@@ -61,12 +61,75 @@ document.getElementById("lockdownBtn").addEventListener("click", async () => {
 });
 
 // --- FETCH LOGS ---
+// --- FETCH LOGS ---
 async function fetchLogs() {
     const res = await fetch("http://localhost:4000/admin/logs", { headers: NGROK_HEADERS });
     if (!res.ok) return;
-    const logs = await res.text(); // assuming logs are plain text
-    document.getElementById("logs").textContent = logs;
+    const logs = await res.json(); // Now expecting JSON
+
+    // Clear previous logs
+    const logsContainer = document.getElementById("logs");
+    logsContainer.innerHTML = "";
+
+    // Helper to format timestamp
+    const formatTime = ts => {
+        const d = new Date(ts);
+        let hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2, "0");
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        return `${hours}:${minutes} ${ampm}`;
+    };
+
+    // --- Upload Logs ---
+    const uploadSection = document.createElement("div");
+    uploadSection.innerHTML = "<h3>Upload Logs</h3>";
+    if (logs.uploadLogs?.length) {
+        const ul = document.createElement("ul");
+        logs.uploadLogs.forEach(l => {
+            const li = document.createElement("li");
+            li.textContent = `[${formatTime(l.timestamp)}] ${l.message}`;
+            ul.appendChild(li);
+        });
+        uploadSection.appendChild(ul);
+    } else {
+        uploadSection.innerHTML += "<p>No upload logs</p>";
+    }
+    logsContainer.appendChild(uploadSection);
+
+    // --- Rate Limit Logs ---
+    const rateSection = document.createElement("div");
+    rateSection.innerHTML = "<h3>Rate Limit Logs</h3>";
+    if (logs.rateLimitLogs?.length) {
+        const ul = document.createElement("ul");
+        logs.rateLimitLogs.forEach(l => {
+            const li = document.createElement("li");
+            li.textContent = `[${formatTime(l.timestamp)}] ${l.message}`;
+            ul.appendChild(li);
+        });
+        rateSection.appendChild(ul);
+    } else {
+        rateSection.innerHTML += "<p>No rate limit logs</p>";
+    }
+    logsContainer.appendChild(rateSection);
+
+    // --- Active Links ---
+    const linksSection = document.createElement("div");
+    linksSection.innerHTML = "<h3>Active Links</h3>";
+    if (logs.activeLinks?.length) {
+        const ul = document.createElement("ul");
+        logs.activeLinks.forEach(l => {
+            const li = document.createElement("li");
+            li.textContent = `[${formatTime(l.timestamp)}] ${l.url}`;
+            ul.appendChild(li);
+        });
+        linksSection.appendChild(ul);
+    } else {
+        linksSection.innerHTML += "<p>No active links</p>";
+    }
+    logsContainer.appendChild(linksSection);
 }
+
 
 // --- AUTO REFRESH ---
 setInterval(() => {
