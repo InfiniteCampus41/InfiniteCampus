@@ -1,5 +1,5 @@
 (() => {
-    const FALLBACK_ART = "https://codehs.com/uploads/f111a37947de2cea81db858094c04f2d";
+    const FALLBACK_ART = "/InfiniteCampus/res/icon.png";
     const DB_NAME = "dryPlayerDB";
     const DB_VERSION = 1;
     let db;

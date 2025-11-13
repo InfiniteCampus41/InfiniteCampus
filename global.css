@@ -13,7 +13,7 @@ body::-webkit-scrollbar {
 body {
     margin: 0;
     padding: 0;
-    background-image: url('https://codehs.com/uploads/a90053d331bc9de909d3eeec0c367692');
+    background-image: url('/InfiniteCampus/res/bg.png');
 }
 header {
     background-color: rgb(140,190,55);
@@ -412,7 +412,7 @@ location {
     bottom: 5%;
     right: -550px;
     width: 500px;
-    background-image: url('https://codehs.com/uploads/69007df21864fd07e42e30e47f9504b0');
+    background-image: url('/InfiniteCampus/res/popupbg.jpg');
     border-radius: 10px 0 0 10px;
     box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
     transition: right 0.3s ease;

@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getDatabase, ref, onValue, push, remove, update, get } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyCd3Yi81oZbRFgcdc98e8hTatdM4pftYRs",
   authDomain: "infinitecampus-6e93c.firebaseapp.com",
@@ -11,18 +10,14 @@ const firebaseConfig = {
   messagingSenderId: "349851426947",
   appId: "1:349851426947:web:14cc56fab543ca91373bb6"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 const updatesRef = ref(db, "updates");
-
 let webhookURL = atob(n);
 let lastSentKey = null;
 let hasLoaded = false;
-let isOwner = false; // track if the user is an owner
-
-// Send to Discord
+let isOwner = false;
 function sendToDiscord(message) {
   fetch(webhookURL, {
     method: "POST",
@@ -30,8 +25,6 @@ function sendToDiscord(message) {
     body: JSON.stringify({ content: message })
   }).catch((e) => console.error("ERR#7 Discord Webhook Error:", e));
 }
-
-// Add Update
 function addUpdate() {
   if (!isOwner) return;
   const contentEl = document.getElementById("newUpdate");
@@ -44,15 +37,11 @@ function addUpdate() {
     contentEl.value = "";
   }
 }
-
-// Delete Update
 function deleteUpdate(key) {
   if (!isOwner) return;
   remove(ref(db, "updates/" + key));
   if (lastSentKey === key) lastSentKey = null;
 }
-
-// Edit Update
 function editUpdate(key, currentText) {
   if (!isOwner) return;
   const newText = prompt("Edit Update:", currentText);
@@ -62,31 +51,23 @@ function editUpdate(key, currentText) {
     });
   }
 }
-
 window.addUpdate = addUpdate;
 window.deleteUpdate = deleteUpdate;
 window.editUpdate = editUpdate;
-
-// Render updates
 function renderUpdates(snapshot) {
   const updates = [];
   snapshot.forEach((child) => {
     updates.push({ key: child.key, ...child.val() });
   });
   updates.sort((a, b) => b.timestamp - a.timestamp);
-
   if (updates.length > 10) {
     updates.slice(10).forEach((u) => deleteUpdate(u.key));
   }
-
   const container = document.getElementById("updates");
   container.innerHTML = "";
-
   updates.slice(0, 10).forEach((update, index) => {
     const div = document.createElement("div");
     div.className = `update-box ${index % 2 === 0 ? "r" : "y"}`;
-
-    // Owner sees edit/delete buttons
     if (isOwner) {
       div.innerHTML = `
         <button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">Edit</button>
@@ -94,14 +75,11 @@ function renderUpdates(snapshot) {
         <button class="button" onclick="deleteUpdate('${update.key}')">Delete</button>
       `;
     } else {
-      // Non-owner: no buttons, no border
       div.innerHTML = `${index + 1}. ${update.content}`;
       div.style.border = "none";
     }
-
     container.appendChild(div);
   });
-
   if (updates.length > 0) {
     const firstUpdate = updates[0];
     if (hasLoaded && firstUpdate.key !== lastSentKey) {
@@ -113,17 +91,12 @@ function renderUpdates(snapshot) {
     }
   }
 }
-
-// Watch updates
 onValue(updatesRef, (snapshot) => {
   renderUpdates(snapshot);
 });
-
-// Auth state listener
 onAuthStateChanged(auth, async (user) => {
   const inputBox = document.getElementById("newUpdateContainer") || document.getElementById("newUpdate");
-  isOwner = false; // reset by default
-
+  isOwner = false;
   if (user) {
     const profileRef = ref(db, `users/${user.uid}/profile/isOwner`);
     const snap = await get(profileRef);
@@ -136,13 +109,9 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     if (inputBox) inputBox.style.display = "none";
   }
-
-  // Re-render updates so buttons show/hide correctly
   const snapshot = await get(updatesRef);
   renderUpdates(snapshot);
 });
-
-// Handle Enter key for adding updates
 document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("newUpdate");
   if (input) {
