@@ -30,12 +30,6 @@
         <script type="module" src="login.js">
         </script>
         <style>
-            body { 
-                font-family: sans-serif; 
-                background: #111; 
-                color: #eee; 
-                padding: 20px; 
-            }
             table { 
                 width: 100%; 
                 border-collapse: collapse; 
@@ -63,22 +57,35 @@
         <br>
         <center>
             <h1 class="tptxt">
-                File Admin Console
+                Server Management Console
             </h1>
-            <div id="logs" style="white-space: pre-wrap; margin-bottom: 10px; background:#222; padding:10px; max-height:200px; overflow-y:auto; color:#0f0;"></div>
-<button id="lockdownBtn">Toggle Lockdown</button>
-<table id="fileTable">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Remaining</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+            <div id="logs" style="white-space: pre-wrap; margin-bottom: 10px; background:#222; padding:10px; max-height:200px; overflow-y:auto; color:#0f0;">
+            </div>
+            <button class="button" id="lockdownBtn">
+                Lockdown
+            </button>
+            <table id="fileTable">
+                <thead>
+                    <tr>
+                        <th>
+                            #
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Size
+                        </th>
+                        <th>
+                            Remaining
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </center>
         <script src="adminuploads.js">
         </script>
