@@ -13,7 +13,7 @@ body::-webkit-scrollbar {
 body {
     margin: 0;
     padding: 0;
-    background-image: url('/InfiniteCampus/res/bg.png');
+    background-image: url('/res/bg.png');
 }
 header {
     background-color: rgb(140,190,55);
@@ -412,7 +412,7 @@ location {
     bottom: 5%;
     right: -550px;
     width: 500px;
-    background-image: url('/InfiniteCampus/res/popupbg.jpg');
+    background-image: url('/res/popupbg.jpg');
     border-radius: 10px 0 0 10px;
     box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
     transition: right 0.3s ease;

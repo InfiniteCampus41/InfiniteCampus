@@ -46,7 +46,7 @@ const headerHTML = `
             </div>
         </div>
         <a href="index.html">
-            <img class="logo" src="/InfiniteCampus/res/logo.svg">
+            <img class="logo" src="/res/logo.svg">
         </a>
         <a class="headerbtn" style="right:710; top:14" href="InfiniteAbouts.html">
             About

@@ -1,5 +1,5 @@
 (() => {
-    const FALLBACK_ART = "/InfiniteCampus/res/icon.png";
+    const FALLBACK_ART = "/res/icon.png";
     const DB_NAME = "dryPlayerDB";
     const DB_VERSION = 1;
     let db;

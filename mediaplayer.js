@@ -1,4 +1,4 @@
-const FALLBACK_ART = "/InfiniteCampus/res/icon.png";
+const FALLBACK_ART = "/res/icon.png";
 const MAX_FILES = 20;
 const PREV_RESTART_THRESHOLD = 10;
 const DB_NAME = "dryPlayerDB";
