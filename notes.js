@@ -24,9 +24,7 @@ function saveNote() {
         noteInput.value = '';
     }
 }
-if (saveBtn) {
-    saveBtn.addEventListener('click', saveNote);
-}
+if (saveBtn) saveBtn.addEventListener('click', saveNote);
 if (noteInput) {
     noteInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -66,9 +64,9 @@ onValue(ref(db, 'notes'), (snapshot) => {
         div.className = 'note';
         div.innerHTML = `
             <div class="txt" data-key="${key}">${note.text}</div>
-            <button class="edit-btn" data-key="${key}" style="display:none">Edit</button>
-            <button class="save-edit-btn" data-key="${key}" style="display:none">Save</button>
-            <button class="delete-btn" data-key="${key}" style="display:none">Delete</button>
+            <button class="edit-btn button" data-key="${key}" style="display:none">Edit</button>
+            <button class="save-edit-btn button" data-key="${key}" style="display:none">Save</button>
+            <button class="delete-btn button" data-key="${key}" style="display:none">Delete</button>
         `;
         notesContainer.appendChild(div);
     });
@@ -85,24 +83,35 @@ onValue(ref(db, 'notes'), (snapshot) => {
             if (!isOwner) return;
             const key = button.getAttribute('data-key');
             const txtDiv = document.querySelector(`.txt[data-key="${key}"]`);
-            const saveBtn = document.querySelector(`.save-edit-btn[data-key="${key}"]`);
+            const saveButton = document.querySelector(`.save-edit-btn[data-key="${key}"]`);
             const currentText = txtDiv.innerText;
-            txtDiv.innerHTML = `<input class="button" type="text" class="edit-input" value="${currentText}">`;
-            saveBtn.style.display = "inline-block";
-        });
-    });
-    document.querySelectorAll('.save-edit-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            if (!isOwner) return;
-            const key = button.getAttribute('data-key');
-            const txtDiv = document.querySelector(`.txt[data-key="${key}"]`);
+            txtDiv.innerHTML = `<input type="text" class="edit-input button" value="${currentText}">`;
             const input = txtDiv.querySelector('.edit-input');
-            if (!input) return;
-            const newText = input.value.trim();
-            if (!newText) return;
-            update(ref(db, 'notes/' + key), { text: newText });
-            txtDiv.innerText = newText;
-            button.style.display = "none";
+            saveButton.style.display = "inline-block";
+            input.focus();
+            input.select();
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEdit(key, txtDiv, saveButton);
+                }
+                if (e.key === 'Escape') {
+                    txtDiv.innerText = currentText;
+                    saveButton.style.display = "none";
+                }
+            });
+            saveButton.onclick = () => {
+                saveEdit(key, txtDiv, saveButton);
+            };
         });
     });
 });
+function saveEdit(key, txtDiv, saveButton) {
+    const input = txtDiv.querySelector('.edit-input');
+    if (!input) return;
+    const newText = input.value.trim();
+    if (!newText) return;
+    update(ref(db, 'notes/' + key), { text: newText });
+    txtDiv.innerText = newText;
+    saveButton.style.display = "none";
+}
