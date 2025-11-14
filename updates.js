@@ -14,16 +14,19 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 const updatesRef = ref(db, "updates");
-let webhookURL = atob(n);
 let lastSentKey = null;
 let hasLoaded = false;
 let isOwner = false;
-function sendToDiscord(message) {
-  	fetch(webhookURL, {
-    	method: "POST",
-    	headers: { "Content-Type": "application/json" },
-    	body: JSON.stringify({ content: message })
-  	}).catch((e) => console.error("ERR#7 Discord Webhook Error:", e));
+function sendToCustomDB(message) {
+    const channelId = "1389703415810101308";
+    fetch(`${a}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            message: message,
+            channelId: channelId
+        })
+    }).catch((e) => console.error("ERR#7 Server Post Error:", e));
 }
 function addUpdate() {
   	if (!isOwner) return;
@@ -84,7 +87,7 @@ function renderUpdates(snapshot) {
     	const firstUpdate = updates[0];
     	if (hasLoaded && firstUpdate.key !== lastSentKey) {
       		lastSentKey = firstUpdate.key;
-      		sendToDiscord(firstUpdate.content);
+			sendToCustomDB(firstUpdate.content);
     	} else if (!hasLoaded) {
       		lastSentKey = firstUpdate.key;
       		hasLoaded = true;

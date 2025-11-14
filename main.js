@@ -14,17 +14,9 @@ function safeSetItem(key, value) {
     }
 }
 const a = "https://included-touched-joey.ngrok-free.app";
-//discord.js webhook vvvv
-const g = "bXl5dXg/NDRpbnhodHdpM2h0cjRmdW40fGpnbXR0cHg0Njg9Pjg4OTg8Nzw1PD4+Nj03NzR3fEk1ZEtkVUdId3JsfEd2bm1RO2o2VTVHTnhWUmRMb3htdX5ZV1I2VGxca0Z3XnZ5OWRxZ0dQWDY1eFB8U1A9SDdLVg==";
-//data url vvvv
 const j = `PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9IndpZHRoOjEwMHZ3ICFpbXBvcnRhbnQ7IGhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyI+PHRpdGxlPkluZmluaXRlIENhbXB1czwvdGl0bGU+PGZvcmVpZ25PYmplY3QgeD0iMCIgeT0iMCIgc3R5bGU9IndpZHRoOjEwMHZ3ICFpbXBvcnRhbnQ7IGhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyI+PGVtYmVkIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIiBzcmM9IiR7dXJsfSIgdHlwZT0idGV4dC9wbGFpbiIgc3R5bGU9ImhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyB3aWR0aDoxMDB2dyAhaW1wb3J0YW50OyIgLz48L2ZvcmVpZ25PYmplY3Q+PC9zdmc+Cg==`;
-//data url vvvv
 const k = "PGh0bWwgbGFuZz0iZW4iPgo8aGVhZD4KPG1ldGEgY2hhcnNldD0iVVRGLTgiPgo8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+Cjx0aXRsZT5JbmZpbml0ZSBDYW1wdXM8L3RpdGxlPgo8c3R5bGU+CmJvZHk6Oi13ZWJraXQtc2Nyb2xsYmFyIHsgZGlzcGxheTogbm9uZTsgfQpib2R5IHsgbWFyZ2luOjBweDsgfQo8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5Pgo8aWZyYW1lIHN0eWxlPSJoZWlnaHQ6MTAwdmg7IHdpZHRoOjEwMHZ3OyIgc3JjPSJQVVRfVVJMX0hFUkUiPjwvaWZyYW1lPgo8L2JvZHk+CjwvaHRtbD4=";
-// keep
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
-// updates webhook url vvv
-const n = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM4OTcwNzcwMDQ1OTUzNjUyNC9tMlBJRkwtdGdpd1dkX2ZyTWV4c1NXb001Z2ZNNE56TzFkeEYyQWRqQThvY18tckswbzFYRTBDWGlUS0VPcXFZaldabw==";
-//keep
 const o = ["Dad", "Default Bot", "Infinite Campus", "Log Bot", "Music Bot"];
 const key = 5;
 console.log('%cWelcome To The Console, If You Do Not Know What You Are Doing, Close It, If You Do I Would Be Happy To Let You Develop The Website With Me infinitecodehs@gmail.com', 'color: purple; font-size: 24px; font-weight: bold;');
