@@ -1,23 +1,9 @@
-let DISCORD_WEBHOOK_URL;
-(function () {
-    const key = 5;
-    function decrypt(str, key) {
-        try {
-            const shifted = atob(str);
-            return [...shifted].map(c =>
-                String.fromCharCode(c.charCodeAt(0) - key)
-            ).join('');
-        } catch {
-            return '';
-        }
-    }
-    DISCORD_WEBHOOK_URL = decrypt(g, key);
-})();
 async function sendMessage() {
     const nameInput = document.getElementById("name").value.trim();
     const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
     const status = document.getElementById("status");
+    const channelId = "1389334335114580229";
     if (!message) {
         status.textContent = "ERR#8 Message Cannot Be empty!";
         status.style.color = "orange";
@@ -25,10 +11,13 @@ async function sendMessage() {
     }
     const fullMessage = `**${name}**\n${message}`;
     try {
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        const response = await fetch(`${a}/send`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: fullMessage })
+            body: JSON.stringify({
+                message: fullMessage,
+                channelId: channelId
+            })
         });
         if (response.ok) {
             status.textContent = "Message Sent!";

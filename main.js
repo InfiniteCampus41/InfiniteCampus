@@ -13,7 +13,6 @@ function safeSetItem(key, value) {
         console.warn(`LocalStorage Unavailable For Key: ${key}`, err);
     }
 }
-//undefined
 const a = "https://included-touched-joey.ngrok-free.app";
 //discord.js webhook vvvv
 const g = "bXl5dXg/NDRpbnhodHdpM2h0cjRmdW40fGpnbXR0cHg0Njg9Pjg4OTg8Nzw1PD4+Nj03NzR3fEk1ZEtkVUdId3JsfEd2bm1RO2o2VTVHTnhWUmRMb3htdX5ZV1I2VGxca0Z3XnZ5OWRxZ0dQWDY1eFB8U1A9SDdLVg==";
@@ -43,7 +42,6 @@ function padlet() { window.open("https://padlet.com/newsomr95/chat-room-br2tjbus
 function converter() { window.open("https://spotidownloader.com/en"); }
 function puter() { window.open("https://puter.com"); }
 function thumbnail() { window.open("https://tagmp3.net/"); }
-function ITU() { window.open("https://postimage.org/"); }
 window.addEventListener('DOMContentLoaded', () => {
     let isFahrenheit = true;
     let currentCity = "";
