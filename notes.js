@@ -66,9 +66,9 @@ onValue(ref(db, 'notes'), (snapshot) => {
         div.className = 'note';
         div.innerHTML = `
             <div class="txt" data-key="${key}">${note.text}</div>
-            <button class="button edit-btn" data-key="${key}" style="display:none">Edit</button>
-            <button class="button save-edit-btn" data-key="${key}" style="display:none">Save</button>
-            <button class="button delete-btn" data-key="${key}" style="display:none">Delete</button>
+            <button class="edit-btn" data-key="${key}" style="display:none">Edit</button>
+            <button class="save-edit-btn" data-key="${key}" style="display:none">Save</button>
+            <button class="delete-btn" data-key="${key}" style="display:none">Delete</button>
         `;
         notesContainer.appendChild(div);
     });
