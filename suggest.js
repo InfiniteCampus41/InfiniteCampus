@@ -1,14 +1,3 @@
-let DISCORD_WEBHOOK_URL;
-(function () {
-    function decrypt(str) {
-        try {
-            return atob(str);
-        } catch {
-            return '';
-        }
-    }
-    DISCORD_WEBHOOK_URL = decrypt(q);
-})();
 async function sendMessage() {
     const nameInput = document.getElementById("name").value.trim();
     const name = nameInput ? nameInput : "Website User";
@@ -21,10 +10,13 @@ async function sendMessage() {
     }
     const fullMessage = `**${name}**\n${message}`;
     try {
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        const response = await fetch("https://included-touched-joey.ngrok-free.app/send", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: fullMessage })
+            body: JSON.stringify({
+                message: fullMessage,
+                channelId: "1334377158789042226"
+            })
         });
         if (response.ok) {
             status.textContent = "Message Sent!";
