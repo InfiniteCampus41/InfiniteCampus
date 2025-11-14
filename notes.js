@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyCd3Yi81oZbRFgcdc98e8hTatdM4pftYRs",
@@ -66,9 +66,9 @@ onValue(ref(db, 'notes'), (snapshot) => {
         div.className = 'note';
         div.innerHTML = `
             <div class="txt" data-key="${key}">${note.text}</div>
-            <button class="edit-btn" data-key="${key}" style="display:none">Edit</button>
-            <button class="save-edit-btn" data-key="${key}" style="display:none">Save</button>
-            <button class="delete-btn" data-key="${key}" style="display:none">Delete</button>
+            <button class="button edit-btn" data-key="${key}" style="display:none">Edit</button>
+            <button class="button save-edit-btn" data-key="${key}" style="display:none">Save</button>
+            <button class="button delete-btn" data-key="${key}" style="display:none">Delete</button>
         `;
         notesContainer.appendChild(div);
     });
