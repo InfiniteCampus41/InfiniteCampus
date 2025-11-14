@@ -87,7 +87,7 @@ onValue(ref(db, 'notes'), (snapshot) => {
             const txtDiv = document.querySelector(`.txt[data-key="${key}"]`);
             const saveBtn = document.querySelector(`.save-edit-btn[data-key="${key}"]`);
             const currentText = txtDiv.innerText;
-            txtDiv.innerHTML = `<input type="text" class="edit-input" value="${currentText}">`;
+            txtDiv.innerHTML = `<input class="button" type="text" class="edit-input" value="${currentText}">`;
             saveBtn.style.display = "inline-block";
         });
     });
