@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const popupHTML = `
         <div class="popup2" id="popup">
             <div class="bar test rgb-element">
-                <div style="text-align:center; font-size:25px; margin-top:-10px;" id="clocks">
+                <div id="clocks">
                     --:--:-- --
                 </div>
             </div>
@@ -101,40 +101,6 @@ window.addEventListener('DOMContentLoaded', () => {
             <img class="settings" src="/res/settings.svg">
         <center>
     `;
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
-    }
-    .switch input { display: none; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 24px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px; width: 18px;
-      left: 5px; bottom: 5px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: lime;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    `;
-    document.head.appendChild(styleEl);
     const wrapper = document.createElement('div');
     wrapper.innerHTML = popupHTML;
     document.body.appendChild(wrapper);

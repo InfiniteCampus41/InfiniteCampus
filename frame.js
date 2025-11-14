@@ -1,40 +1,11 @@
 const headerHTML = `
-<style>
-    .dropdown {
-        position: absolute;
-        top: 50px;
-        right: 590px;
-        display: none;
-        flex-direction: column;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        z-index: 1000;
-        background: inherit;
-    }
-    .dropdown button {
-        background: transparent;
-        border: none;
-        padding: 10px 15px;
-        text-align: left;
-        cursor: pointer;
-        color: white;
-        transition: background 0.3s;
-    }
-    .dropdown button:hover {
-    background-color:transparent
-    }
-    .dropdown-toggle {
-        cursor: pointer;
-    }
-</style>
 <strong>
     <header id="site-header">
         <div class="test">
         </div>
         <div id="location">
         </div>
-        <div style="margin-top:1.5vh; max-width:fit-content" id="weather-container">
+        <div id="weather-container">
             <div id="global-text">
                 <pre id="weather">
                 </pre>
@@ -54,7 +25,7 @@ const headerHTML = `
         <a class="headerbtn" style="right:650; top:14" href="InfiniteApps.html">
             Apps
         </a>
-        <div id="chatToggle" class="dropdown-toggle headerbtn" style="right:595; top:14; position:absolute;">
+        <div id="chatToggle" class="dropdown-toggle headerbtn" style="right:595; top:14;">
             Chat
         </div>
         <div class="dropdown" id="chatDropdown">
@@ -68,7 +39,7 @@ const headerHTML = `
                 Live Discord Chat
             </button>
         </div>
-        <div id="helpToggle" class="dropdown-toggle headerbtn" style="right:470; top:14; position:absolute;">
+        <div id="helpToggle" class="dropdown-toggle headerbtn" style="right:470; top:14;">
             Help/Support
         </div>
         <div style="right:400;" class="dropdown" id="helpDropdown">
@@ -91,7 +62,7 @@ const headerHTML = `
         <a class="headerbtn" style="right:250; top:14" href="InfiniteUpdaters.html">
             Updates
         </a>
-        <div id="downloadToggle" class="dropdown-toggle headerbtn" style="right:120; top:14; position:absolute;">
+        <div id="downloadToggle" class="dropdown-toggle headerbtn" style="right:120; top:14;">
             Download Games
         </div>
         <div style="right:50; top:50px;" class="dropdown" id="downloadDropdown">
@@ -108,20 +79,18 @@ const headerHTML = `
                 Download 0v0
             </button>
         </div>
-        <a class="contactme" style="right:0; top:10; margin-right:10px" href="InfiniteContacts.html">
+        <a class="contactme" style="right:0; top:10" href="InfiniteContacts.html">
             Contact Me
         </a>
     </header>
 </strong>
-<footer id="site-footer" style="z-index:9; bottom:-4; text-align:left">
-    <p>
+<footer id="site-footer" style="bottom:-4">
+    <span style="margin-left:1%;">
         Totally Made By Noah White And Not A Different Person.
-    </p>
-</footer>
-<footer id="text-only-footer" style="z-index:10; background-color:transparent; text-align:right; bottom:-4">
-    <p>
+    </span>
+    <span style="margin-right:1%;">
         Pissing Off Your Teachers Since 2024
-    </p>
+    </span>
 </footer>
 `;
 document.addEventListener("DOMContentLoaded", () => {

@@ -33,7 +33,10 @@ header {
     text-align:top;
 }
 footer {
+    display:flex; 
+    justify-content:space-between;
     padding: 2px;
+    z-index:9;
     background-color: rgb(140,190,55);
     color: #000;
     height:30;
@@ -92,6 +95,8 @@ html {
     font-family: "Roboto","aktiv grotesk","Helvetica Neue","Helvetica",arial,sans-serif;
 }
 #weather-container {
+    margin-top:1.5vh; 
+    max-width:fit-content;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -124,14 +129,6 @@ html {
     color: lightgrey;
     transition: all 0.4s ease;
     font-family: "Roboto","aktiv grotesk","Helvetica Neue","Helvetica",arial,sans-serif;
-}
-#chat { 
-    max-width: 600px; 
-    margin: auto; 
-}
-#loginArea { 
-    margin-bottom: 20px; 
-    width:200px;
 }
 .button{
     background-color:black;
@@ -179,6 +176,7 @@ html {
     color:lightgrey;
 }
 .contactme {
+    margin-right:10px;
     color:black;
     border:1px solid black; 
     border-radius:6px;
@@ -371,15 +369,6 @@ location {
 }
 .pair {
     margin-bottom: 10px;
-}
-.dropdown {
-    background-color:black;
-    color:white;
-    font-size: 70%;
-    padding:9px;
-    border-radius:5px;
-    border:1px solid white;
-    text-decoration:none;
 }
 .settings-button {
     position: fixed;
@@ -807,4 +796,74 @@ emoji-picker {
     max-width: 100%;
     border-radius: 5px;
     margin-top: 8px;
+}
+.dropdown {
+    position: absolute;
+    top: 50px;
+    right: 590px;
+    display: none;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    background: inherit;
+}
+.dropdown button {
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    text-align: left;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s;
+}
+.dropdown button:hover {
+    background-color:transparent
+}
+.dropdown-toggle {
+    cursor: pointer;
+    position:absolute;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input { 
+    display: none; 
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; 
+    width: 18px;
+    left: 5px; 
+    bottom: 5px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: lime;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+#clocks {
+	text-align:center; 
+	font-size:25px; 
+	margin-top:-10px;
 }

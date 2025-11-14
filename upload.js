@@ -119,11 +119,11 @@ if (fileParam) {
                     `;
                     progressBar.style.width = "100%";
                 } catch (err) {
-                    output.innerHTML = `<p style="color:red;">Error Parsing Server Response</p>`;
+                    output.innerHTML = `<p class="r">Error Parsing Server Response</p>`;
                     console.error(err);
                 }
             } else {
-                output.innerHTML = `<p style="color:red;">Upload Failed: ${xhr.statusText}</p>`;
+                output.innerHTML = `<p class="r">Upload Failed: ${xhr.statusText}</p>`;
             }
         };
         xhr.onerror = () => {
