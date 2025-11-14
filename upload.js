@@ -2,7 +2,6 @@ const MAX_SIZE = 500 * 1024 * 1024;
 const appDiv = document.getElementById("app");
 const params = new URLSearchParams(window.location.search);
 const fileParam = params.get("file");
-
 if (fileParam) {
     appDiv.innerHTML = `
         <center>
@@ -14,15 +13,12 @@ if (fileParam) {
             <button class="button" id="downloadBtn">Download</button>
         </center>
     `;
-
     const btn = document.getElementById("downloadBtn");
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
-
     btn.onclick = () => {
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
-
         fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
             method: "GET",
             headers: {
@@ -31,15 +27,12 @@ if (fileParam) {
         })
         .then(response => {
             if (!response.ok) throw new Error("Network Response Was Not Ok");
-
             const contentLength = response.headers.get("Content-Length");
             if (!contentLength) return response.blob();
-
             const total = parseInt(contentLength, 10);
             let loaded = 0;
             const reader = response.body.getReader();
             const chunks = [];
-
             function read() {
                 return reader.read().then(({ done, value }) => {
                     if (done) return;
@@ -50,7 +43,6 @@ if (fileParam) {
                     return read();
                 });
             }
-
             return read().then(() => new Blob(chunks));
         })
         .then(blob => {
@@ -81,50 +73,39 @@ if (fileParam) {
             <p id="output"></p>
         </center>
     `;
-
     const input = document.getElementById("fileInput");
     const fileNameDisplay = document.getElementById("fileName");
     const progressBar = document.getElementById("progressBar");
     const progressContainer = document.getElementById("progressContainer");
     const output = document.getElementById("output");
-
     input.addEventListener("change", () => {
         const file = input.files[0];
         if (!file) return;
-
         fileNameDisplay.textContent = "Selected File: " + file.name;
-
         if (file.size > MAX_SIZE) {
             alert("File Too Large! Maximum Allowed Size Is 500 MB.");
             input.value = "";
             return;
         }
-
         const formData = new FormData();
         formData.append("file", file);
-
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
-
         const xhr = new XMLHttpRequest();
         xhr.open("POST", `${a}/uploadthis`, true);
-
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
                 const percent = Math.round((e.loaded / e.total) * 100);
                 progressBar.style.width = percent + "%";
             }
         };
-
         xhr.onload = () => {
             if (xhr.status === 200) {
                 try {
                     const res = JSON.parse(xhr.responseText);
                     const urlParts = res.fileUrl.split("/");
                     const filename = urlParts[urlParts.length - 1];
-
                     const link = `https://www.infinitecampus.xyz/InfiniteUploaders.html?file=${encodeURIComponent(filename)}`;
-
                     output.innerHTML = `
                         <center>
                             <p>Temporary Download Link (5 Mins):</p>
@@ -136,7 +117,6 @@ if (fileParam) {
                             </a>
                         </center>
                     `;
-
                     progressBar.style.width = "100%";
                 } catch (err) {
                     output.innerHTML = `<p style="color:red;">Error Parsing Server Response</p>`;
@@ -146,14 +126,11 @@ if (fileParam) {
                 output.innerHTML = `<p style="color:red;">Upload Failed: ${xhr.statusText}</p>`;
             }
         };
-
         xhr.onerror = () => {
             output.innerHTML = `<p style="color:red;">Upload Failed (Network Error)</p>`;
         };
-
         xhr.send(formData);
     });
-
     window.copyLink = () => {
         const link = document.getElementById("fileLink");
         link.select();

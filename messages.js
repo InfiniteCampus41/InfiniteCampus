@@ -1,4 +1,4 @@
-const backendUrl = 'https://included-touched-joey.ngrok-free.app';
+const backendUrl = `${a}`;
 const apiMessagesUrl = `${backendUrl}/api/messages`;
 const widgetUrl = 'https://discord.com/api/guilds/1002698920809463808/widget.json';
 let widgetData = null;

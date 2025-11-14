@@ -10,7 +10,7 @@ async function sendMessage() {
     }
     const fullMessage = `**${name}**\n${message}`;
     try {
-        const response = await fetch("https://included-touched-joey.ngrok-free.app/send", {
+        const response = await fetch(`${a}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
