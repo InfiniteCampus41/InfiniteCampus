@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      background: #121212;
+      color: white;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #left, #right {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    #left {
+      flex: 2;
+      border-right: 1px solid #333;
+    }
+
+    #right {
+      flex: 1;
+    }
+
+    button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      margin: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #666;
+    }
+
+    .user-item {
+      cursor: pointer;
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 5px;
+      background: #1e1e1e;
+    }
+
+    .user-item:hover {
+      background: #333;
+    }
+
+    .message {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .message img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+
+    .msg-content {
+      flex: 1;
+    }
+
+    .msg-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      color: #aaa;
+    }
+
+    .msg-text {
+      margin-top: 4px;
+      color: white;
+    }
+
+    .msg-edited {
+      font-size: 0.75em;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      background: #1e1e1e;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="left">
+    <h2>Messages Mod View</h2>
+    <div id="privateChats"></div>
+    <div id="chatView" style="display:none;">
+      <h3 id="chatTitle"></h3>
+      <div id="chatMessages"></div>
+      <button id="deleteChat">Delete Chat</button>
+      <button id="backButton">Back</button>
+    </div>
+  </div>
+
+  <div id="right">
+    <h2>Users</h2>
+    <div id="userList"></div>
+    <div id="userEdit" style="display:none;">
+      <h3 id="editTitle"></h3>
+      <textarea id="userData"></textarea>
+      <button id="saveUser">Save Changes</button>
+      <button id="backToList">Back</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { ref, get, set, remove } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+
+    const privateChatsDiv = document.getElementById("privateChats");
+    const chatView = document.getElementById("chatView");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatMessages = document.getElementById("chatMessages");
+    const deleteChatBtn = document.getElementById("deleteChat");
+    const backButton = document.getElementById("backButton");
+
+    const userListDiv = document.getElementById("userList");
+    const userEditDiv = document.getElementById("userEdit");
+    const editTitle = document.getElementById("editTitle");
+    const userDataTextarea = document.getElementById("userData");
+    const saveUserBtn = document.getElementById("saveUser");
+    const backToListBtn = document.getElementById("backToList");
+
+    let currentChatPath = null;
+    let currentUserEditUID = null;
+    let userProfiles = {}; // uid -> { displayName, pic }
+
+    // Profile picture index → URL map
+    const profilePics = [
+      "/pfps/1.jpeg",
+      "/pfps/2.jpeg",
+      "/pfps/3.jpeg",
+      "/pfps/4.jpeg",
+      "/pfps/5.jpeg",
+      "/pfps/6.jpeg",
+      "/pfps/7.jpeg",
+      "/pfps/8.jpeg",
+      "/pfps/9.jpeg",
+      "/pfps/f3.jpeg",
+      "/pfps/kaiden.png"
+    ];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("You must be logged in to view this page.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const uid = user.uid;
+      const ownerRef = ref(db, `users/${uid}/profile/isOwner`);
+      const snapshot = await get(ownerRef);
+
+      if (!snapshot.exists() || snapshot.val() !== true) {
+        alert("Access denied. You are not an owner.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      await loadUserList();
+      await loadPrivateChats();
+    });
+
+    async function loadPrivateChats() {
+      privateChatsDiv.innerHTML = "Loading messages";
+      const privateRef = ref(db, "private");
+      const snapshot = await get(privateRef);
+      if (!snapshot.exists()) {
+        privateChatsDiv.innerHTML = "No messages found.";
+        return;
+      }
+
+      const data = snapshot.val();
+      privateChatsDiv.innerHTML = "";
+
+      Object.entries(data).forEach(([uid, chatPartners]) => {
+        const userDisplay = userProfiles[uid]?.displayName || uid;
+        const userDiv = document.createElement("div");
+        userDiv.innerHTML = `<strong>${userDisplay}</strong>`;
+        privateChatsDiv.appendChild(userDiv);
+
+        Object.keys(chatPartners).forEach(secondUid => {
+          const partnerName = userProfiles[secondUid]?.displayName || secondUid;
+          const div = document.createElement("div");
+          div.className = "user-item";
+          div.textContent = `Chat between ${userDisplay} & ${partnerName}`;
+          div.onclick = () => viewPrivateChat(uid, secondUid, userDisplay, partnerName);
+          privateChatsDiv.appendChild(div);
+        });
+      });
+    }
+
+    async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
+  currentChatPath = `private/${uid}/${secondUid}`;
+  privateChatsDiv.style.display = "none";
+  chatView.style.display = "block";
+  chatTitle.textContent = `Private Chat: ${userDisplay} & ${partnerDisplay}`;
+  chatMessages.innerHTML = "Loading...";
+
+  const chatRef = ref(db, currentChatPath);
+  const snapshot = await get(chatRef);
+  if (!snapshot.exists()) {
+    chatMessages.innerHTML = "<p>No messages found.</p>";
+    return;
+  }
+
+  const messages = snapshot.val();
+  chatMessages.innerHTML = "";
+
+  for (const [msgId, msgData] of Object.entries(messages)) {
+    const senderUid = msgData.sender || uid;
+
+    // Fetch sender profile if not cached
+    if (!userProfiles[senderUid]) {
+      const userSnap = await get(ref(db, `users/${senderUid}/profile`));
+      const profile = userSnap.exists() ? userSnap.val() : {};
+      userProfiles[senderUid] = {
+        displayName: profile.displayName || "Unknown",
+        pic: profile.pic || ""
+      };
+    }
+    const senderProfile = userProfiles[senderUid];
+
+    // 🖼️ Profile pic logic (match user list)
+    let picNum = parseInt(senderProfile.pic);
+    if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
+      picNum = 1; // default to 1
+    }
+    const senderPic = profilePics[picNum - 0];
+
+    const senderName = senderProfile.displayName || "Unknown";
+
+    // Format timestamp to MM/DD/YYYY hh:mm AM/PM
+    let timestamp = "";
+    if (msgData.timestamp) {
+      const date = new Date(msgData.timestamp);
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const day = date.getDate().toString().padStart(2, "0");
+      const year = date.getFullYear();
+      let hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 => 12
+      timestamp = `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+    }
+
+    const isPartner = senderUid === secondUid;
+
+    // Build message container
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message";
+    msgDiv.style.flexDirection = isPartner ? "row" : "row-reverse";
+    msgDiv.style.background = isPartner ? "#1e1e1e" : "#2b2b2b";
+
+    const img = document.createElement("img");
+    img.src = senderPic;
+    img.alt = "User Pic";
+
+    const content = document.createElement("div");
+    content.className = "msg-content";
+    content.style.textAlign = isPartner ? "left" : "right";
+
+    const header = document.createElement("div");
+    header.className = "msg-header";
+    header.innerHTML = `<span>${senderName}</span><span>${timestamp}</span>`;
+
+    const text = document.createElement("div");
+    text.className = "msg-text";
+    text.textContent = msgData.text || "(no text)";
+
+    content.appendChild(header);
+    content.appendChild(text);
+
+    if (msgData.edited) {
+      const edited = document.createElement("div");
+      edited.className = "msg-edited";
+      edited.textContent = "(edited)";
+      content.appendChild(edited);
+    }
+
+    msgDiv.appendChild(img);
+    msgDiv.appendChild(content);
+    chatMessages.appendChild(msgDiv);
+  }
+}
+
+    deleteChatBtn.onclick = async () => {
+  if (!currentChatPath) return;
+  if (!confirm("Delete this entire private chat and metadata?")) return;
+
+  // Extract uids from currentChatPath: "private/uid/secondUid"
+  const parts = currentChatPath.split("/");
+  const uid = parts[1];
+  const secondUid = parts[2];
+
+  try {
+    // Delete the chat itself
+    await remove(ref(db, `private/${uid}/${secondUid}`));
+
+    // Delete metadata for both users
+    await remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
+    await remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
+
+    alert("Chat and metadata deleted.");
+    chatView.style.display = "none";
+    privateChatsDiv.style.display = "block";
+    loadPrivateChats();
+  } catch (err) {
+    alert("Error deleting chat: " + err.message);
+  }
+};
+
+
+    backButton.onclick = () => {
+      chatView.style.display = "none";
+      privateChatsDiv.style.display = "block";
+    };
+    async function loadUserList() {
+      const usersRef = ref(db, "users");
+      const snapshot = await get(usersRef);
+      if (!snapshot.exists()) {
+        userListDiv.innerHTML = "No users found.";
+        return;
+      }
+      const data = snapshot.val();
+      userProfiles = {};
+      const sorted = Object.entries(data).sort((a, b) => {
+        const nameA = a[1]?.profile?.displayName?.toLowerCase() || "";
+        const nameB = b[1]?.profile?.displayName?.toLowerCase() || "";
+        return nameA.localeCompare(nameB);
+      });
+      userListDiv.innerHTML = "";
+      sorted.forEach(([uid, info]) => {
+        const name = info.profile?.displayName || uid;
+        let picNum = parseInt(info.profile?.pic);
+        if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
+          picNum = 0;
+        }
+
+        const pic = profilePics[picNum + 0];
+        userProfiles[uid] = { displayName: name, pic: picNum.toString() };
+
+        const div = document.createElement("div");
+        div.className = "user-item";
+        div.innerHTML = `<img src="${pic}" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;"> ${name}`;
+        div.onclick = () => editUser(uid, info);
+        userListDiv.appendChild(div);
+      });
+    }
+
+    function editUser(uid, data) {
+      currentUserEditUID = uid;
+      userListDiv.style.display = "none";
+      userEditDiv.style.display = "block";
+      editTitle.textContent = `Editing User: ${uid}`;
+      userDataTextarea.value = JSON.stringify(data, null, 2);
+    }
+
+    saveUserBtn.onclick = async () => {
+      if (!currentUserEditUID) return;
+      try {
+        const newData = JSON.parse(userDataTextarea.value);
+        await set(ref(db, `users/${currentUserEditUID}`), newData);
+        alert("User data saved!");
+        userEditDiv.style.display = "none";
+        userListDiv.style.display = "block";
+        loadUserList();
+      } catch (err) {
+        alert("Invalid JSON or save failed: " + err.message);
+      }
+    };
+
+    backToListBtn.onclick = () => {
+      userEditDiv.style.display = "none";
+      userListDiv.style.display = "block";
+    };
+  </script>
+</body>
+</html>
