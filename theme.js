@@ -117,6 +117,9 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (gradientSetting === 'mnb') {
                 bg = 'linear-gradient(to right, darkblue, black)';
                 isDark = true;
+            } else if (gradientSetting === 'cms') {
+                bg = 'linear-gradient(to right, green, red)';
+                isDark = true;
             } else if (gradientSetting === 'rgb') {
                 if (header) insertRGBVideoBackground(header);
                 if (footer) insertRGBVideoBackground(footer);
