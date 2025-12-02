@@ -80,9 +80,9 @@ function renderMovies(list) {
         div.className = "file-item";
         div.innerHTML = `
             <b>${v.name}</b> — ${v.humanSize}<br><br>
-            <button onclick="openWatchPanel('${v.name}')">Watch</button>
+            <button class="button" onclick="openWatchPanel('${v.name}')">Watch</button>
             <a href="${dlURL}">
-                <button style="background:#ffa800;">Download</button>
+                <button class="button">Download</button>
             </a>
         `;
         box.appendChild(div);
