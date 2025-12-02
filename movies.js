@@ -23,7 +23,7 @@ function uploadApply() {
             const percent = Math.round((e.loaded / e.total) * 100);
             const container = document.getElementById("progressContainer");
             const bar = document.getElementById("progressBar");
-            container.style.display = "block";
+            container.style.display = "flex";
             bar.style.width = percent + "%";
             bar.innerText = percent + "%";
         }
