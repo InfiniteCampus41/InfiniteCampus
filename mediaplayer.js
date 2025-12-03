@@ -2,7 +2,7 @@ const FALLBACK_ART = "/res/icon.png";
 const MAX_FILES = 20;
 const PREV_RESTART_THRESHOLD = 10;
 const DB_NAME = "dryPlayerDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let db;
 let tracks = [];
 let currentIndex = 0;
@@ -50,8 +50,13 @@ function openDB() {
         const req = indexedDB.open(DB_NAME, DB_VERSION);
         req.onupgradeneeded = (e) => {
             db = e.target.result;
+            let store;
             if (!db.objectStoreNames.contains('songs')) {
-                const store = db.createObjectStore('songs', { keyPath: 'id', autoIncrement: true });
+                store = db.createObjectStore('songs', { keyPath: 'id', autoIncrement: true });
+            } else {
+                store = e.target.transaction.objectStore('songs');
+            }
+            if (!store.indexNames.contains('position')) {
                 store.createIndex('position', 'position', { unique: false });
             }
             if (!db.objectStoreNames.contains('state')) {
@@ -399,6 +404,18 @@ if ('mediaSession' in navigator) {
         els.audio.currentTime = Math.min(els.audio.duration || Infinity, els.audio.currentTime + step);
     });
 }
+function makeUUID() {
+    if (crypto && crypto.getRandomValues) {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+    return 'xxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 els.fileInput.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('audio/'));
     if (files.length === 0) return;
@@ -413,7 +430,7 @@ els.fileInput.addEventListener('change', async (e) => {
         const blob = new Blob([await f.arrayBuffer()], { type: f.type || 'audio/mpeg' });
         const title = stripExt(f.name);
         const position = tracks.length + i;
-        tracks.push({ id: crypto.randomUUID(), title, blob, artworkDataUrl, position });
+        tracks.push({ id: makeUUID(), title, blob, artworkDataUrl, position });
     }
     refreshListUI();
     if (tracks.length > 0) {

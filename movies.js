@@ -14,7 +14,7 @@ document.getElementById("applyFile").addEventListener("change", () => {
 });
 function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
-    if (!file) return alert("Choose A File");
+    if (!file) return showError("Choose A File");
     const uploadURL = applyBK + "/api/upload_apply_x9a7b2";
     const formData = new FormData();
     formData.append("file", file);
