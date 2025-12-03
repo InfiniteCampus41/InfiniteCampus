@@ -1,18 +1,38 @@
 (() => {
     const FALLBACK_ART = "/res/icon.png";
     const DB_NAME = "dryPlayerDB";
-    const DB_VERSION = 1;
+    const DB_VERSION = 2;
     let db;
     let tracks = [], currentIndex = 0, isLooping = false;
+    function makeUUID() {
+        if (crypto && crypto.getRandomValues) {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+        return 'xxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
     function openDB() {
         return new Promise((resolve, reject) => {
             const req = indexedDB.open(DB_NAME, DB_VERSION);
             req.onupgradeneeded = e => {
                 db = e.target.result;
-                if (!db.objectStoreNames.contains('songs'))
-                    db.createObjectStore('songs', { keyPath: 'id', autoIncrement: true });
-                if (!db.objectStoreNames.contains('state'))
+                let songStore;
+                if (!db.objectStoreNames.contains('songs')) {
+                    songStore = db.createObjectStore('songs', { keyPath: 'id' });
+                } else {
+                    songStore = e.target.transaction.objectStore('songs');
+                }
+                if (!songStore.indexNames.contains('position')) {
+                    songStore.createIndex('position', 'position', { unique: false });
+                }
+                if (!db.objectStoreNames.contains('state')) {
                     db.createObjectStore('state', { keyPath: 'key' });
+                }
             };
             req.onsuccess = e => { db = e.target.result; resolve(db); };
             req.onerror = e => reject(e);
@@ -29,6 +49,24 @@
                 resolve(allTracks);
             };
             req.onerror = e => reject(e);
+        });
+    }
+    function saveState(key, value) {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction('state', 'readwrite');
+            const store = tx.objectStore('state');
+            store.put({ key, value });
+            tx.oncomplete = resolve;
+            tx.onerror = reject;
+        });
+    }
+    function loadState(key) {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction('state', 'readonly');
+            const store = tx.objectStore('state');
+            const req = store.get(key);
+            req.onsuccess = () => resolve(req.result ? req.result.value : null);
+            req.onerror = reject;
         });
     }
     const floating = document.createElement('div');
@@ -155,10 +193,11 @@
         if(audio.paused) audio.play();
         else audio.pause();
     });
-    btnLoop.addEventListener('click', ()=>{
+    btnLoop.addEventListener('click', async ()=> {
         isLooping = !isLooping;
-        btnLoop.textContent = isLooping ? '↺ On' : '↺ Off';
-        btnLoop.style.outline = isLooping ? '2px solid #4c9aff' : 'none';
+        await saveState("isLooping", isLooping);
+        btnLoop.textContent = isLooping ? "↺ On" : "↺ Off";
+        btnLoop.style.outline = isLooping ? "2px solid #4c9aff" : "none";
     });
     audio.addEventListener('play', ()=> btnPlay.textContent='||');
     audio.addEventListener('pause', ()=> btnPlay.textContent='▶');
@@ -188,6 +227,12 @@
         tracks = await loadAllTracks();
         if(tracks.length>0){
             floating.style.display='block';
+            const savedLoop = await loadState("looping");
+            if (savedLoop !== null) {
+                isLooping = savedLoop;
+                btnLoop.textContent = isLooping ? "↺ On" : "↺ Off";
+                btnLoop.style.outline = isLooping ? "2px solid #4c9aff" : "none";
+            }
             loadTrack(false);
         }
     })();
