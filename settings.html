@@ -1,156 +1,182 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
         <title>
             Settings
         </title>
         <link rel="icon" type="image/png" href="res/icon.png">
-        <link rel="stylesheet" href="globalchat.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
-                max-width: 640px;
-                margin: auto;
-                overflow: auto !important;
-                background: #0f0f0f;
+                background-color: #0f0f0f;
+            }
+            body::-webkit-scrollbar {
+                display: none;
+            }
+            textarea {
+                resize: none;
+            }
+            .card {
+                background-color: #111 !important;
+                border-color: #222;
+            }
+            .form-control, .form-control-color {
+                background-color: #000;
+                color: #fff;
+                border: 1px solid #333;
+            }
+            #profileContainer {
+                justify-content:center;
+            }
+            .form-control:disabled {
+                background:#444;
+            }
+            .form-control:focus {
+                background-color: #000;
+                color: #fff;
+                border-color: #0d6efd;
+                box-shadow: none;
+            }
+            .list-group-item {
+                background: rgba(255, 255, 255, 0.05);
                 color: white;
-                font-family: sans-serif;
-                text-align: center;
+                border: none;
             }
-            body::-webkit-scrollbar { 
-                display: none; 
-            }
-            input, button {
-                padding: 8px;
-                margin: 6px 0;
-                border-radius: 5px;
-                border: 1px solid white;
-                background: black;
-                color: white;
-                transition: 0.3s;
-            }
-            input:hover, button:hover {
-                filter: invert(1);
+            .icon-btn {
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             #settingsPanel {
                 display: none;
-                border:none;
-                margin-top: 20px;
-                border-radius: 10px;
-                padding: 15px;
             }
-            ul {
-                text-align: left;
-                list-style: none;
-                padding: 0;
+            #localStorageList {
+                color:grey;
             }
-            ul li {
-                background: rgba(255,255,255,0.1);
-                margin: 5px 0;
-                padding: 5px 10px;
-                border-radius: 5px;
+            .text-center, label {
+                color:#777;
+                text-align:center;
             }
         </style>
     </head>
-    <body>
-        <center>
-            <h2>
-                Settings
-            </h2>
-            <p id="status">
-                Checking login status...
-            </p>
-            <br>
-            <a class="button" style="width:20%" href="chat.html">
-                Go To Chat
-            </a>
-            <div id="settingsPanel">
-                <h3>
+    <body class="text-light">
+        <div class="container py-5" style="max-width: 640px;">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">
+                    Settings
+                </h2>
+                <p id="status" class="text-secondary">
+                    Checking login status
+                </p>
+                <a href="chat.html" class="btn btn-outline-primary w-25 mt-2">
+                    Go To Chat
+                </a>
+            </div>
+            <div id="settingsPanel" class="card p-4 rounded-4 shadow-lg">
+                <h3 class="text-center mb-4">
                     Profile
                 </h3>
-                <div id="displayContainer" style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 400px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span>
-                            Name:
-                        </span>
-                        <textarea id="displayNameInput" placeholder="Enter Name Here" disabled maxlength="50" rows="1" style="flex: 1; resize: none; overflow: hidden; padding: 6px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
-                        <button id="editDisplayBtn" title="Edit Display Name" style="cursor: pointer;">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        Name
+                    </label>
+                    <div class="d-flex align-items-center gap-2">
+                        <textarea id="displayNameInput" class="form-control flex-grow-1" placeholder="Enter Name Here" disabled maxlength="20" rows="1"></textarea>
+                        <button id="editDisplayBtn" class="btn btn-outline-light icon-btn" title="Edit">
                             ✎
                         </button>
-                        <button id="saveDisplayBtn" title="Save Display Name" style="display:none; cursor:pointer;">
+                        <button id="saveDisplayBtn" class="btn btn-success icon-btn" style="display:none;" title="Save">
                             ✓
                         </button>
-                        <button id="cancelDisplayBtn" title="Cancel Display Name Edit" style="display:none; cursor:pointer;">
-                            X
+                        <button id="cancelDisplayBtn" class="btn btn-danger icon-btn" style="display:none" title="Cancel">
+                            ✕
                         </button>
-                        <small id="displayCharCount" style="text-align: right; color: grey;">
-                            0 / 20
-                        </small>
+                    </div>
+                    <small id="displayCharCount" class="text-secondary d-block text-end mt-1">
+                        0 / 20
+                    </small>
+                </div>
+                <div class="mb-4" style="text-align:center">
+                    <label class="form-label fw-semibold">
+                        Display Name Color
+                    </label>
+                    <div class="d-flex gap-2 align-items-center" style="justify-content:center">
+                        <input type="color" id="nameColorInput" class="form-control form-control-color">
+                        <button id="saveNameColorBtn" class="btn btn-primary">
+                            Save Name Color
+                        </button>
                     </div>
                 </div>
-                Display Name Color:
-                <input type="color" id="nameColorInput" style="padding:3px;"/>
-                <button id="saveNameColorBtn">
-                    Save Name Color
-                </button>
-                <div id="bioContainer" style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 400px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span>
-                            Bio:
-                        </span>
-                        <textarea id="bioInput" placeholder="Enter Bio Here" disabled maxlength="50" rows="1" style="flex: 1; resize: none; overflow: hidden; padding: 6px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
-                        <button id="editBioBtn" title="Edit Bio" style="cursor: pointer;">
+                <div class="mb-4" style="text-align:center">
+                    <label class="form-label fw-semibold">
+                        Bio
+                    </label>
+                    <div class="d-flex align-items-center gap-2">
+                        <textarea id="bioInput" class="form-control flex-grow-1" placeholder="Enter Bio Here" disabled maxlength="50" rows="1"></textarea>
+                        <button id="editBioBtn" class="btn btn-outline-light icon-btn" title="Edit">
                             ✎
                         </button>
-                        <button id="saveBioBtn" title="Save Bio" style="display:none; cursor:pointer;">
+                        <button id="saveBioBtn" class="btn btn-success icon-btn" style="display:none;" title="Save">
                             ✓
                         </button>
-                        <button id="cancelBioBtn" title="Cancel Edit" style="display:none; cursor:pointer;">
-                            X
+                        <button id="cancelBioBtn" class="btn btn-danger icon-btn" style="display:none;" title="Cancel">
+                            ✕
                         </button>
-                        <small id="bioCharCount" style="text-align: right; color: gray;">
-                            0 / 50
-                        </small>
                     </div>
+                    <small id="bioCharCount" class="text-secondary d-block text-end mt-1">
+                        0 / 50
+                    </small>
                 </div>
-                <div id="profileContainer">
+                <div id="profileContainer" style="display:flex;" class="mb-3">
                 </div>
                 <hr>
-                <h4>
+                <h4 class="text-center mt-3">
                     Account Info
                 </h4>
-                <hr style="border-color:darkgrey; max-width:100px; margin-top:-15px;">
-                <p>
-                    User ID: 
-                    <span id="userIdDisplay">
-                    </span>
-                </p>
-                <hr>
-                <p>
-                    Email: 
-                    <hr style="border-color:darkgrey; max-width:100px; margin-top:-15px;">
-                    <span id="userEmailDisplay">
-                    </span> 
-                    <span id="adminBadge" style="font-weight:bold;">
-                    </span>
-                </p>
-                <button id="verifyEmailBtn" style="display:none; margin-bottom:5px;">
-                    Verify Email
-                </button>
-                <hr>
-                <button id="logoutBtn">
+                <hr class="mx-auto" style="max-width:100px;">
+                <div style="display:grid; justify-content:center;">
+                    <p class="mb-2" style="text-align:center;color:#777;">
+                        <strong>
+                            User ID:
+                        </strong>
+                        <span id="userIdDisplay" class="text-info">
+                        </span>
+                    </p>
+                    <hr>
+                    <p class="mb-2" style="text-align:center;color:#777">
+                        <strong>
+                            Email:
+                        </strong>
+                        <span id="userEmailDisplay" class="text-info">
+                        </span>
+                        <br>
+                        <span id="adminBadge" class="ms-2 badge bg-warning text-dark">
+                        </span>
+                    </p>
+                    <button id="verifyEmailBtn" class="btn btn-warning w-100 mb-3 d-none">
+                        Verify Email
+                    </button>
+                    <hr>
+                </div>
+                <button id="logoutBtn" class="btn btn-outline-danger w-100 mb-4">
                     Log Out
                 </button>
-                <h4>
+                <h4 class="text-center">
                     Other Settings
                 </h4>
                 <hr>
-                <button id="resetPasswordBtn">
+                <button id="resetPasswordBtn" class="btn btn-outline-secondary w-100 mb-3">
                     Reset Password
                 </button>
-                <ul id="localStorageList" style="pointer-events:none;">
+                <ul id="localStorageList" class="list-group small" style="pointer-events:none;">
                 </ul>
             </div>
-        </center>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+        </script>
         <script type="module" src="chatsettings.js">
         </script>
     </body>

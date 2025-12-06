@@ -44,15 +44,11 @@ async function loadDisplayName(uid) {
 }
 function enableDisplayEditing() {
     displayNameInput.disabled = false;
-    displayNameInput.style.color = "black";
-    editDisplayBtn.style.background = "black";
     editDisplayBtn.style.display = "none";
     saveDisplayBtn.style.display = "inline";
-    saveDisplayBtn.style.background = "black";
     saveDisplayBtn.style.border = "1px solid white";
     saveDisplayBtn.style.borderRadius = "5px";
     cancelDisplayBtn.style.display = "inline";
-    cancelDisplayBtn.style.background = "black";
     cancelDisplayBtn.style.border = "1px solid white";
     cancelDisplayBtn.style.borderRadius = "5px";
     displayNameInput.focus();
@@ -231,15 +227,11 @@ async function loadUserBio(uid) {
 }
 function enableBioEditing() {
     bioInput.disabled = false;
-    bioInput.style.color = "black";
     editBioBtn.style.display = "none";
-    editBioBtn.style.background = "black";
     saveBioBtn.style.display = "inline";
-    saveBioBtn.style.background = "black";
     saveBioBtn.style.border = "1px solid white";
     saveBioBtn.style.borderRadius = "5px";
     cancelBioBtn.style.display = "inline";
-    cancelBioBtn.style.background = "black";
     cancelBioBtn.style.border = "1px solid white";
     cancelBioBtn.style.borderRadius = "5px";
     bioInput.focus();
@@ -273,16 +265,8 @@ bioInput.addEventListener("input", () => {
     bioCharCount.textContent = `${bioInput.value.length} / 50`;
 });
 const profilePicBtn = document.createElement("button");
-profilePicBtn.className = "pbtn";
+profilePicBtn.className = "btn btn-secondary";
 profilePicBtn.textContent = "Loading Picture...";
-profilePicBtn.style.display = "block";
-profilePicBtn.style.marginTop = "10px";
-profilePicBtn.style.border = "1px solid white";
-profilePicBtn.style.borderRadius = "8px";
-profilePicBtn.style.padding = "10px";
-profilePicBtn.style.background = "black";
-profilePicBtn.style.color = "white";
-profilePicBtn.style.cursor = "pointer";
 const profileImages = [
     "/pfps/1.jpeg",
     "/pfps/2.jpeg",
@@ -379,9 +363,7 @@ onAuthStateChanged(auth, async (user) => {
         await loadUserBio(user.uid);
         await loadUserProfilePic(user.uid);
         const profilePicContainer = document.getElementById("profileContainer");
-        if (profilePicContainer && !document.body.contains(profilePicBtn)) {
-            profilePicContainer.insertAdjacentElement("afterend", profilePicBtn);
-        }
+        profilePicContainer.appendChild(profilePicBtn);
         onValue(ref(db, `users/${user.uid}/profile`), snap => {
             if (snap.exists()) {
                 const profile = snap.val();

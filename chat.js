@@ -62,9 +62,6 @@ style.textContent = `
         font-weight: bold;
         margin-right: 6px;
     }
-    .msg { 
-        margin: 6px 0; 
-    }
     .left { 
         display:flex; 
         align-items:center; 
@@ -263,14 +260,13 @@ async function renderMessageInstant(id, msg) {
     div.id = "msg-" + id;
     div.dataset.timestamp = msg.timestamp || Date.now();
     const topRow = document.createElement("div");
-    topRow.style.display = "flex";
-    topRow.style.justifyContent = "space-between";
-    topRow.style.marginBottom = "2px";
+    topRow.id = "topRow";
     const nameSpan = document.createElement("span");
-    nameSpan.textContent = "User";
+    nameSpan.id = "msgName";
     nameSpan.className = "highlight";
     nameSpan.style.color = "#aaa";
     nameSpan.style.cursor = "pointer";
+    nameSpan.textContent = "User";
     const leftWrapper = document.createElement("span");
     leftWrapper.style.display = "flex";
     leftWrapper.style.gap = "6px";
@@ -306,10 +302,18 @@ async function renderMessageInstant(id, msg) {
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.marginLeft = "40px";
     textDiv.style.marginTop = "-15px";
-    let safeText = (msg.text || "")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>");
+    let safeText = (msg.text || "");
+safeText = safeText
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;");
+
+safeText = safeText.replace(
+  /&lt;i class="([^"]*(?:fa|bi)[^"]+)"&gt;&lt;\/i&gt;/g,
+  '<i class="$1"></i>'
+);
+
+safeText = safeText.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
     safeText = safeText.replace(mentionRegex, (match, name) => {
         const isSelfMention = currentName && (currentName.toLowerCase() === name.toLowerCase() ||
@@ -435,10 +439,6 @@ async function renderMessageInstant(id, msg) {
     });
     const editedSpan = document.createElement("div");
     editedSpan.className = "edited-label";
-    editedSpan.style.fontSize = "0.7em";
-    editedSpan.style.color = "#aaa";
-    editedSpan.style.marginTop = "2px";
-    editedSpan.style.marginLeft = "35px";
     editedSpan.textContent = msg.edited ? "(Edited)" : "";
     div.appendChild(topRow);
     div.appendChild(textDiv);
@@ -576,15 +576,19 @@ async function renderMessageInstant(id, msg) {
                 badgeSpan.style.marginLeft = "6px";
                 badgeSpan.style.fontWeight = "bold";
                 if (badgeText === "⛨") {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield-plus">';
                     badgeSpan.style.color = "lime";
                     badgeSpan.title = "Owner";
                 } else if (badgeText ==="⧨") {
+                    badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
                     badgeSpan.style.color = "#00cc99";
                     badgeSpan.title = "Head Admin";
                 } else if (badgeText === "⛊") {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
                     badgeSpan.style.color = "lightblue";
                     badgeSpan.title = "Co-Owner";
                 } else if (badgeText === "⛉") {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
                     badgeSpan.style.color = "dodgerblue";
                     badgeSpan.title = "Admin";
                 } 
@@ -768,10 +772,19 @@ async function attachMessageListeners(msgRef) {
         if (el) {
             const textDiv = el.querySelector("div:nth-child(2)");
             const editedSpan = el.querySelector(".edited-label");
-            let safeText = (snap.val().text || "")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/\n/g, "<br>");
+            let safeText = (msg.text || "");
+safeText = safeText
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;");
+
+safeText = safeText.replace(
+  /&lt;i class="([^"]*(?:fa|bi)[^"]+)"&gt;&lt;\/i&gt;/g,
+  '<i class="$1"></i>'
+);
+
+safeText = safeText.replace(/\n/g, "<br>");
+
             const mentionRegex = /@([^\s<]+)/g;
             safeText = safeText.replace(mentionRegex, (match, name) => {
                 const isSelfMention = currentName && (currentName.toLowerCase() === name.toLowerCase() ||
