@@ -464,17 +464,20 @@ onAuthStateChanged(auth, async (user) => {
     }
     const uid = user.uid;
     const ownerRef = ref(db, `users/${uid}/profile/isOwner`);
+    const testerRef = ref(db, `users/${uid}/profile/isTester`);
     const coOwnerRef = ref(db, `users/${uid}/profile/isCoOwner`);
     const ownerSnap = await get(ownerRef);
+    const testerSnap = await get(testerRef);
     const coOwnerSnap = await get(coOwnerRef);
     let isOwner = ownerSnap.exists() && ownerSnap.val() === true;
     let isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
-    if (!isOwner && !isCoOwner) {
+    let isTester = testerSnap.exists() && testerSnap.val() === true;
+    if (!isOwner && !isCoOwner && !isTester) {
         showError("Access Denied. You Are Not An Approved User.");
         window.location.href = "chat.html";
         return;
     }
-    if (isCoOwner && !isOwner) {
+    if (isCoOwner && !isOwner && !isTester) {
         userListDiv.style.display = "none";
         userEditDiv.style.display = "none";
         privateChatsDiv.style.display = "none";

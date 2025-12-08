@@ -29,6 +29,7 @@ let currentName = "User";
 let currentColor = "#ffffff";
 let isAdmin = false;
 let isHAdmin = false;
+let isTester = false;
 let isCoOwner = false;
 let isOwner = false;
 let currentPrivateUid = null;
@@ -443,7 +444,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, testerSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -451,7 +452,8 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isAdmin`)),
                 get(ref(db, `users/${msg.sender}/profile/isOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isCoOwner`)),
-                get(ref(db, `users/${msg.sender}/profile/isHAdmin`))
+                get(ref(db, `users/${msg.sender}/profile/isHAdmin`)),
+                get(ref(db, `users/${msg.sender}/profile/isTester`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
@@ -463,10 +465,12 @@ async function renderMessageInstant(id, msg) {
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
+            const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
             if (senderIsOwner) badgeText = "⛨";
             else if (senderIsHAdmin) badgeText = "⧨";
             else if (senderIsCoOwner) badgeText = "⛊";
             else if (senderIsAdmin) badgeText = "⛉";
+            else if (senderIsTester) badgeText = "TSTR";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
@@ -483,7 +487,7 @@ async function renderMessageInstant(id, msg) {
             profilePic.onclick = openProfile;
             nameSpan.textContent = displayName;
             nameSpan.style.color = color;
-            if ((isOwner || isCoOwner || isHAdmin) && !senderIsOwner) {
+            if ((isOwner || isCoOwner || isHAdmin || isTester) && !senderIsOwner) {
                 nameSpan.addEventListener("contextmenu", async (e) => {
                     e.preventDefault();
                     const alreadyMuted = await isUserMuted(msg.sender);
@@ -600,25 +604,29 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
                     badgeSpan.style.color = "dodgerblue";
                     badgeSpan.title = "Admin";
-                } 
-                else {
+                } else if (badgeText === "TSTR") {
+                    badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
                     badgeSpan.style.color = "DarkGoldenRod";
                     badgeSpan.title = "Tester";
+                } else {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
+                    badgeSpan.style.color = "red";
+                    badgeSpan.title = "Spam User";
                 }
                 leftWrapper.appendChild(badgeSpan);
             }
             const isSelf = msg.sender === currentUser.uid;
-            if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin) {
+            if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
                 let canDelete = false;
                 if (isSelf) canDelete = true;
-                else if (isOwner) canDelete = true;
-                else if (isCoOwner && !senderIsOwner) canDelete = true;
-                else if (isHAdmin && !senderIsOwner && !senderIsCoOwner) canDelete = true;
-                else if (isAdmin && !senderIsHAdmin && !senderIsAdmin && !senderIsCoOwner && !senderIsOwner) canDelete = true;
+                else if (isOwner || isTester) canDelete = true;
+                else if (isCoOwner && !senderIsOwner || !senderIsTester && !senderIsCoOwner) canDelete = true;
+                else if (isHAdmin && !senderIsOwner && !senderIsCoOwner && !senderIsTester && !senderIsHAdmin) canDelete = true;
+                else if (isAdmin && !senderIsHAdmin && !senderIsAdmin && !senderIsCoOwner && !senderIsOwner || senderIsTester) canDelete = true;
                 let canEdit = false;
                 if (isSelf) canEdit = true;
-                else if (isOwner) canEdit = true;
-                else if (isCoOwner && !senderIsOwner) canEdit = true;
+                else if (isOwner || isTester) canEdit = true;
+                else if (isCoOwner && !senderIsOwner && !senderIsTester && !senderIsCoOwner) canEdit = true;
                 if (canDelete) {
                     const delBtn = document.createElement("button");
                     delBtn.textContent = "Delete";
@@ -656,7 +664,7 @@ async function renderMessageInstant(id, msg) {
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
                                 const newText = textarea.value.trim();
-                                if (newText.length > 1000 && !(isCoOwner || isOwner || isHAdmin)) {
+                                if (newText.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
                                     showError(`Your Edited Message Is Too Long (${newText.length} Characters). Please Keep It Under 1000.`);
                                     textarea.value = "";
                                     return;
@@ -928,13 +936,13 @@ async function renderChannelsFromDB() {
     }
     const keys = Object.keys(chans).sort();
     keys.forEach(ch => {
-        if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin)) return;
+        if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) return;
         const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
         li.onclick = () => { currentPrivateUid = null; switchChannel(ch); };
         if (!currentPrivateUid && currentPath === `messages/${ch}`) li.classList.add("active");
-        if ((isOwner || isCoOwner) && ch !== "General") {
+        if ((isOwner || isCoOwner || isTester) && ch !== "General") {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const renameBtn = document.createElement("button");
@@ -975,7 +983,7 @@ async function renderChannelsFromDB() {
         }
         channelList.appendChild(li);
     });
-    if (isOwner || isCoOwner) {
+    if (isOwner || isCoOwner || isTester) {
         newChannelName.style.display = "inline-block";
         addChannelBtn.style.display = "inline-block";
     } else {
@@ -984,7 +992,7 @@ async function renderChannelsFromDB() {
     }
 }
 function switchChannel(ch) {
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin)) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
     }
@@ -992,7 +1000,7 @@ function switchChannel(ch) {
     currentPrivateName = null;
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin)) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
         return;
     } else {
         attachMessageListeners(ref(db, currentPath));
@@ -1036,7 +1044,7 @@ sendBtn.onclick = async () => {
     if (muted) {
         return;
     }
-    if (!isAdmin  && !isHAdmin && !isOwner && !isCoOwner) {
+    if (!isAdmin  && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
     const now = Date.now();
     if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
         showError("You Can Only Send A Message Every 3 Seconds.");
@@ -1050,7 +1058,7 @@ sendBtn.onclick = async () => {
         chatInput.value = "";
         return;
     }
-    if (trimmed.length > 1000 && !(isCoOwner || isOwner || isHAdmin)) {
+    if (trimmed.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
         showError(`Your Message Is Too Long (${trimmed.length} Characters). Please Keep It Under 1000.`);
         chatInput.value = "";
         return;
@@ -1070,7 +1078,7 @@ sendBtn.onclick = async () => {
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
-        if (currentPath === "messages/Admin-Chat" && !(isAdmin || isOwner || isCoOwner || isHAdmin)) {
+        if (currentPath === "messages/Admin-Chat" && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
             showError("You Cannot Send Messages To Admin Chat.");
             chatInput.value = "";
             return;
@@ -1170,6 +1178,7 @@ onAuthStateChanged(auth, async user => {
     const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
     const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
     const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
+    const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
     currentUser = user;
     const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
     isOwner = ownerSnap.exists() && ownerSnap.val() === true;
@@ -1177,15 +1186,16 @@ onAuthStateChanged(auth, async user => {
     isCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
     isAdmin = adminSnap.exists() ? adminSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
-    adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin) ? "block" : "none";
-    newChannelName.style.display = (isCoOwner || isOwner) ? "inline-block" : "none";
-    addChannelBtn.style.display = (isCoOwner || isOwner) ? "inline-block" : "none";
+    isTester = testerSnap.exists() ? testerSnap.val() : false;
+    adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
+    newChannelName.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
+    addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     await ensureDisplayName(user);
     await loadMentionSetting(user);
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin)) {
+    if (currentPath && currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");
@@ -1211,8 +1221,9 @@ onAuthStateChanged(auth, async user => {
     isAdmin = adminSnap.exists() ? adminSnap.val() : false;
     isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
-    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : "User")));
-    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : "white")));
+    isTester = testerSnap.exists() ? testerSnap.val() : false;
+    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : "User"))));
+    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : "white"))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
     bioSpan.style.fontSize = "60%";
@@ -1243,7 +1254,7 @@ async function loadAllUsernames() {
     }
 }
 addChannelBtn.onclick = async () => {
-    if (!(isOwner || isCoOwner || currentUser.email === "infinitecodehs@gmail.com")) return;
+    if (!(isOwner || isCoOwner || isTester || currentUser.email === "infinitecodehs@gmail.com")) return;
     const name = newChannelName.value.trim();
     if (!name) return;
     await set(ref(db, `channels/${name}`), true);
