@@ -22,6 +22,7 @@ const muteSection = document.getElementById("mutedUsers");
 let currentChatPath = null;
 let currentUserEditUID = null;
 let userProfiles = {};
+let userSettings = {};
 let activeChatListener = null;
 const profilePics = [
     "/pfps/1.jpeg",
@@ -180,6 +181,7 @@ async function updateTypingUI(typingSnapshot) {
         if (!entry) continue;
         for (const uid of Object.keys(entry)) {
             if (!uid) continue;
+            const color = userSettings[uid]?.color;
             const cached = userProfiles[uid]?.displayName;
             if (cached) {
                 const profile = userProfiles[uid];
@@ -191,21 +193,24 @@ async function updateTypingUI(typingSnapshot) {
                     picNum = 0;
                 }
                 const picSrc = profilePics[picNum];
-                lines.push({ uid, displayName: cached, channelName, picSrc });
+                lines.push({ uid, displayName: cached, channelName, picSrc, color });
             } else {
                 try {
                     const pSnap = await get(ref(db, `users/${uid}/profile`));
+                    const sSnap = await get(ref(db, `users/${uid}/settings`));
                     const profile = pSnap.exists() ? pSnap.val() : {};
+                    const settings = sSnap.exists() ? sSnap.val() : {};
                     const displayName = profile.displayName || uid;
                     const picNum = parseInt(profile.pic);
                     const picSrc = (!isNaN(picNum) && picNum > 0 && picNum <= profilePics.length) ? profilePics[picNum] : (profile.pic || profilePics[0]);
+                    const color = settings.color;
                     userProfiles[uid] = userProfiles[uid] || {};
                     userProfiles[uid].displayName = displayName;
                     userProfiles[uid].pic = profile.pic || "";
-                    lines.push({ uid, displayName, channelName, picSrc});
+                    lines.push({ uid, displayName, channelName, picSrc, color});
                 } catch (err) {
                     console.warn("Failed Fetch Profile For Typing Uid:", uid, err);
-                    lines.push({ uid, picSrc, displayName: uid, channelName });
+                    lines.push({ uid, picSrc, displayName: uid, channelName, color });
                 }
             }
         }
@@ -229,6 +234,7 @@ async function updateTypingUI(typingSnapshot) {
             typic.style.width = "30px";
             p.style.padding = "4px 0";
             p.style.marginLeft = "10px";
+            p.style.color = `${l.color}`;
             p.textContent = `${l.displayName} Is Typing In ${l.channelName}`;
             typingListDiv.appendChild(mdiv);
             mdiv.appendChild(typic);
@@ -381,8 +387,7 @@ function renderUnverifiedViewer() {
     const missingEmail = !settings.userEmail || settings.userEmail === "";
     const verifyBtn = document.createElement("button");
     verifyBtn.textContent = (hasSettingsDisplayName || missingEmail) ? "Verify" : "Verify";
-    verifyBtn.style.padding = "8px 10px";
-    verifyBtn.style.borderRadius = "6px";
+    verifyBtn.classList = "btn btn-secondary";
     verifyBtn.style.cursor = "pointer";
     verifyBtn.onclick = async () => {
         if (hasSettingsDisplayName || missingEmail) {
@@ -401,6 +406,7 @@ function renderUnverifiedViewer() {
     btnArea.appendChild(verifyBtn);
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
+    deleteBtn.classList = "btn btn-secondary";
     deleteBtn.onclick = async () => {
         if (!confirm(`Delete User "${uid}" And All Their Data?`)) return;
         try {
@@ -415,20 +421,14 @@ function renderUnverifiedViewer() {
     btnArea.appendChild(deleteBtn);
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Next";
-    nextBtn.style.padding = "8px 10px";
-    nextBtn.style.borderRadius = "6px";
+    nextBtn.classList = "btn btn-secondary";
     nextBtn.style.cursor = "pointer";
     nextBtn.onclick = showNextUnverified;
     btnArea.appendChild(nextBtn);
     if (hasSettingsDisplayName || missingEmail) {
         const extraDelete = document.createElement("button");
         extraDelete.textContent = "Delete User";
-        extraDelete.style.display = "block";
-        extraDelete.style.marginTop = "10px";
-        extraDelete.style.padding = "8px 10px";
-        extraDelete.style.borderRadius = "6px";
-        extraDelete.style.background = "#aa0000";
-        extraDelete.style.color = "white";
+        extraDelete.classList = "btn btn-secondary";
         extraDelete.style.cursor = "pointer";
         extraDelete.onclick = async () => {
             if (!confirm(`Delete User "${uid}" And All Their Data?`)) return;
