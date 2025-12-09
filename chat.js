@@ -290,7 +290,9 @@ async function renderMessageInstant(id, msg) {
         "/pfps/9.jpeg",
         "/pfps/f3.jpeg",
         "/pfps/kaiden.png",
-        "/pfps/10.jpeg"
+        "/pfps/10.jpeg",
+        "/pfps/11.jpeg",
+        "/pfps/12.jpeg"
     ];
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
@@ -444,7 +446,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, testerSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, testerSnap, hSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -453,7 +455,8 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isCoOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isHAdmin`)),
-                get(ref(db, `users/${msg.sender}/profile/isTester`))
+                get(ref(db, `users/${msg.sender}/profile/isTester`)),
+                get(ref(db, `users/${msg.sender}/profile/mileStone`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
@@ -466,16 +469,18 @@ async function renderMessageInstant(id, msg) {
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
             const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
+            const senderIsHUser = hSnap.exists() ? hSnap.val() : false;
             if (senderIsOwner) badgeText = "⛨";
             else if (senderIsHAdmin) badgeText = "⧨";
             else if (senderIsCoOwner) badgeText = "⛊";
             else if (senderIsAdmin) badgeText = "⛉";
             else if (senderIsTester) badgeText = "TSTR";
+            else if (senderIsHUser) badgeText = "100";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
             const picVal = picSnap.exists() ? picSnap.val() : 0;
-            const picIndex = (picVal >= 0 && picVal <= 11) ? picVal : 0;
+            const picIndex = (picVal >= 0 && picVal <= 13) ? picVal : 0;
             profilePic.src = profilePics[picIndex];
             nameSpan.textContent = displayName;
             nameSpan.style.color = color;
@@ -608,6 +613,10 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
                     badgeSpan.style.color = "DarkGoldenRod";
                     badgeSpan.title = "Tester";
+                } else if (badgeText === "100") {
+                    badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
+                    badgeSpan.style.color = "yellow";
+                    badgeSpan.title = "This User Is The 100Th Signed Up User";
                 } else {
                     badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
                     badgeSpan.style.color = "red";
@@ -620,9 +629,9 @@ async function renderMessageInstant(id, msg) {
                 let canDelete = false;
                 if (isSelf) canDelete = true;
                 else if (isOwner || isTester) canDelete = true;
-                else if (isCoOwner && !senderIsOwner || !senderIsTester && !senderIsCoOwner) canDelete = true;
+                else if (isCoOwner && !senderIsOwner && !senderIsTester && !senderIsCoOwner && !senderIsOwner) canDelete = true;
                 else if (isHAdmin && !senderIsOwner && !senderIsCoOwner && !senderIsTester && !senderIsHAdmin) canDelete = true;
-                else if (isAdmin && !senderIsHAdmin && !senderIsAdmin && !senderIsCoOwner && !senderIsOwner || senderIsTester) canDelete = true;
+                else if (isAdmin && !senderIsHAdmin && !senderIsAdmin && !senderIsCoOwner && !senderIsOwner && senderIsTester) canDelete = true;
                 let canEdit = false;
                 if (isSelf) canEdit = true;
                 else if (isOwner || isTester) canEdit = true;
@@ -1234,7 +1243,7 @@ onAuthStateChanged(auth, async user => {
     const profilePics = [
         "/pfps/1.jpeg","/pfps/2.jpeg","/pfps/3.jpeg","/pfps/4.jpeg",
         "/pfps/5.jpeg","/pfps/6.jpeg","/pfps/7.jpeg","/pfps/8.jpeg",
-        "/pfps/9.jpeg","/pfps/f3.jpeg","/pfps/kaiden.png", "/pfps/10.jpeg"
+        "/pfps/9.jpeg","/pfps/f3.jpeg","/pfps/kaiden.png", "/pfps/10.jpeg", "/pfps/11.jpeg", "/pfps/12.jpeg"
     ];
     const sidebarPfp = document.getElementById("sidebarPfp");
     if (sidebarPfp) {

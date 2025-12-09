@@ -36,7 +36,9 @@ const profilePics = [
     "/pfps/9.jpeg",
     "/pfps/f3.jpeg",
     "/pfps/kaiden.png",
-    "/pfps/10.jpeg"
+    "/pfps/10.jpeg",
+    "/pfps/11.jpeg",
+    "/pfps/12.jpeg"
 ];
 async function logMutedUsers() {
     try {

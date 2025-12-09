@@ -279,7 +279,9 @@ const profileImages = [
     "/pfps/9.jpeg",
     "/pfps/f3.jpeg",
     "/pfps/kaiden.png",
-    "/pfps/10.jpeg"
+    "/pfps/10.jpeg",
+    "/pfps/11.jpeg",
+    "/pfps/12.jpeg"
 ];
 const restrictedPics = [6, 7, 8, 9];
 let currentPicIndex = 0;
