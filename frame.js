@@ -72,10 +72,10 @@ const headerHTML = `
             <button style="font-weight:bold;" onclick="location.href='InfiniteOpeners.html'">
                 Download This Website
             </button>
-            <button style="font-weight:bold;" onclick="location.href='https://downloadgames-14894445.codehs.me/ngon.html'">
+            <button style="font-weight:bold;" onclick="location.href='https://links-17196573.codehs.me/ngon.html'">
                 Download Ngon
             </button>
-            <button style="font-weight:bold;" onclick="location.href='https://downloadgames-14894445.codehs.me/OVO.html'">
+            <button style="font-weight:bold;" onclick="location.href='https://links-17196573.codehs.me/OVO.html'">
                 Download 0v0
             </button>
         </div>
