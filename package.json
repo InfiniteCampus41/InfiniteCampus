@@ -8,5 +8,8 @@
     "start": "node server.js"
   },
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
