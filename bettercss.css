@@ -8,6 +8,9 @@ footer {
     justify-content:space-between;
     padding:4px;
 }
+header {
+    height:9vh;
+}
 #weatherContainer {
     display:flex;
     align-self:center;

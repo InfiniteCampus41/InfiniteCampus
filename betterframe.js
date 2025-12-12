@@ -4,82 +4,81 @@ const headerHTML = `
             <div id="global-text">
                 <pre id="weather">
                 </pre>
-            </div>
-            <div id="global-text">
                 <button id="toggle">
                     °C
                 </button>
             </div>
         </div>
-        <a href="index.html">
-            <img src="/res/logo.svg">
-        </a>
-        <a href="InfiniteAbouts.html">
-            About
-        </a>
-        <a href="InfiniteApps.html">
-            Apps
-        </a>
-        <div id="chatToggle" class="dropdown-toggle headerbtn" style="right:595; top:14;">
-            Chat
-        </div>
-        <div class="dropdown" id="chatDropdown">
-            <button style="font-weight:bold;" onclick="location.href='InfiniteTalkers.html'">
-                Padlet
-            </button>
-            <button style="font-weight:bold;" onclick="location.href='InfiniteChatters.html'">
-                Website Chat
-            </button>
-            <button style="font-weight:bold;" onclick="location.href='InfiniteDiscords.html'">
-                Live Discord Chat
-            </button>
-        </div>
-        <div id="helpToggle" class="dropdown-toggle headerbtn" style="right:470; top:14;">
-            Help/Support
-        </div>
-        <div style="right:400;" class="dropdown" id="helpDropdown">
-            <button style="font-weight:bold;" onclick="location.href='InfiniteQuestions.html'">
-                FAQ
-            </button>
-            <button style="font-weight:bold;" onclick="location.href='InfiniteIssues.html'">
-                Report A Bug
-            </button>
-            <button style="font-weight:bold;" onclick="location.href='InfiniteErrors.html'">
-                Check Error Codes
-            </button>
-        </div>
-        <a href="InfiniteGamers.html">
-            Games
-        </a>
-        <a href="InfiniteCheaters.html">
-            Cheats
-        </a>
-        <a href="InfiniteUpdaters.html">
-            Updates
-        </a>
-        <div id="downloadToggle" class="dropdown-toggle headerbtn" style="right:120; top:14;">
-            Download Games
-        </div>
-        <div style="right:50; top:50px;" class="dropdown" id="downloadDropdown">
-            <button style="font-weight:bold;" onclick="location.href='InfiniteOpeners.html'">
-                Download This Website
-            </button>
-            <button style="font-weight:bold;" onclick="location.href='InfiniteDownloaders.html'">
+        <div id="hbtns">
+            <a href="index.html">
+                <img src="/res/logo.svg">
+            </a>
+            <a href="InfiniteAbouts.html">
+                About
+            </a>
+            <a href="InfiniteApps.html">
+                Apps
+            </a>
+            <div id="chatToggle" class="dropdown-toggle">
+                Chat
+            </div>
+            <div class="dropdown" id="chatDropdown">
+                <button onclick="location.href='InfiniteTalkers.html'">
+                    Padlet
+                </button>
+                <button onclick="location.href='InfiniteChatters.html'">
+                    Website Chat
+                </button>
+                <button onclick="location.href='InfiniteDiscords.html'">
+                    Live Discord Chat
+                </button>
+            </div>
+            <div id="helpToggle" class="dropdown-toggle">
+                Help/Support
+            </div>
+            <div class="dropdown" id="helpDropdown">
+                <button onclick="location.href='InfiniteQuestions.html'">
+                    FAQ
+                </button>
+                <button onclick="location.href='InfiniteIssues.html'">
+                    Report A Bug
+                </button>
+                <button onclick="location.href='InfiniteErrors.html'">
+                    Check Error Codes
+                </button>
+            </div>
+            <a href="InfiniteGamers.html">
+                Games
+            </a>
+            <a href="InfiniteCheaters.html">
+                Cheats
+            </a>
+            <a href="InfiniteUpdaters.html">
+                Updates
+            </a>
+            <div id="downloadToggle" class="dropdown-toggle">
                 Download Games
-            </button>
-        </div>
-        <a class="contactme" style="right:0; top:10" href="InfiniteContacts.html">
-            Contact Me
-        </a>
-    </header>
-<footer id="site-footer">
-    <span style="margin-left:1%;">
-        Totally Made By Noah White And Not A Different Person.
-    </span>
-    <span style="margin-right:1%;">
-        Pissing Off Your Teachers Since 2024
-    </span>
-</footer>
+            </div>
+            <div class="dropdown" id="downloadDropdown">
+                <button onclick="location.href='InfiniteOpeners.html'">
+                    Download This Website
+                </button>
+                <button onclick="location.href='InfiniteDownloaders.html'">
+                    Download Games
+                </button>
+            </div>
+            <a class="contactme" href="InfiniteContacts.html">
+                Contact Me
+            </a>
+        </header>
+        <footer id="site-footer">
+            <span>
+                Totally Made By Noah White And Not A Different Person.
+            </span>
+            <span>
+                Pissing Off Your Teachers Since 2024
+            </span>
+        </footer>
 `;
 document.addEventListener("DOMContentLoaded", () => {
     const headerWrapper = document.createElement("div");
