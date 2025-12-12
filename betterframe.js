@@ -9,10 +9,11 @@ const headerHTML = `
                 </button>
             </div>
         </div>
-        <div id="hbtns">
+        <div id="btns">
             <a href="index.html">
                 <img src="/res/logo.svg">
             </a>
+            <div id="hbtns">
             <a href="InfiniteAbouts.html">
                 About
             </a>
@@ -70,6 +71,9 @@ const headerHTML = `
             <a class="contactme" href="InfiniteContacts.html">
                 Contact Me
             </a>
+            </div>
+            </div>
+
         </header>
         <footer id="site-footer">
             <span>

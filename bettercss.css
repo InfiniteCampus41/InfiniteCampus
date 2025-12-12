@@ -12,9 +12,13 @@ header {
     height:9vh;
 }
 #weatherContainer {
-    display:flex;
+    display:inline-flex;
     align-self:center;
 }
 header a, header a img {
     height:inherit;
+}
+#hbtns {
+    height:inherit;
+    display:inherit;
 }
