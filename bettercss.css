@@ -1,0 +1,6 @@
+body {
+    background-image:url('/res/bg.png');
+}
+header, footer {
+    display:flex;
+}
