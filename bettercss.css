@@ -7,6 +7,22 @@ body {
 .btxt {
     color:white;
 }
+.button {
+    color:white;
+    background:black;
+    border:1px solid white;
+    transition:0.3s all;
+    cursor:pointer;
+    text-decoration:none;
+    padding:5px;
+    border-radius:7px;
+}
+.button:hover {
+    filter:invert(1);
+}
+#clock {
+    color:white;
+}
 .contactme {
     border:1px solid black;
     border-radius:7px;
@@ -50,6 +66,9 @@ body {
 }
 .dropdown-wrap {
     position: relative;
+    transition:0.3s all;
+}
+#fLabel {
     transition:0.3s all;
 }
 footer {
@@ -96,14 +115,17 @@ hr {
     max-width:75%;
     color:white;
 }
+.hr2 {
+    max-width:50%;
+}
 #logo {
     height: 8vh;
     transition:0.3s all;
 }
 #logo:hover, #toggle:hover, .dropdown-toggle:hover, #header-right a:hover,
-.popup2 input:hover, .popup2 a:hover, .popup2 button:hover, #fLabel:hover {
+.popup2 input:hover, .popup2 a:hover, .popup2 button:hover, #fLabel:hover,
+.button:hover {
     filter:invert(1);
-    transition:0.3s all;
 }
 .mdtxt {
     color:darkcyan;
@@ -182,6 +204,9 @@ hr {
     overflow-y: auto;
     text-align: center;
 }
+.r {
+    color:red;
+}
 select {
     appearance: none;
     -webkit-appearance: none;
@@ -229,43 +254,70 @@ select {
 .weather-section {
     margin-top: 10px;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.button {
-    color:white;
-    background:black;
-    border:1px solid white;
-    transition:0.3s all;
-    cursor:pointer;
-    text-decoration:none;
-    padding:5px;
-    border-radius:7px;
-}
-.button:hover {
-    filter:invert(1);
-}
-#clock {
-    color:white;
-}
 .y {
     color:yellow;
 }
-.r {
-    color:red;
-}
-.hr2 {
-    max-width:50%;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.file-item {
+                border:1px solid gray;
+                background-color: rgba(128, 128, 128, 0.5);
+                padding: 15px;
+                margin-bottom: 12px;
+                border-radius: 10px;
+            }
+            #watchPanel {
+                position: fixed;
+                top:0; left:0;
+                width:100%;
+                height:100%;
+                display:none;
+                flex-direction:column;
+                align-items:center;
+                justify-content:flex-start;
+                padding-top:20px;
+                z-index:9999;
+            }
+            #videoPlayer {
+                width: 95vw;
+                max-height: 85vh;
+                border-radius: 10px;
+                margin-top: 70px;
+            }
+            #logs {
+                white-space:pre-wrap;
+                background:#000;
+                padding:10px;
+                margin-top:10px;
+                border-radius:8px;
+                height:150px;
+                overflow:auto;
+                font-size:13px;
+            }
+            .apbtn {
+                margin:5px;
+            }
+            .g {
+                color:green;
+            }
+            .m {
+                color:magenta;
+            }
