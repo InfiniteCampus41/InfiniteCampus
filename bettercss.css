@@ -1,32 +1,230 @@
+a {
+    text-decoration:none;
+}
 body {
     background-image:url('/res/bg.png');
 }
-header, footer {
-    display:inline-flex;
-    width:100%;
+.btxt {
+    color:white;
+}
+.contactme {
+    border:1px solid black;
+    border-radius:7px;
+}
+#CTCbtn {
+    color:black;
+}
+.discord {
+    display: block;
+    margin-top: 15px;
+    color:cyan;
+}
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    flex-direction: column;
+    min-width: 180px;
+    background: inherit;
+    border-radius: 6px;
+    padding: 6px;
+    z-index: 1000;
+}
+.dropdown button {
+    background: none;
+    border: none;
+    color: white;
+    text-align: left;
+    padding: 8px;
+    cursor: pointer;
+}
+.dropdown button:hover {
+    background: rgba(255,255,255,0.1);
+}
+.dropdown-toggle {
+    border: none;
+    transition:0.3s all;
+}
+.dropdown-toggle::after {
+    content: none !important;
+}
+.dropdown-wrap {
+    position: relative;
+    transition:0.3s all;
 }
 footer {
+    position:fixed;
+    bottom:0;
+    display:flex;
     justify-content:space-between;
     padding:4px;
 }
 header {
     height:9vh;
 }
-#weatherContainer {
-    display:inline-flex;
-    align-self:center;
+header, footer {
+  width:100%;
 }
-header a, header a img {
-    height:inherit;
-    display:inherit;
+#header-center {
+    display: flex;
+    align-items: center;
 }
-#hbtns {
-    height:inherit;
-    display:inherit;
+#header-left {
+    display: flex;
+    align-items: center;
 }
-#btns {
-    display:inherit;
+#header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
 }
-.dropdown {
-    display:none;
+#header-right a, .dropdown-toggle {
+    text-decoration:none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 6px 8px;
+    white-space: nowrap;
+    transition:0.3s all;
+}
+hr {
+    margin:auto;
+    opacity:1;
+    max-width:75%;
+}
+#logo {
+    height: 8vh;
+    transition:0.3s all;
+}
+#logo:hover, #toggle:hover, .dropdown-toggle:hover, #header-right a:hover,
+.popup2 input:hover, .popup2 a:hover, .popup2 button:hover, #fLabel:hover {
+    filter:invert(1);
+    transition:0.3s all;
+}
+.mdtxt {
+    color:darkcyan;
+}
+@media (max-width: 768px) {
+    #site-header {
+        flex-wrap: wrap;
+    }
+    #header-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+#panicKeyInput {
+    width:90px;
+}
+.popup2 {
+    position: fixed;
+    border-left:1px solid white;
+    border-top:1px solid white;
+    border-bottom:1px solid white;
+    border-top-left-radius:20px;
+    border-bottom-left-radius:20px;
+    top: 9vh;
+    right: 0;
+    width: 364px;
+    max-width: 90vw;
+    height: 85vh;
+    background-image:url('/res/popupbg.jpg');
+    box-shadow: -8px 0 25px rgba(0,0,0,0.4);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+}
+.popup2 .bar:first-child {
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+.popup2 .bar:last-child {
+    border-bottom-left-radius: 20px;
+    border-top-left-radius: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.popup2 input, .popup2 button, .popup2 a.button {
+    margin: 5px 3px;
+    transition:0.3s all;
+}
+.popup2 input, .popup2 .section button, .popup2 .section a, #fLabel {
+    background:black;
+    width:fit-content;
+    padding:5px;
+    border-radius:4px;
+    border:1px solid white;
+    color:white;
+}
+.popup2 .section {
+    margin-bottom: 10px;
+}
+.popup2.shows {
+    transform: translateX(0);
+}
+.popup2 .text {
+    flex: 1;
+    color:white;
+    overflow-y: auto;
+    text-align: center;
+}
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+.settings-button {
+    position: fixed;
+    bottom: 45px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.settings-button:hover img {
+    transform: rotate(180deg);
+}
+.settings-button img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.4s ease;
+}
+#site-header {
+    display: flex;
+    height:9vh;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    gap: 12px;
+}
+#toggle {
+    background:none;
+    color:black;
+    border-radius:50%;
+    border:1px solid black;
+    transition:0.3s all;
+}
+.tptxt {
+    color:lime;
+}
+.weather-section {
+    margin-top: 10px;
 }

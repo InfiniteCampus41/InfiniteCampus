@@ -180,7 +180,8 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         const weatherEl = document.getElementById("weather");
         const toggleEl = document.getElementById("toggle");
-        weatherEl.innerText = text;
+        weatherEl.innerText = text.replace(/\n/g, " ");
+        weatherEl.textContent = text.replace(/\r?\n|\r/g, " ");
         weatherEl.classList.add("show");
         toggleEl.classList.add("show");
         removePlusSignsFromPage();
