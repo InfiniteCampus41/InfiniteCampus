@@ -103,11 +103,14 @@ body {
     width:100%;
 }
 .file-item {
-    border:1px solid gray;
-    background-color: rgba(128, 128, 128, 0.5);
-    padding: 15px;
-    margin-bottom: 12px;
+    padding: 12px;
+    background: rgba(10,10,10,0.5);
+    margin: 8px 0;
     border-radius: 10px;
+    border:1px solid white;
+}
+.file-item button {
+    margin-right: 10px;
 }
 #fLabel {
     transition:0.3s all;
@@ -364,6 +367,11 @@ input[type="range"]::-webkit-slider-thumb {
 .r {
     color:red;
 }
+#search {
+    width: 100%;
+    font-size: 16px;
+    margin-bottom: 10px;
+} 
 section.player {
     display:flex;
     justify-content:center;
@@ -480,6 +488,14 @@ th, td {
     justify-content:flex-start;
     padding-top:20px;
     z-index:9999;
+}
+#watchVideo {
+    width: auto;
+    height: auto;
+    max-height: 85vh;
+    border-radius: 12px;
+    margin-top: 70px;
+    background: black;
 }
 .weather-section {
     margin-top: 10px;
