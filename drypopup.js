@@ -137,6 +137,8 @@ window.addEventListener('DOMContentLoaded', () => {
     betterWeatherToggle.addEventListener('change', function () {
         const isEnabled = this.checked;
         localStorage.setItem('betterWeather', isEnabled ? 'true' : 'false');
+        sessionStorage.clear();
+        location.reload();
         if (isEnabled && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const { latitude, longitude } = position.coords;
