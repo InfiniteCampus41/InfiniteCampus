@@ -304,7 +304,23 @@ input[type="range"]::-webkit-slider-thumb {
     gap:10px;
     border:1px solid white;
     transition:0.3s all;
-}  
+}
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background-color: limegreen;
+    border-radius: 10px;
+    transition: width 0.2s;
+}
+#progressContainer {
+    width: 80vw;
+    background-color: #333;
+    border-radius: 10px;
+    margin: 20px auto;
+    height: 20px;
+    display: none;
+    overflow: hidden;
+}
 .r {
     color:red;
 }
@@ -346,11 +362,27 @@ select {
     padding: 10px 16px;
     gap: 12px;
 }
+#svideo {
+    width: 100%;
+    height: 100vh;
+    background: black;
+}
 .szo2 {
     width:25%;
 }
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 20px; 
+    color:white;
+}
 textarea.szo2 {
     height:100px;
+}
+th, td { 
+    padding: 8px 12px; 
+    border: 1px solid #444; 
+    text-align: left; 
 }
 #toggle {
     background:none;
@@ -385,6 +417,15 @@ textarea.szo2 {
 }
 .toggled::after {
     content: "On"
+}
+.update-box {
+    padding: 0px;
+    max-width:75%;
+    font-weight:bold;
+    font-size:130%;
+    margin-bottom:7px;
+    border:1px solid white;
+    border-radius:15px;
 }
 #videoPlayer {
     width: 95vw;
