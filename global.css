@@ -185,7 +185,7 @@ input[type="range"]::-webkit-slider-thumb {
     100% { background-color: red; }
 }
 #logo {
-    height: 8vh;
+    height: 50px;
     transition:0.3s all;
 }
 #logo:hover, #toggle:hover, .dropdown-toggle:hover, #header-right a:hover,
