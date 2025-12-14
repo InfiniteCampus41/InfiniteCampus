@@ -9,7 +9,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const gradLeftInput     = document.getElementById('gradientLeft');
     const gradRightInput    = document.getElementById('gradientRight');
     const testElements      = document.querySelectorAll('.test');
-    const RGB_VIDEO_URL     = "https://codehs.com/uploads/9ea5f20a2d618622de3030832cde8ef6";
     const isDarkColor = hex => {
         if (!hex || hex.length !== 7 || !hex.startsWith('#')) return false;
         const r = parseInt(hex.slice(1, 3), 16);
@@ -17,33 +16,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const b = parseInt(hex.slice(5, 7), 16);
         return (r * 299 + g * 587 + b * 114) / 1000 < 128;
     };
-    function insertRGBVideoBackground(target) {
-        const existing = target?.querySelector('.rgb-video-bg');
-        if (existing) existing.remove();
-        const video = document.createElement('video');
-        video.src = RGB_VIDEO_URL;
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.className = 'rgb-video-bg';
-        Object.assign(video.style, {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: '-1',
-            pointerEvents: 'none'
-        });
-        target.style.position = 'fixed';
-        target.prepend(video);
-    }
-    function clearRGBVideo(target) {
-        const vid = target?.querySelector('.rgb-video-bg');
-        if (vid) vid.remove();
-    }
     function applyTheme(colOrLeft, gradientSetting = null) {
             document.querySelectorAll('.rgb-element').forEach(div => {
             div.style.animation = 'none !important';
@@ -55,11 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const r = localStorage.getItem('gradientRight') || '#000000';
             bg = `linear-gradient(to right, ${l}, ${r})`;
             isDark = isDarkColor(l) || isDarkColor(r);
-            clearRGBVideo(header); 
-            clearRGBVideo(footer);
         } else if (gradientSetting) {
-            clearRGBVideo(header); 
-            clearRGBVideo(footer);
             if (gradientSetting === 'red') {
                 bg = 'linear-gradient(to right, darkred, black)';
                 isDark = true;
@@ -234,8 +202,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (colorInput) colorInput.value = defaultColor;
         if (gradLeftInput) gradLeftInput.value = defaultColor;
         if (gradRightInput) gradRightInput.value = defaultColor;
-        clearRGBVideo(header);
-        clearRGBVideo(footer);
         applyTheme(defaultColor);
         location.reload();
     });
