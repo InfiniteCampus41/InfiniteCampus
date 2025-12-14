@@ -55,7 +55,7 @@ onValue(ref(db, 'notes'), (snapshot) => {
         const div = document.createElement('div');
         div.className = 'note';
         div.innerHTML = `
-            <div class="txt" data-key="${key}">${note.text}</div>
+            <div class="btxt" data-key="${key}">${note.text}</div>
             <button class="edit-btn button" data-key="${key}" style="display:none">Edit</button>
             <button class="save-edit-btn button" data-key="${key}" style="display:none">Save</button>
             <button class="delete-btn button" data-key="${key}" style="display:none">Delete</button>

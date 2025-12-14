@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="text">
-                <p class="txt">Settings</p>
+                <p class="btxt">Settings</p>
                 <div class="section weather-section">
                     <p>Enable More Accurate Weather?</p>
                     <label class="switch">

@@ -1,5 +1,5 @@
 const headerHTML = `
-    <header id="site-header">
+    <header id="site-header" class="rgb-element">
         <div id="header-left">
             <div id="weatherContainer">
                 <div id="global-text">
@@ -45,7 +45,7 @@ const headerHTML = `
             <a class="contactme" href="InfiniteContacts.html">Contact Me</a>
         </div>
     </header>
-    <footer id="site-footer">
+    <footer id="site-footer" class="rgb-element">
         <span>
             Totally Made By Noah White And Not A Different Person.
         </span>

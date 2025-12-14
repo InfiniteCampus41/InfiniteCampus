@@ -2,7 +2,6 @@ async function sendMessage() {
     const nameInput = document.getElementById("name").value.trim();
     const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
-    const status = document.getElementById("status");
     const channelId = "1389334335114580229";
     if (!message) {
         showError("ERR#8 Message Cannot Be empty!");

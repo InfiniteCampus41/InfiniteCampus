@@ -64,8 +64,8 @@ if (fileParam) {
     appDiv.innerHTML = `
         <center>
             <h2 class="tptxt">Upload A File → Get A 5 Minute Download Link</h2>
-            <input type="file" id="fileInput">
-            <label for="fileInput" class="custom-file-upload">Choose File</label>
+            <input type="file" id="fileInput" style="display:none;">
+            <label for="fileInput" class="button">Choose File</label>
             <p id="fileName"></p>
             <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto;">
                 <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px;"></div>
