@@ -23,17 +23,6 @@ const els = {
     btnLoop: document.getElementById('btnLoop'),
     countInfo: document.getElementById('countInfo'),
     saveStatus: document.getElementById('saveStatus'),
-    floating: document.getElementById('floating'),
-    floatingBg: document.getElementById('floatingBg'),
-    floatingTitle: document.getElementById('floatingTitle'),
-    floatingClose: document.getElementById('floatingClose'),
-    floatingDragHandle: document.getElementById('floatingDragHandle'),
-    seekMini: document.getElementById('seekMini'),
-    miniTimes: document.getElementById('miniTimes'),
-    miniPrev: document.getElementById('miniPrev'),
-    miniPlay: document.getElementById('miniPlay'),
-    miniNext: document.getElementById('miniNext'),
-    miniLoop: document.getElementById('miniLoop'),
 };
 function fmtTime(s) {
     s = Math.max(0, Math.floor(s || 0));
@@ -235,8 +224,6 @@ function setNowPlayingUI() {
     }
     els.nowTitle.textContent = t.title || 'Untitled';
     els.artImg.src = t.artworkDataUrl || FALLBACK_ART;
-    els.floatingTitle.textContent = t.title || 'Untitled';
-    els.floatingBg.style.backgroundImage = `url("${(t.artworkDataUrl || FALLBACK_ART).replace(/"/g,'\\"')}")`;
     if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
             title: t.title || 'Untitled',
@@ -250,7 +237,6 @@ function setNowPlayingUI() {
 }
 function setLoopUI() {
     els.btnLoop.classList.toggle('toggled', isLooping);
-    els.miniLoop.classList.toggle('toggled', isLooping);
 }
 let objectUrlCache = new Map();
 function getObjectURLForTrack(t) {
@@ -282,8 +268,7 @@ function loadCurrentTrack(autoplay=false, keepTime=false) {
     saveAll();
 }
 function setPlayButtons(playing) {
-    els.btnPlay.textContent = playing ? '||' : '▶';
-    els.miniPlay.textContent = playing ? '||' : '▶';
+    els.btnPlay.innerHTML = playing ? '<i class="bi bi-pause"></i>' : '<i class="bi bi-play"></i>';
 }
 function nextTrack(autoplay=true) {
     if (tracks.length === 0) return;
@@ -353,36 +338,6 @@ function addDragHandlers(li) {
         saveAll();
     });
 }
-(function makeFloatingDraggable() {
-    const dragHandle = els.floatingDragHandle;
-    const floating = els.floating;
-    let startX=0, startY=0, originX=0, originY=0, dragging=false;
-    function onDown(e) {
-        dragging = true;
-        const rect = floating.getBoundingClientRect();
-        originX = rect.left;
-        originY = rect.top;
-        startX = e.clientX;
-        startY = e.clientY;
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-    }
-    function onMove(e) {
-        if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        floating.style.left = (originX + dx) + 'px';
-        floating.style.top = (originY + dy) + 'px';
-        floating.style.right = 'auto';
-        floating.style.bottom = 'auto';
-    }
-    function onUp() {
-        dragging = false;
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-    }
-    dragHandle.addEventListener('mousedown', onDown);
-})();
 if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', async () => { await els.audio.play().catch(()=>{}); setPlayButtons(true); });
     navigator.mediaSession.setActionHandler('pause', () => { els.audio.pause(); setPlayButtons(false); });
@@ -434,9 +389,6 @@ els.fileInput.addEventListener('change', async (e) => {
     }
     refreshListUI();
     if (tracks.length > 0) {
-        if (els.floating.classList.contains('hidden')) {
-            els.floating.classList.remove('hidden');
-        }
         if (tracks.length === toAdd.length) currentIndex = 0;
         loadCurrentTrack(false);
     }
@@ -458,33 +410,15 @@ function syncSeekers() {
     els.seek.value = String(val);
     els.curTime.textContent = fmtTime(cur);
     els.durTime.textContent = fmtTime(dur);
-    els.seekMini.value = String(val);
-    els.miniTimes.textContent = fmtTime(cur) + " / " + fmtTime(dur);
 }
 els.seek.addEventListener('input', () => {
     const dur = els.audio.duration || 0;
     els.audio.currentTime = +els.seek.value / 1000 * dur;
 });
-els.seekMini.addEventListener('input', () => {
-    const dur = els.audio.duration || 0;
-    els.audio.currentTime = +els.seekMini.value / 1000 * dur;
-});
 els.audio.addEventListener('timeupdate', syncSeekers);
 els.audio.addEventListener('loadedmetadata', syncSeekers);
 els.audio.addEventListener('durationchange', syncSeekers);
 els.audio.addEventListener('ended', () => nextTrack(true));
-els.miniPlay.addEventListener('click', async () => {
-    if (els.audio.paused) { await els.audio.play().catch(()=>{}); setPlayButtons(true); }
-    else { els.audio.pause(); setPlayButtons(false); }
-});
-els.miniPrev.addEventListener('click', () => prevTrackSmart());
-els.miniNext.addEventListener('click', () => nextTrack(true));
-els.miniLoop.addEventListener('click', () => { isLooping = !isLooping; setLoopUI(); saveAll(); });
-els.floatingClose.addEventListener('click', () => {
-    els.audio.pause();
-    setPlayButtons(false);
-    els.floating.classList.add('hidden');
-});
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
         e.preventDefault();
@@ -534,7 +468,6 @@ els.btnClear.addEventListener('click', () => {
     refreshListUI();
     setLoopUI();
     if (tracks.length > 0) {
-        els.floating.classList.remove('hidden');
         loadCurrentTrack(false);
     } else {
         els.artImg.src = FALLBACK_ART;

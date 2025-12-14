@@ -154,7 +154,7 @@
     controls.style.gap='8px';
     controls.style.marginTop='10px';
     const btnPrev = document.createElement('button'); btnPrev.textContent='|◁'; controls.appendChild(btnPrev);
-    const btnPlay = document.createElement('button'); btnPlay.textContent='▶'; controls.appendChild(btnPlay);
+    const btnPlay = document.createElement('button'); btnPlay.innerHTML='<i class="bi bi-play"></i>'; controls.appendChild(btnPlay);
     const btnNext = document.createElement('button'); btnNext.textContent='▷|'; controls.appendChild(btnNext);
     const btnLoop = document.createElement('button'); btnLoop.textContent='↺ Off'; controls.appendChild(btnLoop);
     [btnPrev, btnPlay, btnNext, btnLoop].forEach(b=>{
@@ -179,8 +179,8 @@
         const t = tracks[currentIndex];
         audio.src = URL.createObjectURL(t.blob);
         setTrackUI();
-        if(autoplay) audio.play().catch(()=>{}), btnPlay.textContent='||';
-        else btnPlay.textContent='▶';
+        if(autoplay) audio.play().catch(()=>{}), btnPlay.innerHTML='<i class="bi bi-pause"></i>';
+        else btnPlay.innerHTML='<i class="bi bi-play"></i>';
     }
     audio.addEventListener('timeupdate', ()=>{
         const cur = audio.currentTime||0;
@@ -199,8 +199,8 @@
         btnLoop.textContent = isLooping ? "↺ On" : "↺ Off";
         btnLoop.style.outline = isLooping ? "2px solid #4c9aff" : "none";
     });
-    audio.addEventListener('play', ()=> btnPlay.textContent='||');
-    audio.addEventListener('pause', ()=> btnPlay.textContent='▶');
+    audio.addEventListener('play', ()=> btnPlay.innerHTML='<i class="bi bi-pause"></i>');
+    audio.addEventListener('pause', ()=> btnPlay.innerHTML='<i class="bi bi-play"></i>');
     btnNext.addEventListener('click', ()=> nextTrack());
     btnPrev.addEventListener('click', ()=> prevTrack());
     closeBtn.addEventListener('click', ()=> { audio.pause(); floating.style.display='none'; });
