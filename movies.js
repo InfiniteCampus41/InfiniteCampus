@@ -12,46 +12,50 @@ document.getElementById("applyFile").addEventListener("change", () => {
         label.innerText = "";
     }
 });
-function uploadApply() {
+async function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
     if (!file) return showError("Choose A File");
     const uploadURL = applyBK + "/api/upload_apply_x9a7b2";
-    const formData = new FormData();
-    formData.append("file", file);
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", uploadURL);
-    xhr.setRequestHeader("ngrok-skip-browser-warning", "true");
-    xhr.upload.addEventListener("progress", e => {
-        if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            const container = document.getElementById("progressContainer");
-            const bar = document.getElementById("progressBar");
-            bar.style.width = percent + "%";
-            bar.innerText = percent + "%";
-        }
-    });
-    xhr.onload = () => {
-        let result;
-        try { result = JSON.parse(xhr.responseText); }
-        catch (err) {
-            document.getElementById("upload-status").innerText = "Upload failed (bad response)";
-            return;
-        }
-        if (!result.ok) {
+    const chunkSize = 1024 * 1024;
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    const fileId = crypto.randomUUID();
+    const bar = document.getElementById("progressBar");
+    const container = document.getElementById("progressContainer");
+    container.style.display = "block";
+    for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunk = file.slice(start, end);
+        const res = await fetch(uploadURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/octet-stream",
+                "fileId": fileId,
+                "chunkIndex": i,
+                "totalChunks": totalChunks,
+                "filename": file.name,
+                "ngrok-skip-browser-warning": "true"
+            },
+            body: chunk
+        });
+        const data = await res.json();
+        if (!data.ok) {
             document.getElementById("upload-status").innerText =
-                "Upload Failed: " + result.message;
+                "Upload Failed: " + data.message;
             return;
         }
-        document.getElementById("upload-status").innerText =
-            "Uploaded: " + result.filename;
-        setTimeout(() => {
-            document.getElementById("progressContainer").style.display = "none";
-            document.getElementById("progressBar").style.width = "0%";
-            document.getElementById("progressBar").innerText = "";
-        }, 800);
-        loadMovies();
-    };
-    xhr.send(formData);
+        const percent = Math.round(((i + 1) / totalChunks) * 100);
+        bar.style.width = percent + "%";
+        bar.innerText = percent + "%";
+    }
+    document.getElementById("upload-status").innerText =
+        "Uploaded: " + file.name;
+    setTimeout(() => {
+        container.style.display = "none";
+        bar.style.width = "0%";
+        bar.innerText = "";
+    }, 1000);
+    loadMovies();
 }
 async function loadMovies() {
     const url = BACKEND + "/api/list_videos_x9a7b2";
