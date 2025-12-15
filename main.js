@@ -40,8 +40,12 @@ console.log('%cC', `
     background-color: #121212;
 `);
 function showError(err) {
+    const existing = document.getElementById("errDiv");
+    if (existing) existing.remove();
     const errDiv = document.createElement("div");
+    errDiv.id = "errDiv";
     errDiv.textContent = err;
+    errDiv.style.marginTop = "60px";
     errDiv.style.background = "salmon";
     errDiv.style.color = "red";
     errDiv.style.border = "3px solid red";
@@ -52,17 +56,21 @@ function showError(err) {
     errDiv.style.textAlign = "center";
     errDiv.style.fontWeight = "bold";
     errDiv.style.maxWidth = "fit-content";
-    errDiv.style.height = "20px";
+    errDiv.style.height = "35px";
     errDiv.style.top = "70";
     errDiv.style.justifySelf = "center";
     errDiv.addEventListener("click", () => {
         errDiv.remove();
     });
-    document.body.appendChild(errDiv);
+    document.body.insertBefore(errDiv, document.body.firstChild);
 }
 function showSuccess(success) {
+    const existing = document.getElementById("successDiv");
+    if (existing) existing.remove();
     const successDiv = document.createElement("div");
+    successDiv.id = "successDiv";
     successDiv.textContent = success;
+    successDiv.style.marginTop = "60px";
     successDiv.style.background = "paleGreen";
     successDiv.style.color = "green";
     successDiv.style.border = "3px solid green";
@@ -73,13 +81,13 @@ function showSuccess(success) {
     successDiv.style.textAlign = "center";
     successDiv.style.fontWeight = "bold";
     successDiv.style.maxWidth = "fit-content";
-    successDiv.style.height = "20px";
+    successDiv.style.height = "35px";
     successDiv.style.top = "70";
     successDiv.style.justifySelf = "center";
     successDiv.addEventListener("click", () => {
         successDiv.remove();
     });
-    document.body.appendChild(successDiv);
+    document.body.insertBefore(successDiv, document.body.firstChild);
 }
 function padlet() { window.open("https://padlet.com/newsomr95/chat-room-br2tjbusbebezr2n"); }
 function converter() { window.open("https://spotidownloader.com/en"); }
