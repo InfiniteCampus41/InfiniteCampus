@@ -13,6 +13,20 @@ a {
     border-radius:10px;
     border:1px solid white;
 }
+.avatar {
+    height:40px;
+    width:40px;
+    margin-right:5px;
+    border-radius:50%;
+    border:1px solid white;
+}
+#backBtn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    border-radius: 6px;
+    cursor: pointer;
+}
 body {
     background-image:url('/res/bg.png');
 }
@@ -111,6 +125,10 @@ body {
 }
 .file-item button {
     margin-right: 10px;
+}
+#fileLabel {
+    margin-top: 5px;
+    min-height: 1.2em;
 }
 #fLabel {
     transition:0.3s all;
@@ -241,6 +259,35 @@ input[type="range"]::-webkit-slider-thumb {
         margin-top: 16px;
     }
 }
+#messages {
+    list-style: none;
+    padding: 0;
+}
+#messages li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    background-color: black;
+    width: 75vw;
+    overflow-wrap: anywhere;
+    padding: 10px;
+    border-radius: 25px;
+    color: white;
+    border: 1px solid white;
+}
+.notes {
+    color:white;
+    background:black;
+    padding:5px;
+    border:1px solid white;
+    border-radius:10px;
+}
+#notesContainer {
+    width:50vw;
+}
+.note button {
+    font-size: 16px !important;
+}
 .now {
     display:flex;
     color:white;
@@ -366,6 +413,9 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .r {
     color:red;
+}
+.reaction-trigger {
+    display:none;
 }
 #search {
     width: 100%;
