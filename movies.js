@@ -18,7 +18,7 @@ async function uploadApply() {
     const uploadURL = applyBK + "/api/upload_apply_x9a7b2";
     const chunkSize = 1024 * 1024;
     const totalChunks = Math.ceil(file.size / chunkSize);
-    const fileId = crypto.randomUUID();
+    const fileId = Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
     const bar = document.getElementById("progressBar");
     const container = document.getElementById("progressContainer");
     container.style.display = "block";
