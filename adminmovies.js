@@ -6,14 +6,18 @@ const socket = io(BACKEND, {
 socket.on("connect", () => console.log("Server Connected:", socket.id));
 socket.on("jobLog", data => appendLog(data.text));
 socket.on("jobProgress", data => {
-    appendLog(`${data.text}`);
     if (data.percent !== undefined) {
         const bar = document.getElementById("acceptProgressBar");
         const wrap = document.getElementById("acceptProgress");
         wrap.style.display = "block";
         bar.style.width = data.percent + "%";
-        bar.innerText = Math.floor(data.percent) + "%";
+        let label = `${Math.floor(data.percent)}%`;
+        if (data.remainingSec !== undefined) {
+            label += ` — ${formatTime(data.remainingSec)} left`;
+        }
+        bar.innerText = label;
     }
+    if (data.text) appendLog(data.text);
 });
 socket.on("jobError", data => {
     appendLog("ERROR: " + data.message);
@@ -92,7 +96,7 @@ function acceptFile(filename) {
     const lg = document.getElementById("logs");
     document.getElementById("before").style.display = "none";
     lg.innerText = "";
-    lg.style.height = "78vh";
+    lg.style.height = "70vh";
     lg.style.display = "block";
     document.getElementById("watchPanel").style.display = "none";
     showAcceptProgress();
@@ -101,6 +105,12 @@ function acceptFile(filename) {
         filename,
         targetName: newName
     });
+}
+function formatTime(seconds) {
+    if (seconds < 60) return `${seconds}s`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${s}s`;
 }
 let logCounter = 0;
 function appendLog(msg) {
