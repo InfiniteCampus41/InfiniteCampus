@@ -29,6 +29,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <hr>
                 <div class="section">
+                    <button id="toggleSnowBtn" class="button">Toggle Snow</button>
+                    <br>
                     <input type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
                     <button id="saveTitleBtn">Save</button>
                     <button id="resetTitleBtn">Reset</button>

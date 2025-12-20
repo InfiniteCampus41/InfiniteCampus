@@ -472,6 +472,21 @@ select {
     padding: 10px 16px;
     gap: 12px;
 }
+#snowContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  pointer-events: none;
+}
+.snowflake {
+  position: absolute;
+  top: -10px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+}
 .szo2 {
     width:25%;
 }

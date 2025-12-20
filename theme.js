@@ -162,7 +162,8 @@ window.addEventListener('DOMContentLoaded', () => {
         if (colorInput) colorInput.value = storedFlat;
         applyTheme(storedFlat);
     } else {
-        applyTheme('#8cbe37');
+        applyTheme('#000000', 'cms');
+        // applyTheme('#8cbe37');
     }
     colorInput?.addEventListener('input', () => {
         localStorage.setItem('headerColor', colorInput.value);
@@ -198,7 +199,8 @@ window.addEventListener('DOMContentLoaded', () => {
         ['headerColor', 'useGradient', 'gradientLeft', 'gradientRight', 'globalTextColor', 'globalDarkTheme']
         .forEach(k => localStorage.removeItem(k));
         if (themeSelector) themeSelector.value = '';
-        const defaultColor = '#8cbe37';
+        // const defaultColor = '#8cbe37';
+        const defaultColor = 'linear-gradient(to right, green, red)';
         if (colorInput) colorInput.value = defaultColor;
         if (gradLeftInput) gradLeftInput.value = defaultColor;
         if (gradRightInput) gradRightInput.value = defaultColor;
