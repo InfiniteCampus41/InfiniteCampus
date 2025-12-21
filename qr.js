@@ -99,11 +99,41 @@ bgColorEl.addEventListener('input',scheduleRender);
 logoScaleEl.addEventListener('input',scheduleRender);
 logoRadiusEl.addEventListener('input',scheduleRender);
 logoBorderEl.addEventListener('input',scheduleRender);
-logoInputEl.addEventListener('change',e=>{
-    const file=e.target.files[0]; if(!file){logoImage=null; logoPreviewImg.style.display='none'; logoEmpty.style.display='inline'; scheduleRender(); return;}
-    const img=new Image(); img.onload=()=>{logoImage=img; logoPreviewImg.src=img.src; logoPreviewImg.style.display='block'; logoEmpty.style.display='none'; scheduleRender();}; img.src=URL.createObjectURL(file);
+logoInputEl.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) {
+        logoImage = null;
+        if (logoPreviewImg) logoPreviewImg.style.display = 'none';
+        if (logoEmpty) logoEmpty.style.display = 'inline';
+        scheduleRender();
+        return;
+    }
+    const img = new Image();
+    img.onload = () => {
+        logoImage = img;
+        if (logoPreviewImg) {
+            logoPreviewImg.src = img.src;
+            logoPreviewImg.style.display = 'block';
+        }
+        if (logoEmpty) {
+            logoEmpty.style.display = 'none';
+        }
+        scheduleRender();
+    };
+    img.src = URL.createObjectURL(file);
 });
-clearLogoBtn.addEventListener('click',()=>{ logoImage=null; logoInputEl.value=''; logoPreviewImg.style.display='none'; logoEmpty.style.display='inline'; scheduleRender(); });
+clearLogoBtn.addEventListener('click', () => {
+    logoImage = null;
+    logoInputEl.value = '';
+    if (logoPreviewImg) {
+        logoPreviewImg.style.display = 'none';
+        logoPreviewImg.src = '';
+    }
+    if (logoEmpty) {
+        logoEmpty.style.display = 'inline';
+    }
+    scheduleRender();
+});
 downloadBtn.addEventListener('click',()=>{
     if(!latestExportCanvas) return;
     latestExportCanvas.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='qr-code.png'; a.click(); });
