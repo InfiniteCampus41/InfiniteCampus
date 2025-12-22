@@ -254,6 +254,18 @@ function formatTimestamp(ts) {
 function isRestrictedChannel(ch) {
     return ch === "Admin-Chat";
 }
+async function getUidByDisplayName(name) {
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return null;
+    const clean = name.replace(/ 💎/g, "").toLowerCase();
+    for (const [uid, data] of Object.entries(snap.val())) {
+        const dn = data?.profile?.displayName;
+        if (dn && dn.replace(/ 💎/g, "").toLowerCase() === clean) {
+            return uid;
+        }
+    }
+    return null;
+}
 async function renderMessageInstant(id, msg) {
     if (document.getElementById("msg-" + id)) return null;
     const div = document.createElement("div");
@@ -320,7 +332,7 @@ async function renderMessageInstant(id, msg) {
         const isSelfMention = currentName && (currentName.toLowerCase() === name.toLowerCase() ||
             currentName.toLowerCase() === name.toLowerCase().replace(" 💎", ""));
         const cls = isSelfMention ? "mention-self" : "mention";
-        return `<span class="${cls}">@${name}</span>`;
+        return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
     });
     const urlRegex = /\b((?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
     safeText = safeText.replace(urlRegex, (match) => {
@@ -334,6 +346,18 @@ async function renderMessageInstant(id, msg) {
     });
     safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
+    textDiv.querySelectorAll(".mention-user").forEach(span => {
+        span.style.cursor = "pointer";
+        span.addEventListener("click", async () => {
+            const name = span.dataset.name;
+            const uid = await getUidByDisplayName(name);
+            if (!uid) {
+                showError("User Profile Not Found.");
+                return;
+            }
+            window.location.href = `profile.html?user=${uid}`;
+        });
+    });
     textDiv.querySelectorAll(".channel-mention").forEach(span => {
         span.style.color = "#4fa3ff";
         span.style.cursor = "pointer";
