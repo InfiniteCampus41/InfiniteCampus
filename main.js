@@ -1,11 +1,11 @@
 (function () {
     const inIframe = window.self !== window.top;
-    if (inIframe) return;
     let embeddedByDataURL = false;
     try {
-        embeddedByDataURL = window.location.protocol === "data:";
+        const parentHref = window.top.location.href;
+        embeddedByDataURL = parentHref.startsWith("data:");
     } catch {
-        embeddedByDataURL = false;
+        embeddedByDataURL = true;
     }
     if (!embeddedByDataURL) return;
     window.addEventListener("load", () => {
@@ -43,27 +43,65 @@
                     </script>
                 </head>
                 <body>
-                <button class="button" onclick="runEmbeddedDataMode()">
-                    Click Here To Continue
-                </button>
+                <center>
+                    <br>
+                    <h1 class="tptxt">
+                        You Are Using This Page On An Iframe Or A Data Url
+                    </h1>
+                    <hr >
+                    <br>
+                    <h3 class="mdtxt">
+                        Why This Happened
+                    </h3>
+                    <hr style="width:50%">
+                    <br>
+                    <h4 class="btxt">
+                        LocalStorage Does Not Work On Data URLs So I Made It So It Is Like Nettleweb And It Opens In About Blank
+                    </h4>
+                    <br>
+                    <h5 class="y">
+                        What Is Localstorage?
+                    </h5>
+                    <p class="btxt">
+                        LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And You Need It For The Website Chat
+                        <br>
+                        If You Are Using This Page On An Iframe, Dont Worry, This Will Be Fixed Soon. For Now You Can Open The URL In An About:Blank Page
+                        <br>
+                        By Clicking The Button Below
+                    </p>
+                    <button class="button" onclick="runEmbeddedDataMode()">
+                        Click Here To Continue
+                    </button>
+                </center>
                 </body>
             </html>
         `;
     });
 })();
 function runEmbeddedDataMode() {
-    var win = window.open();
-    if (win) {
-        var iframe = win.document.createElement('iframe');
-        iframe.style.width = "100vw";
-        iframe.style.height = "100vh";
-        iframe.style.border = "none";
-        iframe.src = "https://www.infinitecampus.xyz";
-        win.document.title = `Infinite Campus`;
-        win.document.body.style.margin = "0"; 
-        win.document.body.style.overflow = "hidden"; 
-        win.document.body.appendChild(iframe);
-    }
+    const win = window.open("about:blank", "_blank");
+    if (!win) return;
+    win.document.open();
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>
+                Infinite Campus
+            </title>
+            <link id="dynamic-favicon" rel="icon" type="image/png" href="htps://infinitecampus.xyz/res/icon.png">
+        <body style="margin:0; overflow:hidden;">
+        </body>
+        </html>
+    `);
+    win.document.close();
+    const iframe = win.document.createElement("iframe");
+    iframe.src = "https://www.infinitecampus.xyz";
+    iframe.style.width = "100vw";
+    iframe.style.height = "100vh";
+    iframe.style.border = "none";
+    win.document.body.appendChild(iframe);
 }
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
