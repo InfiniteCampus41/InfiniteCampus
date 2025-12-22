@@ -1,3 +1,19 @@
+let overrideChecks = false;
+document.getElementById('overrideBtn').addEventListener('click', () => {
+    overrideChecks = !overrideChecks;
+    const btn = document.getElementById('overrideBtn');
+    if (overrideChecks) {
+        btn.textContent = "Override URL Checks: ON";
+        btn.classList.remove('override-off');
+        btn.classList.add('override-on');
+        showSuccess("URL checks overridden");
+    } else {
+        btn.textContent = "Override URL Checks: OFF";
+        btn.classList.remove('override-on');
+        btn.classList.add('override-off');
+        showSuccess("URL checks restored");
+    }
+});
 function normalizeUrl(url) {
     url = url.trim();
     if (/^https?:\/\//i.test(url)) {
@@ -79,20 +95,34 @@ async function generateDataUrl() {
         showError("Please Select Or Enter A URL.");
         return;
     }
-    const check = await checkURLStatus(urlInput);
-    if (check.status === "cors-ok" || check.status === "cors-ok-but-error" || check.status === "cors-blocked") {
+    if (overrideChecks) {
         let result = '';
         if (type === 'image') {
             result = generateBase64(urlInput);
         } else {
             result = generateAsciiEncodedHtml(urlInput);
         }
+        document.getElementById('output').value = result;
+        showSuccess("Generated With Override");
+        return;
+    }
+    const check = await checkURLStatus(urlInput);
+    if (
+        check.status === "cors-ok" ||
+        check.status === "cors-ok-but-error" ||
+        check.status === "cors-blocked"
+    ) {
+        let result = '';
+        if (type === 'image') {
+            result = generateBase64(urlInput);
+        } else {
+            result = generateAsciiEncodedHtml(urlInput);
+        }
+        document.getElementById('output').value = result;
         if (check.status === "cors-blocked") {
-            document.getElementById('output').value = result;
             showError("Website Does Not Allow CORS So Link May Not Work");
         } else {
             showSuccess("done");
-            document.getElementById('output').value = result;
         }
     }
     else if (check.status === "not-exist") {
@@ -104,6 +134,7 @@ async function generateDataUrl() {
         document.getElementById('output').value = '';
     }
 }
+
 document.getElementById('presetSelect').addEventListener('change', () => {
     const presetVal = document.getElementById('presetSelect').value;
     if (presetVal) {

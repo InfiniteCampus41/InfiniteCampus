@@ -1,3 +1,36 @@
+// ==== DATA URL DETECTION & OVERRIDE UI ====
+if (location.protocol === "data:") {
+    document.addEventListener("DOMContentLoaded", () => {
+        document.documentElement.innerHTML = "";
+        const container = document.createElement("div");
+        container.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #121212;
+        `;
+        const btn = document.createElement("button");
+        btn.textContent = "Run Data Mode Function";
+        btn.style.cssText = `
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: #8BC53F;
+            color: #121212;
+        `;
+        btn.addEventListener("click", runDataMode);
+        container.appendChild(btn);
+        document.body.appendChild(container);
+    });
+    throw new Error("Running in data: URL — normal execution halted");
+}
+function runDataMode() {
+    alert("Data URL mode function executed!");
+}
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js")
