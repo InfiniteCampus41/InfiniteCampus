@@ -7,30 +7,63 @@
     } catch {
         embeddedByDataURL = true;
     }
-    if (!inIframe || !embeddedByDataURL) return;
-    document.documentElement.innerHTML = "";
-    const btn = document.createElement("button");
-    btn.textContent = "Exit Data Embed Mode";
-    btn.style.cssText = `
-        position: fixed;
-        inset: 0;
-        margin: auto;
-        padding: 15px 25px;
-        font-size: 18px;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 8px;
-        border: none;
-        background: #8BC53F;
-        color: #121212;
-        height: fit-content;
-    `;
-    btn.onclick = runEmbeddedDataMode;
-    document.body.appendChild(btn);
-    throw new Error("Blocked: running inside data-embedded iframe");
+    if (!embeddedByDataURL) return;
+    window.addEventListener("load", () => {
+        document.documentElement.innerHTML = `
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+                    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+                    </script>
+                    <script>
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', 'G-7SV03ZXJ9R');
+                    </script>
+                    <title>
+                        Infinite Campus
+                    </title>
+                    <link rel="manifest" href="/manifest.json">
+                    <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+                    <link rel="stylesheet" href="global.css">
+                    <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
+                    <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
+                    <meta property="og:title" content="Infinite Campus">
+                    <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
+                    <meta property="og:url" content="https://www.infinitecampus.xyz">
+                    <meta name="theme-color" content="#8cbe37">
+                    <meta content="/res/icon.png" property="og:image">
+                    <script src="main.js">
+                    </script>
+                </head>
+                <body>
+                <button class="button" onclick="runEmbeddedDataMode()">
+                    Click Here To Continue
+                </button>
+                </body>
+            </html>
+        `;
+    });
 })();
 function runEmbeddedDataMode() {
-    alert("Running inside SVG/data iframe");
+    var win = window.open();
+    if (win) {
+        var iframe = win.document.createElement('iframe');
+        iframe.style.width = "100vw";
+        iframe.style.height = "100vh";
+        iframe.style.border = "none";
+        iframe.src = url;
+        win.document.title = `${c}`;
+        win.document.body.style.margin = "0"; 
+        win.document.body.style.overflow = "hidden"; 
+        win.document.body.appendChild(iframe);
+    }
 }
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
