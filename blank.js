@@ -1,15 +1,37 @@
+let bypassCustomChecks = false;
 function openGame(url) {
-    var win = window.open();
+    var win = window.open('about:blank');
     if (win) {
-        var iframe = win.document.createElement('iframe');
-        iframe.style.width = "100vw";
-        iframe.style.height = "100vh";
-        iframe.style.border = "none";
-        iframe.src = url;
-        win.document.title = `${c}`;
-        win.document.body.style.margin = "0"; 
-        win.document.body.style.overflow = "hidden"; 
-        win.document.body.appendChild(iframe);
+        win.document.open();
+        win.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <link rel="icon" type="image/png" href="https://www.infinitecampus.xyz/res/icon.png">
+                <title>${c}</title>
+                <style>
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                        background: black;
+                    }
+                    iframe {
+                        width: 100vw;
+                        height: 100vh;
+                        border: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <iframe src="${url}"></iframe>
+            </body>
+            </html>
+        `);
+
+        win.document.close();
     } else {
         showError("Err#1 Popup Blocked");
     }
@@ -60,6 +82,10 @@ document.getElementById('openCustomUrl').addEventListener('click', async () => {
             return;
         }
     }
+    if (bypassCustomChecks) {
+        openGame(url);
+        return;
+    }
     const existingWarning = document.getElementById('corsWarning');
     if (existingWarning) existingWarning.remove();
     const check = await checkURLStatus(url);
@@ -72,21 +98,21 @@ document.getElementById('openCustomUrl').addEventListener('click', async () => {
         container.style.textAlign = 'center';
         const warningText = document.createElement('p');
         warningText.style.color = 'red';
-        warningText.textContent = 'Website Does Not Have CORS Enabled About:Blank May Not Work';
+        warningText.textContent =
+            'Website Does Not Have CORS Enabled — About:Blank May Not Work';
         const okButton = document.createElement('button');
         okButton.textContent = 'OK';
         okButton.classList.add('button');
         okButton.style.marginTop = '8px';
-        okButton.style.padding = '8px 16px';
-        okButton.style.cursor = 'pointer';
         okButton.addEventListener('click', () => {
             openGame(url);
             container.remove();
         });
         container.appendChild(warningText);
         container.appendChild(okButton);
-        const openBtn = document.getElementById('openCustomUrl');
-        openBtn.insertAdjacentElement('afterend', container);
+        document
+            .getElementById('openCustomUrl')
+            .insertAdjacentElement('afterend', container);
     } else {
         showError('ERR#15 Website Does Not Exist');
     }
@@ -94,3 +120,15 @@ document.getElementById('openCustomUrl').addEventListener('click', async () => {
 document.getElementById('openInfiniteCampus').addEventListener('click', () => {
     openGame(`${b}`);
 });
+const bypassBtn = document.createElement('button');
+bypassBtn.textContent = 'Bypass URL Checks OFF';
+bypassBtn.classList.add('button');
+bypassBtn.style.marginTop = '10px';
+bypassBtn.style.display = 'block';
+bypassBtn.addEventListener('click', () => {
+    bypassCustomChecks = !bypassCustomChecks;
+    bypassBtn.textContent = bypassCustomChecks
+        ? 'Bypass URL Checks ON'
+        : 'Bypass URL Checks OFF';
+});
+document.getElementById('customUrl').insertAdjacentElement('afterend', bypassBtn);
