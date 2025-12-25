@@ -122,17 +122,17 @@ function formatTime(seconds) {
     return parts.join(" ");
 }
 let logCounter = 0;
+const MAX_LOGS = 100;
 function appendLog(msg) {
     logCounter++;
     const logs = document.getElementById("logs");
     const line = document.createElement("div");
     line.textContent = msg;
-    if (logCounter % 4 === 0) {
-        line.style.color = "lime";
-    } else {
-        line.style.color = "white";
-    }
+    line.style.color = (logCounter % 4 === 0) ? "lime" : "white";
     logs.appendChild(line);
+    while (logs.children.length > MAX_LOGS) {
+        logs.removeChild(logs.firstChild);
+    }
     logs.scrollTop = logs.scrollHeight;
 }
 function showAcceptProgress() {
