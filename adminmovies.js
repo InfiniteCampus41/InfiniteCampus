@@ -45,6 +45,7 @@ async function loadApply() {
     }
     box.innerHTML = "";
     data.list.forEach(f => {
+        if (isCopyFile(f.file)) return;
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
@@ -61,18 +62,33 @@ async function loadApply() {
         box.appendChild(div);
     });
     data.list.forEach(f => {
-    startProgressPolling(f.file);
-});
+        if (is360File(f.file)) {
+            startProgressPolling(f.file);
+        }
+    });
+}
+function isCopyFile(name) {
+    return name.endsWith("_copy") || name.includes("_copy.");
+}
+function is360File(name) {
+    return name.endsWith("_360") || name.includes("_360.");
+}
+function getCopyNameFrom360(name) {
+    return name.replace("_360", "_copy");
 }
 const progressIntervals = new Map();
 function startProgressPolling(filename) {
     if (progressIntervals.has(filename)) return;
     const wrap = document.getElementById(`progress-wrap-${filename}`);
     const bar = document.getElementById(`progress-bar-${filename}`);
+    if (!wrap || !bar) return;
+    const pollFilename = is360File(filename)
+        ? getCopyNameFrom360(filename)
+        : filename;
     const poll = async () => {
         try {
             const res = await fetch(
-                BACKEND + "/accept_status/" + encodeURIComponent(filename),
+                BACKEND + "/accept_status/" + encodeURIComponent(pollFilename),
                 { headers: { "ngrok-skip-browser-warning": "true" } }
             );
             const data = await res.json();
