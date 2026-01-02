@@ -130,6 +130,18 @@ body {
     margin-top: 5px;
     min-height: 1.2em;
 }
+.file-progress {
+    width: 100%;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.file-progress-bar {
+    height: 20px;
+    color:white;
+    transition: width 0.4s linear;
+    white-space: nowrap;
+}
 #fLabel {
     transition:0.3s all;
 }

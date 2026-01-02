@@ -13,7 +13,7 @@ socket.on("jobProgress", data => {
         bar.style.width = data.percent + "%";
         let label = `${Math.floor(data.percent)}%`;
         if (data.remainingSec !== undefined) {
-            label += ` — ${formatTime(data.remainingSec)} left`;
+            label += ` — ${formatTime(data.remainingSec)} Left`;
         }
         bar.innerText = label;
     }
@@ -52,9 +52,60 @@ async function loadApply() {
             <button class="button" onclick="watchApply('${f.file}')">Watch</button>
             <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
             <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
+            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px;">
+                <div class="file-progress-bar" id="progress-bar-${f.file}" style="width:0%;background:#4caf50;padding:2px;font-size:12px;">
+                    0%
+                </div>
+            </div>
         `;
         box.appendChild(div);
     });
+    data.list.forEach(f => {
+    startProgressPolling(f.file);
+});
+}
+const progressIntervals = new Map();
+function startProgressPolling(filename) {
+    if (progressIntervals.has(filename)) return;
+    const wrap = document.getElementById(`progress-wrap-${filename}`);
+    const bar = document.getElementById(`progress-bar-${filename}`);
+    const poll = async () => {
+        try {
+            const res = await fetch(
+                BACKEND + "/accept_status/" + encodeURIComponent(filename),
+                { headers: { "ngrok-skip-browser-warning": "true" } }
+            );
+            const data = await res.json();
+            if (!data.exists || data.status === "idle") {
+                wrap.style.display = "none";
+                stopProgressPolling(filename);
+                return;
+            }
+            wrap.style.display = "block";
+            const percent = data.percent ?? 0;
+            bar.style.width = percent + "%";
+            let label = `${percent}%`;
+            if (data.remainingSec != null) {
+                label += ` — ${formatTime(data.remainingSec)} left`;
+            }
+            bar.innerText = label;
+            if (data.status === "completed" || data.status === "error") {
+                stopProgressPolling(filename);
+            }
+        } catch (e) {
+            console.error("Progress Poll Failed", e);
+        }
+    };
+    poll();
+    const id = setInterval(poll, 2000);
+    progressIntervals.set(filename, id);
+}
+function stopProgressPolling(filename) {
+    const id = progressIntervals.get(filename);
+    if (id) {
+        clearInterval(id);
+        progressIntervals.delete(filename);
+    }
 }
 function watchApply(filename) {
     const url = BACKEND + "/apply_stream_x9a7b2/" + filename;
@@ -93,6 +144,7 @@ async function deleteApply(filename) {
 function acceptFile(filename) {
     const newName = prompt("Enter Name:", filename.replace(".mp4", ""));
     if (!newName) return;
+    startProgressPolling(filename);
     const lg = document.getElementById("logs");
     document.getElementById("before").style.display = "none";
     lg.innerText = "";
