@@ -35,56 +35,60 @@
         </script>
         <script type="module" src="login.js">
         </script>
+        <style>
+            ul, li, input {
+                max-width:900px;
+            }
+            ul { 
+                list-style:none; 
+                padding:0; margin:0;
+            }
+            li { 
+                background:#fff; 
+                margin-bottom:10px; 
+                padding:15px 20px; 
+                border-radius:10px; 
+            }
+            .top1 { 
+                background:#ffd700; 
+                font-weight:600; 
+            }
+            .top2 { 
+                background:#c0c0c0; 
+                font-weight:600; 
+            }
+            .top3 { 
+                background:#cd7f32; 
+                font-weight:600; 
+            }
+            .visit-times { 
+                font-size:13px; 
+                color:#555; 
+                margin-top:6px; 
+                word-break: break-word; 
+            }
+            @media (max-width:600px){ 
+                li{ 
+                    flex-direction: column; 
+                    align-items: flex-start; 
+                } 
+            }
+        </style>
     </head>
     <body>
         <center>
             <h1 class="tptxt">
-                Admin Pages
+                Most Visted Proxy Urls
             </h1>
-            <hr>
-            <br>
-            <a class="button apbtn" href="InfiniteDiscordMods.html">
-                Discord Mod Chat
-            </a>
-            <br>
-            <br>
-            <a class="button apbtn" href="InfiniteServers.html">
-                Manage Server
-            </a>
-            <br>
-            <br>
-            <a class="button apbtn" href="InfiniteArchives.html">
-                All Pages & Scripts
-            </a>
-            <br>
-            <br>
-            <a class="button apbtn" href="InfiniteAdminMovies.html">
-                Movies Apply List
-            </a>
-            <br>
-            <br>
-            <a class="button apbtn" href="InfiniteAdminChats.html">
-                Admin Chat Panel
-            </a>
-            <br>
-            <br>
-            <a class="button apbtn" href="InfiniteAdminUrls.html">
-                Proxy Logs
-            </a>
-            <br>
-            <br>
-            <br>
-            <button class="button" onclick="logout()">
-                Logout
-            </button>
-            <br>
-            <br>
+            <input type="text" id="search" class="button" placeholder="Search URLs...">
+            <ul id="urlList">
+            </ul>
         </center>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-        </script>
-        <script src="popup.js">
+        <script src="adminurls.js">
         </script>
         <script src="frame.js">
+        </script>
+        <script src="popup.js">
         </script>
     </body>
 </html>

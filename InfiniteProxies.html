@@ -29,25 +29,41 @@
         <meta content="/res/icon.png" property="og:image">
         <script src="main.js">
         </script>
-        <script src="drypopup.js">
-        </script>
         <script src="theme.js">
         </script>
+        <style>
+            iframe {
+                height:81vh;
+                width:100%;
+                background:white;
+            }
+            #bar {
+                margin-top:-11px;
+            }
+            #purlinp {
+                width:90%;
+                margin-bottom:1px;
+            }
+            #gbtn {
+                width:9%;
+            }
+        </style>
     </head>
     <body>
-        <br>
-        <br>
-        <br>
-        <center>
-            <a class="button" href="">
-                Download The Proxies List (not currently working)
-            </a>
-            <br>
-            <br>
-        </center>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+        <div id="bar">
+            <input id="purlinp" class="button" placeholder="https://example.com">
+            <button id="gbtn" class="button" onclick="go()">
+                Go
+            </button>
+        </div>
+        <div id="loadingMessage" style="text-align:center; color:white; margin:10px; display:none;">
+            Loading...
+        </div>
+        <iframe id="view" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation">
+        </iframe>
+        <script src="proxy.js">
         </script>
-        <script src="popup.js">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="frame.js">
         </script>
