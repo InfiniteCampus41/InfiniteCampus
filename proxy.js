@@ -27,6 +27,7 @@ async function go() {
     loadingMessage.style.display = "block";
     const encodedUrl = doubleBase64Encode(url);
     iframe.src = `${SERVER_URL}/proxy?url=${encodedUrl}`;
+    iframe.style.background = 'white';
 }
 iframe.onload = () => {
     loadingMessage.style.display = "none";

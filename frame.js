@@ -28,7 +28,7 @@ const headerHTML = `
                 <button id="helpToggle" class="dropdown-toggle">Help / Support</button>
                 <div class="dropdown test" id="helpDropdown">
                     <button onclick="location.href='InfiniteQuestions.html'">FAQ</button>
-                    <button onclick="location.href='InfiniteIssues.html'">Report A Bug</button>
+                    <button onclick="location.href='http://localhost:3000/InfiniteEmbeds.html?choice=5'">Report A Bug</button>
                     <button onclick="location.href='InfiniteErrors.html'">Check Error Codes</button>
                 </div>
             </div>
