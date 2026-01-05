@@ -88,6 +88,9 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (gradientSetting === 'cms') {
                 bg = 'linear-gradient(to right, green, red)';
                 isDark = true;
+            } else if (gradientSetting === 'wtr') {
+                bg = 'linear-gradient(to right, #374377, #bec7ad)';
+                isDark = true;
             } else if (gradientSetting === 'rgb') {
                 bg = 'transparent';
                 isDark = true;
@@ -162,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (colorInput) colorInput.value = storedFlat;
         applyTheme(storedFlat);
     } else {
-        applyTheme('#000000', 'cms');
+        applyTheme('#000000', 'wtr');
         // applyTheme('#8cbe37');
     }
     colorInput?.addEventListener('input', () => {
@@ -200,7 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .forEach(k => localStorage.removeItem(k));
         if (themeSelector) themeSelector.value = '';
         // const defaultColor = '#8cbe37';
-        const defaultColor = 'linear-gradient(to right, green, red)';
+        const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
         if (colorInput) colorInput.value = defaultColor;
         if (gradLeftInput) gradLeftInput.value = defaultColor;
         if (gradRightInput) gradRightInput.value = defaultColor;
