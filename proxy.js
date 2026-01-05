@@ -1,6 +1,7 @@
 const iframe = document.getElementById("view");
 const urlInput = document.getElementById("purlinp");
 const loadingMessage = document.getElementById("loadingMessage");
+const text = document.getElementById('pxybf');
 const SERVER_URL = `${d}`;
 function doubleBase64Encode(str) {
     return btoa(btoa(str));
@@ -28,6 +29,8 @@ async function go() {
     const encodedUrl = doubleBase64Encode(url);
     iframe.src = `${SERVER_URL}/proxy?url=${encodedUrl}`;
     iframe.style.background = 'white';
+    iframe.style.display = 'block';
+    text.style.display = 'none';
 }
 iframe.onload = () => {
     loadingMessage.style.display = "none";

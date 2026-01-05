@@ -93,7 +93,8 @@ function runEmbeddedDataMode() {
             <title>
                 Infinite Campus
             </title>
-            <link id="dynamic-favicon" rel="icon" type="image/png" href="https://infinitecampus.xyz/res/icon.png">
+            <link id="dynamic-favicon" rel="icon" type="image/png" href="https://www.infinitecampus.xyz/res/icon.png">
+        </head>
         <body style="margin:0; overflow:hidden;">
         </body>
         </html>
@@ -292,7 +293,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`https://wttr.in/${city}?format=3&${unit}`);
         const text = await res.text();
         if (text.startsWith("Unknown Location")) {
-            document.body.innerHTML = "<div>Error #3</div>";
+            console.error("Error #3");
             return;
         }
         const weatherEl = document.getElementById("weather");
