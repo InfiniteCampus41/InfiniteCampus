@@ -3,12 +3,19 @@ const urlInput = document.getElementById("purlinp");
 const loadingMessage = document.getElementById("loadingMessage");
 const text = document.getElementById('pxybf');
 const SERVER_URL = `${d}`;
+const NGROK_HEADERS = {
+    "ngrok-skip-browser-warning": "true",
+    "ngrok-skip-browser-warning": "1"
+};
 function doubleBase64Encode(str) {
     return btoa(btoa(str));
 }
 async function checkServer() {
     try {
-        const response = await fetch(`${SERVER_URL}/index.html`);
+        const response = await fetch(`${SERVER_URL}/index.html`, {
+            method: "GET",
+            headers: NGROK_HEADERS
+        });
         if (!response.ok) throw new Error();
         urlInput.disabled = false;
         loadingMessage.style.display = "none";
@@ -45,7 +52,7 @@ iframe.onload = () => {
         });
     } catch (e) {}
 };
-urlInput.addEventListener("keydown", function(event) {
+urlInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") go();
 });
 checkServer();
