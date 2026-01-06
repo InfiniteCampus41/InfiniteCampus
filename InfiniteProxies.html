@@ -36,37 +36,11 @@
                 height:81vh;
                 width:100%;
             }
-            #bar {
-                margin-top:-11px;
-            }
-            #purlinp {
-                width:90%;
-                margin-bottom:1px;
-            }
-            #gbtn {
-                width:9%;
-            }
         </style>
     </head>
     <body>
-        <div id="bar">
-            <input id="purlinp" class="button" placeholder="Enter URL Here" autocomplete="off">
-            <button id="gbtn" class="button" onclick="go()">
-                Go
-            </button>
-        </div>
-        <div id="loadingMessage" style="text-align:center; color:white; margin:10px; display:none;">
-            Loading...
-        </div>
-        <iframe id="view" sandbox="allow-scripts allow-forms allow-same-origin allow-top-navigation" style="display:none;">
+        <iframe src="https://included-touched-joey.ngrok-free.app">
         </iframe>
-        <center id="pxybf">
-            <h4 class="btxt">
-                Enter A URL Above. If It Says "Could Not Reach Server", This Means That Either The Proxy Server Is Down, Or It Is Blocked For You
-            </h4>
-        </center>
-        <script src="proxy.js">
-        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="frame.js">
