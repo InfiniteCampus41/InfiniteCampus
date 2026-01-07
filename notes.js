@@ -26,15 +26,19 @@ if (noteInput) {
     });
 }
 let isOwner = false;
+let isTester = false;
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         applyOwnerPermissions(false);
         return;
     }
     const ownerRef = ref(db, `users/${user.uid}/profile/isOwner`);
-    const snap = await get(ownerRef);
-    isOwner = snap.exists() && snap.val() === true;
-    applyOwnerPermissions(isOwner);
+    const ownerSnap = await get(ownerRef);
+    isOwner = ownerSnap.exists() && ownerSnap.val() === true;
+    const testerRef = ref(db, `users/${user.uid}/profile/isTester`);
+    const testerSnap = await get(testerRef);
+    isTester = testerSnap.exists() && testerSnap.val() === true;
+    applyOwnerPermissions(isOwner || isTester);
 });
 function applyOwnerPermissions(owner) {
     if (noteInput) noteInput.style.display = owner ? "block" : "none";
@@ -62,17 +66,17 @@ onValue(ref(db, 'notes'), (snapshot) => {
         `;
         notesContainer.appendChild(div);
     });
-    applyOwnerPermissions(isOwner);
+    applyOwnerPermissions(isOwner || isTester);
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', () => {
-            if (!isOwner) return;
+            if (!isOwner || !isTester) return;
             const key = button.getAttribute('data-key');
             remove(ref(db, 'notes/' + key));
         });
     });
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', () => {
-            if (!isOwner) return;
+            if (!isOwner || !isTester) return;
             const key = button.getAttribute('data-key');
             const txtDiv = document.querySelector(`.txt[data-key="${key}"]`);
             const saveButton = document.querySelector(`.save-edit-btn[data-key="${key}"]`);

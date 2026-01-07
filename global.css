@@ -78,6 +78,7 @@ body {
 .discord {
     display: block;
     color:cyan;
+    width:fit-content;
 }
 .dropdown {
     display: none;

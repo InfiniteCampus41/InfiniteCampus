@@ -1,18 +1,5 @@
 (function () {
-    if (window.self === window.top) return;
-    const inForeignObject =
-        document.documentElement &&
-        document.documentElement.ownerSVGElement instanceof SVGSVGElement;
-
-    if (!inForeignObject) return;
-    const isEmbed = window.frameElement === null;
-    if (!isEmbed) return;
-    let isDataContext = false;
-    try {
-        isDataContext = window.top.location.protocol === "data:";
-    } catch {
-        isDataContext = true;
-    }
+    let isDataContext = window.location.href.startsWith("data:");
     if (!isDataContext) return;
     window.addEventListener("load", () => {
         document.documentElement.innerHTML = `
