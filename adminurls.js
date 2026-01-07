@@ -48,7 +48,9 @@ async function fetchUrls() {
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
-    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls");
+    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls", {
+        headers: { "ngrok-skip-browser-warning": "true" }
+    });
     const data = await res.json();
     populateBlockedList(data);
 }
@@ -88,7 +90,7 @@ async function addUrl() {
     }
     const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url, reason })
     });
     const data = await res.json();
@@ -112,7 +114,7 @@ async function deleteUrl(url) {
     if (!confirm("Delete This URL?")) return;
     await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/delete", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url })
     });
     fetchUrls();
