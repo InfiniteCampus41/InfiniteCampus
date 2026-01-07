@@ -1,38 +1,44 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 let BACKEND = `${a}`;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",
     extraHeaders: { "ngrok-skip-browser-warning": "true" }
 });
 socket.on("connect", () => console.log("Server Connected:", socket.id));
+async function checkUserAuthentication() {
+    return new Promise((resolve, reject) => {
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                alert('You Must Be Logged In To View This Content.');
+                resolve(false);
+                return;
+            }
+            const uid = user.uid;
+            const userProfileRef = ref(db, `/users/${uid}/profile`);
+            const profileSnapshot = await get(userProfileRef);
+            if (!profileSnapshot.exists() || !(profileSnapshot.val().isOwner || profileSnapshot.val().isTester || profileSnapshot.val().isCoOwner)) {
+                alert('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
+                resolve(false);
+                return;
+            }
+            resolve(true);
+        });
+    });
+}
 socket.on("jobLog", data => appendLog(data.text));
-socket.on("jobProgress", data => {
-    if (data.percent !== undefined) {
-        const bar = document.getElementById("acceptProgressBar");
-        const wrap = document.getElementById("acceptProgress");
-        wrap.style.display = "block";
-        bar.style.width = data.percent + "%";
-        let label = `${Math.floor(data.percent)}%`;
-        if (data.remainingSec !== undefined) {
-            label += ` — ${formatTime(data.remainingSec)} Left`;
-        }
-        bar.innerText = label;
-    }
-    if (data.text) appendLog(data.text);
-});
-socket.on("jobError", data => {
-    appendLog("ERROR: " + data.message);
-    hideAcceptProgress();
-});
-socket.on("jobStarted", data => {
-    appendLog(`Accept Started: ${data.filename}`);
-    showAcceptProgress();
-});
-socket.on("jobDone", data => {
-    showSuccess(`File Accepted: ${data.finalName}`);
-    appendLog(`✔ Accept Completed: ${data.finalName}`);
-    hideAcceptProgress();
-});
+socket.on("jobProgress", data => handleJobProgress(data));
+socket.on("jobError", data => handleJobError(data));
+socket.on("jobStarted", data => handleJobStarted(data));
+socket.on("jobDone", data => handleJobDone(data));
 async function loadApply() {
+    const isAuthenticated = await checkUserAuthentication();
+    if (!isAuthenticated) return;
     const box = document.getElementById("applyList");
     box.innerHTML = "Loading...";
     const res = await fetch(BACKEND + "/api/list_apply_x9a7b2", {
@@ -67,6 +73,72 @@ async function loadApply() {
         }
     });
 }
+async function deleteApply(filename) {
+    const isAuthenticated = await checkUserAuthentication();
+    if (!isAuthenticated) return;
+    if (!confirm("Delete " + filename + "?")) return;
+    const res = await fetch(BACKEND + "/api/delete_apply_x9a7b2", {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true"
+        },
+        body: JSON.stringify({ filename })
+    });
+    const data = await res.json();
+    if (data.ok) {
+        alert("Deleted.");
+        loadApply();
+    } else {
+        alert("Failed: " + data.message);
+    }
+}
+async function acceptFile(filename) {
+    const isAuthenticated = await checkUserAuthentication();
+    if (!isAuthenticated) return;
+    const newName = prompt("Enter Name:", filename.replace(".mp4", ""));
+    if (!newName) return;
+    startProgressPolling(filename);
+    const lg = document.getElementById("logs");
+    document.getElementById("before").style.display = "none";
+    lg.innerText = "";
+    lg.style.height = "70vh";
+    lg.style.display = "block";
+    document.getElementById("watchPanel").style.display = "none";
+    showAcceptProgress();
+    appendLog("Accepting");
+    socket.emit("acceptApplicant", {
+        filename,
+        targetName: newName
+    });
+}
+function handleJobProgress(data) {
+    if (data.percent !== undefined) {
+        const bar = document.getElementById("acceptProgressBar");
+        const wrap = document.getElementById("acceptProgress");
+        wrap.style.display = "block";
+        bar.style.width = data.percent + "%";
+        let label = `${Math.floor(data.percent)}%`;
+        if (data.remainingSec !== undefined) {
+            label += ` — ${formatTime(data.remainingSec)} Left`;
+        }
+        bar.innerText = label;
+    }
+    if (data.text) appendLog(data.text);
+}
+function handleJobError(data) {
+    appendLog("ERROR: " + data.message);
+    hideAcceptProgress();
+}
+function handleJobStarted(data) {
+    appendLog(`Accept Started: ${data.filename}`);
+    showAcceptProgress();
+}
+function handleJobDone(data) {
+    showSuccess(`File Accepted: ${data.finalName}`);
+    appendLog(`✔ Accept Completed: ${data.finalName}`);
+    hideAcceptProgress();
+}
 function isCopyFile(name) {
     return name.endsWith("_copy") || name.includes("_copy.");
 }
@@ -76,7 +148,6 @@ function is360File(name) {
 function getCopyNameFrom360(name) {
     return name.replace("_360", "_copy");
 }
-const progressIntervals = new Map();
 function startProgressPolling(filename) {
     if (progressIntervals.has(filename)) return;
     const wrap = document.getElementById(`progress-wrap-${filename}`);
@@ -122,57 +193,6 @@ function stopProgressPolling(filename) {
         clearInterval(id);
         progressIntervals.delete(filename);
     }
-}
-function watchApply(filename) {
-    const url = BACKEND + "/apply_stream_x9a7b2/" + filename;
-    const vidplay = document.getElementById("videoPlayer");
-    document.getElementById("before").style.display = "none";
-    vidplay.src = url;
-    vidplay.style.height = "50vh";
-    vidplay.style.width = "min-content";
-    document.getElementById("logs").style.display = "none";
-    document.getElementById("watchPanel").style.display = "flex";
-}
-function closeWatch() {
-    document.getElementById("videoPlayer").pause();
-    document.getElementById("videoPlayer").src = "";
-    document.getElementById("watchPanel").style.display = "none";
-    document.getElementById("before").style.display = "block";
-}
-async function deleteApply(filename) {
-    if (!confirm("Delete " + filename + "?")) return;
-    const res = await fetch(BACKEND + "/api/delete_apply_x9a7b2", {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true"
-        },
-        body: JSON.stringify({ filename })
-    });
-    const data = await res.json();
-    if (data.ok) {
-        alert("Deleted.");
-        loadApply();
-    } else {
-        alert("Failed: " + data.message);
-    }
-}
-function acceptFile(filename) {
-    const newName = prompt("Enter Name:", filename.replace(".mp4", ""));
-    if (!newName) return;
-    startProgressPolling(filename);
-    const lg = document.getElementById("logs");
-    document.getElementById("before").style.display = "none";
-    lg.innerText = "";
-    lg.style.height = "70vh";
-    lg.style.display = "block";
-    document.getElementById("watchPanel").style.display = "none";
-    showAcceptProgress();
-    appendLog("Accepting");
-    socket.emit("acceptApplicant", {
-        filename,
-        targetName: newName
-    });
 }
 function formatTime(seconds) {
     seconds = Math.max(0, Math.floor(seconds));

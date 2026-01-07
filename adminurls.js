@@ -1,3 +1,10 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 const tableBody = document.querySelector("#url-table tbody");
 function formatTime(value) {
     if (!value || value === "Unknown") return "Unknown";
@@ -13,38 +20,132 @@ function formatTime(value) {
         hour12: true
     }).format(date);
 }
+async function checkUserPermissions(user) {
+    if (!user) {
+        alert("You Must Be Logged In To Access This Page.");
+        window.location.href = "/InfinitePasswords.html";
+        return false;
+    }
+    const userRef = ref(db, `users/${user.uid}/profile`);
+    const snapshot = await get(userRef);
+    if (!snapshot.exists()) {
+        alert("User Profile Not Found.");
+        return false;
+    }
+    const profile = snapshot.val();
+    if (profile.isOwner || profile.isTester || profile.isCoOwner) {
+        return true;
+    } else {
+        alert("You Do Not Have The Required Permissions To Access This Page.");
+        return false;
+    }
+}
+async function fetchUrls() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("You Must Be Logged In To Fetch URLs.");
+        return;
+    }
+    const hasPermission = await checkUserPermissions(user);
+    if (!hasPermission) return;
+    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls");
+    const data = await res.json();
+    populateBlockedList(data);
+}
+function populateBlockedList(data) {
+    const list = document.getElementById("blocked-list");
+    const search = document.getElementById("search");
+    const query = search.value.toLowerCase();
+    list.innerHTML = "";
+    for (const url in data) {
+        if (!url.toLowerCase().includes(query)) continue;
+        const reason = data[url];
+        const div = document.createElement("div");
+        div.className = "blocked-item";
+        div.innerHTML = `
+            <div class="url">${url}</div>
+            <div class="reason">${reason}</div>
+            <button class="delete-small button">Delete</button>
+        `;
+        div.querySelector(".delete-small").onclick = () => deleteUrl(url);
+        list.appendChild(div);
+    }
+}
+async function addUrl() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("You Must Be Logged In To Add URLs.");
+        return;
+    }
+    const hasPermission = await checkUserPermissions(user);
+    if (!hasPermission) return;
+    const url = document.getElementById("add-url-input").value.trim();
+    const reason = document.getElementById("add-reason-input").value.trim();
+    const error = document.getElementById("add-error");
+    if (!url || !reason) {
+        error.textContent = "URL And Reason Required.";
+        return;
+    }
+    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, reason })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        error.textContent = data.error || "Failed To Add URL.";
+        return;
+    }
+    document.getElementById("add-url-input").value = "";
+    document.getElementById("add-reason-input").value = "";
+    document.getElementById("add-panel").classList.remove("open");
+    fetchUrls();
+}
+async function deleteUrl(url) {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("You Must Be Logged In To Delete URLs.");
+        return;
+    }
+    const hasPermission = await checkUserPermissions(user);
+    if (!hasPermission) return;
+    if (!confirm("Delete This URL?")) return;
+    await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+    });
+    fetchUrls();
+}
 async function fetchLogs() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("You Must Be Logged In To Fetch Logs.");
+        return;
+    }
+    const hasPermission = await checkUserPermissions(user);
+    if (!hasPermission) return;
     try {
         const response = await fetch("https://included-touched-joey.ngrok-free.app/logs", {
-            headers: {
-                "ngrok-skip-browser-warning": "true",
-            }
+            headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await response.json();
         if (!data || Object.keys(data).length === 0) {
             tableBody.innerHTML = '<tr><td colspan="4">No Logs Found.</td></tr>';
             return;
         }
-        const logsArray = Object.entries(data).map(([url, info]) => {
-            let count, lastVisit;
+        const logs = Object.entries(data).map(([url, info]) => {
             if (typeof info === "number") {
-                count = info;
-                lastVisit = "Unknown";
-            } else {
-                count = info.count;
-                lastVisit = formatTime(info.lastVisit);
+                return { url, count: info, lastVisit: "Unknown" };
             }
-            return { url, count, lastVisit };
+            return { url, count: info.count, lastVisit: formatTime(info.lastVisit) };
         });
-        logsArray.sort((a, b) => b.count - a.count);
+        logs.sort((a, b) => b.count - a.count);
         tableBody.innerHTML = "";
-        logsArray.forEach((log, index) => {
+        logs.forEach((log, index) => {
             const tr = document.createElement("tr");
-            let bgColor = "#fff";
-            if (index === 0) bgColor = "gold";
-            else if (index === 1) bgColor = "silver";
-            else if (index === 2) bgColor = "peru";
-            tr.style.background = bgColor;
+            const colors = ["gold", "silver", "peru"];
+            tr.style.background = colors[index] || "white";
             tr.style.color = "black";
             tr.innerHTML = `
                 <td>${index + 1}</td>
@@ -58,5 +159,27 @@ async function fetchLogs() {
         tableBody.innerHTML = `<tr><td colspan="4">Error Fetching Logs: ${err.message}</td></tr>`;
     }
 }
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        fetchUrls();
+        fetchLogs();
+    } else {
+        window.location.href = "/InfinitePasswords.html";
+    }
+});
 setInterval(fetchLogs, 5000);
-fetchLogs();
+const panelBtn = document.getElementById("panel-btn");
+const panel = document.getElementById("panel");
+panelBtn.onclick = () => {
+    panel.classList.add("open");
+    panelBtn.style.display = "none";
+};
+document.getElementById("panel-back").onclick = () => {
+    panel.classList.remove("open");
+    panelBtn.style.display = "inline";
+};
+document.getElementById("add-url-btn").onclick = () =>
+    document.getElementById("add-panel").classList.add("open");
+document.getElementById("add-close").onclick = () =>
+    document.getElementById("add-panel").classList.remove("open");
+document.getElementById("search").oninput = fetchUrls;

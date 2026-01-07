@@ -1,6 +1,50 @@
-const AUTO_DELETE_MS = 5 * 60 * 1000;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+let currentUser = null;
+let isAuthInitialized = false;
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    isAuthInitialized = true;
+});
+async function checkPermissions() {
+    if (!isAuthInitialized) {
+        return new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (isAuthInitialized) {
+                    clearInterval(interval);
+                    resolve(checkPermissions());
+                }
+            }, 100);
+        });
+    }
+    if (!currentUser) {
+        alert("You Must Be Logged In To Access This Page.");
+        return false;
+    }
+    const uid = currentUser.uid;
+    const userRef = ref(db, `users/${uid}/profile`);
+    const snapshot = await get(userRef);
+    if (!snapshot.exists()) {
+        alert("Profile Data Not Found.");
+        return false;
+    }
+    const userData = snapshot.val();
+    const { isOwner, isTester, isCoOwner } = userData;
+    if (isOwner || isTester || isCoOwner) {
+        return true;
+    } else {
+        alert("You Do Not Have The Necessary Permissions To Access This Page.");
+        return false;
+    }
+}
 async function fetchFiles() {
+    if (!await checkPermissions()) return;
     const res = await fetch(`${a}/admin/files`, { headers: NGROK_HEADERS });
     const files = await res.json();
     const tbody = document.querySelector("#fileTable tbody");
@@ -21,6 +65,7 @@ async function fetchFiles() {
     });
 }
 async function deleteFile(filename) {
+    if (!await checkPermissions()) return;
     if (!confirm(`Delete ${filename}?`)) return;
     const res = await fetch(`${a}/admin/files/${encodeURIComponent(filename)}`, {
         method: "DELETE",
@@ -29,7 +74,8 @@ async function deleteFile(filename) {
     if (res.ok) fetchFiles();
     else showError("Failed To Delete File");
 }
-function downloadFile(filename) {
+async function downloadFile(filename) {
+    if (!await checkPermissions()) return;
     const link = document.createElement("a");
     link.href = `${a}/files/${encodeURIComponent(filename)}`;
     link.download = filename;
@@ -42,6 +88,7 @@ function formatBytes(bytes) {
     return bytes.toFixed(1) + " " + units[i];
 }
 document.getElementById("lockdownBtn").addEventListener("click", async () => {
+    if (!await checkPermissions()) return;
     const res = await fetch(`${a}/admin/lockdown`, {
         method: "POST",
         headers: NGROK_HEADERS
@@ -55,6 +102,7 @@ document.getElementById("lockdownBtn").addEventListener("click", async () => {
     }
 });
 async function fetchLogs() {
+    if (!await checkPermissions()) return;
     const res = await fetch(`${a}/admin/logs`, { headers: NGROK_HEADERS });
     if (!res.ok) return;
     const logs = await res.json();

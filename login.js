@@ -28,6 +28,9 @@ onAuthStateChanged(auth, async (user) => {
             }
         } else {
             window.location.href = "InfinitePasswords.html";
+            signOut(auth).then(() => {
+                window.location.href = "InfinitePasswords.html";
+            });
         }
     } catch (err) {
         console.error("Permission Check Failed:", err);
