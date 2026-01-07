@@ -66,7 +66,7 @@ rl.question(
           HOST = "0.0.0.0";
           mode = "Network";
         } else {
-          console.log("\nInvalid selection.\n");
+          console.log("\nInvalid Selection.\n");
           rl.close();
           process.exit(1);
         }

@@ -29,44 +29,46 @@
         <meta content="/res/icon.png" property="og:image">
         <script src="main.js">
         </script>
+        <script src="drypopup.js">
+        </script>
         <script src="theme.js">
         </script>
+        <script type="module" src="login.js">
+        </script>
         <style>
-            #pform {
-                margin-top:-10px;
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
             }
-            #purl {
-                width:90%;
-            }
-            #pgo {
-                width:9%;
-            }
-            #error {
-                text-align:center;
-            }
-            #pframe {
-                width:100vw;
-                height:82vh;
+            td {
+                padding: 10px;
+                border: 1px solid #ddd;
+                text-align: left;
             }
         </style>
     </head>
     <body>
-        <form id="pform">
-            <input class="button" type="text" id="purl" placeholder="Enter URL Here" required>
-            <button id="pgo" class="button" type="submit">
-                Go
-            </button>
-        </form>
-        <div id="error" class="btxt">
-            Enter A Url Above, If It Says Cannot Reach Server, It Means That The Server Is Likely Blocked
-            <br>
-            It Will Be Fixed Soon
-        </div>
-        <iframe id="pframe">
-        </iframe>
-        <script src="proxy.js">
+        <center>
+            <h1 class="tptxt">
+                Proxy URL Logs
+            </h1>
+            <table id="url-table">
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            Loading
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </center>
+        <script src="adminurls.js">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+        </script>
+        <script src="popup.js">
         </script>
         <script src="frame.js">
         </script>

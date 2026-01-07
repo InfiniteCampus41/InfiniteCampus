@@ -23,12 +23,14 @@ onAuthStateChanged(auth, async (user) => {
             profile.isTester === true ||
             profile.isCoOwner === true;
         if (isAllowed) {
-            window.location.href = "InfiniteAdmins.html";
+            if (window.location.pathname == '/InfinitePasswords.html') {
+                window.location.href = "InfiniteAdmins.html";
+            }
         } else {
             window.location.href = "InfinitePasswords.html";
         }
     } catch (err) {
-        console.error("Permission check failed:", err);
+        console.error("Permission Check Failed:", err);
         window.location.href = "InfinitePasswords.html";
     }
 });
