@@ -1,4 +1,18 @@
 const tableBody = document.querySelector("#url-table tbody");
+function formatTime(value) {
+    if (!value || value === "Unknown") return "Unknown";
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "Unknown";
+    return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    }).format(date);
+}
 async function fetchLogs() {
     try {
         const response = await fetch("https://included-touched-joey.ngrok-free.app/logs", {
@@ -16,9 +30,9 @@ async function fetchLogs() {
             if (typeof info === "number") {
                 count = info;
                 lastVisit = "Unknown";
-            } else if (typeof info === "object") {
+            } else {
                 count = info.count;
-                lastVisit = info.lastVisit;
+                lastVisit = formatTime(info.lastVisit);
             }
             return { url, count, lastVisit };
         });
@@ -31,7 +45,7 @@ async function fetchLogs() {
             else if (index === 1) bgColor = "silver";
             else if (index === 2) bgColor = "peru";
             tr.style.background = bgColor;
-            tr.style.color = 'black';
+            tr.style.color = "black";
             tr.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${log.url}</td>
