@@ -28,7 +28,7 @@ const headerHTML = `
                 <button id="helpToggle" class="dropdown-toggle">Help / Support</button>
                 <div class="dropdown test" id="helpDropdown">
                     <button onclick="location.href='InfiniteQuestions.html'">FAQ</button>
-                    <button onclick="location.href='InfiniteEmbeds.html?choice=5 '">Report A Bug</button>
+                    <button onclick="location.href='InfiniteEmbeds.html?choice=4'">Report A Bug</button>
                     <button onclick="location.href='InfiniteErrors.html'">Check Error Codes</button>
                 </div>
             </div>
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateSnowflakePositions() {
         const spacing = containerWidth / snowflakes.length;
         snowflakes.forEach((flake, index) => {
-            flake.startX = spacing * index + spacing / 2; // evenly spaced
+            flake.startX = spacing * index + spacing / 2;
         });
     }
     updateSnowflakePositions();
