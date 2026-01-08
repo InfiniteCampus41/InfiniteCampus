@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
+<html>
+	<head>
+		<meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
         </script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -14,11 +14,10 @@
             gtag('js', new Date());
             gtag('config', 'G-7SV03ZXJ9R');
         </script>
-        <title>
-            Infinite Campus
-        </title>
-        <link rel="manifest" href="/manifest.json">
-        <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+		<title>
+			Infinite Campus
+		</title>
+		<link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
         <link rel="stylesheet" href="global.css">
         <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
         <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
@@ -27,48 +26,46 @@
         <meta property="og:url" content="https://www.infinitecampus.xyz">
         <meta name="theme-color" content="#8cbe37">
         <meta content="/res/icon.png" property="og:image">
-        <script src="main.js">
+		<script src="/scram/scramjet.all.js">
+		</script>
+		<script src="/baremux/index.js">
+		</script>
+		<link rel="stylesheet" href="index.css" />
+		<script src="register-sw.js" defer>
+		</script>
+		<script src="search.js" defer>
+		</script>
+		<script src="index.js" defer>
+		</script>
+		<script src="main.js">
         </script>
         <script src="theme.js">
         </script>
-        <style>
-            #pform {
-                margin-top:-10px;
-            }
-            #purl {
-                width:90%;
-            }
-            #pgo {
-                width:9%;
-            }
-            #error {
-                text-align:center;
-            }
-            #pframe {
-                width:100vw;
-                height:82vh;
-            }
-        </style>
-    </head>
-    <body>
-        <form id="pform">
-            <input class="button" type="text" id="purl" placeholder="Enter URL Here" required>
-            <button id="pgo" class="button" type="submit">
-                Go
-            </button>
-        </form>
-        <div id="error" class="btxt">
-            Enter A Url Above, If It Says Cannot Reach Server, It Means That The Server Is Likely Blocked
-            <br>
-            It Will Be Fixed Soon
-        </div>
-        <iframe id="pframe">
-        </iframe>
-        <script src="proxy.js">
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+	</head>
+	<body>
+		<center>
+			<div>
+				<h1 style="color:lime">
+					Infinite Campus Web Browser
+				</h1>
+				<img src="/res/icon.png" style="border-radius:20px;height:100px;">
+			</div>
+		</center>
+		<form id="sj-form" class="flex-center">
+			<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
+			<input id="sj-address" type="text" placeholder="Search The Web" />
+		</form>
+		<div class="desc left-margin">
+			<p id="sj-error">
+			</p>
+			<pre id="sj-error-code">
+			</pre>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="frame.js">
         </script>
-    </body>
+		<script src="proxy.js">
+		</script>
+	</body>
 </html>

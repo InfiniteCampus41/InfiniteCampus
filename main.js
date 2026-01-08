@@ -22,7 +22,6 @@
                     <title>
                         Infinite Campus
                     </title>
-                    <link rel="manifest" href="/manifest.json">
                     <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
                     <link rel="stylesheet" href="global.css">
                     <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
@@ -93,13 +92,6 @@ function runEmbeddedDataMode() {
     iframe.style.height = "100vh";
     iframe.style.border = "none";
     win.document.body.appendChild(iframe);
-}
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
-        .then(reg => console.log("Service Worker Registered:", reg))
-        .catch(err => console.error("Service Worker Registration Failed:", err));
-    });
 }
 function safeGetItem(key) {
     try {

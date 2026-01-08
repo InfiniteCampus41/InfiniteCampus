@@ -1,34 +1,40 @@
-const form = document.getElementById('pform');
-const input = document.getElementById('purl');
-const iframe = document.getElementById('pframe');
-const errorDiv = document.getElementById('error');
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    let url = input.value.trim();
-    if (!url) return;
-    errorDiv.style.display = 'none';
-    if (!/^https?:\/\//i.test(url)) {
-        url = 'https://' + url;
-    }
-    errorDiv.textContent = '';
-    iframe.srcdoc = '';
-    try {
-        const response = await fetch('https://included-touched-joey.ngrok-free.app/scramjet/url', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url })
-        });
-        if (!response.ok) {
-            const err = await response.json();
-            errorDiv.style.display = 'block';
-            errorDiv.style.color = 'red';
-            throw new Error(err.error || 'Failed To Fetch URL');
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("sj-form");
+    const addressInput = document.getElementById("sj-address");
+    const errorEl = document.getElementById("sj-error");
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        let input = addressInput.value.trim();
+        if (!input) {
+            errorEl.textContent = "Please Enter A URL Or Search Term.";
+            return;
         }
-        const html = await response.text();
-        iframe.srcdoc = html;
-    } catch (err) {
-        errorDiv.textContent = err.message;
-    }
+        let logUrl;
+        try {
+            const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
+            logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
+        } catch {
+            logUrl = input.toLowerCase();
+        }
+        const now = new Date().toISOString();
+        const payload = {
+            url: logUrl,
+            timestamp: now
+        };
+        try {
+            const response = await fetch("/logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            addressInput.value = "";
+            errorEl.textContent = "";
+        } catch (err) {
+            console.error(err);
+            errorEl.textContent = "Failed To Log URL Visit.";
+        }
+    });
 });

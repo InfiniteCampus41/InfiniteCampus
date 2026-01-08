@@ -1,16 +1,19 @@
+import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { getDatabase, ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
+forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-let BACKEND = `${a}`;
+let BACKEND = `https://api.infinitecampus.xyz`;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",
     extraHeaders: { "ngrok-skip-browser-warning": "true" }
 });
 socket.on("connect", () => console.log("Server Connected:", socket.id));
+const progressIntervals = new Map();
 async function checkUserAuthentication() {
     return new Promise((resolve, reject) => {
         onAuthStateChanged(auth, async (user) => {
@@ -130,6 +133,29 @@ function handleJobError(data) {
     appendLog("ERROR: " + data.message);
     hideAcceptProgress();
 }
+function watchApply(filename) {
+    const video = document.getElementById("videoPlayer");
+    const panel = document.getElementById("watchPanel");
+    const before = document.getElementById("before");
+    const logs = document.getElementById("logs");
+    before.style.display = "none";
+    logs.style.display = "none";
+    panel.style.display = "block";
+    video.src = `${BACKEND}/api/watch_apply_x9a7b2/${encodeURIComponent(filename)}`;
+    video.load();
+    video.play();
+}
+function closeWatch() {
+    const video = document.getElementById("videoPlayer");
+    const panel = document.getElementById("watchPanel");
+    const before = document.getElementById("before");
+    const logs = document.getElementById("logs");
+    video.pause();
+    video.src = "";
+    panel.style.display = "none";
+    before.style.display = "block";
+    logs.style.display = "none";
+}
 function handleJobStarted(data) {
     appendLog(`Accept Started: ${data.filename}`);
     showAcceptProgress();
@@ -235,3 +261,8 @@ function hideAcceptProgress() {
     wrap.style.display = "none";
 }
 loadApply();
+window.acceptFile = acceptFile;
+window.loadApply = loadApply;
+window.deleteApply = deleteApply;
+window.watchApply = watchApply;
+window.closeWatch = closeWatch;

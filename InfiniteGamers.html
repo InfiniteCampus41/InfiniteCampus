@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
+<html>
+	<head>
+		<meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
         </script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -14,11 +14,10 @@
             gtag('js', new Date());
             gtag('config', 'G-7SV03ZXJ9R');
         </script>
-        <title>
-            Infinite Campus
-        </title>
-        <link rel="manifest" href="/manifest.json">
-        <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+		<title>
+			Infinite Campus
+		</title>
+		<link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
         <link rel="stylesheet" href="global.css">
         <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
         <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
@@ -27,14 +26,33 @@
         <meta property="og:url" content="https://www.infinitecampus.xyz">
         <meta name="theme-color" content="#8cbe37">
         <meta content="/res/icon.png" property="og:image">
-        <script src="main.js">
-        </script>
-        <script src="games.js">
+		<script src="/scram/scramjet.all.js">
+		</script>
+		<script src="/baremux/index.js">
+		</script>
+		<link rel="stylesheet" href="index.css" />
+		<script src="register-sw.js" defer>
+		</script>
+		<script src="search.js" defer>
+		</script>
+		<script src="index.js" defer>
+		</script>
+		<script src="main.js">
         </script>
         <script src="theme.js">
         </script>
-    </head>
-    <body>
+	</head>
+	<body>
+		<form id="sj-form" class="flex-center" style="display:none;">
+			<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
+			<input id="sj-address" type="text" placeholder="Search The Web" />
+		</form>
+		<div class="desc left-margin" style="display:none;">
+			<p id="sj-error">
+			</p>
+			<pre id="sj-error-code">
+			</pre>
+		</div>
         <center>
             <div id="before">
                 <h1 class="tptxt">
@@ -66,9 +84,11 @@
                 <br>
             </div>
         </center>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="frame.js">
         </script>
-    </body>
+		<script src="games.js">
+		</script>
+	</body>
 </html>

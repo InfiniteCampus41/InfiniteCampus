@@ -1,0 +1,89 @@
+"use strict";
+
+/** @type {HTMLFormElement} */
+const form = document.getElementById("sj-form");
+/** @type {HTMLInputElement} */
+const address = document.getElementById("sj-address");
+/** @type {HTMLInputElement} */
+const searchEngine = document.getElementById("sj-search-engine");
+/** @type {HTMLParagraphElement} */
+const error = document.getElementById("sj-error");
+/** @type {HTMLPreElement} */
+const errorCode = document.getElementById("sj-error-code");
+
+const { ScramjetController } = $scramjetLoadController();
+const scramjet = new ScramjetController({
+    files: {
+        wasm: "/scram/scramjet.wasm.wasm",
+        all: "/scram/scramjet.all.js",
+        sync: "/scram/scramjet.sync.js",
+    },
+});
+scramjet.init();
+
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+let blockedUrls = [];
+async function loadBlockedUrls() {
+    try {
+        const res = await fetch("/edit-urls");
+        if (!res.ok) throw new Error("Failed to fetch blocked URLs");
+        const data = await res.json();
+        blockedUrls = Object.entries(data).map(([url, reason]) => ({
+            url,
+            reason
+        }));
+    } catch (err) {
+        console.error("Error Loading URLs:", err);
+        blockedUrls = [];
+    }
+}
+function getBaseDomain(input) {
+    try {
+        const u = new URL(input.startsWith("http") ? input : "https://" + input);
+        return u.hostname.toLowerCase();
+    } catch (e) {
+        return "";
+    }
+}
+function checkBlocked(inputUrl) {
+    const domain = getBaseDomain(inputUrl);
+    for (const entry of blockedUrls) {
+        const blockedDomain = getBaseDomain(entry.url);
+        if (domain === blockedDomain) {
+            return entry.reason || "Blocked.";
+        }
+    }
+    return null;
+}
+loadBlockedUrls();
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const reason = checkBlocked(address.value);
+    if (reason) {
+        error.textContent = "This URL Is Blocked.";
+        errorCode.textContent = reason;
+        return;
+    }
+    try {
+        await registerSW();
+    } catch (err) {
+        error.textContent = "Failed To Register Service Worker.";
+        errorCode.textContent = err.toString();
+        throw err;
+    }
+    const url = search(address.value, searchEngine.value);
+    let wispUrl =
+        (location.protocol === "https:" ? "wss" : "ws") +
+        "://" +
+        location.host +
+        "/wisp/";
+    if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
+        await connection.setTransport("/libcurl/index.mjs", [
+            { websocket: wispUrl },
+        ]);
+    }
+    const frame = scramjet.createFrame();
+    frame.frame.id = "sj-frame";
+    document.body.appendChild(frame.frame);
+    frame.go(url);
+});

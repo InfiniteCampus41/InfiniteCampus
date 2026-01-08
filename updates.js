@@ -1,5 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, remove, update, get } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import {
+    getDatabase,
+    ref,
+    onValue,
+    push,
+    remove,
+    update,
+    get,
+    forceWebSockets
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+forceWebSockets();
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { firebaseConfig } from "./firebase.js";
 const app = initializeApp(firebaseConfig);
@@ -22,7 +32,7 @@ function sendToCustomDB(message) {
     }).catch((e) => console.error("ERR#7 Server Post Error:", e));
 }
 function addUpdate() {
-  	if (!isOwner || !isTester) return;
+  	if (!isOwner && !isTester) return;
   	const contentEl = document.getElementById("newUpdate");
   	const content = contentEl.value.trim();
   	if (content) {
@@ -34,12 +44,12 @@ function addUpdate() {
   	}
 }
 function deleteUpdate(key) {
-  	if (!isOwner || !isTester) return;
+  	if (!isOwner && !isTester) return;
   	remove(ref(db, "updates/" + key));
   	if (lastSentKey === key) lastSentKey = null;
 }
 function editUpdate(key, currentText) {
-  	if (!isOwner || !isTester) return;
+  	if (!isOwner && !isTester) return;
   	const newText = prompt("Edit Update:", currentText);
   	if (newText !== null && newText.trim() !== "") {
     	update(ref(db, "updates/" + key), {

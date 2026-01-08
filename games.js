@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("launchGames").onclick = function () {
-        setTimeout(function () {
-            var games = [
+    const launchButton = document.getElementById("launchGames");
+    const before = document.getElementById("before");
+    if (!launchButton) return;
+    launchButton.addEventListener("click", function () {
+            before.style.display = 'none';
+            const games = [
             { name: "Slope", url: "https://mathadventure1.github.io/slope/slope/index.html" },
             { name: "NettleWeb (1)", url: "https://nettleweb.com"},
             { name: "NettleWeb (2)", url: "https://sigmasigmatoiletedge.github.io" },
@@ -135,68 +138,75 @@ document.addEventListener("DOMContentLoaded", function () {
             { name: "Worldguessr", url: "https://www.worldguessr.com/" },
             { name: "Tomb Of The Mask", url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
         ];
-        var container = document.createElement("div");
-            const before = document.getElementById('before');
-            before.style.display = "none";
+        let container = document.getElementById("gamesContainer");
+        if (!container) {
+            container = document.createElement("div");
             container.setAttribute("id", "gamesContainer");
-            document.body.appendChild(container);
             container.style.padding = "30px";
-            games.forEach(function (game) {
-                var button = document.createElement("button");
-                button.textContent = game.name;
-                button.className = "button";
-                button.onclick = function () {
-                    document.getElementById("gamesContainer").style.display = "none";
-                    var backButton = document.createElement("button");
-                    backButton.textContent = "← Back";
-                    backButton.className = "button";
-                    backButton.style.position = "fixed";
-                    backButton.style.top = "10px";
-                    backButton.style.left = "10px";
-                    backButton.style.zIndex = "1000";
-                    backButton.style.padding = "10px";
-                    backButton.style.fontSize = "16px";
-                    backButton.style.cursor = "pointer";
-                    backButton.setAttribute("id", "backButton");
-                    var fullscreen = document.createElement("button");
-                    fullscreen.textContent = "⛶";
-                    fullscreen.className = "button";
-                    fullscreen.style.position = "fixed";
-                    fullscreen.style.bottom = "10px";
-                    fullscreen.style.right = "10px";
-                    fullscreen.style.zIndex = "1000";
-                    fullscreen.style.padding = "10px";
-                    fullscreen.style.fontSize = "16px";
-                    fullscreen.style.cursor = "pointer";
-                    var iframe = document.createElement("iframe");
-                    iframe.src = game.url;
-                    iframe.style.width = "100%";
-                    iframe.style.height = "85vh";
-                    iframe.style.border = "none";
-                    iframe.setAttribute("allowfullscreen", "");
-                    iframe.setAttribute("referrerpolicy", "no-referrer");
-                    iframe.setAttribute("id", game.name.replace(/ /g, "") + "Frame");
-                    document.body.appendChild(backButton);
-                    document.body.appendChild(fullscreen);
-                    document.body.appendChild(iframe);
-                    fullscreen.onclick = function () {
-                        if (!document.fullscreenElement) {
-                            iframe.requestFullscreen().catch(err => {
-                                console.error("Fullscreen failed:", err);
-                            });
-                        } else {
-                            document.exitFullscreen();
-                        }
-                    };
-                    backButton.onclick = function () {
-                        iframe.remove();
-                        backButton.remove();
-                        fullscreen.remove();
-                        document.getElementById("gamesContainer").style.display = "block";
-                    };
+            container.style.display = "flex";
+            container.style.flexWrap = "wrap";
+            container.style.justifyContent = "center";
+            container.style.gap = "10px";
+            document.body.appendChild(container);
+        }
+        games.forEach(function (game) {
+            const button = document.createElement("button");
+            button.textContent = game.name;
+            button.className = "button";
+            button.style.padding = "10px 20px";
+            button.style.fontSize = "16px";
+            button.style.cursor = "pointer";
+            button.onclick = function () {
+                container.style.display = "none";
+                const backButton = document.createElement("button");
+                backButton.textContent = "← Back";
+                backButton.className = "button";
+                backButton.style.position = "fixed";
+                backButton.style.top = "70px";
+                backButton.style.left = "10px";
+                backButton.style.zIndex = "1000";
+                backButton.style.padding = "10px";
+                backButton.style.fontSize = "16px";
+                backButton.style.cursor = "pointer";
+                document.body.appendChild(backButton);
+                const fullscreen = document.createElement("button");
+                fullscreen.textContent = "⛶";
+                fullscreen.className = "button";
+                fullscreen.style.position = "fixed";
+                fullscreen.style.bottom = "10px";
+                fullscreen.style.right = "10px";
+                fullscreen.style.zIndex = "1000";
+                fullscreen.style.padding = "10px";
+                fullscreen.style.fontSize = "16px";
+                fullscreen.style.cursor = "pointer";
+                document.body.appendChild(fullscreen);
+                const addressInput = document.getElementById("sj-address");
+                if (addressInput) {
+                    addressInput.value = game.url;
+                    const form = document.getElementById("sj-form");
+                    if (form) {
+                        const event = new Event("submit", { bubbles: true, cancelable: true });
+                        form.dispatchEvent(event);
+                    }
+                }
+                fullscreen.onclick = function () {
+                    const iframe = document.querySelector("iframe");
+                    if (!iframe) return;
+                    if (!document.fullscreenElement) {
+                        iframe.requestFullscreen().catch(err => console.error(err));
+                    } else {
+                        document.exitFullscreen();
+                    }
                 };
-                container.appendChild(button);
-            });
-        }, 1000);
-    };
+                backButton.onclick = function () {
+                    const iframes = document.querySelectorAll("iframe");
+                    iframes.forEach(iframe => iframe.remove());
+                    backButton.remove();
+                    fullscreen.remove();
+                    container.style.display = "flex";
+                };
+            };
+            container.appendChild(button);
+        });
+    });
 });

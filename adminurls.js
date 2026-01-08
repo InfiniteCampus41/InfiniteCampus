@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { getDatabase, ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
+forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -20,6 +21,7 @@ function formatTime(value) {
         hour12: true
     }).format(date);
 }
+window.addUrl = addUrl;
 async function checkUserPermissions(user) {
     if (!user) {
         alert("You Must Be Logged In To Access This Page.");
@@ -48,7 +50,7 @@ async function fetchUrls() {
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
-    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls", {
+    const res = await fetch("/edit-urls", {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
@@ -88,7 +90,7 @@ async function addUrl() {
         error.textContent = "URL And Reason Required.";
         return;
     }
-    const res = await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/add", {
+    const res = await fetch("/edit-urls/add", {
         method: "POST",
         headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url, reason })
@@ -112,7 +114,7 @@ async function deleteUrl(url) {
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
     if (!confirm("Delete This URL?")) return;
-    await fetch("https://included-touched-joey.ngrok-free.app/edit-urls/delete", {
+    await fetch("/edit-urls/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url })
@@ -128,7 +130,7 @@ async function fetchLogs() {
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
     try {
-        const response = await fetch("https://included-touched-joey.ngrok-free.app/logs", {
+        const response = await fetch("/logs", {
             headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await response.json();
