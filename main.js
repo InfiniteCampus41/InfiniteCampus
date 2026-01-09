@@ -117,7 +117,7 @@ const k = `PGh0bWwgbGFuZz0iZW4iPgo8aGVhZD4KPG1ldGEgY2hhcnNldD0iVVRGLTgiPgo8bWV0Y
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 const o = ["Dad", "Default Bot", "Infinite Campus", "Log Bot", "Music Bot"];
 const key = 5;
-console.log('%cWelcome To The Console, If You Do Not Know What You Are Doing, Close It, If You Do I Would Be Happy To Let You Develop The Website With Me At support@infinitecampus.xyz@gmail.com', 'color: purple; font-size: 24px; font-weight: bold;');
+console.log('%cWelcome To The Console, If You Do Not Know What You Are Doing, Close It, If You Do I Would Be Happy To Let You Develop The Website With Me At support@infinitecampus.xyz', 'color: purple; font-size: 24px; font-weight: bold;');
 console.log('%cC', `
     font-size: 100px;
     padding: 1px 35px 1px 35px;
