@@ -1,9 +1,6 @@
 import { auth, db } from "./chatfirebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import {
-    ref, push, onChildAdded, onChildRemoved, onChildChanged,
-    remove, update, set, get, runTransaction, onValue, off
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { ref, push, onChildAdded, onChildRemoved, onChildChanged, remove, update, set, get, runTransaction, onValue, off } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const channelList = document.getElementById("channels");
 const chatLog = document.getElementById("chatLog");
 let lastMessageTimestamp = 0;
@@ -1078,13 +1075,13 @@ sendBtn.onclick = async () => {
         return;
     }
     if (!isAdmin  && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
-    const now = Date.now();
-    if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
-        showError("You Can Only Send A Message Every 3 Seconds.");
-        return;
+        const now = Date.now();
+        if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
+            showError("You Can Only Send A Message Every 3 Seconds.");
+            return;
+        }
+        lastMessageTimestamp = now;
     }
-    lastMessageTimestamp = now;
-}
     const mentions = trimmed.match(/@\w+/g);
     if (mentions && mentions.length > 1) {
         showError("Only One Mention Per Message Is Allowed.");

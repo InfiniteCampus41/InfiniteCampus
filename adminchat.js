@@ -603,53 +603,53 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
             content.className = "msg-content";
             content.style.textAlign = "left";
             const header = document.createElement("div");
-          header.className = "msg-header";
-          header.innerHTML = `<img style="height:40px;width:40px;border-radius:50%;border:1px solid white;" src="${senderPic}" alt="${senderName}'s Pic"><span style="font-size:1.5em; margin-left:10px; color:${nameColor};width:100%;">${senderName}</span><span style="width:100%; text-align:right;">${timestamp}</span>`;
-          header.style.display = "flex";
-          const text = document.createElement("div");
-          text.className = "msg-text";
-          text.style.marginLeft = "50px";
-          text.style.marginTop = "-10px";
-          text.textContent = msgData.text || "(no text)";
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "Delete";
-          deleteBtn.className = "deleteBtn";
-          deleteBtn.style.marginTop = "6px";
-          deleteBtn.onclick = async () => {
-            try {
-              await remove(ref(db, `${currentChatPath}/${msgId}`));
-            } catch (err) {
-              showError("Delete Failed: " + err.message);
-            }
-          };
-          content.appendChild(header);
-          content.appendChild(text);
-          if (msgData.edited) {
-            const edited = document.createElement("div");
-            edited.className = "edited-label";
-            edited.style.marginLeft = "50px";
-            edited.textContent = "(Edited)";
-            edited.style.color = "gray";
-            edited.style.fontSize = "0.7em";
-            content.appendChild(edited);
-          }
-          content.appendChild(deleteBtn);
-          msgDiv.appendChild(content);
-          chatMessages.appendChild(msgDiv);
+        	header.className = "msg-header";
+          	header.innerHTML = `<img style="height:40px;width:40px;border-radius:50%;border:1px solid white;" src="${senderPic}" alt="${senderName}'s Pic"><span style="font-size:1.5em; margin-left:10px; color:${nameColor};width:100%;">${senderName}</span><span style="width:100%; text-align:right;">${timestamp}</span>`;
+          	header.style.display = "flex";
+          	const text = document.createElement("div");
+          	text.className = "msg-text";
+          	text.style.marginLeft = "50px";
+          	text.style.marginTop = "-10px";
+          	text.textContent = msgData.text || "(no text)";
+          	const deleteBtn = document.createElement("button");
+          	deleteBtn.textContent = "Delete";
+          	deleteBtn.className = "deleteBtn";
+          	deleteBtn.style.marginTop = "6px";
+          	deleteBtn.onclick = async () => {
+            	try {
+              		await remove(ref(db, `${currentChatPath}/${msgId}`));
+            	} catch (err) {
+              		showError("Delete Failed: " + err.message);
+            	}
+          	};
+          	content.appendChild(header);
+          	content.appendChild(text);
+          	if (msgData.edited) {
+            	const edited = document.createElement("div");
+            	edited.className = "edited-label";
+            	edited.style.marginLeft = "50px";
+            	edited.textContent = "(Edited)";
+            	edited.style.color = "gray";
+            	edited.style.fontSize = "0.7em";
+            	content.appendChild(edited);
+          	}
+          	content.appendChild(deleteBtn);
+          	msgDiv.appendChild(content);
+          	chatMessages.appendChild(msgDiv);
         }
         chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, (err) => {
+    }, (err) => {
         console.error("Realtime Listener Error:", err);
         chatMessages.innerHTML = "<p>Error Loading Messages.</p>";
-      });
-    }
-     deleteChatBtn.onclick = async () => {
-      if (!currentChatPath) return;
-      if (!confirm("Delete this entire private chat and metadata?")) return;
-      const parts = currentChatPath.split("/");
-      const uid = parts[1];
-      const secondUid = parts[2];
-      try {
+    });
+}
+deleteChatBtn.onclick = async () => {
+    if (!currentChatPath) return;
+    if (!confirm("Delete This Entire Private Chat And Metadata?")) return;
+    const parts = currentChatPath.split("/");
+    const uid = parts[1];
+    const secondUid = parts[2];
+    try {
         await remove(ref(db, `private/${uid}/${secondUid}`));
         await remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
         await remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
@@ -657,61 +657,61 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
         chatView.style.display = "none";
         privateChatsDiv.style.display = "block";
         loadPrivateChats();
-      } catch (err) {
-        showError("Error deleting chat: " + err.message);
-      }
-    };
+    } catch (err) {
+        showError("Error Deleting Chat: " + err.message);
+    }
+};
 backButton.onclick = () => {
-      chatView.style.display = "none";
-      privateChatsDiv.style.display = "block";
-    };
+    chatView.style.display = "none";
+    privateChatsDiv.style.display = "block";
+};
 async function loadUserList() {
-      const usersRef = ref(db, "users");
-      const snapshot = await get(usersRef);
-      const users = snapshot.val();
-      const keys = Object.keys(users);
-      const userCount = keys.length;
-      const userCountH = document.getElementById('userCount');
-      userCountH.textContent = `Users: ${userCount}`;
-      if (!snapshot.exists()) {
+    const usersRef = ref(db, "users");
+    const snapshot = await get(usersRef);
+    const users = snapshot.val();
+    const keys = Object.keys(users);
+    const userCount = keys.length;
+    const userCountH = document.getElementById('userCount');
+    userCountH.textContent = `Users: ${userCount}`;
+    if (!snapshot.exists()) {
         userListDiv.innerHTML = "No Users Found.";
         return;
-      }
-function populateSendAsOptions() {
-      const selected = sendAsSelect.value;
-      sendAsSelect.innerHTML = '';
-      const adminOpt = document.createElement('option');
-      adminOpt.value = 'admin';
-      adminOpt.textContent = '⛨ Admin';
-      sendAsSelect.appendChild(adminOpt);
-      const uEntries = Object.entries(userProfiles).sort((a, b) => {
-        const aName = a[1].displayName.toLowerCase();
-        const bName = b[1].displayName.toLowerCase();
-        return aName.localeCompare(bName);
-      });
-      uEntries.forEach(([uid, info]) => {
-        const opt = document.createElement('option');
-        opt.value = uid;
-        opt.textContent = info.displayName || uid;
-        sendAsSelect.appendChild(opt);
-      });
-      if ([...sendAsSelect.options].some(o => o.value === selected)) {
-        sendAsSelect.value = selected;
-      }
     }
-     const data = snapshot.val();
-      userProfiles = {};
-      const sorted = Object.entries(data).sort((a, b) => {
-        const nameA = a[1]?.profile?.displayName?.toLowerCase() || "";
-        const nameB = b[1]?.profile?.displayName?.toLowerCase() || "";
-        return nameA.localeCompare(nameB);
-      });
-      userListDiv.innerHTML = "";
-      sorted.forEach(([uid, info]) => {
+	function populateSendAsOptions() {
+    	const selected = sendAsSelect.value;
+    	sendAsSelect.innerHTML = '';
+    	const adminOpt = document.createElement('option');
+    	adminOpt.value = 'admin';
+    	adminOpt.textContent = '⛨ Admin';
+		sendAsSelect.appendChild(adminOpt);
+    	const uEntries = Object.entries(userProfiles).sort((a, b) => {
+        	const aName = a[1].displayName.toLowerCase();
+        	const bName = b[1].displayName.toLowerCase();
+        	return aName.localeCompare(bName);
+    	});
+    	uEntries.forEach(([uid, info]) => {
+        	const opt = document.createElement('option');
+        	opt.value = uid;
+        	opt.textContent = info.displayName || uid;
+        	sendAsSelect.appendChild(opt);
+    	});
+    	if ([...sendAsSelect.options].some(o => o.value === selected)) {
+        	sendAsSelect.value = selected;
+    	}
+	}
+	const data = snapshot.val();
+	userProfiles = {};
+	const sorted = Object.entries(data).sort((a, b) => {
+    	const nameA = a[1]?.profile?.displayName?.toLowerCase() || "";
+    	const nameB = b[1]?.profile?.displayName?.toLowerCase() || "";
+    	return nameA.localeCompare(nameB);
+	});
+    userListDiv.innerHTML = "";
+    sorted.forEach(([uid, info]) => {
         const name = info.profile?.displayName || uid;
         let picNum = parseInt(info.profile?.pic);
         if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
-          picNum = 0;
+          	picNum = 0;
         }
         const pic = profilePics[Math.max(0, picNum)];
         const x3FColor = info.settings?.color || "white";
@@ -722,137 +722,137 @@ function populateSendAsOptions() {
         div.innerHTML = `<img src="${pic}" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;"> ${name}`;
         div.onclick = () => editUser(uid, info);
         userListDiv.appendChild(div);
-      });
-      populateSendAsOptions();
-    }
-    function editUser(uid, data) {
-      currentUserEditUID = uid;
-      userListDiv.style.display = "none";
-      userEditDiv.style.display = "block";
-      editTitle.textContent = `Editing User: ${uid}`;
-      userDataTextarea.value = JSON.stringify(data, null, 2);
-      let delBtn = document.getElementById("deleteUserBtn");
-      if (delBtn) delBtn.remove();
-      delBtn = document.createElement("button");
-      delBtn.id = "deleteUserBtn";
-      delBtn.textContent = "Delete User";
-      delBtn.style.marginTop = "12px";
-      delBtn.style.background = "#7a0000";
-      delBtn.style.color = "white";
-      delBtn.style.padding = "8px";
-      delBtn.style.borderRadius = "6px";
-      delBtn.onclick = () => deleteEntireUser(uid);
-      userEditDiv.appendChild(delBtn);
-    }
-    async function deleteEntireUser(uid) {
-      if (!confirm(`Delete User "${uid}" And All Their Data?\nThis Cannot Be Undone.`)) {
-      return;
-  }
-  try {
-    const privateRef = ref(db, "private");
-    const privateSnap = await get(privateRef);
-    if (privateSnap.exists()) {
-      const allPrivate = privateSnap.val();
-      for (const userA in allPrivate) {
-        for (const userB in allPrivate[userA]) {
-          if (userA === uid || userB === uid) {
-            await remove(ref(db, `private/${userA}/${userB}`));
-          }
-        }
-      }
-    }
-    await remove(ref(db, `metadata/${uid}/privateChats`));
-    const metadataSnap = await get(ref(db, "metadata"));
-    if (metadataSnap.exists()) {
-      const allMeta = metadataSnap.val();
-      for (const otherUID in allMeta) {
-        if (allMeta[otherUID]?.privateChats?.[uid]) {
-          await remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
-        }
-      }
-    }
-    const privateRef2 = ref(db, "private");
-    const privateSnap2 = await get(privateRef2);
-    if (privateSnap2.exists()) {
-      const allPrivate2 = privateSnap2.val();
-      for (const userA in allPrivate2) {
-        for (const userB in allPrivate2[userA]) {
-          const chatPath = `private/${userA}/${userB}`;
-          const msgs = allPrivate2[userA][userB];
-          for (const msgId in msgs) {
-            if (msgs[msgId].sender === uid) {
-              await remove(ref(db, `${chatPath}/${msgId}`));
-            }
-          }
-        }
-      }
-    }
-    const messagesRef = ref(db, "messages");
-    const messagesSnap = await get(messagesRef);
-    if (messagesSnap.exists()) {
-      const allChannels = messagesSnap.val();
-      for (const channelName in allChannels) {
-        const channelMsgs = allChannels[channelName];
-        for (const msgId in channelMsgs) {
-          if (channelMsgs[msgId]?.sender === uid) {
-            await remove(ref(db, `messages/${channelName}/${msgId}`));
-          }
-        }
-      }
-    }
-    await remove(ref(db, `users/${uid}`));
-    showSuccess(`User "${uid}" Deleted Successfully`);
-    userEditDiv.style.display = "none";
-    userListDiv.style.display = "block";
-    loadUserList();
-    loadPrivateChats();
-  } catch (err) {
-    showError("User Delete Failed: " + err.message);
-  }
+    });
+    populateSendAsOptions();
 }
-    saveUserBtn.onclick = async () => {
-      if (!currentUserEditUID) return;
-      try {
+function editUser(uid, data) {
+    currentUserEditUID = uid;
+    userListDiv.style.display = "none";
+    userEditDiv.style.display = "block";
+    editTitle.textContent = `Editing User: ${uid}`;
+    userDataTextarea.value = JSON.stringify(data, null, 2);
+    let delBtn = document.getElementById("deleteUserBtn");
+    if (delBtn) delBtn.remove();
+    delBtn = document.createElement("button");
+    delBtn.id = "deleteUserBtn";
+    delBtn.textContent = "Delete User";
+    delBtn.style.marginTop = "12px";
+    delBtn.style.background = "#7a0000";
+    delBtn.style.color = "white";
+    delBtn.style.padding = "8px";
+    delBtn.style.borderRadius = "6px";
+    delBtn.onclick = () => deleteEntireUser(uid);
+    userEditDiv.appendChild(delBtn);
+}
+async function deleteEntireUser(uid) {
+    if (!confirm(`Delete User "${uid}" And All Their Data?\nThis Cannot Be Undone.`)) {
+    	return;
+	}
+  	try {
+    	const privateRef = ref(db, "private");
+    	const privateSnap = await get(privateRef);
+    	if (privateSnap.exists()) {
+      		const allPrivate = privateSnap.val();
+      		for (const userA in allPrivate) {
+        		for (const userB in allPrivate[userA]) {
+          			if (userA === uid || userB === uid) {
+            			await remove(ref(db, `private/${userA}/${userB}`));
+          			}
+        		}
+      		}
+    	}
+    	await remove(ref(db, `metadata/${uid}/privateChats`));
+    	const metadataSnap = await get(ref(db, "metadata"));
+    	if (metadataSnap.exists()) {
+      		const allMeta = metadataSnap.val();
+      		for (const otherUID in allMeta) {
+        		if (allMeta[otherUID]?.privateChats?.[uid]) {
+          			await remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
+        		}
+      		}
+    	}
+    	const privateRef2 = ref(db, "private");
+    	const privateSnap2 = await get(privateRef2);
+    	if (privateSnap2.exists()) {
+      		const allPrivate2 = privateSnap2.val();
+      		for (const userA in allPrivate2) {
+        		for (const userB in allPrivate2[userA]) {
+          			const chatPath = `private/${userA}/${userB}`;
+          			const msgs = allPrivate2[userA][userB];
+          			for (const msgId in msgs) {
+            			if (msgs[msgId].sender === uid) {
+              				await remove(ref(db, `${chatPath}/${msgId}`));
+            			}
+          			}
+        		}
+      		}
+    	}
+    	const messagesRef = ref(db, "messages");
+    	const messagesSnap = await get(messagesRef);
+    	if (messagesSnap.exists()) {
+      		const allChannels = messagesSnap.val();
+      		for (const channelName in allChannels) {
+        		const channelMsgs = allChannels[channelName];
+       			for (const msgId in channelMsgs) {
+          			if (channelMsgs[msgId]?.sender === uid) {
+            			await remove(ref(db, `messages/${channelName}/${msgId}`));
+          			}
+        		}
+      		}
+    	}
+    	await remove(ref(db, `users/${uid}`));
+    	showSuccess(`User "${uid}" Deleted Successfully`);
+    	userEditDiv.style.display = "none";
+    	userListDiv.style.display = "block";
+    	loadUserList();
+    	loadPrivateChats();
+  	} catch (err) {
+    	showError("User Delete Failed: " + err.message);
+  	}
+}
+saveUserBtn.onclick = async () => {
+    if (!currentUserEditUID) return;
+    try {
         const newData = JSON.parse(userDataTextarea.value);
         await set(ref(db, `users/${currentUserEditUID}`), newData);
-        showSuccess("User data saved!");
+        showSuccess("User Data Saved!");
         userEditDiv.style.display = "none";
         userListDiv.style.display = "block";
         loadUserList();
-      } catch (err) {
+    } catch (err) {
         showError("Invalid JSON Or Save Failed: " + err.message);
-      }
-    };
-    backToListBtn.onclick = () => {
-      userEditDiv.style.display = "none";
-      userListDiv.style.display = "block";
-    };
-    sendAdminMessageBtn.onclick = async () => {
-      if (!currentChatPath) {
+    }
+};
+backToListBtn.onclick = () => {
+    userEditDiv.style.display = "none";
+    userListDiv.style.display = "block";
+};
+sendAdminMessageBtn.onclick = async () => {
+    if (!currentChatPath) {
         showError("Open A Private Chat First.");
         return;
-      }
-      const text = adminMsgInput.value.trim();
-      if (!text) return;
-      const sendAs = sendAsSelect.value || "admin";
-      const msgSender = (sendAs === "admin") ? "admin" : sendAs;
-      const timestamp = Date.now();
-      const key = `${timestamp}_${Math.floor(Math.random() * 100000)}`;
-      const newMsg = {
+    }
+    const text = adminMsgInput.value.trim();
+    if (!text) return;
+    const sendAs = sendAsSelect.value || "admin";
+    const msgSender = (sendAs === "admin") ? "admin" : sendAs;
+    const timestamp = Date.now();
+    const key = `${timestamp}_${Math.floor(Math.random() * 100000)}`;
+    const newMsg = {
         text,
         sender: msgSender,
         timestamp,
         edited: false
-      };
-      try {
+    };
+    try {
         await set(ref(db, `${currentChatPath}/${key}`), newMsg);
         adminMsgInput.value = "";
-      } catch (err) {
-        showError("Send failed: " + err.message);
-      }
-    };
-    let currentErrorDiv = null;
-    function showError(message) {
+    } catch (err) {
+        showError("Send Failed: " + err.message);
+    }
+};
+let currentErrorDiv = null;
+function showError(message) {
     if (currentErrorDiv) currentErrorDiv.remove();
     const errorDiv = document.createElement("div");
     errorDiv.textContent = message;

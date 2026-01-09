@@ -1,5 +1,4 @@
 "use strict";
-
 /** @type {HTMLFormElement} */
 const form = document.getElementById("sj-form");
 /** @type {HTMLInputElement} */
@@ -10,7 +9,6 @@ const searchEngine = document.getElementById("sj-search-engine");
 const error = document.getElementById("sj-error");
 /** @type {HTMLPreElement} */
 const errorCode = document.getElementById("sj-error-code");
-
 const { ScramjetController } = $scramjetLoadController();
 const scramjet = new ScramjetController({
     files: {
@@ -20,7 +18,6 @@ const scramjet = new ScramjetController({
     },
 });
 scramjet.init();
-
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
 async function loadBlockedUrls() {

@@ -7,7 +7,7 @@ function openGame(url) {
             <!DOCTYPE html>
             <html>
             <head>
-                <link rel="icon" type="image/png" href="https://www.infinitecampus.xyz/res/icon.png">
+                <link rel="icon" type="image/png" href="/res/icon.png">
                 <title>${c}</title>
                 <style>
                     html, body {

@@ -1,10 +1,5 @@
 import { auth, db } from './chatfirebase.js';
-import { 
-    onAuthStateChanged, 
-    signOut, 
-    sendPasswordResetEmail, 
-    updateProfile
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const statusEl = document.getElementById('status');
 const settingsPanel = document.getElementById('settingsPanel');
@@ -68,7 +63,6 @@ async function saveDisplayName() {
     if (!/^[a-zA-Z0-9 _-]*$/.test(newDisplay)) {
         return showError("Display Name Can Only Contain Letters, Numbers, Spaces, Underscores, And Dashes.");
     }
-
     const usersSnap = await get(ref(db, 'users'));
     if (usersSnap.exists()) {
         let taken = false;
@@ -78,10 +72,8 @@ async function saveDisplayName() {
         });
         if (taken) return showError("Display Name Already Taken.");
     }
-
     if (newDisplay.length === 0) return showError("Display Name Cannot Be Empty.");
     if (newDisplay.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
-
     await set(ref(db, `users/${currentUser.uid}/profile/displayName`), newDisplay);
     await updateProfile(currentUser, { displayName: newDisplay });
     currentDisplay = newDisplay;

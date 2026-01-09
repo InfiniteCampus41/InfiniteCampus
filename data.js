@@ -134,7 +134,6 @@ async function generateDataUrl() {
         document.getElementById('output').value = '';
     }
 }
-
 document.getElementById('presetSelect').addEventListener('change', () => {
     const presetVal = document.getElementById('presetSelect').value;
     if (presetVal) {
