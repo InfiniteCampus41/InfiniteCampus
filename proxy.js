@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
             errorEl.textContent = "";
         } catch (err) {
             console.error(err);
-            errorEl.textContent = "Failed To Log URL Visit.";
         }
     });
 });

@@ -1,14 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import {
-    getDatabase,
-    ref,
-    onValue,
-    push,
-    remove,
-    update,
-    get,
-    forceWebSockets
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove, update, get, forceWebSockets} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 forceWebSockets();
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { firebaseConfig } from "./firebase.js";
