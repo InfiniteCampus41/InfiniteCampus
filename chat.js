@@ -29,6 +29,7 @@ let isHAdmin = false;
 let isTester = false;
 let isCoOwner = false;
 let isOwner = false;
+let isDev = false;
 let currentPrivateUid = null;
 let currentPrivateName = null;
 let metadataListenerRef = null;
@@ -467,7 +468,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, testerSnap, hSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, testerSnap, hSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -476,6 +477,7 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isCoOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isHAdmin`)),
+                get(ref(db, `users/${msg.sender}/profile/isDev`)),
                 get(ref(db, `users/${msg.sender}/profile/isTester`)),
                 get(ref(db, `users/${msg.sender}/profile/mileStone`))
             ]);
@@ -486,6 +488,7 @@ async function renderMessageInstant(id, msg) {
             const color = colorSnap.exists() ? colorSnap.val() : "#4fa3ff";
             let badgeText = null;
             const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
+            const senderIsDev = devSnap.exists() ? devSnap.val() : false;
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
@@ -497,6 +500,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsAdmin) badgeText = "⛉";
             else if (senderIsTester) badgeText = "TSTR";
             else if (senderIsHUser) badgeText = "100";
+            else if(senderIsDev) badgetext = "Developer";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
@@ -638,6 +642,10 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
                     badgeSpan.style.color = "yellow";
                     badgeSpan.title = "This User Is The 100Th Signed Up User";
+                } else if (badgeText === "Developer") {
+                    badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
+                    badgeSpan.style.color = "green";
+                    badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz"
                 } else {
                     badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
                     badgeSpan.style.color = "red";
@@ -1022,7 +1030,7 @@ async function renderChannelsFromDB() {
     }
 }
 function switchChannel(ch) {
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
     }
@@ -1030,7 +1038,7 @@ function switchChannel(ch) {
     currentPrivateName = null;
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
         return;
     } else {
         attachMessageListeners(ref(db, currentPath));
@@ -1108,7 +1116,7 @@ sendBtn.onclick = async () => {
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
-        if (currentPath === "messages/Admin-Chat" && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
+        if (currentPath === "messages/Admin-Chat" && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
             showError("You Cannot Send Messages To Admin Chat.");
             chatInput.value = "";
             return;
@@ -1205,6 +1213,7 @@ onAuthStateChanged(auth, async user => {
         setTimeout(() => location.href = "login.html", 1000);
         return; 
     }
+    const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));
     const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
     const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
     const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
@@ -1217,6 +1226,7 @@ onAuthStateChanged(auth, async user => {
     isAdmin = adminSnap.exists() ? adminSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
+    isDev = devSnap.exists() ? devSnap.val() : false;
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
     newChannelName.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
@@ -1225,7 +1235,7 @@ onAuthStateChanged(auth, async user => {
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) {
+    if (currentPath && currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");
@@ -1252,8 +1262,8 @@ onAuthStateChanged(auth, async user => {
     isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
-    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : "User"))));
-    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : "white"))));
+    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isDev ? "Developer" : "User")))));
+    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isDev ? "green" : "white")))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
     bioSpan.style.fontSize = "60%";
