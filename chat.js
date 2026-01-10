@@ -500,7 +500,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsAdmin) badgeText = "⛉";
             else if (senderIsTester) badgeText = "TSTR";
             else if (senderIsHUser) badgeText = "100";
-            else if(senderIsDev) badgetext = "Developer";
+            else if(senderIsDev) badgeText = "Developer";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
