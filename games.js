@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { name: "Infinite Craft", url: "https://infinite-craft.com/infinite-craft/" },
             { name: "Wordle", url: "https://wordleunlimited.org/" },
             { name: "Worldguessr", url: "https://www.worldguessr.com/" },
-            { name: "DELTARUNE", url: "https://g-mcb.github.io/deltarune/index.html/" },
+            { name: "DELTARUNE", url: "https://g-mcb.github.io/deltarune/index.html" },
             { name: "Tomb Of The Mask", url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
         ];
         let container = document.getElementById("gamesContainer");
