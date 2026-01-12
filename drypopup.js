@@ -58,8 +58,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     <br><br>
                     <a href="InfiniteDonaters.html">Help Support By Donating</a>
                     <a id="resetAllBtn">Clear Data</a>
+                    <br>
+                    <a class="discord" href="https://discord.gg/4d9hJSVXca">Join The Discord</a>
                 </div>
-                <a class="discord" href="https://discord.gg/4d9hJSVXca">Join The Discord</a>
             </div>
             <div class="bar test rgb-element">
                 <a id="CTCbtn" class="darkbuttons" href="InfiniteContacts.html">
