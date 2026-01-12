@@ -44,9 +44,58 @@ async function checkPermissions() {
         return false;
     }
 }
+async function verifyAdminPassword() {
+    while (true) {
+        if (ADMIN_PASS) {
+            try {
+                const res = await fetch(BACKEND + "/check_pass", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "ngrok-skip-browser-warning": "true"
+                    },
+                    body: JSON.stringify({ password: ADMIN_PASS })
+                });
+                const data = await res.json().catch(() => null);
+                if (data && data.ok) {
+                    return true;
+                }
+            } catch (e) {}
+            sessionStorage.removeItem("a_pass");
+            ADMIN_PASS = null;
+        }
+        const entered = prompt("Enter Admin Password:");
+        if (!entered) continue;
+        ADMIN_PASS = entered.trim();
+        try {
+            const res = await fetch(BACKEND + "/check_pass", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ password: ADMIN_PASS })
+            });
+            const data = await res.json().catch(() => null);
+            if (data && data.ok) {
+                sessionStorage.setItem("a_pass", ADMIN_PASS);
+                return true;
+            }
+        } catch (e) {}
+        alert("Incorrect Password.");
+        ADMIN_PASS = null;
+    }
+}
+async function adminFetch(url, options = {}) {
+    options.headers = Object.assign({}, options.headers, {
+        "x-admin-password": ADMIN_PASS,
+        "ngrok-skip-browser-warning": "true"
+    });
+    return fetch(url, options);
+}
 async function fetchFiles() {
     if (!await checkPermissions()) return;
-    const res = await fetch(`${a}/admin/files`, { headers: NGROK_HEADERS });
+    const res = await adminFetch(`${a}/admin/files`, { headers: NGROK_HEADERS });
     const files = await res.json();
     const tbody = document.querySelector("#fileTable tbody");
     tbody.innerHTML = "";
@@ -68,7 +117,7 @@ async function fetchFiles() {
 async function deleteFile(filename) {
     if (!await checkPermissions()) return;
     if (!confirm(`Delete ${filename}?`)) return;
-    const res = await fetch(`${a}/admin/files/${encodeURIComponent(filename)}`, {
+    const res = await adminFetch(`${a}/admin/files/${encodeURIComponent(filename)}`, {
         method: "DELETE",
         headers: NGROK_HEADERS
     });
@@ -90,7 +139,7 @@ function formatBytes(bytes) {
 }
 document.getElementById("lockdownBtn").addEventListener("click", async () => {
     if (!await checkPermissions()) return;
-    const res = await fetch(`${a}/admin/lockdown`, {
+    const res = await adminFetch(`${a}/admin/lockdown`, {
         method: "POST",
         headers: NGROK_HEADERS
     });
@@ -104,7 +153,7 @@ document.getElementById("lockdownBtn").addEventListener("click", async () => {
 });
 async function fetchLogs() {
     if (!await checkPermissions()) return;
-    const res = await fetch(`${a}/admin/logs`, { headers: NGROK_HEADERS });
+    const res = await adminFetch(`${a}/admin/logs`, { headers: NGROK_HEADERS });
     if (!res.ok) return;
     const logs = await res.json();
     const logsContainer = document.getElementById("logs");
@@ -167,5 +216,8 @@ setInterval(() => {
     fetchFiles();
     fetchLogs();
 }, 1000);
+(async () => {
+    await verifyAdminPassword();
+})();
 fetchFiles();
 fetchLogs();

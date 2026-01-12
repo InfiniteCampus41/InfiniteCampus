@@ -194,7 +194,7 @@ function watchApply(filename) {
     before.style.display = "none";
     logs.style.display = "none";
     panel.style.display = "block";
-    video.src = `${BACKEND}/api/watch_apply_x9a7b2/${encodeURIComponent(filename)}`;
+    video.src = `${BACKEND}/apply_stream_x9a7b2/${encodeURIComponent(filename)}`;
     video.load();
     video.play();
 }
