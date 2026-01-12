@@ -8,6 +8,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 let BACKEND = `https://api.infinitecampus.xyz`;
+let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",
     extraHeaders: {
@@ -15,7 +16,6 @@ const socket = io(BACKEND, {
         "x-admin-password": ADMIN_PASS || ""
     }
 });
-let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
 async function verifyAdminPassword() {
     while (true) {
         if (ADMIN_PASS) {
