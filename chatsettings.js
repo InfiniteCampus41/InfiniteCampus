@@ -367,6 +367,9 @@ onAuthStateChanged(auth, async (user) => {
                 } else if (profile.isAdmin) {
                     adminBadge.textContent = "Admin";
                     adminBadge.style.color = "deepskyblue";
+                } else if (profile.isDev) {
+                    adminBadge.textContent = "Admin";
+                    adminBadge.style.color = "deepskyblue";
                 } else {
                     adminBadge.textContent = "";
                     adminBadge.style.color = "";

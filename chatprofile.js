@@ -28,7 +28,7 @@ async function loadUserProfile(uid) {
       const viewerSnap = await get(ref(db, "users/" + currentUser.uid + "/profile"));
       if (viewerSnap.exists()) {
         const p = viewerSnap.val();
-        if (p?.isOwner === true || p?.isCoOwner === true || p?.isHAdmin === true) {
+        if (p?.isOwner === true || p?.isCoOwner === true || p?.isHAdmin === true || p?.isDev === true) {
           viewerIsOwner = true;
         }
       }
