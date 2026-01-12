@@ -46,7 +46,7 @@ async function verifyAdminPassword() {
                     "Content-Type": "application/json",
                     "ngrok-skip-browser-warning": "true"
                 },
-                body: JSON.stringify({ password: ADMIN_PASS })
+                body: JSON.stringify({ ADMIN_PASS })
             });
             const data = await res.json().catch(() => null);
             if (data && data.ok) {
