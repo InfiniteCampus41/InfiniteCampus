@@ -9,6 +9,7 @@ const db = getDatabase(app);
 let currentUser = null;
 let isAuthInitialized = false;
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
+let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     isAuthInitialized = true;
