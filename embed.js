@@ -18,6 +18,8 @@ if (choice == 1) {
     iframe.marginwidth = '0';
     tptxt.style.display = 'block';
     hr.style.display = 'block';
+} else if(choice == 5) {
+    iframe.src = 'https://calc-one-ruby.vercel.app/';
 } else {
     iframe.style.display = 'none';
     showError('You Must Select An Embed First');
