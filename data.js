@@ -6,12 +6,12 @@ document.getElementById('overrideBtn').addEventListener('click', () => {
         btn.textContent = "Override URL Checks: ON";
         btn.classList.remove('override-off');
         btn.classList.add('override-on');
-        showSuccess("URL checks overridden");
+        showSuccess("URL Checks Overridden");
     } else {
         btn.textContent = "Override URL Checks: OFF";
         btn.classList.remove('override-on');
         btn.classList.add('override-off');
-        showSuccess("URL checks restored");
+        showSuccess("URL Checks Restored");
     }
 });
 function normalizeUrl(url) {

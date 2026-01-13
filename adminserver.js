@@ -10,7 +10,7 @@ let currentUser = null;
 let isAuthInitialized = false;
 const BACKEND = 'https://api.infinitecampus.xyz';
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
-let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     isAuthInitialized = true;
@@ -27,14 +27,14 @@ async function checkPermissions() {
         });
     }
     if (!currentUser) {
-        alert("You Must Be Logged In To Access This Page.");
+        showError("You Must Be Logged In To Access This Page.");
         return false;
     }
     const uid = currentUser.uid;
     const userRef = ref(db, `users/${uid}/profile`);
     const snapshot = await get(userRef);
     if (!snapshot.exists()) {
-        alert("Profile Data Not Found.");
+        showError("Profile Data Not Found.");
         return false;
     }
     const userData = snapshot.val();
@@ -42,7 +42,7 @@ async function checkPermissions() {
     if (isOwner || isTester || isCoOwner) {
         return true;
     } else {
-        alert("You Do Not Have The Necessary Permissions To Access This Page.");
+        showError("You Do Not Have The Necessary Permissions To Access This Page.");
         return false;
     }
 }
@@ -63,7 +63,7 @@ async function verifyAdminPassword() {
                     return true;
                 }
             } catch (e) {}
-            sessionStorage.removeItem("a_pass");
+            localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
         const entered = prompt("Enter Admin Password:");
@@ -80,11 +80,11 @@ async function verifyAdminPassword() {
             });
             const data = await res.json().catch(() => null);
             if (data && data.ok) {
-                sessionStorage.setItem("a_pass", ADMIN_PASS);
+                localStorage.setItem("a_pass", ADMIN_PASS);
                 return true;
             }
         } catch (e) {}
-        alert("Incorrect Password.");
+        showError("Incorrect Password.");
         ADMIN_PASS = null;
     }
 }

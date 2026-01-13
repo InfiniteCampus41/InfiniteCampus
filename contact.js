@@ -3,10 +3,8 @@ async function sendMessage() {
     const nameInput = document.getElementById("name").value.trim();
     const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
-    const status = document.getElementById("status");
     if (!message) {
-        status.textContent = "ERR#8 Message Cannot Be empty!";
-        status.style.color = "orange";
+        showError("ERR#8 Message Cannot Be empty!")
         return;
     }
     const fullMessage = `**${name}**\n${message}`;
@@ -20,16 +18,13 @@ async function sendMessage() {
             })
         });
         if (response.ok) {
-            status.textContent = "Message Sent!";
-            status.style.color = "lightgreen";
+            showSuccess("Message Sent");
             document.getElementById("name").value = "";
             document.getElementById("message").value = "";
         } else {
-            status.textContent = "ERR#7 Failed To Send Message.";
-            status.style.color = "red";
+            showError("ERR#7 Failed To Send Message.");
         }
     } catch (error) {
-        status.textContent = "ERR#7 Error Sending Message.";
-        status.style.color = "orange";
+        showError("ERR#7 Error Sending Message.");
     }
 }

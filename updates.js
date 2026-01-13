@@ -30,7 +30,7 @@ function addUpdate() {
     	push(updatesRef, {
       		content,
       		timestamp: Date.now()
-    	}).then(() => console.log("Update Added."));
+    	}).then(() => showSuccess("Update Added."));
     	contentEl.value = "";
   	}
 }

@@ -17,7 +17,7 @@ window.login = () => {
             window.location.href = "InfiniteAdmins.html";
         })
         .catch((error) => {
-            errorText.textContent = error.message;
+            showError(error.message);
         });
 };
 window.addEventListener("keydown", (e) => {
