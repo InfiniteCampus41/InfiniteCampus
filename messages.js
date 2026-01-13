@@ -28,10 +28,10 @@ setInterval(fetchWidget, 30000);
 function getSelectedChannelId(){ return document.getElementById('channelSelector').value; }
 function getStatusImage(status){
     switch(status){
-        case 'online': return 'https://codehs.com/uploads/32492fbd9c7975781bec905cc80efbde';
-        case 'idle': return 'https://codehs.com/uploads/366cef0d856f621ae394ef8ca02c0807';
-        case 'dnd': return 'https://codehs.com/uploads/ad7edef57db7e5c9eab58f45b9b8d7a4';
-        default: return 'https://codehs.com/uploads/1837fc15433ac1289c3b36ec975fbc56';
+        case 'online': return '/res/online.png';
+        case 'idle': return '/res/idle.png';
+        case 'dnd': return '/res/dnd.png';
+        default: return '/res/offline.png';
     }
 }
 function getStatusTitle(status){
@@ -64,7 +64,7 @@ async function renderMessage(msg, list){
     avatarImg.classList.add('avatar');
     avatarImg.src = msg.author.avatar
         ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/0.png`;
+        : `/res/default.png`;
     li.appendChild(avatarImg);
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content');
