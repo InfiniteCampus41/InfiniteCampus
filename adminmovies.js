@@ -8,10 +8,63 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 let BACKEND = `https://api.infinitecampus.xyz`;
+let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",
-    extraHeaders: { "ngrok-skip-browser-warning": "true" }
+    extraHeaders: {
+        "ngrok-skip-browser-warning": "true",
+        "x-admin-password": ADMIN_PASS || ""
+    }
 });
+async function verifyAdminPassword() {
+    while (true) {
+        if (ADMIN_PASS) {
+            try {
+                const res = await fetch(BACKEND + "/check_pass", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "ngrok-skip-browser-warning": "true"
+                    },
+                    body: JSON.stringify({ password: ADMIN_PASS })
+                });
+                const data = await res.json().catch(() => null);
+                if (data && data.ok) {
+                    return true;
+                }
+            } catch (e) {}
+            sessionStorage.removeItem("a_pass");
+            ADMIN_PASS = null;
+        }
+        const entered = prompt("Enter Admin Password:");
+        if (!entered) continue;
+        ADMIN_PASS = entered.trim();
+        try {
+            const res = await fetch(BACKEND + "/check_pass", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ password: ADMIN_PASS })
+            });
+            const data = await res.json().catch(() => null);
+            if (data && data.ok) {
+                sessionStorage.setItem("a_pass", ADMIN_PASS);
+                return true;
+            }
+        } catch (e) {}
+        alert("Incorrect Password.");
+        ADMIN_PASS = null;
+    }
+}
+async function adminFetch(url, options = {}) {
+    options.headers = Object.assign({}, options.headers, {
+        "x-admin-password": ADMIN_PASS,
+        "ngrok-skip-browser-warning": "true"
+    });
+    return fetch(url, options);
+}
 socket.on("connect", () => console.log("Server Connected:", socket.id));
 const progressIntervals = new Map();
 async function checkUserAuthentication() {
@@ -44,7 +97,7 @@ async function loadApply() {
     if (!isAuthenticated) return;
     const box = document.getElementById("applyList");
     box.innerHTML = "Loading...";
-    const res = await fetch(BACKEND + "/api/list_apply_x9a7b2", {
+    const res = await adminFetch(BACKEND + "/api/list_apply_x9a7b2", {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
@@ -80,7 +133,7 @@ async function deleteApply(filename) {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
     if (!confirm("Delete " + filename + "?")) return;
-    const res = await fetch(BACKEND + "/api/delete_apply_x9a7b2", {
+    const res = await adminFetch(BACKEND + "/api/delete_apply_x9a7b2", {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",
@@ -141,7 +194,7 @@ function watchApply(filename) {
     before.style.display = "none";
     logs.style.display = "none";
     panel.style.display = "block";
-    video.src = `${BACKEND}/api/watch_apply_x9a7b2/${encodeURIComponent(filename)}`;
+    video.src = `${BACKEND}/apply_stream_x9a7b2/${encodeURIComponent(filename)}`;
     video.load();
     video.play();
 }
@@ -260,7 +313,10 @@ function hideAcceptProgress() {
     const wrap = document.getElementById("acceptProgress");
     wrap.style.display = "none";
 }
-loadApply();
+(async () => {
+    await verifyAdminPassword();
+    loadApply();
+})();
 window.acceptFile = acceptFile;
 window.loadApply = loadApply;
 window.deleteApply = deleteApply;
