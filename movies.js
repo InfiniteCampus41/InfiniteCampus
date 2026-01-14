@@ -44,7 +44,7 @@ async function uploadApply() {
                 "Upload Failed: " + data.message;
             return;
         }
-        const percent = Math.round(((i + 1) / totalChunks) * 100);
+        const percent = Math.round(((i + 1) / totalChunks) * 100 -1);
         bar.style.width = percent + "%";
         bar.innerText = percent + "%";
     }
