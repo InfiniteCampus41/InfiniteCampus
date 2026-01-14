@@ -111,7 +111,7 @@ async function loadApply() {
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
-            <b>${f.file}</b> — ${f.humanSize}<br><br>
+            <b>${f.file}</b> — <span id="size-${f.file}">${f.humanSize}</span><br><br>
             <button class="button" onclick="watchApply('${f.file}')">Watch</button>
             <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
             <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
@@ -128,6 +128,25 @@ async function loadApply() {
             startProgressPolling(f.file);
         }
     });
+}
+setInterval(updateSizesFromListApply, 3000);
+async function updateSizesFromListApply() {
+    try {
+        const res = await adminFetch(BACKEND + "/api/list_apply_x9a7b2", {
+            headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const data = await res.json();
+        if (!data.ok || !data.list) return;
+        for (const f of data.list) {
+            const span = document.getElementById(`size-${f.file}`);
+            if (!span) continue;
+            if (f.humanSize) {
+                span.innerText = f.humanSize;
+            }
+        }
+    } catch (err) {
+        console.error("Size Update Error:", err);
+    }
 }
 async function deleteApply(filename) {
     const isAuthenticated = await checkUserAuthentication();
@@ -227,6 +246,7 @@ function is360File(name) {
 function getCopyNameFrom360(name) {
     return name.replace("_360", "_copy");
 }
+/*
 function startProgressPolling(filename) {
     if (progressIntervals.has(filename)) return;
     const wrap = document.getElementById(`progress-wrap-${filename}`);
@@ -273,6 +293,7 @@ function stopProgressPolling(filename) {
         progressIntervals.delete(filename);
     }
 }
+*/
 function formatTime(seconds) {
     seconds = Math.max(0, Math.floor(seconds));
     const days = Math.floor(seconds / 86400);
