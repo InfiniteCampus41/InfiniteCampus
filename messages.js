@@ -113,7 +113,7 @@ async function renderMessage(msg, list){
         contentHTML += `</div>`;
     }
     contentHTML += `<div class="timestamp">${timestamp}</div>
-                    <br><span class="reaction-trigger" data-id="${msg.id}">React</span>`;
+                    <br><span class="reaction-trigger" data-id="${msg.id}"></span>`;
     contentDiv.innerHTML = contentHTML;
     displayedMessageIds.add(msg.id);
 }
@@ -163,49 +163,6 @@ document.getElementById('channelSelector').addEventListener('change',()=>{
     displayedMessageIds.clear();
     document.getElementById('messages').innerHTML='';
     enqueueRequest(()=>fetchMessages(currentChannelToken));
-});
-const emojiPicker = document.getElementById('emojiPicker');
-const discordEmojiRegex = /^(<a?:\w+:\d+>|[\p{Emoji_Presentation}\u200d]+)$/u;
-document.body.addEventListener('click', e => {
-    if (e.target.classList.contains('reaction-trigger')) {
-        currentReactMessageId = e.target.dataset.id;
-        const rect = e.target.getBoundingClientRect();
-        emojiPicker.style.left = rect.left + 'px';
-        emojiPicker.style.top = rect.bottom + 'px';
-        emojiPicker.style.display = 'block';
-    } else if (e.target.classList.contains('reaction-btn')) {
-        const btn = e.target;
-        if (btn.dataset.clicked) return;
-        btn.dataset.clicked = 'true';
-        const messageId = btn.dataset.id;
-        const emoji = btn.dataset.emoji;
-        if(!discordEmojiRegex.test(emoji)){
-            showError('This Emoji Is Not Valid For Discord.');
-            return;
-        }
-        fetch(`${backendUrl}/react`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageId, emoji, channelId: currentChannelId })
-        }).catch(err => console.error(err));
-    } else if (!emojiPicker.contains(e.target)) emojiPicker.style.display = 'none';
-});
-emojiPicker.addEventListener('emoji-click', event => {
-    const emoji = event.detail.unicode;
-    if(!discordEmojiRegex.test(emoji)){
-        showError('This Emoji Is Not Valid For Discord.');
-        return;
-    }
-    const messageId = currentReactMessageId;
-    const triggerBtn = document.querySelector(`.reaction-trigger[data-id="${messageId}"]`);
-    if (triggerBtn.dataset.clicked) return;
-    triggerBtn.dataset.clicked = 'true';
-    fetch(`${backendUrl}/react`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId, emoji, channelId: currentChannelId })
-    }).catch(err => console.error(err));
-    emojiPicker.style.display = 'none';
 });
 const typingContainer = document.createElement('div');
 typingContainer.id = 'typingIndicator';
