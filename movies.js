@@ -45,6 +45,7 @@ async function uploadApply() {
             return;
         }
         const percent = Math.round((((i + 1) / totalChunks) * 100)-1);
+        if (percent == '-1') percent = '0';
         bar.style.width = percent + "%";
         bar.innerText = percent + "%";
     }
