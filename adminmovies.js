@@ -246,7 +246,6 @@ function is360File(name) {
 function getCopyNameFrom360(name) {
     return name.replace("_360", "_copy");
 }
-/*
 function startProgressPolling(filename) {
     if (progressIntervals.has(filename)) return;
     const wrap = document.getElementById(`progress-wrap-${filename}`);
@@ -293,7 +292,6 @@ function stopProgressPolling(filename) {
         progressIntervals.delete(filename);
     }
 }
-*/
 function formatTime(seconds) {
     seconds = Math.max(0, Math.floor(seconds));
     const days = Math.floor(seconds / 86400);
