@@ -271,7 +271,7 @@ function startProgressPolling(filename) {
             bar.style.width = percent + "%";
             let label = `${percent}%`;
             if (data.remainingSec != null) {
-                label += ` — ${formatTime(data.remainingSec)} left`;
+                label += ` — ${formatTime(data.remainingSec)} Left`;
             }
             bar.innerText = label;
             if (data.status === "completed" || data.status === "error") {

@@ -42,9 +42,20 @@ async function loadUserProfile(uid) {
     const email = foundUser.settings?.userEmail || "(No Email Set)";
     const picValue = foundUser.profile?.pic ?? 0;
     const profileImages = [
-      "/pfps/1.jpeg", "/pfps/2.jpeg", "/pfps/3.jpeg", "/pfps/4.jpeg",
-      "/pfps/5.jpeg", "/pfps/6.jpeg", "/pfps/7.jpeg", "/pfps/8.jpeg",
-      "/pfps/9.jpeg", "/pfps/f3.jpeg", "/pfps/kaiden.png", "/pfps/10.jpeg", "/pfps/11.jpeg", "/pfps/12.jpeg"
+      "/pfps/1.jpeg",
+      "/pfps/2.jpeg",
+      "/pfps/3.jpeg",
+      "/pfps/4.jpeg",
+      "/pfps/5.jpeg",
+      "/pfps/6.jpeg",
+      "/pfps/7.jpeg",
+      "/pfps/8.jpeg",
+      "/pfps/9.jpeg",
+      "/pfps/10.jpeg",
+      "/pfps/11.jpeg",
+      "/pfps/12.jpeg",
+      "/pfps/13.jpeg", 
+      "/pfps/14.jpeg"
     ];
     const imgSrc = profileImages[picValue] || profileImages[0];
     loadingEl.style.display = "none";

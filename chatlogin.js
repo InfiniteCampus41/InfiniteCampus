@@ -109,7 +109,7 @@ submitResetDataBtn.addEventListener("click", async () => {
         resetMenu.style.display = "none";
     } catch (err) {
         console.error(err);
-        showError("Error Submitting Sata: " + err.message);
+        showError("Error Submitting Data: " + err.message);
     }
 });
 loginBtn.addEventListener("click", handleLogin);

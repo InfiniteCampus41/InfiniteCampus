@@ -11,7 +11,6 @@ onAuthStateChanged(auth, (user) => {
 window.login = () => {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
-    const errorText = document.getElementById("errorText");
     signInWithEmailAndPassword(auth, email, password)
         .then(() => {
             window.location.href = "InfiniteAdmins.html";

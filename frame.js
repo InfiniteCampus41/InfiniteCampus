@@ -3,8 +3,11 @@ const headerHTML = `
         <div id="header-left">
             <div id="weatherContainer">
                 <div id="global-text">
-                    <span id="weather"></span>
-                    <button class="darkbuttons"id="toggle">°C</button>
+                    <span id="weather">
+                    </span>
+                    <button class="darkbuttons"id="toggle">
+                        °C
+                    </button>
                 </div>
             </div>
         </div>
@@ -14,36 +17,148 @@ const headerHTML = `
             </a>
         </div>
         <div id="header-right">
-            <a href="InfiniteAbouts.html">About</a>
-            <a href="InfiniteApps.html">Apps</a>
+            <a href="InfiniteAbouts.html">
+                About
+            </a>
+            <a href="InfiniteApps.html">
+                Apps
+            </a>
             <div class="dropdown-wrap">
-                <button id="chatToggle" class="dropdown-toggle">Chat</button>
+                <button id="chatToggle" class="dropdown-toggle">
+                    Chat
+                </button>
                 <div class="dropdown test" id="chatDropdown">
-                    <button onclick="location.href='InfiniteTalkers.html'">Padlet</button>
-                    <button onclick="location.href='InfiniteChatters.html'">Website Chat</button>
-                    <button onclick="location.href='InfiniteDiscords.html'">Live Discord Chat</button>
+                    <button onclick="location.href='InfiniteTalkers.html'">
+                        Padlet
+                    </button>
+                    <button onclick="location.href='InfiniteChatters.html'">
+                        Website Chat
+                    </button>
+                    <button onclick="location.href='InfiniteDiscords.html'">
+                        Live Discord Chat
+                    </button>
                 </div>
             </div>
             <div class="dropdown-wrap">
-                <button id="helpToggle" class="dropdown-toggle">Help / Support</button>
+                <button id="helpToggle" class="dropdown-toggle">
+                    Help / Support
+                </button>
                 <div class="dropdown test" id="helpDropdown">
-                    <button onclick="location.href='InfiniteQuestions.html'">FAQ</button>
-                    <button onclick="location.href='InfiniteEmbeds.html?choice=4'">Report A Bug</button>
-                    <button onclick="location.href='InfiniteErrors.html'">Check Error Codes</button>
+                    <button onclick="location.href='InfiniteQuestions.html'">
+                        FAQ
+                    </button>
+                    <button onclick="location.href='InfiniteEmbeds.html?choice=4'">
+                        Report A Bug
+                    </button>
+                    <button onclick="location.href='InfiniteErrors.html'">
+                        Check Error Codes
+                    </button>
                 </div>
             </div>
-            <a href="InfiniteGamers.html">Games</a>
-            <a href="InfiniteCheaters.html">Cheats</a>
-            <a href="InfiniteUpdaters.html">Updates</a>
+            <a href="InfiniteGamers.html">
+                Games
+            </a>
+            <a href="InfiniteCheaters.html">
+                Cheats
+            </a>
+            <a href="InfiniteUpdaters.html">
+                Updates
+            </a>
             <div class="dropdown-wrap">
-                <button id="downloadToggle" class="dropdown-toggle">Download Games</button>
+                <button id="downloadToggle" class="dropdown-toggle">
+                    Download Games
+                </button>
                 <div class="dropdown test" id="downloadDropdown">
-                    <button onclick="location.href='InfiniteOpeners.html'">Download This Website</button>
-                    <button onclick="location.href='InfiniteDownloaders.html'">Download Games</button>
+                    <button onclick="location.href='InfiniteOpeners.html'">
+                        Download This Website
+                    </button>
+                    <button onclick="location.href='InfiniteDownloaders.html'">
+                        Download Games
+                    </button>
                 </div>
             </div>
-            <a class="contactme" href="InfiniteContacts.html">Contact Me</a>
+            <a class="contactme" href="InfiniteContacts.html">
+                Contact Me
+            </a>
         </div>
+        <div id="snowContainer">
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+        <div class="snowflake">
+        </div>
+    </div>
     </header>
     <footer id="site-footer" class="rgb-element">
         <span>
@@ -56,46 +171,6 @@ const headerHTML = `
     <br>
     <br>
     <br>
-    <div id="snowContainer">
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-        <div class="snowflake"></div>
-    </div>
 `;
 document.addEventListener("DOMContentLoaded", () => {
     const headerWrapper = document.createElement("div");
@@ -149,6 +224,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     waitForToggleSnowBtn((toggleBtn) => {
+        const today = new Date();
+        let monthIndex = today.getMonth();
+        if (monthIndex = 11 || 0) {
+            toggleBtn.textContent = 'Toggle Snow';
+        } else if (monthIndex = 1) {
+            toggleBtn.textContent = 'Toggle Hearts';
+        } else if (monthIndex >= 2 && monthIndex <= 9) {
+            toggleBtn.style.display = 'none';
+        } else if (monthIndex = 10) {
+            toggleBtn.textContent = 'Toggle Leaves';
+        } else {
+            toggleBtn.style.display = 'none';
+        }
         toggleBtn.addEventListener("click", () => {
             snowEnabled = !snowEnabled;
             localStorage.setItem("snowEnabled", snowEnabled.toString());
@@ -156,6 +244,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
     snowflakes.forEach((flake) => {
+        const today = new Date();
+        let monthIndex = today.getMonth();
+        if (monthIndex = 11 || 0) {
+            flake.innerHTML = '<i class="bi bi-snow"></i>';
+        } else if (monthIndex = 1) {
+            flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
+            flake.style.color = 'red';
+        } else if (monthIndex >= 2 && monthIndex <= 9) {
+            flake.style.display = 'none';
+        } else if (monthIndex = 10) {
+            flake.innerHTML = '<i class="bi bi-leaf-fill"></i>';
+            flake.innerhtml = 'darkgoldenrod';
+        } else {
+            flake.style.display = 'none';
+        }
         let y = Math.random() * 60;
         let swayOffset = Math.random() * Math.PI * 2;
         let running = false;
@@ -173,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const x = startX + Math.sin(swayOffset) * swayAmplitude;
             swayOffset += swaySpeed;
             flake.style.transform =
-                `translate(${x}px, ${y}px) rotate(${y * 6}deg)`;
+                `translate(${x}px, ${y}px) rotate(${y * 4}deg)`;
             requestAnimationFrame(animate);
         }
         flake.start = () => {
