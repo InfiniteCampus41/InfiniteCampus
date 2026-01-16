@@ -4,12 +4,12 @@ async function sendMessage() {
     const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
     if (!message) {
-        showError("ERR#8 Message Cannot Be empty!")
+        showError("ERR#8 Message Cannot Be Empty!")
         return;
     }
     const fullMessage = `**${name}**\n${message}`;
     try {
-        const response = await fetch(`${a}`, {
+        const response = await fetch(`${a}/send`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

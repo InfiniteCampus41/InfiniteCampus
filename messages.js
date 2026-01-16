@@ -132,27 +132,42 @@ function updateReactions(msg){
     if(oldReactions) oldReactions.replaceWith(new DOMParser().parseFromString(reactionsHTML,'text/html').body.firstChild);
     else li.querySelector('.content').insertAdjacentHTML('beforeend', reactionsHTML);
 }
-async function fetchMessages(token=currentChannelToken){
+async function fetchMessages(token = currentChannelToken) {
     const channelId = currentChannelId;
     const messagesList = document.getElementById('messages');
     try {
         const res = await fetch(`${apiMessagesUrl}?channelId=${channelId}`, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        if (!res.ok) throw new Error('Backend Unreachable');
+        if (!res.ok) {
+            let errorText = '';
+            try {
+                const errJson = await res.json();
+                errorText = errJson?.error || '';
+            } catch {
+            }
+            if (errorText === 'Discord integration disabled') {
+                throw new Error('DISCORD_LOCKDOWN');
+            }
+            throw new Error('Backend Unreachable');
+        }
         const data = await res.json();
-        const sorted = data.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
-        for(const msg of sorted){
-            if(token !== currentChannelToken) return;
+        const sorted = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (const msg of sorted) {
+            if (token !== currentChannelToken) return;
             await renderMessage(msg, messagesList);
         }
-    } catch(err){
+    } catch (err) {
         console.error(err);
         messagesList.innerHTML = '';
         const li = document.createElement('li');
-        li.textContent = "Live Discord Chat Is Down Please Come Back Later";
         li.style.color = 'red';
         li.style.fontWeight = 'bold';
+        if (err.message === 'DISCORD_LOCKDOWN') {
+            li.textContent = 'Live Discord Chat Is Currently Locked Down';
+        } else {
+            li.textContent = 'Live Discord Chat Is Currently Down, Please Come Back Later';
+        }
         messagesList.appendChild(li);
     }
 }

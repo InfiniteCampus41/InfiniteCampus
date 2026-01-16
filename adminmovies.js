@@ -7,7 +7,7 @@ forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-let BACKEND = `https://api.infinitecampus.xyz`;
+let BACKEND = `${a}`;
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",

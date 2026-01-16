@@ -6,7 +6,7 @@ forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const BACKEND = "https://api.infinitecampus.xyz";
+const BACKEND = `${a}`;
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 async function verifyAdminPassword() {
     while (true) {

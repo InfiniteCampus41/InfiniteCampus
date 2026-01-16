@@ -8,7 +8,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 let currentUser = null;
 let isAuthInitialized = false;
-const BACKEND = 'https://api.infinitecampus.xyz';
+const BACKEND = `${a}`;
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 onAuthStateChanged(auth, (user) => {
@@ -151,6 +151,20 @@ document.getElementById("lockdownBtn").addEventListener("click", async () => {
         document.getElementById("lockdownBtn").textContent = `Lockdown ` + (state.lockdown ? "ON" : "OFF");
     } else {
         showError("Failed To Toggle Lockdown");
+    }
+});
+document.getElementById("lockdowndisc").addEventListener("click", async () => {
+    if (!await checkPermissions()) return;
+    const res = await adminFetch(`${a}/admin/discord_toggle`, {
+        method: "POST",
+        headers: NGROK_HEADERS
+    });
+    if (res.ok) {
+        const state = await res.json();
+        showSuccess("Discord Lockdown Is Now " + (state.lockdown ? "ENABLED" : "DISABLED"));
+        document.getElementById("lockdowndisc").textContent = `Discord Lockdown ` + (state.lockdown ? "ON" : "OFF");
+    } else {
+        showError("Failed To Toggle Discord Lockdown");
     }
 });
 async function fetchLogs() {
