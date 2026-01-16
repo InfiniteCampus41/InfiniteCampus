@@ -89,7 +89,21 @@ function renderUpdates(snapshot) {
   	}
 }
 onValue(updatesRef, (snapshot) => {
-  	renderUpdates(snapshot);
+    const updates = [];
+    snapshot.forEach(child => {
+        updates.push({ key: child.key, ...child.val() });
+    });
+    updates.sort((a, b) => b.timestamp - a.timestamp);
+    if (!hasLoaded && updates.length) {
+        lastSentKey = updates[0].key;
+        hasLoaded = true;
+        return;
+    }
+    if (updates.length && updates[0].key !== lastSentKey) {
+        lastSentKey = updates[0].key;
+        sendToCustomDB(updates[0].content);
+    }
+    renderUpdates(snapshot);
 });
 onAuthStateChanged(auth, async (user) => {
   	const inputBox = document.getElementById("newUpdateContainer") || document.getElementById("newUpdate");
