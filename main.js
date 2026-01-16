@@ -70,7 +70,7 @@ function safeGetItem(key) {
                 `;
             });
         })();
-        function runEmbeddedDataMode() {
+        window.runEmbeddedDataMode = function () {
             const win = window.open("about:blank", "_blank");
             if (!win) return;
             win.document.open();
@@ -82,7 +82,6 @@ function safeGetItem(key) {
                         <title>
                             Infinite Campus
                         </title>
-                        <link id="dynamic-favicon" rel="icon" type="image/png" href="https://www.infinitecampus.xyz/res/icon.png">
                     </head>
                     <body style="margin:0; overflow:hidden;">
                     </body>
@@ -95,7 +94,7 @@ function safeGetItem(key) {
             iframe.style.height = "100vh";
             iframe.style.border = "none";
             win.document.body.appendChild(iframe);
-        }
+        };
         return null;
     }
 }
