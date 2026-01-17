@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const launch2 = document.getElementById("launchGames2");
     const OfficialSites = ['infinitecampus.xyz', 'instructure.space'];
     if (OfficialSites.includes(window.location.host)) {
-        launch2.style.display = 'none';
+        launch2.textContent = 'Games (Method 2)'
     } else {
         launchButton.style.display = 'none';
     }
