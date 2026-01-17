@@ -3,6 +3,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const themeSelector     = document.getElementById('themeSelector');
     const resetBtn          = document.getElementById('resetColors');
     const header            = document.getElementById('site-header');
+    const mobile            = document.getElementById('mobileSidePanel');
     const footer            = document.getElementById('site-footer');
     const textOnlyFooter    = document.getElementById('text-only-footer');
     const globalText        = document.getElementById('global-text');
@@ -108,7 +109,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const textColor = isDark ? 'white' : '';
         localStorage.setItem('globalDarkTheme', isDark);
         localStorage.setItem('globalTextColor', textColor);
-        [header, footer].forEach(bar => {
+        [header, footer, mobile].forEach(bar => {
             if (!bar) return;
             bar.style.background = bg;
             bar.style.color = textColor;

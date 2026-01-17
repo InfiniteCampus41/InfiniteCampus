@@ -167,6 +167,9 @@ const headerHTML = `
     </div>
     </header>
     <div id="mobileSidePanel" class="test rgb-element">
+        <a id="lgbtn" href="index.html">
+            <img src="/res/logo.svg" id="logo" style="width:fit-content; margin-bottom:-60px; display:block;">
+        </a>
         <button id="closeMobilePanel" class="darkbuttons">
             x
         </button>

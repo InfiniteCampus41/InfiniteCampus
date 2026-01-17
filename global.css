@@ -360,7 +360,7 @@ input[type="range"]::-webkit-slider-thumb {
     transition:0.35s ease;
     overflow-y: auto;
 }
-#mobileSidePanel a,
+#mobileSidePanel a:not(#lgbtn),
 #mobileSidePanel button{
     color:white;
     background:none;
