@@ -17,69 +17,75 @@ const headerHTML = `
             </a>
         </div>
         <div id="header-right">
-            <a href="InfiniteAbouts.html">
-                About
-            </a>
-            <a href="InfiniteApps.html">
-                Apps
-            </a>
-            <div class="dropdown-wrap">
-                <button id="chatToggle" class="dropdown-toggle">
-                    Chat
-                </button>
-                <div class="dropdown test" id="chatDropdown">
-                    <button onclick="location.href='InfiniteTalkers.html'">
-                        Padlet
+            <button id="mobileMenuBtn" class="mobile-menu-btn">
+                <i class="bi bi-list">
+                </i>
+            </button>
+            <div id="desktopNav">
+                <a href="InfiniteAbouts.html">
+                    About
+                </a>
+                <a href="InfiniteApps.html">
+                    Apps
+                </a>
+                <div class="dropdown-wrap">
+                    <button id="chatToggle" class="dropdown-toggle">
+                        Chat
                     </button>
-                    <button onclick="location.href='InfiniteChatters.html'">
-                        Website Chat
-                    </button>
-                    <button onclick="location.href='InfiniteDiscords.html'">
-                        Live Discord Chat
-                    </button>
+                    <div class="dropdown test" id="chatDropdown">
+                        <button onclick="location.href='InfiniteTalkers.html'">
+                            Padlet
+                        </button>
+                        <button onclick="location.href='InfiniteChatters.html'">
+                            Website Chat
+                        </button>
+                        <button onclick="location.href='InfiniteDiscords.html'">
+                            Live Discord Chat
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="dropdown-wrap">
-                <button id="helpToggle" class="dropdown-toggle">
-                    Help / Support
-                </button>
-                <div class="dropdown test" id="helpDropdown">
-                    <button onclick="location.href='InfiniteQuestions.html'">
-                        FAQ
+                <div class="dropdown-wrap">
+                    <button id="helpToggle" class="dropdown-toggle">
+                        Help / Support
                     </button>
-                    <button onclick="location.href='InfiniteEmbeds.html?choice=4'">
-                        Report A Bug
-                    </button>
-                    <button onclick="location.href='InfiniteErrors.html'">
-                        Check Error Codes
-                    </button>
+                    <div class="dropdown test" id="helpDropdown">
+                        <button onclick="location.href='InfiniteQuestions.html'">
+                            FAQ
+                        </button>
+                        <button onclick="location.href='InfiniteEmbeds.html?choice=4'">
+                            Report A Bug
+                        </button>
+                        <button onclick="location.href='InfiniteErrors.html'">
+                            Check Error Codes
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <a href="InfiniteGamers.html">
-                Games
-            </a>
-            <a href="InfiniteCheaters.html">
-                Cheats
-            </a>
-            <a href="InfiniteUpdaters.html">
-                Updates
-            </a>
-            <div class="dropdown-wrap">
-                <button id="downloadToggle" class="dropdown-toggle">
-                    Download Games
-                </button>
-                <div class="dropdown test" id="downloadDropdown">
-                    <button onclick="location.href='InfiniteOpeners.html'">
-                        Download This Website
-                    </button>
-                    <button onclick="location.href='InfiniteDownloaders.html'">
+                <a href="InfiniteGamers.html">
+                    Games
+                </a>
+                <a href="InfiniteCheaters.html">
+                    Cheats
+                </a>
+                <a href="InfiniteUpdaters.html">
+                    Updates
+                </a>
+                <div class="dropdown-wrap">
+                    <button id="downloadToggle" class="dropdown-toggle">
                         Download Games
                     </button>
+                    <div class="dropdown test" id="downloadDropdown">
+                        <button onclick="location.href='InfiniteOpeners.html'">
+                            Download This Website
+                        </button>
+                        <button onclick="location.href='InfiniteDownloaders.html'">
+                            Download Games
+                        </button>
+                    </div>
                 </div>
+                <a class="contactme" href="InfiniteContacts.html">
+                    Contact Me
+                </a>
             </div>
-            <a class="contactme" href="InfiniteContacts.html">
-                Contact Me
-            </a>
         </div>
         <div id="snowContainer">
         <div class="snowflake">
@@ -160,6 +166,53 @@ const headerHTML = `
         </div>
     </div>
     </header>
+    <div id="mobileSidePanel" class="test rgb-element">
+        <button id="closeMobilePanel" class="darkbuttons">
+            x
+        </button>
+        <a href="InfiniteAbouts.html" class="darkbuttons">
+            About
+        </a>
+        <a href="InfiniteApps.html" class="darkbuttons">
+            Apps
+        </a>
+        <a href="InfiniteTalkers.html" class="darkbuttons">
+            Padlet
+        </a>
+        <a href="InfiniteChatters.html" class="darkbuttons">
+            Website Chat
+        </a>
+        <a href="InfiniteDiscords.html" class="darkbuttons">
+            Live Discord Chat
+        </a>
+        <a href="InfiniteQuestions.html" class="darkbuttons">
+            FAQ
+        </a>
+        <a href="InfiniteEmbeds.html?choice=4" class="darkbuttons">
+            Report A Bug
+        </a>
+        <a href="InfiniteErrors.html" class="darkbuttons">
+            Check Error Codes
+        </a>
+        <a href="InfiniteGamers.html" class="darkbuttons">
+            Games
+        </a>
+        <a href="InfiniteCheaters.html" class="darkbuttons">
+            Cheats
+        </a>
+        <a href="InfiniteUpdaters.html" class="darkbuttons">
+            Updates
+        </a>
+        <a href="InfiniteOpeners.html" class="darkbuttons">
+            Download This Website
+        </a>
+        <a href="InfiniteDownloaders.html" class="darkbuttons">
+            Download Games
+        </a>
+        <a href="InfiniteContacts.html" class="darkbuttons">
+            Contact Me
+        </a>
+    </div>
     <footer id="site-footer" class="rgb-element">
         <span>
             Totally Made By Noah White And Not A Different Person.
@@ -328,5 +381,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!helpDropdown.contains(e.target) && !helpToggle.contains(e.target)) {
             helpDropdown.style.display = 'none';
         }
+    });
+    const mobileBtn = document.getElementById("mobileMenuBtn");
+    const mobilePanel = document.getElementById("mobileSidePanel");
+    const closeMobile = document.getElementById("closeMobilePanel");
+    const overlay = document.createElement("div");
+    overlay.id = "mobileOverlay";
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", () => {
+        mobilePanel.style.right = "-100%";
+        overlay.style.display = "none";
+    });
+    mobileBtn.addEventListener("click", () => {
+        mobilePanel.style.right = "0";
+        overlay.style.display = "block";
+    });
+    closeMobile.addEventListener("click", () => {
+        mobilePanel.style.right = "-100%";
+        overlay.style.display = 'none';
     });
 });

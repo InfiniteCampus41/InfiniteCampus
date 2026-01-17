@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
     const launchButton = document.getElementById("launchGames");
     const launch2 = document.getElementById("launchGames2");
+    const OfficialSites = ['infinitecampus.xyz', 'instructure.space'];
+    if (OfficialSites.includes(window.location.host)) {
+        launch2.style.display = 'none';
+    } else {
+        launchButton.style.display = 'none';
+    }
     const before = document.getElementById("before");
     const games = [
         { name: "Slope", url: "https://mathadventure1.github.io/slope/slope/index.html" },
