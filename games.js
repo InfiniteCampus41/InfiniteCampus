@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Rooftop Snipers", url: "https://rooftop-snipers.github.io/file/" },
         { name: "Stickman Hook", url: "https://mountain658.github.io/g/stickmanhook/index.html" },
         { name: "We Become What We Behold", url: "https://gnhustgames.github.io/wbwwb/" },
-        { name: "Universal Paperclips", url: "https://ryann-4.github.io/universal-paperclips/index2.html" },
+        { name: "Universal Paperclips", url: "https://TheHacker41.github.io/universal-paperclips/index2.html" },
         { name: "Plants Vs Zombies", url: "https://games.gombis.com/plants-vs-zombies-3?hl=en" },
         { name: "Gridland", url: "https://gridland.doublespeakgames.com/" },
         { name: "8 Ball Pool Multiplayer", url: "https://foony.com/games/8-ball-pool-online-billiards?&platform=crazygames" },
