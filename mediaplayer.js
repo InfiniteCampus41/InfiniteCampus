@@ -1,5 +1,4 @@
 const FALLBACK_ART = "/res/icon.png";
-const MAX_FILES = 20;
 const PREV_RESTART_THRESHOLD = 10;
 const DB_NAME = "dryPlayerDB";
 const DB_VERSION = 2;
@@ -374,12 +373,8 @@ function makeUUID() {
 els.fileInput.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('audio/'));
     if (files.length === 0) return;
-    const allowed = Math.max(0, MAX_FILES - tracks.length);
-    const toAdd = files.slice(0, allowed);
-    if (toAdd.length < files.length) {
-        showError(`Only ${allowed} More File(s) Allowed (Max ${MAX_FILES}).`);
-    }
-    for (let i=0;i<toAdd.length;i++) {
+    const toAdd = files;
+    for (let i = 0; i < toAdd.length; i++) {
         const f = toAdd[i];
         const artworkDataUrl = await extractArtworkDataUrl(f);
         const blob = new Blob([await f.arrayBuffer()], { type: f.type || 'audio/mpeg' });
@@ -395,6 +390,7 @@ els.fileInput.addEventListener('change', async (e) => {
     await saveAll();
     e.target.value = '';
 });
+
 els.btnPlay.addEventListener('click', async () => {
     if (els.audio.paused) { await els.audio.play().catch(()=>{}); setPlayButtons(true); }
     else { els.audio.pause(); setPlayButtons(false); }
