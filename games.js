@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Wormate.io", url: "https://wormate.io/" },
         { name: "Build Royale", url: "https://buildroyale.io/" },
         { name: "BLOXD.IO", url: "https://bloxd.io/" },
+        { name: "1", url: "https://devs.infinitecampus.xyz/games/1/index.html" },
         { name: "2048", url: "https://2048game.com/" },
         { name: "9007199254740992", url: "https://dmitrykuzmenko.github.io/2048/" },
         { name: "Subway Surfers", url: "https://dddavit.github.io/subway/" },
