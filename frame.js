@@ -88,83 +88,7 @@ const headerHTML = `
             </div>
         </div>
         <div id="snowContainer">
-        <div class="snowflake">
         </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-        <div class="snowflake">
-        </div>
-    </div>
     </header>
     <div id="mobileSidePanel" class="test rgb-element">
         <a id="lgbtn" href="index.html">
@@ -233,8 +157,46 @@ document.addEventListener("DOMContentLoaded", () => {
     headerWrapper.innerHTML = headerHTML;
     document.body.insertBefore(headerWrapper, document.body.firstChild);
     const snowContainer = document.getElementById("snowContainer");
+    function calculateFlakeCount() {
+        const width = window.innerWidth;
+        if (width < 500) return 8;
+        if (width < 800) return 15;
+        return 40;
+    }
+    function createSnowflakes() {
+        snowContainer.innerHTML = "";
+        const count = calculateFlakeCount();
+        const flakes = [];
+        for (let i = 0; i < count; i++) {
+            const flake = document.createElement("div");
+            flake.className = "snowflake";
+            snowContainer.appendChild(flake);
+            flakes.push(flake);
+        }
+        return flakes;
+    }
+    let snowflakes = createSnowflakes();
     const toggleBtn = document.getElementById("toggleSnowBtn");
-    const snowflakes = Array.from(document.querySelectorAll(".snowflake"));
+    function adjustSnowflakeCount() {
+        const width = window.innerWidth;
+        let maxFlakes;
+        if (width < 500) {
+            maxFlakes = 8;
+        } else if (width < 800) {
+            maxFlakes = 15;
+        } else {
+            maxFlakes = snowflakes.length;
+        }
+        snowflakes.forEach((flake, index) => {
+            if (index < maxFlakes) {
+                flake.style.display = "";
+            } else {
+                flake.style.display = "none";
+            }
+        });
+    }
+    adjustSnowflakeCount();
+    window.addEventListener("resize", adjustSnowflakeCount);
     let containerWidth = snowContainer.clientWidth;
     function updateSnowflakePositions() {
         const spacing = containerWidth / snowflakes.length;
@@ -299,56 +261,64 @@ document.addEventListener("DOMContentLoaded", () => {
             snowEnabled ? startSnow() : stopSnow();
         });
     });
-    snowflakes.forEach((flake) => {
-        const today = new Date();
-        let monthIndex = today.getMonth();
-        if (monthIndex = 11 || 0) {
-            flake.innerHTML = '<i class="bi bi-snow"></i>';
-        } else if (monthIndex = 1) {
-            flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
-            flake.style.color = 'red';
-        } else if (monthIndex >= 2 && monthIndex <= 9) {
-            flake.style.display = 'none';
-        } else if (monthIndex = 10) {
-            flake.innerHTML = '<i class="bi bi-leaf-fill"></i>';
-            flake.innerhtml = 'darkgoldenrod';
-        } else {
-            flake.style.display = 'none';
-        }
-        let y = Math.random() * 60;
-        let swayOffset = Math.random() * Math.PI * 2;
-        let running = false;
-        const size = 3 + Math.random() * 4;
-        const startX = flake.startX;
-        const swayAmplitude = 5 + Math.random() * 5;
-        const speedY = 0.3 + Math.random() * 0.4;
-        const swaySpeed = 0.02 + Math.random() * 0.02;
-        flake.style.width = `${size}px`;
-        flake.style.height = `${size}px`;
-        function animate() {
-            if (!running) return;
-            y += speedY;
-            if (y > 60) y = -10;
-            const x = startX + Math.sin(swayOffset) * swayAmplitude;
-            swayOffset += swaySpeed;
-            flake.style.transform =
-                `translate(${x}px, ${y}px) rotate(${y * 4}deg)`;
-            requestAnimationFrame(animate);
-        }
-        flake.start = () => {
-            if (!running) {
-                running = true;
-                animate();
+    function initSnowflakeAnimations() {
+        snowflakes.forEach((flake) => {
+            const today = new Date();
+            let monthIndex = today.getMonth();
+            if (monthIndex = 11 || 0) {
+                flake.innerHTML = '<i class="bi bi-snow"></i>';
+            } else if (monthIndex = 1) {
+                flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
+                flake.style.color = 'red';
+            } else if (monthIndex >= 2 && monthIndex <= 9) {
+                flake.style.display = 'none';
+            } else if (monthIndex = 10) {
+                flake.innerHTML = '<i class="bi bi-leaf-fill"></i>';
+                flake.innerhtml = 'darkgoldenrod';
+            } else {
+                flake.style.display = 'none';
             }
-        };
-        flake.stop = () => {
-            running = false;
-        };
-        if (snowEnabled) flake.start();
-    });
+            let y = Math.random() * 60;
+            let swayOffset = Math.random() * Math.PI * 2;
+            let running = false;
+            const size = 3 + Math.random() * 4;
+            const startX = flake.startX;
+            const swayAmplitude = 5 + Math.random() * 5;
+            const speedY = 0.3 + Math.random() * 0.4;
+            const swaySpeed = 0.02 + Math.random() * 0.02;
+            flake.style.width = `${size}px`;
+            flake.style.height = `${size}px`;
+            function animate() {
+                if (!running) return;
+                y += speedY;
+                if (y > 60) y = -10;
+                const x = startX + Math.sin(swayOffset) * swayAmplitude;
+                swayOffset += swaySpeed;
+                flake.style.transform =
+                    `translate(${x}px, ${y}px) rotate(${y * 4}deg)`;
+                requestAnimationFrame(animate);
+            }
+            flake.start = () => {
+                if (!running) {
+                    running = true;
+                    animate();
+                }
+            };
+            flake.stop = () => {
+                running = false;
+            };
+            if (snowEnabled) flake.start();
+        });
+    }
+    initSnowflakeAnimations();
     window.addEventListener("resize", () => {
         containerWidth = snowContainer.clientWidth;
+        snowflakes = createSnowflakes();
         updateSnowflakePositions();
+        initSnowflakeAnimations();
+        if (snowEnabled) {
+            snowflakes.forEach(flake => flake.start && flake.start());
+        }
     });
     const chatToggle = document.getElementById('chatToggle');
     const chatDropdown = document.getElementById('chatDropdown');
