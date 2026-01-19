@@ -19,7 +19,7 @@ onAuthStateChanged(auth, async (user) => {
     const profileSnap = await get(profileRef);
     if (!profileSnap.exists()) return;
     const data = profileSnap.val();
-    const allowed = data.isOwner === true || data.isTester === true;
+    const allowed = data.isOwner === true || data.isTester === true || data.isDev === true;
     if (allowed) {
         pollList.style.display = "block";
         pollContainer.style.display = 'none';

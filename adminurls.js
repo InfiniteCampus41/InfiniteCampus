@@ -86,7 +86,7 @@ async function checkUserPermissions(user) {
         return false;
     }
     const profile = snapshot.val();
-    if (profile.isOwner || profile.isTester || profile.isCoOwner) {
+    if (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isDev ) {
         return true;
     } else {
         showError("You Do Not Have The Required Permissions To Access This Page.");

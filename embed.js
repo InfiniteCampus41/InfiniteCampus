@@ -21,7 +21,7 @@ if (choice == 1) {
 } else if(choice == 5) {
     iframe.src = 'https://calc-one-ruby.vercel.app/';
 } else if (choice == 6) {
-    alert('WARNING: Use st your own risk. We are NOT responsible if you get caught or get in trouble for using this.');
+    showError('WARNING: Use at your own risk. We are NOT responsible if you get caught or get in trouble for using this.');
     iframe.src = 'https://proxyman15.github.io/';
 } else {
     iframe.style.display = 'none';
