@@ -282,6 +282,16 @@ input[type="range"]::-webkit-slider-thumb {
         display:none; 
     }
 }
+@media (max-width: 768px) {
+    #appsDiv .apbtn {
+        display: block !important;
+        width: 60% !important;
+        margin: 10px auto !important;
+    }
+    center #appsDiv > br {
+        display: none;
+    }
+}
 @media (max-width: 900px) {
     #desktopNav {
         display:none;
