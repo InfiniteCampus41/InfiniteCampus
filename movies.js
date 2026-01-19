@@ -21,7 +21,14 @@ async function uploadApply() {
     const fileId = Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
     const bar = document.getElementById("progressBar");
     const container = document.getElementById("progressContainer");
+    const percentText = document.getElementById("progressPercent");
+    const uploadingText = document.getElementById("uploadingText");
     container.style.display = "block";
+    let dotCount = 0;
+    const dotInterval = setInterval(() => {
+        dotCount = (dotCount + 1) % 4;
+        uploadingText.innerText = "Uploading" + " .".repeat(dotCount);
+    }, 500);
     for (let i = 0; i < totalChunks; i++) {
         const start = i * chunkSize;
         const end = Math.min(start + chunkSize, file.size);
@@ -40,20 +47,31 @@ async function uploadApply() {
         });
         const data = await res.json();
         if (!data.ok) {
+            clearInterval(dotInterval);
             document.getElementById("upload-status").innerText =
                 "Upload Failed: " + data.message;
             return;
         }
-        const percent = Math.round(((i + 1) / totalChunks) * 100);
-        bar.style.width = percent + "%";
-        bar.innerText = percent + "%";
+        let percent = Math.round(((i + 1) / totalChunks) * 100);
+        if (percent < 1) percent = 0;
+        if (percent >= 99) {
+            bar.style.width = "99%";
+            percentText.innerText = "Finishing Up, This May Take A While";
+            const uploadText = document.getElementById("uploadingText");
+            uploadText.style.display = "none";
+        } else {
+            bar.style.width = percent + "%";
+            percentText.innerText = percent + "%";
+        }
     }
+    clearInterval(dotInterval);
+    uploadingText.innerText = "";
     document.getElementById("upload-status").innerText =
         "Uploaded: " + file.name;
     setTimeout(() => {
         container.style.display = "none";
         bar.style.width = "0%";
-        bar.innerText = "";
+        percentText.innerText = "";
     }, 1000);
     loadMovies();
 }
@@ -118,9 +136,11 @@ function openWatchPanel(name) {
 function closeWatchPanel() {
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
+    const before = document.getElementById("before");
     player.pause();
     player.src = "";
     panel.style.display = "none";
+    before.style.display = "block";
     currentfile.style.display = "none";
     currentfile.textContent = "";
     section.style.display = "block";

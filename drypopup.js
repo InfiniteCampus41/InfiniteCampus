@@ -19,47 +19,81 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="text">
-                <p class="btxt">Settings</p>
+                <p class="btxt">
+                    Settings
+                </p>
                 <div class="section weather-section">
-                    <p>Enable More Accurate Weather?</p>
+                    <p>
+                        Enable More Accurate Weather?
+                    </p>
                     <label class="switch">
                         <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
-                        <span class="slider"></span>
+                        <span class="slider">
+                        </span>
                     </label>
                 </div>
                 <hr>
                 <div class="section">
-                    <button id="toggleSnowBtn" class="button">Toggle Snow</button>
+                    <button id="toggleSnowBtn" class="button">
+                        Toggle Snow
+                    </button>
                     <br>
                     <input type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
-                    <button id="saveTitleBtn">Save</button>
-                    <button id="resetTitleBtn">Reset</button>
+                    <button id="saveTitleBtn">
+                        Save
+                    </button>
+                    <button id="resetTitleBtn">
+                        Reset
+                    </button>
                     <br>
-                    <label id="fLabel" for="faviconInput">Choose Favicon Image</label>
+                    <label id="fLabel" for="faviconInput">
+                        Choose Favicon Image
+                    </label>
                     <input type="file" id="faviconInput" accept="image/*" hidden>
-                    <button class="button" id="setFaviconBtn">Save</button>
-                    <button class="button" id="resetFaviconBtn">Reset</button>
+                    <button class="button" id="setFaviconBtn">
+                        Save
+                    </button>
+                    <button class="button" id="resetFaviconBtn">
+                        Reset
+                    </button>
                 </div>
                 <hr>
                 <div class="section">
                     <input id="panicKeyInput" placeholder="Panic Key" readonly>
                     <input id="panicUrlInput" placeholder="Set Panic URL">
-                    <button id="savePanicBtn">Save</button>
-                    <button id="clearPanicBtn">Reset</button>
+                    <button id="savePanicBtn">
+                        Save
+                    </button>
+                    <button id="clearPanicBtn">
+                        Reset
+                    </button>
                 </div>
                 <hr>
                 <div class="section">
                     <br>
-                    <a class="test button darkbuttons rgb-element" href="InfiniteColors.html">Change Site Theme</a>
-                    <a class="disabled" disabled>Take A Quick Survey</a>
-                    <br><br>
-                    <a href="InfiniteBypassers.html">Open In About:Blank</a>
-                    <a href="InfiniteFeatures.html">Suggest A Feature</a>
-                    <br><br>
-                    <a href="InfiniteDonaters.html">Help Support By Donating</a>
-                    <a id="resetAllBtn">Clear Data</a>
+                    <a class="test button darkbuttons rgb-element" href="InfiniteColors.html">
+                        Change Site Theme
+                    </a>
+                    <a href="InfinitePolls.html">
+                        Website Poll
+                    </a>
                     <br>
-                    <a class="discord" href="https://discord.gg/4d9hJSVXca">Join The Discord</a>
+                    <br>
+                    <a href="InfiniteBypassers.html">
+                        Open In About:Blank
+                    </a>
+                    <a href="InfiniteFeatures.html">
+                        Suggest A Feature
+                    </a>
+                    <br>
+                    <br>
+                    <a id="resetAllBtn">
+                        Clear Data
+                    </a>
+                    <br>
+                    <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca">
+                        Join The Discord
+                    </a>
                 </div>
             </div>
             <div class="bar test rgb-element">
@@ -70,7 +104,7 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="settings-button test rgb-element" id="trigger">
             <img class="settings" src="/res/settings.svg">
-        <center>
+        </div>
     `;
     const wrapper = document.createElement('div');
     wrapper.innerHTML = popupHTML;
@@ -209,7 +243,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const setFaviconBtn = document.getElementById('setFaviconBtn');
     const resetFaviconBtn = document.getElementById('resetFaviconBtn');
     const originalFaviconLink = document.querySelector("link[rel~='icon']");
-    const originalFaviconUrl = originalFaviconLink ? originalFaviconLink.href : '/favicon.ico';
+    const originalFaviconUrl = originalFaviconLink ? originalFaviconLink.href : '/res/icon.png';
     function updateFavicon(url) {
         let link = document.querySelector("link[rel~='icon']");
         if (!link) {

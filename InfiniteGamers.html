@@ -30,7 +30,6 @@
 		</script>
 		<script src="/baremux/index.js">
 		</script>
-		<link rel="stylesheet" href="index.css" />
 		<script src="register-sw.js" defer>
 		</script>
 		<script src="search.js" defer>
@@ -44,8 +43,8 @@
 	</head>
 	<body>
 		<form id="sj-form" class="flex-center" style="display:none;">
-			<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
-			<input id="sj-address" type="text" placeholder="Search The Web" />
+			<input id="sj-search-engine" type="hidden"/>
+			<input id="sj-address" type="text"/>
 		</form>
 		<div class="desc left-margin" style="display:none;">
 			<p id="sj-error">
@@ -79,6 +78,11 @@
                     </p>
                 </strong>
                 <button id="launchGames" class="button">
+                    Games
+                </button>
+                <br>
+                <br>
+                <button id="launchGames2" class="button">
                     Games
                 </button>
                 <br>

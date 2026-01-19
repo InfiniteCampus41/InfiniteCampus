@@ -1,103 +1,100 @@
-(function () {
-    let isDataContext = window.location.href.startsWith("data:");
-    if (!isDataContext) return;
-    window.addEventListener("load", () => {
-        document.documentElement.innerHTML = `
-            <!DOCTYPE html>
-            <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-                    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
-                    </script>
-                    <script>
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
-                        gtag('config', 'G-7SV03ZXJ9R');
-                    </script>
-                    <title>
-                        Infinite Campus
-                    </title>
-                    <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
-                    <link rel="stylesheet" href="global.css">
-                    <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
-                    <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
-                    <meta property="og:title" content="Infinite Campus">
-                    <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
-                    <meta property="og:url" content="https://www.infinitecampus.xyz">
-                    <meta name="theme-color" content="#8cbe37">
-                    <meta content="/res/icon.png" property="og:image">
-                    <script src="main.js">
-                    </script>
-                </head>
-                <body>
-                <center>
-                    <br>
-                    <h1 class="tptxt">
-                        You Are Likely Using This Page On A Data Url
-                    </h1>
-                    <hr >
-                    <br>
-                    <h3 class="mdtxt">
-                        Why This Happened
-                    </h3>
-                    <hr style="width:50%">
-                    <br>
-                    <h4 class="btxt">
-                        LocalStorage Does Not Work On Data URLs So I Made It So It Is Like Nettleweb And It Opens In About Blank
-                    </h4>
-                    <br>
-                    <h5 class="y">
-                        What Is Localstorage?
-                    </h5>
-                    <p class="btxt">
-                        LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And You Need It For The Website Chat
-                    </p>
-                    <br>
-                    <button class="button" onclick="runEmbeddedDataMode()">
-                        Click Here To Continue
-                    </button>
-                </center>
-                </body>
-            </html>
-        `;
-    });
-})();
-function runEmbeddedDataMode() {
-    const win = window.open("about:blank", "_blank");
-    if (!win) return;
-    win.document.open();
-    win.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>
-                Infinite Campus
-            </title>
-            <link id="dynamic-favicon" rel="icon" type="image/png" href="https://www.infinitecampus.xyz/res/icon.png">
-        </head>
-        <body style="margin:0; overflow:hidden;">
-        </body>
-        </html>
-    `);
-    win.document.close();
-    const iframe = win.document.createElement("iframe");
-    iframe.src = "https://www.infinitecampus.xyz";
-    iframe.style.width = "100vw";
-    iframe.style.height = "100vh";
-    iframe.style.border = "none";
-    win.document.body.appendChild(iframe);
-}
 function safeGetItem(key) {
     try {
         return localStorage.getItem(key);
     } catch (err) {
         console.warn(`LocalStorage Unavailable For Key: ${key}`, err);
+        (function () {
+            window.addEventListener("load", () => {
+                document.documentElement.innerHTML = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+                            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+                            <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+                            </script>
+                            <script>
+                                window.dataLayer = window.dataLayer || [];
+                                function gtag(){dataLayer.push(arguments);}
+                                gtag('js', new Date());
+                                gtag('config', 'G-7SV03ZXJ9R');
+                            </script>
+                            <title>
+                                Infinite Campus
+                            </title>
+                            <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+                            <link rel="stylesheet" href="global.css">
+                            <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
+                            <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
+                            <meta property="og:title" content="Infinite Campus">
+                            <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
+                            <meta property="og:url" content="https://www.infinitecampus.xyz">
+                            <meta name="theme-color" content="#8cbe37">
+                            <meta content="/res/icon.png" property="og:image">
+                            <script src="main.js">
+                            </script>
+                        </head>
+                        <body>
+                            <center>
+                                <br>
+                                <h1 class="tptxt">
+                                    You Are Likely Using This Page On A Data Url
+                                </h1>
+                                <hr>
+                                <br>
+                                <h3 class="mdtxt">
+                                    Why This Happened
+                                </h3>
+                                <hr style="width:50%">
+                                <br>
+                                <h4 class="btxt">
+                                    LocalStorage Does Not Work On Data URLs So I Made It So It Is Like Nettleweb And It Opens In About Blank
+                                </h4>
+                                <br>
+                                <h5 class="y">
+                                    What Is Localstorage?
+                                </h5>
+                                <p class="btxt">
+                                    LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And You Need It For The Website Chat
+                                </p>
+                                <br>
+                                <button class="button" onclick="runEmbeddedDataMode()">
+                                    Click Here To Continue
+                                </button>
+                            </center>
+                        </body>
+                    </html>
+                `;
+            });
+        })();
+        window.runEmbeddedDataMode = function () {
+            const win = window.open("about:blank", "_blank");
+            if (!win) return;
+            win.document.open();
+            win.document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>
+                            Infinite Campus
+                        </title>
+                    </head>
+                    <body style="margin:0; overflow:hidden;">
+                    </body>
+                </html>
+            `);
+            win.document.close();
+            const iframe = win.document.createElement("iframe");
+            iframe.src = "https://www.infinitecampus.xyz";
+            iframe.style.width = "100vw";
+            iframe.style.height = "100vh";
+            iframe.style.border = "none";
+            win.document.body.appendChild(iframe);
+        };
         return null;
     }
 }

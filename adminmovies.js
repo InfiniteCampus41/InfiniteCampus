@@ -7,8 +7,8 @@ forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-let BACKEND = `https://api.infinitecampus.xyz`;
-let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
+let BACKEND = `${a}`;
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 const socket = io(BACKEND, { 
     path: "/socket_io_realtime_x9a7b2",
     extraHeaders: {
@@ -33,7 +33,7 @@ async function verifyAdminPassword() {
                     return true;
                 }
             } catch (e) {}
-            sessionStorage.removeItem("a_pass");
+            localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
         const entered = prompt("Enter Admin Password:");
@@ -50,11 +50,11 @@ async function verifyAdminPassword() {
             });
             const data = await res.json().catch(() => null);
             if (data && data.ok) {
-                sessionStorage.setItem("a_pass", ADMIN_PASS);
+                localStorage.setItem("a_pass", ADMIN_PASS);
                 return true;
             }
         } catch (e) {}
-        alert("Incorrect Password.");
+        showError("Incorrect Password.");
         ADMIN_PASS = null;
     }
 }
@@ -71,7 +71,7 @@ async function checkUserAuthentication() {
     return new Promise((resolve, reject) => {
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                alert('You Must Be Logged In To View This Content.');
+                showError('You Must Be Logged In To View This Content.');
                 resolve(false);
                 return;
             }
@@ -79,7 +79,7 @@ async function checkUserAuthentication() {
             const userProfileRef = ref(db, `/users/${uid}/profile`);
             const profileSnapshot = await get(userProfileRef);
             if (!profileSnapshot.exists() || !(profileSnapshot.val().isOwner || profileSnapshot.val().isTester || profileSnapshot.val().isCoOwner)) {
-                alert('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
+                showError('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
                 resolve(false);
                 return;
             }
@@ -111,7 +111,7 @@ async function loadApply() {
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
-            <b>${f.file}</b> — ${f.humanSize}<br><br>
+            <b>${f.file}</b> — <span id="size-${f.file}">${f.humanSize}</span><br><br>
             <button class="button" onclick="watchApply('${f.file}')">Watch</button>
             <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
             <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
@@ -129,6 +129,25 @@ async function loadApply() {
         }
     });
 }
+setInterval(updateSizesFromListApply, 3000);
+async function updateSizesFromListApply() {
+    try {
+        const res = await adminFetch(BACKEND + "/api/list_apply_x9a7b2", {
+            headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const data = await res.json();
+        if (!data.ok || !data.list) return;
+        for (const f of data.list) {
+            const span = document.getElementById(`size-${f.file}`);
+            if (!span) continue;
+            if (f.humanSize) {
+                span.innerText = f.humanSize;
+            }
+        }
+    } catch (err) {
+        console.error("Size Update Error:", err);
+    }
+}
 async function deleteApply(filename) {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
@@ -143,10 +162,10 @@ async function deleteApply(filename) {
     });
     const data = await res.json();
     if (data.ok) {
-        alert("Deleted.");
+        showSuccess("Deleted.");
         loadApply();
     } else {
-        alert("Failed: " + data.message);
+        showError("Failed: " + data.message);
     }
 }
 async function acceptFile(filename) {
@@ -252,7 +271,7 @@ function startProgressPolling(filename) {
             bar.style.width = percent + "%";
             let label = `${percent}%`;
             if (data.remainingSec != null) {
-                label += ` — ${formatTime(data.remainingSec)} left`;
+                label += ` — ${formatTime(data.remainingSec)} Left`;
             }
             bar.innerText = label;
             if (data.status === "completed" || data.status === "error") {

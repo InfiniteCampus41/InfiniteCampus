@@ -6,6 +6,57 @@ forceWebSockets();
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+const BACKEND = `${a}`;
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
+async function verifyAdminPassword() {
+    while (true) {
+        if (ADMIN_PASS) {
+            try {
+                const res = await fetch(BACKEND + "/check_pass", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "ngrok-skip-browser-warning": "true"
+                    },
+                    body: JSON.stringify({ password: ADMIN_PASS })
+                });
+                const data = await res.json().catch(() => null);
+                if (data && data.ok) {
+                    return true;
+                }
+            } catch (e) {}
+            localStorage.removeItem("a_pass");
+            ADMIN_PASS = null;
+        }
+        const entered = prompt("Enter Admin Password:");
+        if (!entered) continue;
+        ADMIN_PASS = entered.trim();
+        try {
+            const res = await fetch(BACKEND + "/check_pass", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ password: ADMIN_PASS })
+            });
+            const data = await res.json().catch(() => null);
+            if (data && data.ok) {
+                localStorage.setItem("a_pass", ADMIN_PASS);
+                return true;
+            }
+        } catch (e) {}
+        showError("Incorrect Password.");
+        ADMIN_PASS = null;
+    }
+}
+async function adminFetch(url, options = {}) {
+    options.headers = Object.assign({}, options.headers, {
+        "x-admin-password": ADMIN_PASS,
+        "ngrok-skip-browser-warning": "true"
+    });
+    return fetch(url, options);
+}
 const tableBody = document.querySelector("#url-table tbody");
 function formatTime(value) {
     if (!value || value === "Unknown") return "Unknown";
@@ -24,33 +75,33 @@ function formatTime(value) {
 window.addUrl = addUrl;
 async function checkUserPermissions(user) {
     if (!user) {
-        alert("You Must Be Logged In To Access This Page.");
+        showError("You Must Be Logged In To Access This Page.");
         window.location.href = "/InfinitePasswords.html";
         return false;
     }
     const userRef = ref(db, `users/${user.uid}/profile`);
     const snapshot = await get(userRef);
     if (!snapshot.exists()) {
-        alert("User Profile Not Found.");
+        showError("User Profile Not Found.");
         return false;
     }
     const profile = snapshot.val();
     if (profile.isOwner || profile.isTester || profile.isCoOwner) {
         return true;
     } else {
-        alert("You Do Not Have The Required Permissions To Access This Page.");
+        showError("You Do Not Have The Required Permissions To Access This Page.");
         return false;
     }
 }
 async function fetchUrls() {
     const user = auth.currentUser;
     if (!user) {
-        alert("You Must Be Logged In To Fetch URLs.");
+        showError("You Must Be Logged In To Fetch URLs.");
         return;
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
-    const res = await fetch("/edit-urls", {
+    const res = await adminFetch("/edit-urls", {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
@@ -78,7 +129,7 @@ function populateBlockedList(data) {
 async function addUrl() {
     const user = auth.currentUser;
     if (!user) {
-        alert("You Must Be Logged In To Add URLs.");
+        showError("You Must Be Logged In To Add URLs.");
         return;
     }
     const hasPermission = await checkUserPermissions(user);
@@ -90,7 +141,7 @@ async function addUrl() {
         error.textContent = "URL And Reason Required.";
         return;
     }
-    const res = await fetch("/edit-urls/add", {
+    const res = await adminFetch("/edit-urls/add", {
         method: "POST",
         headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url, reason })
@@ -108,13 +159,13 @@ async function addUrl() {
 async function deleteUrl(url) {
     const user = auth.currentUser;
     if (!user) {
-        alert("You Must Be Logged In To Delete URLs.");
+        showError("You Must Be Logged In To Delete URLs.");
         return;
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
     if (!confirm("Delete This URL?")) return;
-    await fetch("/edit-urls/delete", {
+    await adminFetch("/edit-urls/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ url })
@@ -124,13 +175,13 @@ async function deleteUrl(url) {
 async function fetchLogs() {
     const user = auth.currentUser;
     if (!user) {
-        alert("You Must Be Logged In To Fetch Logs.");
+        showError("You Must Be Logged In To Fetch Logs.");
         return;
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
     try {
-        const response = await fetch("/logs", {
+        const response = await adminFetch("/logs", {
             headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await response.json();
@@ -187,3 +238,6 @@ document.getElementById("add-url-btn").onclick = () =>
 document.getElementById("add-close").onclick = () =>
     document.getElementById("add-panel").classList.remove("open");
 document.getElementById("search").oninput = fetchUrls;
+(async () => {
+    await verifyAdminPassword();
+})();

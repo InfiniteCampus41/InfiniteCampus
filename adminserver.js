@@ -8,9 +8,9 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 let currentUser = null;
 let isAuthInitialized = false;
-const BACKEND = 'https://api.infinitecampus.xyz';
+const BACKEND = `${a}`;
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
-let ADMIN_PASS = sessionStorage.getItem("a_pass") || null;
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 onAuthStateChanged(auth, (user) => {
     currentUser = user;
     isAuthInitialized = true;
@@ -27,14 +27,14 @@ async function checkPermissions() {
         });
     }
     if (!currentUser) {
-        alert("You Must Be Logged In To Access This Page.");
+        showError("You Must Be Logged In To Access This Page.");
         return false;
     }
     const uid = currentUser.uid;
     const userRef = ref(db, `users/${uid}/profile`);
     const snapshot = await get(userRef);
     if (!snapshot.exists()) {
-        alert("Profile Data Not Found.");
+        showError("Profile Data Not Found.");
         return false;
     }
     const userData = snapshot.val();
@@ -42,7 +42,7 @@ async function checkPermissions() {
     if (isOwner || isTester || isCoOwner) {
         return true;
     } else {
-        alert("You Do Not Have The Necessary Permissions To Access This Page.");
+        showError("You Do Not Have The Necessary Permissions To Access This Page.");
         return false;
     }
 }
@@ -63,7 +63,7 @@ async function verifyAdminPassword() {
                     return true;
                 }
             } catch (e) {}
-            sessionStorage.removeItem("a_pass");
+            localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
         const entered = prompt("Enter Admin Password:");
@@ -80,11 +80,11 @@ async function verifyAdminPassword() {
             });
             const data = await res.json().catch(() => null);
             if (data && data.ok) {
-                sessionStorage.setItem("a_pass", ADMIN_PASS);
+                localStorage.setItem("a_pass", ADMIN_PASS);
                 return true;
             }
         } catch (e) {}
-        alert("Incorrect Password.");
+        showError("Incorrect Password.");
         ADMIN_PASS = null;
     }
 }
@@ -153,6 +153,20 @@ document.getElementById("lockdownBtn").addEventListener("click", async () => {
         showError("Failed To Toggle Lockdown");
     }
 });
+document.getElementById("lockdowndisc").addEventListener("click", async () => {
+    if (!await checkPermissions()) return;
+    const res = await adminFetch(`${a}/admin/discord_toggle`, {
+        method: "POST",
+        headers: NGROK_HEADERS
+    });
+    if (res.ok) {
+        const state = await res.json();
+        showSuccess("Discord Lockdown Is Now " + (state.lockdown ? "ENABLED" : "DISABLED"));
+        document.getElementById("lockdowndisc").textContent = `Discord Lockdown ` + (state.lockdown ? "ON" : "OFF");
+    } else {
+        showError("Failed To Toggle Discord Lockdown");
+    }
+});
 async function fetchLogs() {
     if (!await checkPermissions()) return;
     const res = await adminFetch(`${a}/admin/logs`, { headers: NGROK_HEADERS });
@@ -180,7 +194,6 @@ async function fetchLogs() {
         uploadSection.appendChild(ul);
     } else {
         uploadSection.innerHTML += "<p>No Upload Logs</p>";
-        uploadSection.style.display = "none";
     }
     logsContainer.appendChild(uploadSection);
     const rateSection = document.createElement("div");
@@ -195,7 +208,6 @@ async function fetchLogs() {
         rateSection.appendChild(ul);
     } else {
         rateSection.innerHTML += "<p>No Rate Limit Logs</p>";
-        rateSection.style.display = "none";
     }
     logsContainer.appendChild(rateSection);
     const linksSection = document.createElement("div");
@@ -210,7 +222,6 @@ async function fetchLogs() {
         linksSection.appendChild(ul);
     } else {
         linksSection.innerHTML += "<p>No Active Links</p>";
-        linksSection.style.display = "none";
     }
     logsContainer.appendChild(linksSection);
 }

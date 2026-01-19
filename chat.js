@@ -298,11 +298,11 @@ async function renderMessageInstant(id, msg) {
         "/pfps/7.jpeg",
         "/pfps/8.jpeg",
         "/pfps/9.jpeg",
-        "/pfps/f3.jpeg",
-        "/pfps/kaiden.png",
         "/pfps/10.jpeg",
         "/pfps/11.jpeg",
-        "/pfps/12.jpeg"
+        "/pfps/12.jpeg",
+        "/pfps/13.jpeg",
+        "/pfps/14.jpeg"
     ];
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
@@ -1241,7 +1241,7 @@ onAuthStateChanged(auth, async user => {
     if (!currentPath) switchChannel("General");
     startMetadataListener();
     const mentionsRef = ref(db, `mentions/${currentUser.uid}`);
-    onChildAdded(mentionsRef, snap => { console.log("Mention (db): ", snap.val()); });
+    onChildAdded(mentionsRef, snap => { console.log("Mention: ", snap.val()); });
     const storedUid = localStorage.getItem("openPrivateChatUid");
     if (storedUid) {
         getDisplayName(storedUid).then(name => {
@@ -1272,9 +1272,20 @@ onAuthStateChanged(auth, async user => {
     const pfpSnap = await get(ref(db, `users/${user.uid}/profile/pic`));
     const pfpIndex = pfpSnap.exists() ? pfpSnap.val() : 0;
     const profilePics = [
-        "/pfps/1.jpeg","/pfps/2.jpeg","/pfps/3.jpeg","/pfps/4.jpeg",
-        "/pfps/5.jpeg","/pfps/6.jpeg","/pfps/7.jpeg","/pfps/8.jpeg",
-        "/pfps/9.jpeg","/pfps/f3.jpeg","/pfps/kaiden.png", "/pfps/10.jpeg", "/pfps/11.jpeg", "/pfps/12.jpeg"
+        "/pfps/1.jpeg",
+        "/pfps/2.jpeg",
+        "/pfps/3.jpeg",
+        "/pfps/4.jpeg",
+        "/pfps/5.jpeg",
+        "/pfps/6.jpeg",
+        "/pfps/7.jpeg",
+        "/pfps/8.jpeg",
+        "/pfps/9.jpeg",
+        "/pfps/10.jpeg",
+        "/pfps/11.jpeg",
+        "/pfps/12.jpeg",
+        "/pfps/13.jpeg",
+        "/pfps/14.jpeg"
     ];
     const sidebarPfp = document.getElementById("sidebarPfp");
     if (sidebarPfp) {

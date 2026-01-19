@@ -69,8 +69,8 @@
                 <h3 class="mdtxt">
                     Submit A Movie
                 </h3>
-                <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t">
-                <label for="applyFile" type="file" class="button" accept="video/*,.ts,video/mp2t">
+                <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t,.mkv,video/x-matroska">
+                <label for="applyFile" type="file" class="button">
                     Upload A File
                 </label>
                 <div id="selectedFileName" style="margin-top:5px;color:#ff0;">
@@ -78,8 +78,13 @@
                 <button class="button" onclick="uploadApply()">
                     Upload
                 </button>
-                <div id="progressContainer">
-                    <div id="progressBar">0%</div>
+                <div id="progressContainer" style="display:none; text-align:left;">
+                    <div id="progressBar" style="height: 20px; width: 0%; background: #4caf50;">
+                    </div>
+                </div>
+                <div id="progressPercent" style="margin-top: 8px; font-weight: bold; text-align:center;">
+                </div>
+                <div id="uploadingText" style="text-align:center; margin-top:5px; opacity:0.8;">
                 </div>
                 <div id="upload-status">
                 </div>
