@@ -20,6 +20,9 @@ if (choice == 1) {
     hr.style.display = 'block';
 } else if(choice == 5) {
     iframe.src = 'https://calc-one-ruby.vercel.app/';
+} else if (choice == 6) {
+    alert('WARNING: Use st your own risk. We are NOT responsible if you get caught or get in trouble for using this.');
+    iframe.src = 'https://proxyman15.github.io/';
 } else {
     iframe.style.display = 'none';
     showError('You Must Select An Embed First');
