@@ -127,6 +127,14 @@ body {
     position: relative;
     transition:0.3s all;
 }
+#entries div {
+    max-width:75%;
+    background:#111;
+    color:white;
+    border:1px solid white;
+    border-radius: 10px;
+    margin-bottom:10px;
+}
 #fields textarea {
     width:100%;
 }
@@ -411,6 +419,15 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #panicKeyInput {
     width:90px;
+}
+#pollContainer {
+    background:#111;
+    border-radius:15px;
+    width:90%;
+    padding:5px;
+}
+.pollMsg {
+    margin-bottom:6px;
 }
 .popup2 {
     position: fixed;
