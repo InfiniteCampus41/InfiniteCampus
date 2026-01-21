@@ -23,6 +23,8 @@ if (choice == 1) {
 } else if (choice == 6) {
     showError('WARNING: Use at your own risk. We are NOT responsible if you get caught or get in trouble for using this.');
     iframe.src = 'https://proxyman15.github.io/';
+} else if(choice == 7) {
+    iframe.src = 'https://universityequality.com/';
 } else {
     iframe.style.display = 'none';
     showError('You Must Select An Embed First');
