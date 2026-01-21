@@ -179,32 +179,6 @@ document.getElementById('channelSelector').addEventListener('change',()=>{
     document.getElementById('messages').innerHTML='';
     enqueueRequest(()=>fetchMessages(currentChannelToken));
 });
-const typingContainer = document.createElement('div');
-typingContainer.id = 'typingIndicator';
-typingContainer.style.display = 'none';
-typingContainer.style.marginTop = '5px';
-typingContainer.style.fontStyle = 'bold';
-typingContainer.style.color = 'white';
-typingContainer.style.fontSize = '14px';
-typingContainer.innerHTML = `<span id="typingText"></span> <span class="dots"><span>.</span><span>.</span><span>.</span></span>`;
-document.getElementById('sendForm').appendChild(typingContainer);
-const typingText = document.getElementById('typingText');
-const dots = typingContainer.querySelectorAll('.dots span');
-let dotIndex = 0;
-setInterval(() => {
-    dots.forEach((d,i) => d.style.visibility = (i <= dotIndex ? 'visible' : 'hidden'));
-    dotIndex = (dotIndex + 1) % 3;
-}, 500);
-let typingTimeout = null;
-document.getElementById('msgInput').addEventListener('input', () => {
-    const username = document.getElementById('nameInput').value.trim() || 'User';
-    typingText.textContent = `${username} Is Typing`;
-    typingContainer.style.display = 'block';
-    if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-        typingContainer.style.display = 'none';
-    }, 5000);
-});
 document.getElementById('sendForm').addEventListener('submit', e=>{
     e.preventDefault();
     const name = document.getElementById('nameInput').value.trim();

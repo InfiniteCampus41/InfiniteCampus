@@ -127,6 +127,14 @@ body {
     position: relative;
     transition:0.3s all;
 }
+#entries div {
+    max-width:75%;
+    background:#111;
+    color:white;
+    border:1px solid white;
+    border-radius: 10px;
+    margin-bottom:10px;
+}
 #fields textarea {
     width:100%;
 }
@@ -282,6 +290,16 @@ input[type="range"]::-webkit-slider-thumb {
         display:none; 
     }
 }
+@media (max-width: 768px) {
+    #appsDiv .apbtn {
+        display: block !important;
+        width: 60% !important;
+        margin: 10px auto !important;
+    }
+    center #appsDiv > br {
+        display: none;
+    }
+}
 @media (max-width: 900px) {
     #desktopNav {
         display:none;
@@ -401,6 +419,15 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #panicKeyInput {
     width:90px;
+}
+#pollContainer {
+    background:#111;
+    border-radius:15px;
+    width:90%;
+    padding:5px;
+}
+.pollMsg {
+    margin-bottom:6px;
 }
 .popup2 {
     position: fixed;

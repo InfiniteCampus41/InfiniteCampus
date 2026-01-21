@@ -19,8 +19,10 @@ onAuthStateChanged(auth, async (user) => {
     const profileSnap = await get(profileRef);
     if (!profileSnap.exists()) return;
     const data = profileSnap.val();
-    const allowed = data.isOwner === true || data.isTester === true;
+    const allowed = data.isOwner === true || data.isTester === true || data.isDev === true;
     if (allowed) {
+        const before = document.getElementById("pollBefore");
+        before.innerHTML = `<h1 class="tptxt">Poll Entries</h1>`;
         pollList.style.display = "block";
         pollContainer.style.display = 'none';
         loadPolls();
@@ -35,7 +37,7 @@ function loadPolls() {
             const poll = child.val();
             const time = poll.timestamp ? new Date(poll.timestamp).toLocaleString() : "Unknown";
             const div = document.createElement("div");
-            div.innerHTML = `<strong>Message:</strong> ${poll.content || "(none)"}<br><strong>Time:</strong> ${time}`;
+            div.innerHTML = `<p class="pollMsg"><strong>Message:</strong> ${poll.content || "(none)"}</p><hr><p class="pollTme"><strong>Time:</strong> ${time}</p>`;
             entriesDiv.appendChild(div);
         });
     });
