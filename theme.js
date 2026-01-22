@@ -3,6 +3,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const themeSelector     = document.getElementById('themeSelector');
     const resetBtn          = document.getElementById('resetColors');
     const header            = document.getElementById('site-header');
+    const mobile            = document.getElementById('mobileSidePanel');
     const footer            = document.getElementById('site-footer');
     const textOnlyFooter    = document.getElementById('text-only-footer');
     const globalText        = document.getElementById('global-text');
@@ -91,6 +92,12 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (gradientSetting === 'wtr') {
                 bg = 'linear-gradient(to right, #374377, #bec7ad)';
                 isDark = true;
+            } else if (gradientSetting === 'lve') {
+                bg = 'linear-gradient(to right, #be5f37, #be3786)';
+                isDark = false;
+            } else if (gradientSetting === 'tky') {
+                bg = 'linear-gradient(to right, #be9a37, #be5f37)';
+                isDark = true;
             } else if (gradientSetting === 'rgb') {
                 bg = 'transparent';
                 isDark = true;
@@ -102,7 +109,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const textColor = isDark ? 'white' : '';
         localStorage.setItem('globalDarkTheme', isDark);
         localStorage.setItem('globalTextColor', textColor);
-        [header, footer].forEach(bar => {
+        [header, footer, mobile].forEach(bar => {
             if (!bar) return;
             bar.style.background = bg;
             bar.style.color = textColor;
@@ -165,8 +172,21 @@ window.addEventListener('DOMContentLoaded', () => {
         if (colorInput) colorInput.value = storedFlat;
         applyTheme(storedFlat);
     } else {
-        applyTheme('#000000', 'wtr');
-        // applyTheme('#8cbe37');
+        const today = new Date();
+        let monthIndex = today.getMonth();
+        if (monthIndex === 0) {
+            applyTheme('#000000', 'wtr');
+        } else if (monthIndex = 1) {
+            applyTheme('#000000', 'lve');
+        } else if (monthIndex >= 2 && monthIndex <= 9) {
+            applyTheme('#8cbe37');
+        } else if (monthIndex = 10) {
+            applyTheme('#000000', 'tky');
+        } else if (monthIndex = 11) {
+            applyTheme('#000000', 'cms');
+        } else {
+            applyTheme('#8cbe37');
+        }
     }
     colorInput?.addEventListener('input', () => {
         localStorage.setItem('headerColor', colorInput.value);
@@ -202,8 +222,22 @@ window.addEventListener('DOMContentLoaded', () => {
         ['headerColor', 'useGradient', 'gradientLeft', 'gradientRight', 'globalTextColor', 'globalDarkTheme']
         .forEach(k => localStorage.removeItem(k));
         if (themeSelector) themeSelector.value = '';
-        // const defaultColor = '#8cbe37';
-        const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
+        const today = new Date();
+        let monthIndex = today.getMonth();
+        let defaultColor;
+        if (monthIndex === 0) {
+            const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
+        } else if (monthIndex = 1) {
+            const defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
+        } else if (monthIndex >= 2 && monthIndex <= 9) {
+            const defaultColor = '#8cbe37';
+        } else if (monthIndex = 10) {
+            const defaultColor = 'linear-gradient(to right, #be9a37, #be5f37)';
+        } else if (monthIndex = 11) {
+            const defaultColor = 'linear-gradient(to right, green, red)';
+        } else {
+            const defaultColor = '#8cbe37';
+        }
         if (colorInput) colorInput.value = defaultColor;
         if (gradLeftInput) gradLeftInput.value = defaultColor;
         if (gradRightInput) gradRightInput.value = defaultColor;

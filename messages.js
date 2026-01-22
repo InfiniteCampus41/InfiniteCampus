@@ -28,10 +28,10 @@ setInterval(fetchWidget, 30000);
 function getSelectedChannelId(){ return document.getElementById('channelSelector').value; }
 function getStatusImage(status){
     switch(status){
-        case 'online': return 'https://codehs.com/uploads/32492fbd9c7975781bec905cc80efbde';
-        case 'idle': return 'https://codehs.com/uploads/366cef0d856f621ae394ef8ca02c0807';
-        case 'dnd': return 'https://codehs.com/uploads/ad7edef57db7e5c9eab58f45b9b8d7a4';
-        default: return 'https://codehs.com/uploads/1837fc15433ac1289c3b36ec975fbc56';
+        case 'online': return '/res/online.png';
+        case 'idle': return '/res/idle.png';
+        case 'dnd': return '/res/dnd.png';
+        default: return '/res/offline.png';
     }
 }
 function getStatusTitle(status){
@@ -64,7 +64,7 @@ async function renderMessage(msg, list){
     avatarImg.classList.add('avatar');
     avatarImg.src = msg.author.avatar
         ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/0.png`;
+        : `/res/default.png`;
     li.appendChild(avatarImg);
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content');
@@ -113,7 +113,7 @@ async function renderMessage(msg, list){
         contentHTML += `</div>`;
     }
     contentHTML += `<div class="timestamp">${timestamp}</div>
-                    <br><span class="reaction-trigger" data-id="${msg.id}">React</span>`;
+                    <br><span class="reaction-trigger" data-id="${msg.id}"></span>`;
     contentDiv.innerHTML = contentHTML;
     displayedMessageIds.add(msg.id);
 }
@@ -132,27 +132,42 @@ function updateReactions(msg){
     if(oldReactions) oldReactions.replaceWith(new DOMParser().parseFromString(reactionsHTML,'text/html').body.firstChild);
     else li.querySelector('.content').insertAdjacentHTML('beforeend', reactionsHTML);
 }
-async function fetchMessages(token=currentChannelToken){
+async function fetchMessages(token = currentChannelToken) {
     const channelId = currentChannelId;
     const messagesList = document.getElementById('messages');
     try {
         const res = await fetch(`${apiMessagesUrl}?channelId=${channelId}`, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        if (!res.ok) throw new Error('Backend Unreachable');
+        if (!res.ok) {
+            let errorText = '';
+            try {
+                const errJson = await res.json();
+                errorText = errJson?.error || '';
+            } catch {
+            }
+            if (errorText === 'Discord integration disabled') {
+                throw new Error('DISCORD_LOCKDOWN');
+            }
+            throw new Error('Backend Unreachable');
+        }
         const data = await res.json();
-        const sorted = data.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
-        for(const msg of sorted){
-            if(token !== currentChannelToken) return;
+        const sorted = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (const msg of sorted) {
+            if (token !== currentChannelToken) return;
             await renderMessage(msg, messagesList);
         }
-    } catch(err){
+    } catch (err) {
         console.error(err);
         messagesList.innerHTML = '';
         const li = document.createElement('li');
-        li.textContent = "Live Discord Chat Is Down Please Come Back Later";
         li.style.color = 'red';
         li.style.fontWeight = 'bold';
+        if (err.message === 'DISCORD_LOCKDOWN') {
+            li.textContent = 'Live Discord Chat Is Currently Locked Down';
+        } else {
+            li.textContent = 'Live Discord Chat Is Currently Down, Please Come Back Later';
+        }
         messagesList.appendChild(li);
     }
 }
@@ -163,75 +178,6 @@ document.getElementById('channelSelector').addEventListener('change',()=>{
     displayedMessageIds.clear();
     document.getElementById('messages').innerHTML='';
     enqueueRequest(()=>fetchMessages(currentChannelToken));
-});
-const emojiPicker = document.getElementById('emojiPicker');
-const discordEmojiRegex = /^(<a?:\w+:\d+>|[\p{Emoji_Presentation}\u200d]+)$/u;
-document.body.addEventListener('click', e => {
-    if (e.target.classList.contains('reaction-trigger')) {
-        currentReactMessageId = e.target.dataset.id;
-        const rect = e.target.getBoundingClientRect();
-        emojiPicker.style.left = rect.left + 'px';
-        emojiPicker.style.top = rect.bottom + 'px';
-        emojiPicker.style.display = 'block';
-    } else if (e.target.classList.contains('reaction-btn')) {
-        const btn = e.target;
-        if (btn.dataset.clicked) return;
-        btn.dataset.clicked = 'true';
-        const messageId = btn.dataset.id;
-        const emoji = btn.dataset.emoji;
-        if(!discordEmojiRegex.test(emoji)){
-            showError('This Emoji Is Not Valid For Discord.');
-            return;
-        }
-        fetch(`${backendUrl}/react`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageId, emoji, channelId: currentChannelId })
-        }).catch(err => console.error(err));
-    } else if (!emojiPicker.contains(e.target)) emojiPicker.style.display = 'none';
-});
-emojiPicker.addEventListener('emoji-click', event => {
-    const emoji = event.detail.unicode;
-    if(!discordEmojiRegex.test(emoji)){
-        showError('This Emoji Is Not Valid For Discord.');
-        return;
-    }
-    const messageId = currentReactMessageId;
-    const triggerBtn = document.querySelector(`.reaction-trigger[data-id="${messageId}"]`);
-    if (triggerBtn.dataset.clicked) return;
-    triggerBtn.dataset.clicked = 'true';
-    fetch(`${backendUrl}/react`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId, emoji, channelId: currentChannelId })
-    }).catch(err => console.error(err));
-    emojiPicker.style.display = 'none';
-});
-const typingContainer = document.createElement('div');
-typingContainer.id = 'typingIndicator';
-typingContainer.style.display = 'none';
-typingContainer.style.marginTop = '5px';
-typingContainer.style.fontStyle = 'bold';
-typingContainer.style.color = 'white';
-typingContainer.style.fontSize = '14px';
-typingContainer.innerHTML = `<span id="typingText"></span> <span class="dots"><span>.</span><span>.</span><span>.</span></span>`;
-document.getElementById('sendForm').appendChild(typingContainer);
-const typingText = document.getElementById('typingText');
-const dots = typingContainer.querySelectorAll('.dots span');
-let dotIndex = 0;
-setInterval(() => {
-    dots.forEach((d,i) => d.style.visibility = (i <= dotIndex ? 'visible' : 'hidden'));
-    dotIndex = (dotIndex + 1) % 3;
-}, 500);
-let typingTimeout = null;
-document.getElementById('msgInput').addEventListener('input', () => {
-    const username = document.getElementById('nameInput').value.trim() || 'User';
-    typingText.textContent = `${username} Is Typing`;
-    typingContainer.style.display = 'block';
-    if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-        typingContainer.style.display = 'none';
-    }, 5000);
 });
 document.getElementById('sendForm').addEventListener('submit', e=>{
     e.preventDefault();

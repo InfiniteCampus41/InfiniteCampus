@@ -258,7 +258,7 @@ bioInput.addEventListener("input", () => {
 });
 const profilePicBtn = document.createElement("button");
 profilePicBtn.className = "btn btn-secondary";
-profilePicBtn.textContent = "Loading Picture...";
+profilePicBtn.textContent = "Loading Picture";
 const profileImages = [
     "/pfps/1.jpeg",
     "/pfps/2.jpeg",
@@ -269,11 +269,11 @@ const profileImages = [
     "/pfps/7.jpeg",
     "/pfps/8.jpeg",
     "/pfps/9.jpeg",
-    "/pfps/f3.jpeg",
-    "/pfps/kaiden.png",
     "/pfps/10.jpeg",
     "/pfps/11.jpeg",
-    "/pfps/12.jpeg"
+    "/pfps/12.jpeg",
+    "/pfps/13.jpeg",
+    "/pfps/14.jpeg"
 ];
 const restrictedPics = [6, 7, 8, 9];
 let currentPicIndex = 0;
@@ -368,11 +368,11 @@ onAuthStateChanged(auth, async (user) => {
                     adminBadge.textContent = "Admin";
                     adminBadge.style.color = "deepskyblue";
                 } else if (profile.isDev) {
-                    adminBadge.textContent = "Admin";
-                    adminBadge.style.color = "deepskyblue";
+                    adminBadge.textContent = "Developer";
+                    adminBadge.style.color = "green";
                 } else {
-                    adminBadge.textContent = "";
-                    adminBadge.style.color = "";
+                    adminBadge.textContent = "User";
+                    adminBadge.style.color = "white";
                 }
             }
         });

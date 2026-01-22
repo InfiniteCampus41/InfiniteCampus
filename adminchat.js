@@ -34,11 +34,11 @@ const profilePics = [
     "/pfps/7.jpeg",
     "/pfps/8.jpeg",
     "/pfps/9.jpeg",
-    "/pfps/f3.jpeg",
-    "/pfps/kaiden.png",
     "/pfps/10.jpeg",
     "/pfps/11.jpeg",
-    "/pfps/12.jpeg"
+    "/pfps/12.jpeg",
+    "/pfps/13.jpeg",
+    "/pfps/14.jpeg"
 ];
 async function logMutedUsers() {
     try {
@@ -90,7 +90,7 @@ async function logMutedUsers() {
                 if (!confirm(`Unmute ${nameVal}?`)) return;
                 try {
                     await remove(ref(db, `mutedUsers/${uid}`));
-                    showSuccess(`${nameVal} unmuted`);
+                    showSuccess(`${nameVal} Was Unmuted`);
                     userDiv.remove();
                 } catch (err) {
                     showError("Failed To Unmute: " + err.message);
@@ -102,7 +102,7 @@ async function logMutedUsers() {
             if (muteSection) muteSection.appendChild(userDiv);
         }
     } catch (err) {
-        console.error("Error fetching muted users:", err);
+        console.error("Error Fetching Muted Users:", err);
     }
 }
 logMutedUsers();
@@ -681,8 +681,8 @@ async function loadUserList() {
     	const selected = sendAsSelect.value;
     	sendAsSelect.innerHTML = '';
     	const adminOpt = document.createElement('option');
-    	adminOpt.value = 'admin';
-    	adminOpt.textContent = '⛨ Admin';
+    	adminOpt.value = 'jiEcu7wSifMalQxVupmQXRchA9k1';
+    	adminOpt.textContent = 'Hacker41';
 		sendAsSelect.appendChild(adminOpt);
     	const uEntries = Object.entries(userProfiles).sort((a, b) => {
         	const aName = a[1].displayName.toLowerCase();
@@ -719,7 +719,7 @@ async function loadUserList() {
         const div = document.createElement("div");
         div.className = "user-item";
         div.style.color = `${x3FColor}`;
-        div.innerHTML = `<img src="${pic}" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;"> ${name}`;
+        div.innerHTML = `<img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;"> ${name}`;
         div.onclick = () => editUser(uid, info);
         userListDiv.appendChild(div);
     });
@@ -834,8 +834,8 @@ sendAdminMessageBtn.onclick = async () => {
     }
     const text = adminMsgInput.value.trim();
     if (!text) return;
-    const sendAs = sendAsSelect.value || "admin";
-    const msgSender = (sendAs === "admin") ? "admin" : sendAs;
+    const sendAs = sendAsSelect.value || "jiEcu7wSifMalQxVupmQXRchA9k1";
+    const msgSender = (sendAs === "jiEcu7wSifMalQxVupmQXRchA9k1") ? "jiEcu7wSifMalQxVupmQXRchA9k1" : sendAs;
     const timestamp = Date.now();
     const key = `${timestamp}_${Math.floor(Math.random() * 100000)}`;
     const newMsg = {

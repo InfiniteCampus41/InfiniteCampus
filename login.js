@@ -21,7 +21,8 @@ onAuthStateChanged(auth, async (user) => {
         const isAllowed =
             profile.isOwner === true ||
             profile.isTester === true ||
-            profile.isCoOwner === true;
+            profile.isCoOwner === true ||
+            profile.isDev === true;
         if (isAllowed) {
             if (window.location.pathname == '/InfinitePasswords.html') {
                 window.location.href = "InfiniteAdmins.html";

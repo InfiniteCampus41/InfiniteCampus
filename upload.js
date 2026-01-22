@@ -102,7 +102,7 @@ if (fileParam) {
             const remainingBytes = e.total - e.loaded;
             const remainingSec = speed > 0 ? Math.round(remainingBytes / speed) : 0;
             progressBar.style.width = percent + "%";
-            progressBar.textContent = `${percent}% — ${remainingSec}s left`;
+            progressBar.textContent = `${percent}% — ${remainingSec}s Left`;
         };
         xhr.onload = () => {
             if (xhr.status === 200) {

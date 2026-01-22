@@ -47,7 +47,8 @@ function updateCountdown(targetDate) {
     const now = new Date();
     let diff = Math.floor((targetDate - now) / 1000);
     if (diff <= 58.5 && !audioStarted) {
-        audio.play().catch(err => console.error("Autoplay Blocked:", err));
+        audio.play()
+        .catch(err => console.error("Autoplay Blocked:", err));
         audioStarted = true;
     }
     if (diff <= 0) {
