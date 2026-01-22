@@ -337,7 +337,9 @@ async function renderMessageInstant(id, msg) {
         let display = match;
         while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
         let href = display.trim();
-        if (!/^https?:\/\//i.test(href)) href = "https://" + href;
+        if (!/^https?:\/\//i.test(href)) {
+            return match;
+        }
         const trailing = match.slice(display.length);
         return `<a href="${href}" target="_blank" rel="noopener noreferrer"
             style="color:#4fa3ff; text-decoration:underline; position:relative;">${display}</a>${trailing}`;
@@ -494,13 +496,13 @@ async function renderMessageInstant(id, msg) {
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
             const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
             const senderIsHUser = hSnap.exists() ? hSnap.val() : false;
-            if (senderIsOwner) badgeText = "⛨";
-            else if (senderIsHAdmin) badgeText = "⧨";
-            else if (senderIsCoOwner) badgeText = "⛊";
-            else if (senderIsAdmin) badgeText = "⛉";
+            if (senderIsOwner) badgeText = "OWNR";
             else if (senderIsTester) badgeText = "TSTR";
-            else if (senderIsHUser) badgeText = "100";
+            else if (senderIsCoOwner) badgeText = "COWNR";
+            else if (senderIsHAdmin) badgeText = "HADMIN";
+            else if (senderIsAdmin) badgeText = "ADMN";
             else if(senderIsDev) badgeText = "Developer";
+            else if (senderIsHUser) badgeText = "100";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
@@ -618,34 +620,34 @@ async function renderMessageInstant(id, msg) {
                 badgeSpan.textContent = `${badgeText}`;
                 badgeSpan.style.marginLeft = "6px";
                 badgeSpan.style.fontWeight = "bold";
-                if (badgeText === "⛨") {
+                if (badgeText === "OWNR") {
                     badgeSpan.innerHTML = '<i class="bi bi-shield-plus">';
                     badgeSpan.style.color = "lime";
                     badgeSpan.title = "Owner";
-                } else if (badgeText ==="⧨") {
-                    badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
-                    badgeSpan.style.color = "#00cc99";
-                    badgeSpan.title = "Head Admin";
-                } else if (badgeText === "⛊") {
-                    badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
-                    badgeSpan.style.color = "lightblue";
-                    badgeSpan.title = "Co-Owner";
-                } else if (badgeText === "⛉") {
-                    badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
-                    badgeSpan.style.color = "dodgerblue";
-                    badgeSpan.title = "Admin";
                 } else if (badgeText === "TSTR") {
                     badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
                     badgeSpan.style.color = "DarkGoldenRod";
                     badgeSpan.title = "Tester";
-                } else if (badgeText === "100") {
-                    badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
-                    badgeSpan.style.color = "yellow";
-                    badgeSpan.title = "This User Is The 100Th Signed Up User";
+                } else if (badgeText === "COWNR") {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
+                    badgeSpan.style.color = "lightblue";
+                    badgeSpan.title = "Co-Owner";
+                } else if (badgeText ==="HADMIN") {
+                    badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                    badgeSpan.style.color = "#00cc99";
+                    badgeSpan.title = "Head Admin";
+                } else if (badgeText === "ADMN") {
+                    badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
+                    badgeSpan.style.color = "dodgerblue";
+                    badgeSpan.title = "Admin";
                 } else if (badgeText === "Developer") {
                     badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
                     badgeSpan.style.color = "green";
                     badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz"
+                } else if (badgeText === "100") {
+                    badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
+                    badgeSpan.style.color = "yellow";
+                    badgeSpan.title = "This User Is The 100Th Signed Up User";
                 } else {
                     badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
                     badgeSpan.style.color = "red";
