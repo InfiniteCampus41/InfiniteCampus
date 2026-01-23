@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 fullscreen.textContent = "⛶";
                 fullscreen.className = "button";
                 fullscreen.style.position = "fixed";
-                fullscreen.style.bottom = "10px";
+                fullscreen.style.bottom = "60px";
                 fullscreen.style.right = "10px";
                 fullscreen.style.zIndex = "1000";
                 fullscreen.style.padding = "10px";
