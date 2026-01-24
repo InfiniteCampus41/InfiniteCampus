@@ -1,6 +1,7 @@
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
+let finishingTimeout = null;
 const currentfile = document.getElementById("currentFile");
 const section = document.getElementById("section");
 document.getElementById("applyFile").addEventListener("change", () => {
@@ -48,6 +49,8 @@ async function uploadApply() {
         const data = await res.json();
         if (!data.ok) {
             clearInterval(dotInterval);
+            if (finishingTimeout) clearTimeout(finishingTimeout);
+                percentText.innerText = "Uploaded!";
             document.getElementById("upload-status").innerText =
                 "Upload Failed: " + data.message;
             return;
@@ -59,6 +62,9 @@ async function uploadApply() {
             percentText.innerText = "Finishing Up, This May Take A While";
             const uploadText = document.getElementById("uploadingText");
             uploadText.style.display = "none";
+            let finishingTimeout = setTimeout(() => {
+                percentText.innerText = "Uploaded!";
+            }, 120000);
         } else {
             bar.style.width = percent + "%";
             percentText.innerText = percent + "%";
@@ -66,6 +72,8 @@ async function uploadApply() {
     }
     clearInterval(dotInterval);
     uploadingText.innerText = "";
+    if (finishingTimeout) clearTimeout(finishingTimeout);
+    percentText.innerText = "Uploaded!";
     document.getElementById("upload-status").innerText =
         "Uploaded: " + file.name;
     setTimeout(() => {
