@@ -1,6 +1,7 @@
+const allowedHosts = ["infinitecampus.xyz", "www.infinitecampus.xyz", "instructure.space"];
 const before = document.getElementById("before");
 const toptext = document.getElementById("tptxt");
-if (e !== window.location.host) {
+if (!allowedHosts.includes(window.location.host)) {
     toptext.textContent = "About Infinite Campus";
     before.innerHTML = `
         Infinite Campus Was Founded On December 19th, 2024.
