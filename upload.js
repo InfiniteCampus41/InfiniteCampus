@@ -67,8 +67,8 @@ if (fileParam) {
             <input type="file" id="fileInput" style="display:none;">
             <label for="fileInput" class="button">Choose File</label>
             <p id="fileName"></p>
-            <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto;">
-            <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:center; font-weight:bold;"></div>
+            <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto; text-align:left;">
+            <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;"></div>
             </div>
             <p id="output"></p>
         </center>

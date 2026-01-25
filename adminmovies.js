@@ -115,8 +115,8 @@ async function loadApply() {
             <button class="button" onclick="watchApply('${f.file}')">Watch</button>
             <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
             <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
-            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px;">
-                <div class="file-progress-bar" id="progress-bar-${f.file}" style="width:0%;background:#4caf50;padding:2px;font-size:12px;">
+            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px; text-align:left;">
+                <div class="file-progress-bar" id="progress-bar-${f.file}" style="width:0%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
                     0%
                 </div>
             </div>
