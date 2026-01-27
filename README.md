@@ -13,13 +13,15 @@ Step 1: Click The Green Code Icon And Select Download Zip
 
 Step 2: Extract The Zip File And Open The Folder With Everything In It In The Terminal
 
-Step 3: Run node server.js
+Step 3: Run npm install
 
-Step 4: Enter The Port You Would Like To Use Ex: 2000
+Step 4: Run node server.js
 
-Step 5: Select Either Local Or Network Modes (Network Allows Anyone On Your Network With The Url To Visit It)
+Step 5: Enter The Port You Would Like To Use Ex: 2000
 
-Step 6: Go To The Url It Gives You
+Step 6: Select Either Local Or Network Modes (Network Allows Anyone On Your Network With The Url To Visit It)
+
+Step 7: Go To The Url It Gives You
 
 
 
