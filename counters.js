@@ -57,7 +57,7 @@ function update() {
 	const hoursLeftAnalog = Math.floor(totalMinutesLeft / 60) % 12;
 	const smoothSeconds = secondsLeft;
 	const smoothMinutes = minutesLeftAnalog + smoothSeconds / 60;
-	const smoothHours = hoursLeftAnalog + smoothMinutes / 12;
+	const smoothHours = hoursLeftAnalog + smoothMinutes / 60;
 	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg)`;
 	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg)`;
 	hourHand.style.transform   = `rotate(${smoothHours * 30}deg)`;
