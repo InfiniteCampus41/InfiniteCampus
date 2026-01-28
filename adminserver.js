@@ -234,3 +234,4 @@ setInterval(() => {
 })();
 fetchFiles();
 fetchLogs();
+window.deleteFile = deleteFile;
