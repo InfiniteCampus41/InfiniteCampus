@@ -32,62 +32,55 @@
         </script>
         <script src="theme.js">
         </script>
-        <script src="counters.js">
-        </script>
     </head>
     <body>
         <center>
             <h1 class="tptxt">
                 Countdown Timer
             </h1>
-            <div>
-                <label class="btxt" for="format">
-                    Date Format:
-                </label>
-                <br>
-                <br>
-                <select class="button" id="format">
-                    <option class="button" value="mdy">
-                        MM/DD/YYYY
-                    </option>
-                    <option class="button" value="dmy">
-                        DD/MM/YYYY
-                    </option>
-                </select>
-            </div>
+            <hr>
             <br>
-            <div>
-                <input class="button" id="dateInput" placeholder="Enter Date (EX: 12/25/2026)" />
-            </div>
-            <br>
-            <div>
-                <input class="button" id="timeInput" placeholder="Optional Time (EX: 14:30:00)" />
-            </div>
-            <br>
-            <div>
-                <button class="button" onclick="startCountdown()">
-                    Start Countdown
+            <div id="setup">
+                <input class="button" id="dateTimePicker" type="datetime-local">
+                <button class="button" id="startBtn">
+                    Start
                 </button>
             </div>
-            <br>
-            <div class="mdtxt" style="font-size:2em">
-                <div class="time-section" id="days">
-                </div>
-                <div class="time-section" id="hours">
-                </div>
-                <div class="time-section" id="minutes">
-                </div>
-                <div class="time-section" id="seconds">
+            <div id="dateText">
+            </div>
+            <div id="digitalClock">
+            </div>
+            <div id="clockView">
+                <div class="clock">
+                    <script>
+                        for (let i = 0; i < 60; i++) {
+                            document.write(
+                                `<div class="mark ${i % 5 === 0 ? 'hour' : ''}"
+                                style="transform: rotate(${i * 6}deg)"></div>`
+                            );
+                        }
+                    </script>
+                    <div id="hour" class="hand">
+                    </div>
+                    <div id="minute" class="hand">
+                    </div>
+                    <div id="second" class="hand">
+                    </div>
+                    <div class="cdot">
+                    </div>
                 </div>
             </div>
-            <br>
-            <br>
+            <button id="reset" class="button">
+                Reset
+            </button>
         </center>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
-        <script src="popup.js">
-        </script>
         <script src="frame.js">
+        </script>
+        <script src="counters.js">
+        </script>
+        <script src="popup.js">
         </script>
     </body>
 </html>

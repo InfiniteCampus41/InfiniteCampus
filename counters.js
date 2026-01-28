@@ -1,101 +1,78 @@
 let timer;
+let targetDate;
 let audioStarted = false;
+let lastLoggedAt = 0;
 const audio = new Audio("https://codehs.com/uploads/4c43e4c918e704a08db7b92ff1daadf3");
-function startCountdown() {
-    clearInterval(timer);
-    audio.pause();
-    audio.currentTime = 0;
-    audioStarted = false;
-    const format = document.getElementById("format").value;
-    const dateStr = document.getElementById("dateInput").value.trim();
-    const timeStr = document.getElementById("timeInput").value.trim();
-    const parsedDate = parseDateTime(dateStr, timeStr, format);
-    if (!parsedDate || isNaN(parsedDate.getTime())) {
-        showError("Err#2 Invalid Date Or Time.");
-        return;
-    }
-    localStorage.setItem("countdownTarget", parsedDate.getTime());
-    localStorage.setItem("countdownDateInput", dateStr);
-    localStorage.setItem("countdownTimeInput", timeStr);
-    localStorage.setItem("countdownFormat", format);
-    timer = setInterval(() => updateCountdown(parsedDate), 1000);
-    updateCountdown(parsedDate);
-}
-function parseDateTime(dateStr, timeStr, format) {
-    const dateParts = dateStr.split("/");
-    if (dateParts.length !== 3) return null;
-    let day, month, year;
-    if (format === "mdy") {
-        [month, day, year] = dateParts;
-    } else {
-        [day, month, year] = dateParts;
-    }
-    const timeParts = (timeStr || "00:00:00").split(":");
-    const hours = parseInt(timeParts[0] || 0);
-    const minutes = parseInt(timeParts[1] || 0);
-    const seconds = parseInt(timeParts[2] || 0);
-    return new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-        hours,
-        minutes,
-        seconds
-    );
-}
-function updateCountdown(targetDate) {
-    const now = new Date();
-    let diff = Math.floor((targetDate - now) / 1000);
-    if (diff <= 58.5 && !audioStarted) {
-        audio.play()
-        .catch(err => console.error("Autoplay Blocked:", err));
-        audioStarted = true;
-    }
-    if (diff <= 0) {
-        clearInterval(timer);
-        document.getElementById("days").textContent = "Time's Up!";
-        document.getElementById("hours").textContent = "";
-        document.getElementById("minutes").textContent = "";
-        document.getElementById("seconds").textContent = "";
+const picker = document.getElementById("dateTimePicker");
+const startBtn = document.getElementById("startBtn");
+const digitalClock = document.getElementById("digitalClock");
+const setupUI = document.getElementById("setup");
+const clockUI = document.getElementById("clockView");
+const dateText = document.getElementById("dateText");
+const hourHand = document.getElementById("hour");
+const minuteHand = document.getElementById("minute");
+const secondHand = document.getElementById("second");
+const reset = document.getElementById("reset");
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+picker.value = today.toISOString().slice(0, 16);
+startBtn.onclick = () => {
+  	targetDate = new Date(picker.value);
+  	if (isNaN(targetDate)) return;
+  	localStorage.setItem("countdownTarget", targetDate.getTime());
+  	setupUI.style.display = "none";
+  	clockUI.style.display = "flex";
+  	clearInterval(timer);
+  	timer = setInterval(update, 1000);
+  	update();
+};
+function update() {
+	const now = new Date();
+	let diff = Math.floor((targetDate - now) / 1000);
+	const totalMinutes = Math.floor(diff / 60);
+	const hoursLeft = Math.floor(totalMinutes / 60);
+	const minutesLeft = totalMinutes % 60;
+	const secondsLeft = diff % 60;
+	digitalClock.textContent =
+		`${hoursLeft.toString().padStart(2, "0")}H:` +
+		`${minutesLeft.toString().padStart(2, "0")}M:` +
+		`${secondsLeft.toString().padStart(2, "0")}S`;
+	if (diff <= 58.5 && !audioStarted) {
+		audio.play().catch(() => {});
+		audioStarted = true;
+	}
+	if (diff <= 0) {
+		clearInterval(timer);
+		dateText.textContent = "Times Up!";
         localStorage.removeItem("countdownTarget");
-        localStorage.removeItem("countdownDateInput");
-        localStorage.removeItem("countdownTimeInput");
-        return;
-    }
-    const days = Math.floor(diff / (60 * 60 * 24));
-    diff %= (60 * 60 * 24);
-    const hours = Math.floor(diff / 3600);
-    diff %= 3600;
-    const minutes = Math.floor(diff / 60);
-    const seconds = diff % 60;
-    const daysEl = document.getElementById("days");
-    daysEl.textContent = `Days: ${days}`;
-    document.getElementById("hours").textContent = `Hours: ${hours}`;
-    document.getElementById("minutes").textContent = `Minutes: ${minutes}`;
-    document.getElementById("seconds").textContent = `Seconds: ${seconds}`;
+		return;
+	}
+	let days = Math.floor(diff / 86400);
+	let months = Math.floor(days / 30);
+	let years = Math.floor(months / 12);
+	dateText.textContent =
+		`${years} Years • ${months % 12} Months • ${days % 30} Days`;
+	const totalMinutesLeft = Math.floor(diff / 60);
+	const minutesLeftAnalog = totalMinutesLeft % 60;
+	const hoursLeftAnalog = Math.floor(totalMinutesLeft / 60) % 12;
+	const smoothSeconds = secondsLeft;
+	const smoothMinutes = minutesLeftAnalog + smoothSeconds / 60;
+	const smoothHours = hoursLeftAnalog + smoothMinutes / 12;
+	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg)`;
+	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg)`;
+	hourHand.style.transform   = `rotate(${smoothHours * 30}deg)`;
 }
+reset.addEventListener("click", () => {
+	localStorage.removeItem("countdownTarget");
+	location.reload();
+})
 window.addEventListener("load", () => {
-    const savedTarget = localStorage.getItem("countdownTarget");
-    const savedDate = localStorage.getItem("countdownDateInput");
-    const savedTime = localStorage.getItem("countdownTimeInput");
-    const savedFormat = localStorage.getItem("countdownFormat");
-    if (savedDate) document.getElementById("dateInput").value = savedDate;
-    if (savedTime) document.getElementById("timeInput").value = savedTime;
-    if (savedFormat) document.getElementById("format").value = savedFormat;
-    if (savedTarget) {
-        const targetDate = new Date(parseInt(savedTarget));
-        if (targetDate > new Date()) {
-            timer = setInterval(() => updateCountdown(targetDate), 1000);
-            updateCountdown(targetDate);
-        } else {
-            localStorage.clear();
-        }
-    }
-});
-["dateInput", "timeInput"].forEach(id => {
-    document.getElementById(id).addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            startCountdown();
-        }
-    });
+  	const saved = localStorage.getItem("countdownTarget");
+  	if (saved && new Date(parseInt(saved)) > new Date()) {
+    	targetDate = new Date(parseInt(saved));
+    	setupUI.style.display = "none";
+    	clockUI.style.display = "flex";
+    	timer = setInterval(update, 1000);
+    	update();
+  	}
 });
