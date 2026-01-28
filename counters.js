@@ -14,6 +14,8 @@ const minuteHand = document.getElementById("minute");
 const secondHand = document.getElementById("second");
 const reset = document.getElementById("reset");
 const today = new Date();
+const clockMode = document.getElementById("clockMode");
+const analogClock = document.getElementById("analogClock");
 today.setHours(0, 0, 0, 0);
 picker.value = today.toISOString().slice(0, 16);
 startBtn.onclick = () => {
@@ -26,6 +28,18 @@ startBtn.onclick = () => {
   	timer = setInterval(update, 1000);
   	update();
 };
+function updateClockMode() {
+  	if (clockMode.value === "digital") {
+    	analogClock.style.display = "none";
+    	digitalClock.style.display = "block";
+    	digitalClock.classList.add("big");
+  	} else {
+    	analogClock.style.display = "block";
+    	digitalClock.style.display = "block";
+    	digitalClock.classList.remove("big");
+  	}
+}
+clockMode.addEventListener("change", updateClockMode);
 function update() {
 	const now = new Date();
 	let diff = Math.floor((targetDate - now) / 1000);
@@ -58,9 +72,9 @@ function update() {
 	const smoothSeconds = secondsLeft;
 	const smoothMinutes = minutesLeftAnalog + smoothSeconds / 60;
 	const smoothHours = hoursLeftAnalog + smoothMinutes / 60;
-	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg)`;
-	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg)`;
-	hourHand.style.transform   = `rotate(${smoothHours * 30}deg)`;
+	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg) translateY(-1px)`;
+	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg) translateY(-2px)`;
+	hourHand.style.transform   = `rotate(${smoothHours * 30}deg) translateY(-4px)`;
 }
 reset.addEventListener("click", () => {
 	localStorage.removeItem("countdownTarget");
@@ -76,3 +90,4 @@ window.addEventListener("load", () => {
     	update();
   	}
 });
+updateClockMode();

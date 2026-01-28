@@ -1,6 +1,9 @@
 a {
     text-decoration:none;
 }
+.analog-clock {
+    display: block;
+}
 .apbtn {
     margin:5px;
 }
@@ -124,6 +127,11 @@ body {
     color: white;
     letter-spacing: 1px;
     pointer-events: none;
+}
+#digitalClock.big {
+    font-size: 64px;
+    font-weight: bold;
+    text-align: center;
 }
 .discord {
     display: block;
@@ -334,7 +342,7 @@ input[type="range"]::-webkit-slider-thumb {
     height: 10px;
     background: white;
     top: 0;
-    left: 50%;
+    left: 49%;
     transform-origin: center 160px;
 }
 .mark.hour {
