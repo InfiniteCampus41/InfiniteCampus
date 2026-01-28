@@ -126,6 +126,7 @@ console.log('%cC', `
     color: #8BC53F;
     background-color: #121212;
 `);
+localStorage.setItem("replit-pill-preference", "hidden");
 function showError(err) {
     const existing = document.getElementById("errDiv");
     if (existing) existing.remove();
