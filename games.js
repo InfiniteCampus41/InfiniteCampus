@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Build Royale", method: ["1", "2"], url: "https://buildroyale.io/" },
         { name: "BLOXD.IO", method: ["1", "2"], url: "https://bloxd.io/" },
         { name: "1", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/1/" },
-        { name: "2048", method: ["1", "2"], url: "https://2048game.com/" },
+        { name: "2048", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/2048/" },
         { name: "9007199254740992", method: ["1", "2"], url: "https://dmitrykuzmenko.github.io/2048/" },
         { name: "Subway Surfers", method: ["1", "2"], url: "https://dddavit.github.io/subway/" },
         { name: "World's Hardest Game", method: ["1", "2"], url: "https://mountain658.github.io/zworldsHardestGame.html" },
