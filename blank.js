@@ -118,7 +118,7 @@ document.getElementById('openCustomUrl').addEventListener('click', async () => {
     }
 });
 document.getElementById('openInfiniteCampus').addEventListener('click', () => {
-    openGame(`${b}`);
+    openGame(window.location.origin);
 });
 const bypassBtn = document.createElement('button');
 bypassBtn.textContent = 'Bypass URL Checks OFF';

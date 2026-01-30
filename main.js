@@ -89,7 +89,7 @@ function safeGetItem(key) {
             `);
             win.document.close();
             const iframe = win.document.createElement("iframe");
-            iframe.src = "https://www.infinitecampus.xyz";
+            iframe.src = window.location.origin;
             iframe.style.width = "100vw";
             iframe.style.height = "100vh";
             iframe.style.border = "none";

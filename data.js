@@ -1,4 +1,6 @@
 let overrideChecks = false;
+const thisSite = document.getElementById("thisSite");
+thisSite.value = window.location.origin;
 document.getElementById('overrideBtn').addEventListener('click', () => {
     overrideChecks = !overrideChecks;
     const btn = document.getElementById('overrideBtn');
