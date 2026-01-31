@@ -77,35 +77,6 @@ chatInput.insertAdjacentElement("beforebegin", typingIndicator);
 let typingTimeout = null;
 let typingRef = null;
 document.head.appendChild(style);
-let currentErrorDiv = null;
-function showError(message) {
-    if (currentErrorDiv) currentErrorDiv.remove();
-    const errorDiv = document.createElement("div");
-    errorDiv.textContent = message;
-    Object.assign(errorDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "salmon",
-        color: "black",
-        border: "2px solid red",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    errorDiv.addEventListener("click", () => {
-        errorDiv.remove();
-        currentErrorDiv = null;
-    });
-    document.body.appendChild(errorDiv);
-    currentErrorDiv = errorDiv;
-}
 chatLog.addEventListener("scroll", () => {
     const nearBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight < 50;
     autoScrollEnabled = nearBottom;
@@ -1378,32 +1349,3 @@ document.addEventListener("click", (e) => {
         mentionActive = false;
     }
 });
-let currentSuccessDiv = null;
-function showSuccess(message) {
-    if (currentSuccessDiv) currentSuccessDiv.remove();
-    const successDiv = document.createElement("div");
-    successDiv.textContent = message;
-    Object.assign(successDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "seagreen",
-        color: "black",
-        border: "2px solid green",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    successDiv.addEventListener("click", () => {
-        successDiv.remove();
-        currentSuccessDiv = null;
-    });
-    document.body.appendChild(successDiv);
-    currentSuccessDiv = successDiv;
-}

@@ -133,16 +133,10 @@ async function loadUserProfile(uid) {
       		messageBtn.style.display = "inline-block";
       		messageBtn.onclick = () => {
         		localStorage.setItem("openPrivateChatUid", uid);
-        		window.location.href = "chat.html";
+        		window.location.href = "InfiniteChatters.html";
       		};
     	}
   	} catch (err) {
     	showError("Error Loading Profile: " + err.message);
   	}
-}
-function showError(msg) {
-  	loadingEl.style.display = "none";
-  	profileContent.style.display = "none";
-	errorEl.style.display = "block";
-  	errorEl.textContent = msg;
 }

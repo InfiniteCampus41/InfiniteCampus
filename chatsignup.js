@@ -96,32 +96,3 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         showError("Failed To Save Display Name: " + error.message);
     }
 });
-let currentErrorDiv = null;
-function showError(message) {
-    if (currentErrorDiv) currentErrorDiv.remove();
-    const errorDiv = document.createElement("div");
-    errorDiv.textContent = message;
-    Object.assign(errorDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "salmon",
-        color: "black",
-        border: "2px solid red",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    errorDiv.addEventListener("click", () => {
-        errorDiv.remove();
-        currentErrorDiv = null;
-    });
-    document.body.appendChild(errorDiv);
-    currentErrorDiv = errorDiv;
-}

@@ -460,7 +460,7 @@ if (deleteTypingBtn) {
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         showError("You Must Be Logged In To View This Page.");
-        window.location.href = "chat.html";
+        window.location.href = "InfiniteChatters.html";
         return;
     }
     const uid = user.uid;

@@ -97,14 +97,6 @@ displayNameInput.addEventListener("keydown", (e) => {
         saveDisplayName();
     }
 });
-function refreshLocalStorageList() {
-    localStorageList.innerHTML = '';
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const value = localStorage.getItem(key);
-        if (value) localStorageList.innerHTML += `<li>${key}: ${value}</li>`;
-    }
-}
 async function loadSettings(uid) {
     const userSettingsRef = ref(db, `users/${uid}/settings`);
     const snap = await get(userSettingsRef);
@@ -128,7 +120,6 @@ async function loadSettings(uid) {
     if (!settings.color) {
         await set(ref(db, `users/${uid}/settings/color`), storedColor);
     }
-    refreshLocalStorageList();
     statusEl.textContent = `Settings Loaded For ${uid}`;
     onValue(ref(db, `users/${uid}/settings/color`), snap => {
         if (snap.exists()) {
@@ -190,7 +181,6 @@ saveNameColorBtn.addEventListener("click", async () => {
     }
     await set(ref(db, `users/${currentUser.uid}/settings/color`), color);
     localStorage.setItem("color", color);
-    refreshLocalStorageList();
     showSuccess("Name Color Saved!");
 });
 const bioInput = document.getElementById("bioInput");
@@ -376,7 +366,6 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
         });
-        refreshLocalStorageList();
         statusEl.textContent = `Logged In As ${user.email}`;
     } else {
         statusEl.textContent = "Not Logged In.";
@@ -404,61 +393,3 @@ setInterval(async () => {
         }
     }
 }, 10000);
-let currentErrorDiv = null;
-function showError(message) {
-    if (currentErrorDiv) currentErrorDiv.remove();
-    const errorDiv = document.createElement("div");
-    errorDiv.textContent = message;
-    Object.assign(errorDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "salmon",
-        color: "black",
-        border: "2px solid red",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    errorDiv.addEventListener("click", () => {
-        errorDiv.remove();
-        currentErrorDiv = null;
-    });
-    document.body.appendChild(errorDiv);
-    currentErrorDiv = errorDiv;
-}
-let currentSuccessDiv = null;
-function showSuccess(message) {
-    if (currentSuccessDiv) currentSuccessDiv.remove();
-    const successDiv = document.createElement("div");
-    successDiv.textContent = message;
-    Object.assign(successDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "seagreen",
-        color: "black",
-        border: "2px solid green",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    successDiv.addEventListener("click", () => {
-        successDiv.remove();
-        currentSuccessDiv = null;
-    });
-    document.body.appendChild(successDiv);
-    currentSuccessDiv = successDiv;
-}
