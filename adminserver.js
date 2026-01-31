@@ -235,3 +235,4 @@ setInterval(() => {
 fetchFiles();
 fetchLogs();
 window.deleteFile = deleteFile;
+window.downloadFile = downloadFile;
