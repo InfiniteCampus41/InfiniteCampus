@@ -176,13 +176,13 @@ window.addEventListener('DOMContentLoaded', () => {
         let monthIndex = today.getMonth();
         if (monthIndex === 0) {
             applyTheme('#000000', 'wtr');
-        } else if (monthIndex = 1) {
+        } else if (monthIndex === 1) {
             applyTheme('#000000', 'lve');
         } else if (monthIndex >= 2 && monthIndex <= 9) {
             applyTheme('#8cbe37');
-        } else if (monthIndex = 10) {
+        } else if (monthIndex === 10) {
             applyTheme('#000000', 'tky');
-        } else if (monthIndex = 11) {
+        } else if (monthIndex === 11) {
             applyTheme('#000000', 'cms');
         } else {
             applyTheme('#8cbe37');
@@ -227,13 +227,13 @@ window.addEventListener('DOMContentLoaded', () => {
         let defaultColor;
         if (monthIndex === 0) {
             const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
-        } else if (monthIndex = 1) {
+        } else if (monthIndex === 1) {
             const defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
         } else if (monthIndex >= 2 && monthIndex <= 9) {
             const defaultColor = '#8cbe37';
-        } else if (monthIndex = 10) {
+        } else if (monthIndex === 10) {
             const defaultColor = 'linear-gradient(to right, #be9a37, #be5f37)';
-        } else if (monthIndex = 11) {
+        } else if (monthIndex === 11) {
             const defaultColor = 'linear-gradient(to right, green, red)';
         } else {
             const defaultColor = '#8cbe37';

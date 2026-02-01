@@ -242,18 +242,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     waitForToggleSnowBtn((toggleBtn) => {
-        const today = new Date();
-        let monthIndex = today.getMonth();
-        if (monthIndex = 11 || 0) {
-            toggleBtn.textContent = 'Toggle Snow';
-        } else if (monthIndex = 1) {
+        const monthIndex = new Date().getMonth();
+        if (monthIndex === 11 || monthIndex === 0) {
+            toggleBtn.textContent = "Toggle Snow";
+        } else if (monthIndex === 1) {
             toggleBtn.textContent = 'Toggle Hearts';
         } else if (monthIndex >= 2 && monthIndex <= 9) {
             toggleBtn.style.display = 'none';
-        } else if (monthIndex = 10) {
+        } else if (monthIndex === 10) {
             toggleBtn.textContent = 'Toggle Leaves';
-        } else {
-            toggleBtn.style.display = 'none';
         }
         toggleBtn.addEventListener("click", () => {
             snowEnabled = !snowEnabled;
@@ -263,20 +260,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     function initSnowflakeAnimations() {
         snowflakes.forEach((flake) => {
-            const today = new Date();
-            let monthIndex = today.getMonth();
-            if (monthIndex = 11 || 0) {
+            const monthIndex = new Date().getMonth();
+            if (monthIndex === 11 || monthIndex === 0) {
                 flake.innerHTML = '<i class="bi bi-snow"></i>';
-            } else if (monthIndex = 1) {
+            } else if (monthIndex === 1) {
                 flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
                 flake.style.color = 'red';
             } else if (monthIndex >= 2 && monthIndex <= 9) {
                 flake.style.display = 'none';
-            } else if (monthIndex = 10) {
+            } else if (monthIndex === 10) {
                 flake.innerHTML = '<i class="bi bi-leaf-fill"></i>';
-                flake.innerhtml = 'darkgoldenrod';
-            } else {
-                flake.style.display = 'none';
+                flake.style.color = 'darkgoldenrod';
             }
             let y = Math.random() * 60;
             let swayOffset = Math.random() * Math.PI * 2;
