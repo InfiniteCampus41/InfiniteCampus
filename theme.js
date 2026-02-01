@@ -172,8 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (colorInput) colorInput.value = storedFlat;
         applyTheme(storedFlat);
     } else {
-        const today = new Date();
-        let monthIndex = today.getMonth();
+        const monthIndex = new Date().getMonth();
         if (monthIndex === 0) {
             applyTheme('#000000', 'wtr');
         } else if (monthIndex === 1) {
@@ -222,8 +221,7 @@ window.addEventListener('DOMContentLoaded', () => {
         ['headerColor', 'useGradient', 'gradientLeft', 'gradientRight', 'globalTextColor', 'globalDarkTheme']
         .forEach(k => localStorage.removeItem(k));
         if (themeSelector) themeSelector.value = '';
-        const today = new Date();
-        let monthIndex = today.getMonth();
+        const monthIndex = new Date().getMonth();
         let defaultColor;
         if (monthIndex === 0) {
             const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
