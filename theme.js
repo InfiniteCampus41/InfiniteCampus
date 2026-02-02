@@ -94,7 +94,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 isDark = true;
             } else if (gradientSetting === 'lve') {
                 bg = 'linear-gradient(to right, #be5f37, #be3786)';
-                isDark = false;
+                isDark = true;
             } else if (gradientSetting === 'tky') {
                 bg = 'linear-gradient(to right, #be9a37, #be5f37)';
                 isDark = true;
