@@ -142,7 +142,7 @@ const headerHTML = `
     </div>
     <footer id="site-footer" class="rgb-element">
         <span>
-            Totally Made By Noah White And Not A Different Person.
+            Made With All The Love We Are Legally Allowed To Give!
         </span>
         <span>
             Pissing Off Your Teachers Since 2024
