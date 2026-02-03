@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "NettleWeb (2)", method: ["2"], url: "https://sigmasigmatoiletedge.github.io" },
         { name: "Ngon", method: ["1", "2"], url: "https://landgreen.github.io/n-gon/" },
         { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: "https://sd592g.github.io/zj684od4lfg/" },
+        { name: "Eaglercraft ( 1.5.2 ) (2)", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/eaglercraft/index.html" },
         { name: "Eaglercraft ( 1.8.8 )", method: ["1", "2"], url: "https://resent4-0.vercel.app/" },
         { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: "https://mcraft.fun/" },
         { name: "Eaglercraft Servers", method: ["1", "2"], url: "https://servers.eaglercraft.com/" },
