@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Stickman Hook", method: ["1", "2"], url: "https://mountain658.github.io/g/stickmanhook/index.html" },
         { name: "Universal Paperclips", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/paperclips/index.html" },
         { name: "Plants Vs Zombies", method: ["1", "2"], url: "https://games.gombis.com/plants-vs-zombies-3?hl=en" },
+        { name: "Polytrack", method: ["1", "2"], url: "https://www.kodub.com/apps/polytrack" },
         { name: "Gridland", method: ["1", "2"], url: "https://gridland.doublespeakgames.com/" },
         { name: "8 Ball Pool Multiplayer", method: ["1", "2"], url: "https://foony.com/games/8-ball-pool-online-billiards?&platform=crazygames" },
         { name: "Gulper.io", method: ["1", "2"], url: "https://gulper.io/" },
