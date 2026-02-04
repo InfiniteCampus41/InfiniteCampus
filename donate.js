@@ -77,7 +77,7 @@ if (result && uid) {
             const msg = document.getElementById("msg");
             if (data.status === "success") {
                 if ((data.amount/100).toFixed(2) >= 5) {
-                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium!`
+                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium For The Next 3 Months!`
                 } else {
                     msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}.`;
                 }
