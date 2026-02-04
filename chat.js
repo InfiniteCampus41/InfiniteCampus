@@ -30,6 +30,7 @@ let isTester = false;
 let isCoOwner = false;
 let isOwner = false;
 let isDev = false;
+let premium = false;
 let currentPrivateUid = null;
 let currentPrivateName = null;
 let metadataListenerRef = null;
@@ -441,7 +442,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, testerSnap, hSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, preSnap, testerSnap, hSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -451,6 +452,7 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isCoOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isHAdmin`)),
                 get(ref(db, `users/${msg.sender}/profile/isDev`)),
+                get(ref(db, `users/${msg.sender}/profile/premium`)),
                 get(ref(db, `users/${msg.sender}/profile/isTester`)),
                 get(ref(db, `users/${msg.sender}/profile/mileStone`))
             ]);
@@ -462,6 +464,7 @@ async function renderMessageInstant(id, msg) {
             let badgeText = null;
             const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
             const senderIsDev = devSnap.exists() ? devSnap.val() : false;
+            const senderPre = preSnap.exists() ? preSnap.val() :false;
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
@@ -473,6 +476,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
             else if(senderIsDev) badgeText = "Developer";
+            else if (senderPre) badgeText = "Premium";
             else if (senderIsHUser) badgeText = "100";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
@@ -615,6 +619,10 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
                     badgeSpan.style.color = "green";
                     badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz"
+                } else if (badgeText === "Premium") {
+                    badgeSpan.innerHTML = '<i class="bi bi-currency-dollar"></i>';
+                    badgeSpan.style.color = 'aquamarine';
+                    badgeSpan.title = 'This User Has Infinite Campus Premium';
                 } else if (badgeText === "100") {
                     badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
                     badgeSpan.style.color = "yellow";

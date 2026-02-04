@@ -1,7 +1,16 @@
-const MAX_SIZE = 100 * 1024 * 1024;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+const DEFAULT_MAX_SIZE = 100 * 1024 * 1024;
+const PREMIUM_MAX_SIZE = 500 * 1024 * 1024;
 const appDiv = document.getElementById("app");
 const params = new URLSearchParams(window.location.search);
 const fileParam = params.get("file");
+let finalFileUrl = null;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 if (fileParam) {
     appDiv.innerHTML = `
         <center>
@@ -21,9 +30,7 @@ if (fileParam) {
         progressBar.style.width = "0%";
         fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
             method: "GET",
-            headers: {
-                "ngrok-skip-browser-warning": "true"
-            }
+            headers: { "ngrok-skip-browser-warning": "true" }
         })
         .then(response => {
             if (!response.ok) throw new Error("Network Response Was Not Ok");
@@ -56,19 +63,18 @@ if (fileParam) {
             URL.revokeObjectURL(url);
             progressBar.style.width = "100%";
         })
-        .catch(err => {
-            showError("Download Failed: " + err.message);
-        });
+        .catch(err => { showError("Download Failed: " + err.message); });
     };
 } else {
     appDiv.innerHTML = `
         <center>
             <h2 class="tptxt">Upload A File → Get A 5 Minute Download Link</h2>
+            <p id="premiumInfo" style="color:blue;"></p>
             <input type="file" id="fileInput" style="display:none;">
             <label for="fileInput" class="button">Choose File</label>
             <p id="fileName"></p>
             <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto; text-align:left;">
-            <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;"></div>
+                <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;"></div>
             </div>
             <p id="output"></p>
         </center>
@@ -78,63 +84,103 @@ if (fileParam) {
     const progressBar = document.getElementById("progressBar");
     const progressContainer = document.getElementById("progressContainer");
     const output = document.getElementById("output");
-    input.addEventListener("change", () => {
+    const premiumInfo = document.getElementById("premiumInfo");
+    let maxFileSize = DEFAULT_MAX_SIZE;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const uid = user.uid;
+            const snapshot = await get(child(ref(db), `users/${uid}/profile/premium`));
+            const isPremium = snapshot.exists() && snapshot.val() === true;
+            if (isPremium) {
+                maxFileSize = PREMIUM_MAX_SIZE;
+                premiumInfo.innerHTML = `You Are A Premium User! You Can Upload Files Up To 500MB.`;
+            } else {
+                premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Upgrade To <a href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+            }
+        } else {
+            premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Sign In And Upgrade To <a href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+        }
+    });
+    input.addEventListener("change", async () => {
         const file = input.files[0];
         if (!file) return;
         fileNameDisplay.textContent = "Selected File: " + file.name;
-        if (file.size > MAX_SIZE) {
-            showError("File Too Large! Maximum Allowed Size Is 100 MB.");
+        if (file.size > maxFileSize) {
+            if (maxFileSize === PREMIUM_MAX_SIZE) {
+                showError("File Too Large! Maximum Allowed Size For Premium Is 500 MB.");
+            } else {
+                output.innerHTML = `File Too Large! Maximum Allowed Size Is 100MB. <br>Want to upload up to 500MB? <a href="/premium">Upgrade to Premium</a>`;
+            }
             input.value = "";
             return;
         }
-        const formData = new FormData();
-        formData.append("file", file);
+        const CHUNK_SIZE = 10 * 1024 * 1024;
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const fileId = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${a}/uploadthis`, true);
-        let uploadStart = Date.now();
-        xhr.upload.onprogress = (e) => {
-            if (!e.lengthComputable) return;
-            const percent = Math.round((e.loaded / e.total) * 100);
-            const elapsed = (Date.now() - uploadStart) / 1000;
-            const speed = e.loaded / elapsed;
-            const remainingBytes = e.total - e.loaded;
-            const remainingSec = speed > 0 ? Math.round(remainingBytes / speed) : 0;
-            progressBar.style.width = percent + "%";
-            progressBar.textContent = `${percent}% — ${remainingSec}s Left`;
-        };
-        xhr.onload = () => {
-            if (xhr.status === 200) {
-                try {
-                    const res = JSON.parse(xhr.responseText);
-                    const urlParts = res.fileUrl.split("/");
-                    const filename = urlParts[urlParts.length - 1];
-                    const link = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(filename)}`;
-                    output.innerHTML = `
-                        <center>
-                            <p>Temporary Download Link (5 Mins):</p>
-                            <input type="text" id="fileLink" value="${link}" readonly style="width:80%">
-                            <button class="button" onclick="copyLink()">Copy</button>
-                            <br><br>
-                            <a href="${link}" target="_blank">
-                                <button class="button">Go To Download Page</button>
-                            </a>
-                        </center>
-                    `;
-                    progressBar.style.width = "100%";
-                } catch (err) {
-                    output.innerHTML = `<p class="r">Error Parsing Server Response</p>`;
-                    console.error(err);
-                }
-            } else {
-                output.innerHTML = `<p class="r">Upload Failed: ${xhr.statusText}</p>`;
+        let uploadedBytes = 0;
+        for (let chunkNumber = 1; chunkNumber <= totalChunks; chunkNumber++) {
+            const start = (chunkNumber - 1) * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, file.size);
+            const chunk = file.slice(start, end);
+            const formData = new FormData();
+            formData.append("file", chunk);
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${a}/uploadthis`, false);
+            xhr.setRequestHeader("X-File-Id", fileId);
+            xhr.setRequestHeader("X-Chunk-Number", chunkNumber);
+            xhr.setRequestHeader("X-Total-Chunks", totalChunks);
+            xhr.setRequestHeader("X-Filename", file.name);
+            if (auth.currentUser) {
+                xhr.setRequestHeader("X-User-Id", auth.currentUser.uid);
             }
-        };
-        xhr.onerror = () => {
-            output.innerHTML = `<p class="r">Upload Failed (Network Error)</p>`;
-        };
-        xhr.send(formData);
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    uploadedBytes += chunk.size;
+                    const percent = Math.round((uploadedBytes / file.size) * 100);
+                    progressBar.style.width = percent + "%";
+                    progressBar.textContent = `${percent}% — Uploading Chunk ${chunkNumber}/${totalChunks}`;
+                    if (chunkNumber === totalChunks) {
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            if (res.fileUrl) {
+                                finalFileUrl = res.fileUrl;
+                            }
+                        } catch (e) {
+                            throw new Error("Invalid Server Response");
+                        }
+                    }
+                } else {
+                    throw new Error(`Chunk ${chunkNumber} Upload Failed`);
+                }
+            };
+            xhr.onerror = () => {
+                output.innerHTML = `<p class="r">Chunk ${chunkNumber} Upload Failed (Network Error)</p>`;
+                throw new Error(`Chunk ${chunkNumber} Upload Failed`);
+            };
+            xhr.send(formData);
+        }
+        output.innerHTML = `<p>Upload Complete! Finalizing On Server...</p>`;
+        if (!finalFileUrl) {
+            output.innerHTML = `<p class="r">Upload Finished, But Final File URL Missing.</p>`;
+            return;
+        }
+        const fileName = finalFileUrl.split("/").pop();
+        const link = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
+        output.innerHTML = `
+            <center>
+                <p>Temporary Download Link (5 Mins):</p>
+                <input type="text" id="fileLink" value="${link}" readonly style="width:80%">
+                <button class="button" onclick="copyLink()">Copy</button>
+                <br><br>
+                <a href="${link}" target="_blank">
+                    <button class="button">Go To Download Page</button>
+                </a>
+            </center>
+        `;
+        progressBar.style.width = "100%";
+        progressBar.textContent = "100% — Complete";
     });
     window.copyLink = () => {
         const link = document.getElementById("fileLink");

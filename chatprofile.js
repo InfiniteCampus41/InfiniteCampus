@@ -22,6 +22,7 @@ function createBadge(profile, isVerified) {
     	{ key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
     	{ key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
     	{ key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
+		{ key: "premium", icon: "bi bi-currency-dollar", title: "This User Has Infinite Campus Premium", color: "aquamarine"},
     	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100Th Signed Up User", color: "yellow" }
   	];
   	roles.forEach(r => {
