@@ -74,8 +74,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     <a class="test button darkbuttons rgb-element" href="InfiniteColors.html">
                         Change Site Theme
                     </a>
-                    <a href="InfinitePolls.html">
-                        Website Poll
+                    <a href="InfiniteDonaters.html">
+                        Help Support By Donating
                     </a>
                     <br>
                     <br>

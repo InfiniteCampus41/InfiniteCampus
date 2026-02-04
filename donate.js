@@ -28,7 +28,7 @@ function signup() {
         currentUser = userCredential.user;
         sessionStorage.setItem("donUID", currentUser.uid);
     })
-    .catch(err => alert(err.message));
+    .catch(err => showError(err.message));
 }
 function login() {
     const email = document.getElementById("email").value;
@@ -38,7 +38,7 @@ function login() {
         currentUser = userCredential.user;
         sessionStorage.setItem("donUID", currentUser.uid);
     })
-    .catch(err => alert(err.message));
+    .catch(err => showError(err.message));
 }
 function logout() {
     auth.signOut();
@@ -46,9 +46,9 @@ function logout() {
 }
 async function donate() {
     const amount = Number(document.getElementById("amount").value);
-    if (!amount || amount <= 0) return alert("Invalid Amount");
+    if (!amount || amount <= 0) return showError("Invalid Amount");
     const uid = currentUser?.uid;
-    if (!uid) return alert("You Must Be Logged In To Donate.");
+    if (!uid) return showError("You Must Be Logged In To Donate.");
     sessionStorage.setItem("donUID", uid);
     const res = await fetch(`${backend}/checkout`, {
         method: "POST",
@@ -76,13 +76,44 @@ if (result && uid) {
         .then(data => {
             const msg = document.getElementById("msg");
             if (data.status === "success") {
-                msg.innerText = `Thank you! You Donated $${(data.amount/100).toFixed(2)}. Premium Activated If $5+!`;
+                if ((data.amount/100).toFixed(2) >= 5) {
+                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium!`
+                } else {
+                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}.`;
+                }
             } else {
                 msg.innerText = "Donation Cancelled.";
             }
             history.replaceState({}, "", "/");
             sessionStorage.removeItem("donUID");
         });
+    });
+}
+const password = document.getElementById("password");
+if (password) {
+    password.addEventListener("keydown", (e) => {
+      	if (e.key === "Enter") {
+        	e.preventDefault();
+        	login();
+      	}
+    });
+}
+const email = document.getElementById("email");
+if (email) {
+    email.addEventListener("keydown", (e) => {
+      	if (e.key === "Enter") {
+        	e.preventDefault();
+        	login();
+      	}
+    });
+}
+const amount = document.getElementById("amount");
+if (amount) {
+    amount.addEventListener("keydown", (e) => {
+      	if (e.key === "Enter") {
+        	e.preventDefault();
+        	donate();
+      	}
     });
 }
 window.donate = donate;

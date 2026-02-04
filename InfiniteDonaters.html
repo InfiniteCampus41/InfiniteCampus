@@ -51,7 +51,15 @@
     </head>
     <body>
         <center>
-            <div class="box">
+            <h2 class="tptxt">
+                Nothing Here Yet
+            </h2>
+            <hr>
+            <br>
+            <h4 class="mdtxt">
+                Premium & Donation Services Will Be Available Soon
+            </h4>
+            <div id="pollContainer" style="display:none;">
                 <h2 id="title" class="tptxt">
                     Donate
                 </h2>
@@ -63,8 +71,22 @@
                 <p id="msg" style="color:white;">
                 </p>
                 <div id="authUI">
+                    <p class="btxt">
+                        You Must Log In To Donate
+                    </p>
+                    <label class="btxt" for="email">
+                        Email
+                    </label>
+                    <br>
                     <input class="button" id="email" type="email" placeholder="Email">
+                    <br>
+                    <label class="btxt" for="password">
+                        Password
+                    </label>
+                    <br>
                     <input class="button" id="password" type="password" placeholder="Password">
+                    <br>
+                    <br>
                     <button class="button" onclick="login()">
                         Login
                     </button>
@@ -74,9 +96,13 @@
                 </div>
                 <div id="donateUI" style="display:none">
                     <input class="button" id="amount" type="number" min="1" placeholder="Amount (USD)">
+                    <br>
+                    <br>
                     <button class="button" onclick="donate()">
                         Donate
                     </button>
+                    <br>
+                    <br>
                     <button class="button" onclick="logout()">
                         Logout
                     </button>
