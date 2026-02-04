@@ -1,16 +1,12 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
-import { firebaseConfig } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { ref, get, child } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { auth, db } from "./firebase.js";
 const DEFAULT_MAX_SIZE = 100 * 1024 * 1024;
 const PREMIUM_MAX_SIZE = 500 * 1024 * 1024;
 const appDiv = document.getElementById("app");
 const params = new URLSearchParams(window.location.search);
 const fileParam = params.get("file");
 let finalFileUrl = null;
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
 if (fileParam) {
     appDiv.innerHTML = `
         <center>

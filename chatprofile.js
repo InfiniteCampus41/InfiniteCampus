@@ -1,4 +1,4 @@
-import { db, auth } from "./chatfirebase.js";
+import { db, auth } from "./firebase.js";
 import { ref, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const displayNameEl = document.getElementById("displayName");
 const bioEl = document.getElementById("bio");

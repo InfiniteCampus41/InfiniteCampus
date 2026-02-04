@@ -1,11 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, remove, update, get, forceWebSockets} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { ref, onValue, push, remove, update, get, forceWebSockets} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 forceWebSockets();
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { firebaseConfig } from "./firebase.js";
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { auth, db } from "./firebase.js";
 const updatesRef = ref(db, "updates");
 let lastSentKey = null;
 let hasLoaded = false;

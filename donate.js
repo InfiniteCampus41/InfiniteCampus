@@ -1,15 +1,5 @@
-firebase.initializeApp({  
-  	apiKey: "AIzaSyBvbTQcsL1DoipWlO0ckApzkwCZgxBYbzY",
-  	authDomain: "notes-27f22.firebaseapp.com",
-  	databaseURL: "https://notes-27f22-default-rtdb.firebaseio.com",
-  	projectId: "notes-27f22",
-  	storageBucket: "notes-27f22.firebasestorage.app",
-  	messagingSenderId: "424229778181",
-  	appId: "1:424229778181:web:fa531219ed165346fa7d6c",
-  	measurementId: "G-834FYV6VTR"
-});
+import { auth } from "./firebase.js";
 const backend = `${a}`;
-const auth = firebase.auth();
 const stripe = Stripe("pk_test_51SwqnpInalZRzJRKVBQTC3l8NDDsOCWTjHVmINXMoKK9GAHcQ0L4yThMfBkHWix6cgnu28vswidluayVGQUg8OeP00CqBY5phP");
 let currentUser = null;
 auth.onAuthStateChanged(user => {

@@ -1,10 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getDatabase, ref, get, push, onValue} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { firebaseConfig } from "./firebase.js";
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getDatabase(app);
+import { ref, get, push, onValue} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { auth, db } from "./firebase.js";
 const pollList = document.getElementById("pollList");
 const entriesDiv = document.getElementById("entries");
 const pollRef = ref(db, `poll`);

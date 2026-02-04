@@ -1,4 +1,4 @@
-import { auth, db } from './chatfirebase.js';
+import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const statusEl = document.getElementById('status');

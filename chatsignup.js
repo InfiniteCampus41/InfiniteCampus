@@ -1,4 +1,4 @@
-import { auth, db } from "./chatfirebase.js";
+import { auth, db } from "./firebase.js";
 import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { ref, set, update, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const emailInput = document.getElementById("email");
