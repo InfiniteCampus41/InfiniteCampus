@@ -1,12 +1,13 @@
-import { ref, onValue, push, remove, update, get, forceWebSockets} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { ref, onValue, push, remove, update, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 forceWebSockets();
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { auth, db } from "./firebase.js";
 const updatesRef = ref(db, "updates");
 let lastSentKey = null;
 let hasLoaded = false;
 let isOwner = false;
 let isTester = false;
+let cleanupRunning = false;
 function sendToCustomDB(message) {
     const channelId = "1389703415810101308";
     fetch(`${a}/send`, {
@@ -17,6 +18,26 @@ function sendToCustomDB(message) {
             channelId: channelId
         })
     }).catch((e) => console.error("ERR#7 Server Post Error:", e));
+}
+async function enforceUpdateLimit(snapshot) {
+    if (cleanupRunning) return;
+    cleanupRunning = true;
+    try {
+        const updates = [];
+        snapshot.forEach(child => {
+            updates.push({ key: child.key, ...child.val() });
+        });
+        updates.sort((a, b) => b.timestamp - a.timestamp);
+        if (updates.length <= 10) return;
+        const toDelete = updates.slice(10);
+        const multi = {};
+        toDelete.forEach(u => {
+            multi["updates/" + u.key] = null;
+        });
+        await update(ref(db), multi);
+    } finally {
+        cleanupRunning = false;
+    }
 }
 function addUpdate() {
   	if (!isOwner && !isTester) return;
@@ -53,9 +74,6 @@ function renderUpdates(snapshot) {
     	updates.push({ key: child.key, ...child.val() });
   	});
   	updates.sort((a, b) => b.timestamp - a.timestamp);
-  	if (updates.length > 10) {
-    	updates.slice(10).forEach((u) => deleteUpdate(u.key));
-  	}
   	const container = document.getElementById("updates");
   	container.innerHTML = "";
   	updates.slice(0, 10).forEach((update, index) => {
@@ -73,18 +91,8 @@ function renderUpdates(snapshot) {
     	}
     	container.appendChild(div);
   	});
-  	if (updates.length > 0) {
-    	const firstUpdate = updates[0];
-    	if (hasLoaded && firstUpdate.key !== lastSentKey) {
-      		lastSentKey = firstUpdate.key;
-			sendToCustomDB(firstUpdate.content);
-    	} else if (!hasLoaded) {
-      		lastSentKey = firstUpdate.key;
-      		hasLoaded = true;
-    	}
-  	}
 }
-onValue(updatesRef, (snapshot) => {
+onValue(updatesRef, async (snapshot) => {
     const updates = [];
     snapshot.forEach(child => {
         updates.push({ key: child.key, ...child.val() });
@@ -93,13 +101,13 @@ onValue(updatesRef, (snapshot) => {
     if (!hasLoaded && updates.length) {
         lastSentKey = updates[0].key;
         hasLoaded = true;
-        return;
-    }
-    if (updates.length && updates[0].key !== lastSentKey) {
+    } 
+    else if (updates.length && updates[0].key !== lastSentKey) {
         lastSentKey = updates[0].key;
         sendToCustomDB(updates[0].content);
     }
     renderUpdates(snapshot);
+    await enforceUpdateLimit(snapshot);
 });
 onAuthStateChanged(auth, async (user) => {
   	const inputBox = document.getElementById("newUpdateContainer") || document.getElementById("newUpdate");
