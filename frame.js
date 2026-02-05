@@ -22,9 +22,22 @@ const headerHTML = `
                 </i>
             </button>
             <div id="desktopNav">
-                <a href="InfiniteAbouts.html">
-                    About
-                </a>
+                <div class="dropdown-wrap">
+                    <button id="abtToggle" class="dropdown-toggle">
+                        About
+                    </button>
+                    <div class="dropdown test" id="abtDropdown">
+                        <button onclick="location.href='InfiniteAbouts.html'">
+                            About Us
+                        </button>
+                        <button onclick="location.href='InfinitePolicies.html'">
+                            Privacy Policy
+                        </button>
+                        <button onclick="location.href='InfiniteTerms.html'">
+                            Terms
+                        </button>
+                    </div>
+                </div>
                 <a href="InfiniteApps.html">
                     Apps
                 </a>
@@ -138,6 +151,12 @@ const headerHTML = `
         </a>
         <a href="InfiniteContacts.html" class="darkbuttons">
             Contact Me
+        </a>
+        <a href="InfinitePolicies.html" class="darkbuttons">
+            Privacy Policy
+        </a>
+        <a href="InfiniteTerms.html" class="darkbuttons">
+            Terms
         </a>
     </div>
     <footer id="site-footer" class="rgb-element">
@@ -320,23 +339,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const downloadDropdown = document.getElementById('downloadDropdown');
     const helpToggle = document.getElementById('helpToggle');
     const helpDropdown = document.getElementById('helpDropdown');
+    const abtToggle = document.getElementById('abtToggle');
+    const abtDropdown = document.getElementById('abtDropdown');
     chatToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         chatDropdown.style.display = chatDropdown.style.display === 'flex' ? 'none' : 'flex';
         downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
+        abtDropdown.style.display = 'none';
     });
     downloadToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadDropdown.style.display = downloadDropdown.style.display === 'flex' ? 'none' : 'flex';
         chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
+        abtDropdown.style.display = 'none';
     });
     helpToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
         downloadDropdown.style.display = 'none';
         chatDropdown.style.display = 'none';
+        abtDropdown.style.display = 'none';
+    });
+    abtToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
+        downloadDropdown.style.display = 'none';
+        chatDropdown.style.display = 'none';
+        helpDropdown.style.display = 'none';
     });
     document.addEventListener('click', (e) => {
         if (!chatDropdown.contains(e.target) && !chatToggle.contains(e.target)) {
@@ -347,6 +378,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (!helpDropdown.contains(e.target) && !helpToggle.contains(e.target)) {
             helpDropdown.style.display = 'none';
+        }
+        if (!abtDropdown.contains(e.target) && !abtToggle.contains(e.target)) {
+            abtDropdown.style.display = 'none';
         }
     });
     const mobileBtn = document.getElementById("mobileMenuBtn");
