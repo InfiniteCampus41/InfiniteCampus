@@ -126,6 +126,7 @@ console.log('%cC', `
     color: #8BC53F;
     background-color: #121212;
 `);
+let isFahrenheit = true;
 localStorage.setItem("replit-pill-preference", "hidden");
 function showError(err) {
     const existing = document.getElementById("errDiv");
@@ -190,7 +191,6 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem("warn", "1");
         }
     }
-    let isFahrenheit = true;
     let currentCity = "";
     function setPopup2Color(isDark) {
         document.querySelectorAll('.popup2').forEach(el => {
@@ -285,17 +285,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error("Temperature Unavailable");
                 return;
             }
-            const temp = useFahrenheit
-                ? `${data.temperature.fahrenheit}°F`
-                : `${data.temperature.celsius}°C`;
+            const temp = useFahrenheit ? `${data.temperature.fahrenheit}°F` : `${data.temperature.celsius}°C`;
+            const display = `${data.location}: ${data.emoji} ${temp}`;
             const weatherEl = document.getElementById("weather");
             const toggleEl = document.getElementById("toggle");
-            weatherEl.textContent = data.display;
+            weatherEl.textContent = display;
             weatherEl.classList.add("show");
             toggleEl.classList.add("show");
             applyDarkModeClass();
         } catch (err) {
-            console.error("Weather error:", err);
+            console.error("Weather Error:", err);
+            weatherEl.textContent("Unable To Get Weather");
         }
     }
     function removePlusSignsFromPage() {
@@ -306,7 +306,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     document.getElementById("toggle")?.addEventListener("click", () => {
-        isFahrenheit = !isFahrenheit;
+        if (isFahrenheit === true) {
+            isFahrenheit = false;
+        } else {
+            isFahrenheit = true;
+        }
         document.getElementById("toggle").innerText = isFahrenheit ? "°C" : "°F";
         const city = sessionStorage.getItem("city");
         const state = sessionStorage.getItem("state");
