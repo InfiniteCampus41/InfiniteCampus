@@ -119,7 +119,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 e.style.borderColor = textColor || '';
             });
             bar.querySelectorAll('img').forEach(img => {
-                img.style.filter = isDark ? 'invert(1)' : '';
+                img.style.filter = isDark ? 'invert(0.9)' : '';
             });
             if (!isDark && bar === header) {
                 bar.querySelectorAll('button').forEach(btn => {
@@ -137,7 +137,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 });
             }
             document.querySelectorAll('.settings').forEach(img => {
-                img.style.filter = isDark ? 'invert(0)' : 'invert(1)';
+                img.style.filter = isDark ? 'invert(0)' : 'invert(0.9)';
             });
             document.querySelectorAll('.settings-button').forEach(div => {
                 div.style.border = isDark ? '1px solid white' : '1px solid black';
