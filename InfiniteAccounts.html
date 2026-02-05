@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+        </script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-7SV03ZXJ9R');
+        </script>
+        <title>
+            Infinite Campus
+        </title>
+        <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+        <link rel="stylesheet" href="global.css">
+        <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
+        <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
+        <meta property="og:title" content="Infinite Campus">
+        <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
+        <meta property="og:url" content="https://www.infinitecampus.xyz">
+        <meta name="theme-color" content="#8cbe37">
+        <meta content="/res/icon.png" property="og:image">
+        <link rel="manifest" href="/manifest.json">
+        <script src="main.js">
+        </script>
+        <script src="theme.js">
+        </script>
+    </head>
+    <body>
+        <center id="profileView" style="display:none;">
+            <div id="profileCard">
+                <div id="loading">
+                    Loading Profile...
+                </div>
+                <div id="profileContent" style="display:none;">
+                    <div class="displayName" id="displayName">
+                    </div>
+                    <hr>
+                    <div class="bio" id="bio">
+                    </div>
+                    <hr>
+                    <div class="uid" id="uid">
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <button id="messageUserBtn" class="button">
+                        Message
+                    </button>
+                    <a class="button" href="InfiniteChatters.html" class="button">
+                        Back To Chat
+                    </a>
+                </div>
+                <div id="error" class="error" style="display:none;">
+                </div>
+            </div>
+        </center>
+        <div id="settingsPage">
+            <center id="chatBtn" style="display:none">
+                <a style="max-width:400px;" class="button" href="InfiniteChatters.html">
+                    Go To Chat
+                </a>
+                <br>
+                <br>
+                <br>
+            </center>
+            <div id="userpanel">
+                <p id="status" class="btxt">
+                    Checking Login Status...
+                </p>
+                <br>
+                <img id="pfp">
+                <div id="stats">
+                    <div class="d-flex align-items-center gap-2">
+                        <textarea id="displayNameInput" class="tinput" placeholder="Enter Name Here" disabled maxlength="20" rows="1" style="font-weight:700"></textarea>
+                        <button id="editDisplayBtn" title="Edit">
+                            ✎
+                        </button>
+                        <button id="saveDisplayBtn"  style="display:none" title="Save">
+                            ✓
+                        </button>
+                        <button id="cancelDisplayBtn" style="display:none" title="Cancel">
+                            ✕
+                        </button>
+                    </div>
+                    <small id="displayCharCount" class="text-secondary d-block text-end">
+                        0 / 20
+                    </small>
+                    <div class="d-flex align-items-center gap-2" style="margin-top:-10px">
+                        <textarea id="bioInput" class="tinput" placeholder="Enter Bio Here" disabled maxlength="50" rows="1"></textarea>
+                        <button id="editBioBtn" class="btn icon-btn" title="Edit">
+                            ✎
+                        </button>
+                        <button id="saveBioBtn" class="btn icon-btn" style="display:none" title="Save">
+                            ✓
+                        </button>
+                        <button id="cancelBioBtn" class="btn icon-btn" style="display:none" title="Cancel">
+                            ✕
+                        </button>
+                    </div>
+                    <small id="bioCharCount" class="text-secondary d-block text-end mt-1">
+                        0 / 50
+                    </small>
+                    <br>
+                    <br>
+                </div>
+            </div>
+            <center id="adminBtn" style="display:none">
+                <a style="max-width:400px;" class="button" href="InfiniteAdmins.html">
+                    Go To Admin Pages
+                </a>
+                <br>
+                <br>
+                <br>
+            </center>
+            <center>
+                <div id="badgeContainer">
+                    <p class="btxt">
+                        Badges
+                    </p>
+                    <hr class="szo2">
+                    <div id="badges">
+                    </div>
+                </div>
+                <hr>
+                <div id="settings" style="justify-content:center; max-width:900px;">
+                    <label for="nameColorInput">
+                        Name Color
+                    </label>
+                    <div class="d-flex gap-2 align-items-center" style="justify-content:center">
+                        <input type="color" id="nameColorInput" class="form-control form-control-color">
+                        <button id="saveNameColorBtn" class="btn btn-primary">
+                            Save Name Color
+                        </button>
+                    </div>
+                    <br>
+                    <div id="profileContainer" style="display:flex;" class="mb-3">
+                    </div>
+                    <div style="display:grid; justify-content:center;">
+                        <p class="mb-2" style="text-align:center;color:#777;">
+                            <strong>
+                                User ID:
+                            </strong>
+                            <span id="userIdDisplay" class="text-info">
+                            </span>
+                        </p>
+                        <hr>
+                        <p class="mb-2" style="text-align:center;color:#777">
+                            <strong>
+                                Email:
+                            </strong>
+                            <span id="userEmailDisplay" class="text-info">
+                            </span>
+                        </p>
+                        <button id="verifyEmailBtn" class="button">
+                            Verify Email
+                        </button>
+                        <hr>
+                    </div>
+                    <div id="dangerzone">
+                        <button id="logoutBtn" class="button">
+                            Log Out
+                        </button>
+                        <br>
+                        <br>
+                        <button id="resetPasswordBtn" class="button">
+                            Reset Password
+                        </button>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+            </center>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+        </script>
+        <script type="module" src="account.js">
+        </script>
+        <script src="frame.js">
+        </script>
+    </body>
+</html>

@@ -1,9 +1,12 @@
 import { auth, db } from "./firebase.js";
 import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { ref, set, update, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+const urlParams = new URLSearchParams(window.location.search);
+const chatparams = urlParams.get("chat");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const signupBtn = document.getElementById("signupBtn");
+const loginBtn = document.getElementById("login");
 const displayNameSection = document.getElementById("displayNameSection");
 const displayNameInput = document.getElementById("displayNameInput");
 const saveDisplayNameBtn = document.getElementById("saveDisplayNameBtn");
@@ -14,7 +17,11 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("signupSection").style.display = "none";
         displayNameSection.style.display = "block";
     } else if (user && user.displayName) {
-        window.location.href = "settings.html";
+        if (chatparams) {
+            window.location.href = "InfiniteAccounts.html?chat=true";
+        } else {
+            window.location.href = "InfiniteAccounts.html";
+        }
     }
 });
 signupBtn.addEventListener("click", async () => {
@@ -44,6 +51,13 @@ signupBtn.addEventListener("click", async () => {
             console.error(error);
             showError("Signup Failed: " + error.message);
         }
+    }
+});
+loginBtn.addEventListener("click", async () => {
+    if (chatparams) {
+        window.location.href = "InfiniteLogins.html?chat=true";
+    } else {
+        window.location.href = "InfiniteLogins.html";
     }
 });
 saveDisplayNameBtn.addEventListener("click", async () => {
@@ -87,7 +101,11 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         await update(userProfileRef, {
             displayName: displayName,
         });
-        window.location.href = "settings.html";
+        if (chatparams) {
+            window.location.href = "InfiniteAccounts.html?chat=true";
+        } else {
+            window.location.href = "InfiniteAccounts.html";
+        }
     } catch (error) {
         if (error.code === "permission-denied") {
             return;

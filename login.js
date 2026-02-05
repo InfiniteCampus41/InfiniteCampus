@@ -3,14 +3,14 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-dat
 import { auth, db } from "./firebase.js";
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.href = "InfinitePasswords.html";
+        window.location.href = "InfiniteLogins.html";
         return;
     }
     try {
         const profileRef = ref(db, `users/${user.uid}/profile`);
         const snapshot = await get(profileRef);
         if (!snapshot.exists()) {
-            window.location.href = "InfinitePasswords.html";
+            window.location.href = "InfiniteLogins.html";
             return;
         }
         const profile = snapshot.val();
@@ -20,22 +20,19 @@ onAuthStateChanged(auth, async (user) => {
             profile.isCoOwner === true ||
             profile.isDev === true;
         if (isAllowed) {
-            if (window.location.pathname == '/InfinitePasswords.html') {
+            if (window.location.pathname == '/InfiniteLogins.html') {
                 window.location.href = "InfiniteAdmins.html";
             }
         } else {
-            window.location.href = "InfinitePasswords.html";
-            signOut(auth).then(() => {
-                window.location.href = "InfinitePasswords.html";
-            });
+            window.location.href = "InfiniteAccounts.html";
         }
     } catch (err) {
         console.error("Permission Check Failed:", err);
-        window.location.href = "InfinitePasswords.html";
+        window.location.href = "InfiniteLogins.html";
     }
 });
 window.logout = () => {
     signOut(auth).then(() => {
-        window.location.href = "InfinitePasswords.html";
+        window.location.href = "InfiniteLogins.html";
     });
 };

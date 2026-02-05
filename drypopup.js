@@ -22,6 +22,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 <p class="btxt">
                     Settings
                 </p>
+                <a class="button" href="InfiniteAccounts.html">
+                    My Account
+                </a>
                 <div class="section weather-section">
                     <p>
                         Enable More Accurate Weather?

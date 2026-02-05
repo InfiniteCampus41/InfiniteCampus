@@ -72,7 +72,7 @@ window.addUrl = addUrl;
 async function checkUserPermissions(user) {
     if (!user) {
         showError("You Must Be Logged In To Access This Page.");
-        window.location.href = "/InfinitePasswords.html";
+        window.location.href = "/InfiniteLogins.html";
         return false;
     }
     const userRef = ref(db, `users/${user.uid}/profile`);
@@ -215,7 +215,7 @@ onAuthStateChanged(auth, async (user) => {
         fetchUrls();
         fetchLogs();
     } else {
-        window.location.href = "/InfinitePasswords.html";
+        window.location.href = "/InfiniteLogins.html";
     }
 });
 setInterval(fetchLogs, 5000);

@@ -1,0 +1,740 @@
+import { auth, db } from './firebase.js';
+import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+const urlParams = new URLSearchParams(window.location.search);
+const uid = urlParams.get("user");
+const settingsPage = document.getElementById('settingsPage');
+const profileView = document.getElementById('profileView');
+if (uid) {
+    settingsPage.style.display = 'none';
+    profileView.style.display = 'block';
+    const style = document.createElement("style");
+    style.innerHTML = `
+        body {
+            background:#121212;
+            font-family: sans-serif;
+            color: #eee;
+        }
+        #profileCard {
+            padding:20px 30px;
+            max-width:60%;
+        }
+        .displayName {
+            font-size:1.6em;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        img {
+            transition:0.3s all;
+        }
+        .bio {
+            margin-bottom:12px;
+            color:#ccc;
+            white-space:pre-wrap;
+        }
+        .bio::before {
+            content: "Bio: ";
+        }
+        .uid {
+            font-size:0.9em;
+            color:#777;
+            margin-top:10px;
+        }
+        .error {
+            color:red;
+            font-weight:bold;
+        }
+        hr {
+            max-width:100%;
+        }
+    `;
+    document.head.appendChild(style);
+    const displayNameEl = document.getElementById("displayName");
+    const bioEl = document.getElementById("bio");
+    const uidEl = document.getElementById("uid");
+    const loadingEl = document.getElementById("loading");
+    const profileContent = document.getElementById("profileContent");
+    const errorEl = document.getElementById("error");
+    const messageBtn = document.getElementById("messageUserBtn");
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get("user");
+    function createBadge(profile, isVerified) {
+  	    const badgeContainer = document.createElement("span");
+  	    badgeContainer.style.display = "flex";
+  	    badgeContainer.style.alignItems = "center";
+  	    badgeContainer.style.gap = "6px";
+  	    badgeContainer.style.marginLeft = "6px";
+  	    const roles = [
+        	{ key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
+        	{ key: "isTester", icon: "fa-solid fa-cogs", title: "Tester", color: "DarkGoldenRod" },
+        	{ key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
+        	{ key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
+        	{ key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
+        	{ key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
+	    	{ key: "premium", icon: "bi bi-currency-dollar", title: "This User Has Infinite Campus Premium", color: "aquamarine"},
+        	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100Th Signed Up User", color: "yellow" }
+  	    ];
+  	    roles.forEach(r => {
+    	    if (profile?.[r.key] === true) {
+      	    	const badge = document.createElement("i");
+      	    	badge.className = `${r.icon}`;
+      	    	badge.title = r.title;
+      	    	badge.style.color = r.color;
+      	    	badge.style.fontSize = "1.1em";
+      	    	badgeContainer.appendChild(badge);
+    	    }
+  	    });
+	    if (isVerified === true) {
+        	const verified = document.createElement("i");
+        	verified.className = "bi bi-shield-check";
+        	verified.title = "Verified User";
+        	verified.style.color = "white";
+        	verified.style.fontSize = "1.1em";
+        	badgeContainer.appendChild(verified);
+  	    }
+  	    return badgeContainer;
+    }
+    if (!uid) {
+      	showError("Invalid URL");
+    } else {
+      	loadUserProfile(uid);
+    }
+    async function loadUserProfile(uid) {
+      	try {
+        	const userSnap = await get(ref(db, "users/" + uid));
+        	if (!userSnap.exists()) {
+          		showError(`User With ID "${uid}" Not Found.`);
+          		return;
+        	}
+        	const foundUser = userSnap.val();
+        	const currentUser = auth.currentUser;
+        	let viewerIsOwner = false;
+        	if (currentUser) {
+          		const viewerSnap = await get(ref(db, "users/" + currentUser.uid + "/profile"));
+          		if (viewerSnap.exists()) {
+            		const p = viewerSnap.val();
+            		if (p?.isOwner === true || p?.isCoOwner === true || p?.isHAdmin === true || p?.isDev === true) {
+              			viewerIsOwner = true;
+            		}
+          		}
+        	}
+        	const color = foundUser.settings?.color || "#ffffff";
+        	let displayName = foundUser.profile?.displayName || "";
+        	if (displayName.trim() === "") {
+          		displayName = "Spam Account";
+        	}
+        	const bio = foundUser.profile?.bio || "No Bio Set.";
+        	const email = foundUser.settings?.userEmail || "(No Email Set)";
+        	const picValue = foundUser.profile?.pic ?? 0;
+        	const profileImages = [
+          		"/pfps/1.jpeg",
+          		"/pfps/2.jpeg",
+          		"/pfps/3.jpeg",
+          		"/pfps/4.jpeg",
+          		"/pfps/5.jpeg",
+          		"/pfps/6.jpeg",
+          		"/pfps/7.jpeg",
+          		"/pfps/8.jpeg",
+          		"/pfps/9.jpeg",
+          		"/pfps/10.jpeg",
+          		"/pfps/11.jpeg",
+          		"/pfps/12.jpeg",
+          		"/pfps/13.jpeg", 
+         		"/pfps/14.jpeg"
+        	];
+        	const imgSrc = profileImages[picValue] || profileImages[0];
+        	loadingEl.style.display = "none";
+        	errorEl.style.display = "none";
+        	profileContent.style.display = "block";
+        	displayNameEl.innerHTML = "";
+        	const container = document.createElement("div");
+        	container.style.display = "flex";
+        	container.style.alignItems = "center";
+        	container.style.gap = "10px";
+        	const img = document.createElement("img");
+        	img.src = imgSrc;
+        	img.alt = "Profile Icon";
+        	img.style.width = "60px";
+        	img.style.height = "60px";
+        	img.style.marginLeft = "20px";
+        	img.style.borderRadius = "50%";
+        	img.style.border = "2px solid white";
+        	img.style.objectFit = "cover";
+        	const nameSpan = document.createElement("span");
+        	nameSpan.textContent = `@${displayName}`;
+        	nameSpan.style.color = color;
+        	nameSpan.style.fontSize = "1.2em";
+        	nameSpan.style.fontWeight = "600";
+    		container.appendChild(img);
+    		container.appendChild(nameSpan);
+    		const isVerified = foundUser.profile?.verified === true;
+    		const badgeEl = createBadge(foundUser.profile, isVerified);
+    		container.appendChild(badgeEl);
+        	displayNameEl.appendChild(container);
+        	bioEl.textContent = bio;
+        	uidEl.innerHTML = `User ID: ${uid}`;
+        	if (viewerIsOwner) {
+          		const emailEl = document.createElement("div");
+          		emailEl.style.marginTop = "5px";
+          		emailEl.textContent = `Email: ${email}`;
+          		uidEl.appendChild(emailEl);
+        	}
+        	if (messageBtn) {
+          		messageBtn.style.display = "inline-block";
+          		messageBtn.onclick = () => {
+            		localStorage.setItem("openPrivateChatUid", uid);
+            		window.location.href = "InfiniteChatters.html";
+          		};
+        	}
+      	} catch (err) {
+        	showError("Error Loading Profile: " + err.message);
+      	}
+    }
+} else {
+    const style = document.createElement("style");
+    style.innerHTML = `
+        textarea {
+            resize: none;
+        }
+        .card {
+            background-color: #111 !important;
+            border-color: #222;
+        }
+        .form-control, .form-control-color {
+            background-color: #000;
+            border: 1px solid transparent;
+        }
+        #profileContainer {
+            justify-content:center;
+        }
+        .form-control:disabled {
+            background:transparent;
+        }
+        .form-control:focus {
+            background-color: transparent;
+            color: #fff;
+            border-color: #0d6efd;
+            box-shadow: none;
+        }
+        .list-group-item {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: none;
+        }
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .text-center, label {
+            color:#777;
+            text-align:center;
+        }
+        #userpanel {
+            display:flex;
+            justify-content:center;
+            display:none;
+        }
+        .btn {
+            border:none;
+        }
+        .btn:hover {
+            color:#888 !important;
+        }
+        .btn:active {
+            border:none;
+        }
+        .tinput {
+            background:transparent;
+            border:none;
+            min-height: calc(1.5em + .75rem + calc(var(--bs-border-width) * 2));
+            margin-left:10px;
+            width:100%;
+        }
+        .tinput:active {
+            border:1px solid white;
+            border-radius:5px;
+        }
+        #stats button {
+            color:white;
+            transition:0.3s all;
+            background:none;
+            border:none;
+        }
+        #stats button:hover {
+            color:#888;
+        }
+        #settings {
+            display:flex;
+            justify-content:center;
+            max-width:900px;
+            flex-direction:column;
+        }
+        #settings button {
+            max-width:200px;
+        }
+    `;
+    document.head.appendChild(style);
+    profileView.style.display = 'none';
+    const statusEl = document.getElementById('status');
+    const updateDisplayNameBtn = document.getElementById('updateDisplayNameBtn');
+    const userIdDisplay = document.getElementById('userIdDisplay');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const adminBadge = document.getElementById('adminBadge');
+    const localStorageList = document.getElementById('localStorageList');
+    const nameColorInput = document.getElementById("nameColorInput");
+    const saveNameColorBtn = document.getElementById("saveNameColorBtn");
+    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    let currentUser = null;
+    const displayNameInput = document.getElementById("displayNameInput");
+    const editDisplayBtn = document.getElementById("editDisplayBtn");
+    const saveDisplayBtn = document.getElementById("saveDisplayBtn");
+    const cancelDisplayBtn = document.getElementById("cancelDisplayBtn");
+    const displayCharCount = document.getElementById("displayCharCount");
+    const panelPic = document.getElementById('pfp');
+    panelPic.src = '/pfps/1.jpeg';
+    panelPic.style.height = '100px';
+    panelPic.style.width = '100px';
+    panelPic.style.border = '1px solid white';
+    panelPic.style.borderRadius = '50%';
+    const userpanel = document.getElementById('userpanel');
+    const params = new URLSearchParams(window.location.search);
+    const chaturl = params.get("chat");
+    const adminBtn = document.getElementById('adminBtn');
+    const chatBtn = document.getElementById('chatBtn');
+    if (chaturl) {
+        chatBtn.style.display = 'block';
+    }
+    let currentDisplay = "";
+    window.appSettings = {
+        nameColor: "#ffffff",
+        bio: "No Bio Set",
+        displayName: "User",
+        pic: "/pfps/1.jpeg"
+    };
+    function setSetting(key, value) {
+        window.appSettings[key] = value;
+        window[key] = value;
+    }
+    window.appReady = new Promise(resolve => {
+        window.__appResolve = resolve;
+    });
+    function autoResizeDisplay() {
+        displayNameInput.style.height = "auto";
+        displayNameInput.style.height = displayNameInput.scrollHeight + "px";
+    }
+    async function loadDisplayName(uid) {
+        const displayRef = ref(db, `users/${uid}/profile/displayName`);
+        const snap = await get(displayRef);
+        if (snap.exists()) {
+            currentDisplay = snap.val() || "";
+            displayNameInput.value = currentDisplay;
+            setSetting("displayName", currentDisplay);
+        } else {
+            displayNameInput.value = "";
+            displayNameInput.placeholder = "Enter Display Name Here";
+        }
+        displayCharCount.textContent = `${displayNameInput.value.length} / 20`;
+        autoResizeDisplay();
+    }
+    function enableDisplayEditing() {
+        displayNameInput.disabled = false;
+        editDisplayBtn.style.display = "none";
+        saveDisplayBtn.style.display = "inline";
+        cancelDisplayBtn.style.display = "inline";
+        displayNameInput.focus();
+    }
+    function disableDisplayEditing(resetValue = false) {
+        if (resetValue) displayNameInput.value = currentDisplay || "";
+        displayNameInput.disabled = true;
+        editDisplayBtn.style.display = "inline";
+        saveDisplayBtn.style.display = "none";
+        cancelDisplayBtn.style.display = "none";
+        autoResizeDisplay();
+    }
+    async function saveDisplayName() {
+        if (!currentUser) return;
+        const newDisplay = displayNameInput.value.trim();
+        if (!/^[a-zA-Z0-9 _-]*$/.test(newDisplay)) {
+            return showError("Display Name Can Only Contain Letters, Numbers, Spaces, Underscores, And Dashes.");
+        }
+        const usersSnap = await get(ref(db, 'users'));
+        if (usersSnap.exists()) {
+            let taken = false;
+            usersSnap.forEach(child => {
+                const p = child.val()?.profile;
+                if (p?.displayName === newDisplay) taken = true;
+            });
+            if (taken) return showError("Display Name Already Taken.");
+        }
+        if (newDisplay.length === 0) return showError("Display Name Cannot Be Empty.");
+        if (newDisplay.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
+        await set(ref(db, `users/${currentUser.uid}/profile/displayName`), newDisplay);
+        setSetting("displayName", newDisplay);
+        await updateProfile(currentUser, { displayName: newDisplay });
+        currentDisplay = newDisplay;
+        disableDisplayEditing();
+        showSuccess("Display Name Saved!");
+    }
+    editDisplayBtn.addEventListener("click", enableDisplayEditing);
+    saveDisplayBtn.addEventListener("click", saveDisplayName);
+    cancelDisplayBtn.addEventListener("click", () => disableDisplayEditing(true));
+    displayNameInput.addEventListener("input", () => {
+        displayNameInput.value = displayNameInput.value.replace(/[^a-zA-Z0-9 _-]/g, "");
+        autoResizeDisplay();
+        if (displayNameInput.value.length > 20) {
+            displayNameInput.value = displayNameInput.value.slice(0, 20);
+        }
+        displayCharCount.textContent = `${displayNameInput.value.length} / 20`;
+    });
+    displayNameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            saveDisplayName();
+        }
+    });
+    async function loadSettings(uid) {
+        const userSettingsRef = ref(db, `users/${uid}/settings`);
+        const snap = await get(userSettingsRef);
+        let settings = {};
+        if (snap.exists()) settings = snap.val();
+        let storedColor = settings.color || localStorage.getItem("color") || "#ffffff";
+        const rgb = hexToRgb(storedColor);
+        if (colorDistance(rgb, darkGray) < darkThreshold) {
+            storedColor = lightGray;
+            await set(ref(db, `users/${uid}/settings/color`), storedColor);
+        }
+        nameColorInput.value = storedColor;
+        localStorage.setItem("color", storedColor);
+        setSetting("nameColor", storedColor);
+        onValue(ref(db, `users/${uid}/settings/color`), snap => {
+            if (!snap.exists()) return;
+            const color = snap.val();
+            if (!color) return;
+            nameColorInput.value = color;
+            localStorage.setItem("color", color);
+            setSetting("nameColor", color);
+        });
+        userpanel.style.display = 'flex';
+        statusEl.textContent = ``;
+    }
+    async function setDisplayNameEverywhere(user, name) {
+        await update(ref(db, `users/${user.uid}/profile`), { displayName: name });
+        await updateProfile(user, { displayName: name });
+    }
+    async function updateDisplayName() {
+        if (!currentUser) return;
+        const newName = displayNameInput.value.trim();
+        if (!newName) return showError("Display Name Cannot Be Empty.");
+        if (newName.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
+        if (!/^[a-zA-Z0-9 _-]+$/.test(newName)) return showError("Invalid Display Name.");
+        const usersSnap = await get(ref(db, 'users'));
+        if (usersSnap.exists()) {
+            let taken = false;
+            usersSnap.forEach(child => {
+                const p = child.val()?.profile;
+                if (p?.displayName === newName) taken = true;
+            });
+            if (taken) return showError("Display Name Already Taken.");
+        }
+        await setDisplayNameEverywhere(currentUser, newName);
+        showSuccess("Display Name Updated!");
+    }
+    function hexToRgb(hex) {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const num = parseInt(hex, 16);
+        return [num >> 16, (num >> 8) & 255, num & 255];
+    }
+    function colorDistance(c1, c2) {
+        return Math.sqrt(
+            Math.pow(c1[0] - c2[0], 2) +
+            Math.pow(c1[1] - c2[1], 2) +
+            Math.pow(c1[2] - c2[2], 2)
+        );
+    }
+    const darkThreshold = 100;
+    const darkGray = hexToRgb("#121212");
+    const lightGray = "#555752";
+    saveNameColorBtn.addEventListener("click", async () => {
+        if (!currentUser) return;
+        let color = nameColorInput.value || "#ffffff";
+        const rgb = hexToRgb(color);
+        if (colorDistance(rgb, darkGray) < darkThreshold) {
+            color = lightGray;
+            nameColorInput.value = lightGray;
+            showError("Color Too Dark! Changed To Light Grey.");
+        }
+        await set(ref(db, `users/${currentUser.uid}/settings/color`), color);
+        localStorage.setItem("color", color);
+        setSetting("nameColor", color);
+        showSuccess("Name Color Saved!");
+    });
+    const bioInput = document.getElementById("bioInput");
+    const editBioBtn = document.getElementById("editBioBtn");
+    const saveBioBtn = document.getElementById("saveBioBtn");
+    const cancelBioBtn = document.getElementById("cancelBioBtn");
+    const bioCharCount = document.getElementById("bioCharCount");
+    let currentBio = "";
+    function autoResizeBio() {
+        bioInput.style.height = "auto";
+        bioInput.style.height = bioInput.scrollHeight + "px";
+    }
+    async function loadUserBio(uid) {
+        const bioRef = ref(db, `users/${uid}/profile/bio`);
+        const snap = await get(bioRef);
+        if (snap.exists()) {
+            currentBio = snap.val() || "";
+            setSetting("bio", currentBio);
+            bioInput.value = currentBio;
+            bioInput.style.color = "white";
+        } else {
+            bioInput.value = "";
+            bioInput.placeholder = "Enter Bio Here";
+        }
+        bioCharCount.textContent = `${bioInput.value.length} / 50`;
+        autoResizeBio();
+    }
+    function enableBioEditing() {
+        bioInput.disabled = false;
+        editBioBtn.style.display = "none";
+        saveBioBtn.style.display = "inline";
+        cancelBioBtn.style.display = "inline";
+        bioInput.focus();
+    }
+    function disableBioEditing(resetValue = false) {
+        if (resetValue) bioInput.value = currentBio || "";
+        bioInput.disabled = true;
+        bioInput.style.color = "white";
+        editBioBtn.style.display = "inline";
+        saveBioBtn.style.display = "none";
+        cancelBioBtn.style.display = "none";
+        autoResizeBio();
+    }
+    async function saveUserBio() {
+        if (!currentUser) return;
+        const newBio = bioInput.value.trim();
+        if (newBio.length > 50) return showError("Bio Cannot Exceed 50 Characters.");
+        await set(ref(db, `users/${currentUser.uid}/profile/bio`), newBio);
+        currentBio = newBio;
+        disableBioEditing();
+        setSetting("bio", newBio);
+        showSuccess("Bio Saved!");
+    }
+    editBioBtn.addEventListener("click", enableBioEditing);
+    saveBioBtn.addEventListener("click", saveUserBio);
+    cancelBioBtn.addEventListener("click", () => disableBioEditing(true));
+    bioInput.addEventListener("input", () => {
+        autoResizeBio();
+        if (bioInput.value.length > 50) {
+            bioInput.value = bioInput.value.slice(0, 50);
+        }
+        bioCharCount.textContent = `${bioInput.value.length} / 50`;
+    });
+    const profilePicBtn = document.createElement("button");
+    profilePicBtn.className = "btn btn-secondary";
+    profilePicBtn.textContent = "Loading Picture";
+    const profileImages = [
+        "/pfps/1.jpeg",
+        "/pfps/2.jpeg",
+        "/pfps/3.jpeg",
+        "/pfps/4.jpeg",
+        "/pfps/5.jpeg",
+        "/pfps/6.jpeg",
+        "/pfps/7.jpeg",
+        "/pfps/8.jpeg",
+        "/pfps/9.jpeg",
+        "/pfps/10.jpeg",
+        "/pfps/11.jpeg",
+        "/pfps/12.jpeg",
+        "/pfps/13.jpeg",
+        "/pfps/14.jpeg"
+    ];
+    const restrictedPics = [6, 7, 8, 9];
+    let currentPicIndex = 0;
+    function updateProfilePicButton() {
+        const img = profileImages[currentPicIndex];
+        profilePicBtn.innerHTML = `<img src="${img}" style="width:50px;height:50px;border-radius:50%;vertical-align:middle;margin-right:10px;border:1px solid white"> Change Picture`;
+    }
+    async function loadUserProfilePic(uid) {
+        const picRef = ref(db, `users/${uid}/profile/pic`);
+        const snap = await get(picRef);
+        if (snap.exists()) {
+            const picIndex = snap.val();
+            if (typeof picIndex === "number" && picIndex >= 0 && picIndex < profileImages.length) {
+                currentPicIndex = picIndex;
+                setSetting("pic", profileImages[currentPicIndex]);
+            }
+        }
+        updateProfilePicButton();
+    }
+    profilePicBtn.addEventListener("click", async () => {
+        if (!currentUser) return;
+        let nextIndex = currentPicIndex;
+        do {
+            nextIndex = (nextIndex + 1) % profileImages.length;
+        } while (restrictedPics.includes(nextIndex));
+        currentPicIndex = nextIndex;
+        updateProfilePicButton();
+        await set(ref(db, `users/${currentUser.uid}/profile/pic`), currentPicIndex);
+        setSetting("pic", profileImages[currentPicIndex]);
+    });
+    resetPasswordBtn.addEventListener("click", async () => {
+        const email = currentUser?.email;
+        if (!email) return showError("No Email Found. Please Log In Again.");
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showSuccess("Password Reset Email Sent To " + email);
+        } catch (e) {
+            showError("Failed To Send Reset Email: " + e.message);
+        }
+    });
+    logoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+        localStorage.clear();
+        location.href = "InfiniteLogins.html";
+    });
+    const verifyEmailBtn = document.getElementById("verifyEmailBtn");
+    verifyEmailBtn.addEventListener("click", async () => {
+        if (!currentUser) return showError("No User Logged In.");
+        try {
+            await sendEmailVerification(currentUser);
+            showSuccess("Verification Email Sent To " + currentUser.email + ". Please Check Your Inbox.");
+        } catch (err) {
+            console.error(err);
+            showError("Failed To Send Verification Email: " + err.message);
+        }
+    });
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            userIdDisplay.textContent = user.uid;
+            userEmailDisplay.textContent = user.email;
+            let verifiedDisplay = document.getElementById("verifiedDisplay");
+            if (!verifiedDisplay) {
+                verifiedDisplay = document.createElement("div");
+                verifiedDisplay.id = "verifiedDisplay";
+                verifiedDisplay.style.marginTop = "5px";
+                verifiedDisplay.style.fontWeight = "bold";
+                userEmailDisplay.insertAdjacentElement("afterend", verifiedDisplay);
+            }
+            if (user.emailVerified) {
+                userEmailDisplay.style.color = "limegreen";
+                verifyEmailBtn.style.display = "none";
+            } else {
+                userEmailDisplay.style.color = "yellow";
+                verifyEmailBtn.style.display = "inline";
+                verifyEmailBtn.style.border = "1px solid white";
+                verifyEmailBtn.style.borderRadius = "5px";
+            }
+            await loadSettings(user.uid);
+            await loadDisplayName(user.uid);
+            await loadUserBio(user.uid);
+            await loadUserProfilePic(user.uid);
+            const profilePicContainer = document.getElementById("profileContainer");
+            profilePicContainer.appendChild(profilePicBtn);
+            onValue(ref(db, `users/${user.uid}/profile`), snap => {
+                if (snap.exists()) {
+                    const profile = snap.val();
+                    const badges = document.getElementById('badges');
+                    badges.innerHTML = "";
+                    function addBadge(name, color, icon) {
+                        const badge = document.createElement("span");
+                        const badgeContainer = document.getElementById('badgeContainer');
+                        badgeContainer.style.display = 'flex';
+                        badgeContainer.style.flexDirection = 'column';
+                        badge.style.color = color;
+                        badge.style.fontSize = '1.5em';
+                        badge.style.fontWeight = "600";
+                        badge.innerHTML = `
+                            <i class="${icon}" style="margin-right:6px;" title="${name}"></i>
+                        `;
+                        badges.appendChild(badge);
+                    }
+                    let hasAnyRole = false;
+                    if (profile.isOwner) {
+                        addBadge("Owner", "lime", "bi bi-shield-plus");
+                        adminBtn.style.display = 'block';
+                        hasAnyRole = true;
+                    }
+                    if (profile.isTester) {
+                        addBadge("Tester", "DarkGoldenRod", "fa-solid fa-cogs");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isCoOwner) {
+                        addBadge("Co-Owner", "lightblue", "bi bi-shield-fill");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isHAdmin) {
+                        addBadge("Head Admin", "#00cc99", "fa-solid fa-shield-halved");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isAdmin) {
+                        addBadge("Admin", "dodgerblue", "bi bi-shield");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isDev) {
+                        addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
+                        hasAnyRole = true;
+                    }
+                    if (profile.premium) {
+                        addBadge("This User Has Infinite Campus Premium", "aquamarine", "bi bi-currency-dollar");
+                        hasAnyRole = true;
+                    }
+                    if (profile.mileStone) {
+                        addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
+                        hasAnyRole = true;
+                    }
+                    if (profile.verified) {
+                        addBadge("Verified User", "white", "bi bi-shield-check");
+                        hasAnyRole = true;
+                    }
+                    if (!hasAnyRole) {
+                    }
+                }
+            });
+            statusEl.textContent = `Logged In As ${user.email}`;
+        } else {
+            statusEl.textContent = "Not Logged In.";
+            setTimeout(() => location.href = "InfiniteLogins.html", 1000);
+        }
+        if (user) {
+            currentUser = user;
+            await loadSettings(user.uid);
+            await loadDisplayName(user.uid);
+            await loadUserBio(user.uid);
+            await loadUserProfilePic(user.uid);
+            window.__appResolve();
+        }
+    });
+    setInterval(async () => {
+        if (currentUser) {
+            await currentUser.reload();
+            const verifiedDisplay = document.getElementById("verifiedDisplay");
+            if (currentUser.emailVerified) {
+                verifyEmailBtn.style.display = "none";
+                if (verifiedDisplay) {
+                    userEmailDisplay.style.color = "limegreen";
+                }
+            } else {
+                userEmailDisplay.style.color = "yellow";
+                verifyEmailBtn.style.display = "inline";
+                verifyEmailBtn.style.border = "1px solid white";
+                verifyEmailBtn.style.borderRadius = "5px";
+                if (verifiedDisplay) {
+                    verifiedDisplay.style.color = "white";
+                }
+            }
+        }
+    }, 10000);
+    appReady.then(() => {
+        panelPic.src = pic;
+        panelPic.style.borderColor = nameColor;
+        displayNameInput.style.color = nameColor;
+        displayNameInput.style.fontSize = '2em';
+    });
+}

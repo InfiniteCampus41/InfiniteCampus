@@ -327,7 +327,7 @@ async function renderMessageInstant(id, msg) {
                 showError("User Profile Not Found.");
                 return;
             }
-            window.location.href = `profile.html?user=${uid}`;
+            window.location.href = `InfiniteAccounts.html?user=${uid}`;
         });
     });
     textDiv.querySelectorAll(".channel-mention").forEach(span => {
@@ -488,7 +488,7 @@ async function renderMessageInstant(id, msg) {
             nameSpan.style.color = color;
             const openProfile = () => {
                 const cleanName = encodeURIComponent(displayName.replace(/ /g, ""));
-                window.location.href = `profile.html?user=${msg.sender}`;
+                window.location.href = `InfiniteAccounts.html?user=${msg.sender}`;
             };
             nameSpan.onclick = openProfile;
             profilePic.onclick = openProfile;
@@ -1191,7 +1191,7 @@ chatInput.addEventListener("blur", () => {
 onAuthStateChanged(auth, async user => {
     if (!user) { 
         showError("Not Logged In!"); 
-        setTimeout(() => location.href = "login.html", 1000);
+        setTimeout(() => location.href = "InfiniteLogins.html?chat=true", 1000);
         return; 
     }
     const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));

@@ -124,9 +124,12 @@ window.addEventListener('DOMContentLoaded', () => {
             if (!isDark && bar === header) {
                 bar.querySelectorAll('button').forEach(btn => {
                     btn.style.backgroundColor = '';
-                    btn.style.color = '';
+                    btn.style.color = 'black';
                     btn.style.border = '';
                 });
+                bar.querySelectorAll('a').forEach(a => {
+                    a.style.color = 'black';
+                })
             }
             if (!isDark && bar === footer) {
                 bar.querySelectorAll('p, span, div').forEach(el => {

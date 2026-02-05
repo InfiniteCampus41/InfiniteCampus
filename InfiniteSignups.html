@@ -32,9 +32,8 @@
                 width: 40%;
                 cursor:text !important;
             }
-            #status {
-                margin-top:12px;
-                color:white;
+            #displayNameSection {
+                display: none;
             }
         </style>
         <script src="main.js">
@@ -45,28 +44,38 @@
     <body>
         <center>
             <h2 class="tptxt">
-                Login
+                Sign Up Page
             </h2>
-            <input class="button" type="email" id="email" placeholder="Email">
-            <br>
-            <input class="button" type="password" id="password" placeholder="Password">
-            <div>
-                <button class="button" id="loginBtn">
-                    Login
-                </button>
-                <a class="button" href="signup.html" style="margin-left:10px;">
+            <div id="signupSection">
+                <input class="button" type="email" id="email" placeholder="Email">
+                <br>
+                <input class="button" type="password" id="password" placeholder="Password">
+                <br>
+                <button class="button" id="signupBtn">
                     Sign Up
-                </a>
+                </button>
+                <br>
+                <br>
+                <button id="login" class="button">
+                    Go To Login
+                </button>
             </div>
-            <button class="button" id="resetBtn">
-                Reset Password
-            </button>
-            <p id="status">
-            </p>
+            <div id="displayNameSection">
+                <h3>
+                    Set Your Display Name
+                </h3>
+                <input class="button" type="text" id="displayNameInput" placeholder="Display Name">
+                <br>
+                <button class="button" id="saveDisplayNameBtn">
+                    Save
+                </button>
+            </div>
         </center>
+        <p id="status">
+        </p>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
-        <script type="module" src="chatlogin.js">
+        <script type="module" src="signup.js">
         </script>
         <script src="frame.js">
         </script>
