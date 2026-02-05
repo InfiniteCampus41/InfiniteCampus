@@ -273,23 +273,30 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         if (resolve) resolve();
     }
-    async function getWeather(city, useFahrenheit) {
-        city = city.replace(/\+/g, "");
-        const unit = useFahrenheit ? "u" : "m";
-        const res = await fetch(`https://wttr.in/${city}?format=3&${unit}`);
-        const text = await res.text();
-        if (text.startsWith("Unknown Location")) {
-            console.error("Error #3");
-            return;
+    async function getWeather(city, state, useFahrenheit) {
+        if (!city || !state) return;
+        try {
+            const res = await fetch(
+                `${a}/weather?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`
+            );
+            if (!res.ok) throw new Error("Weather Request Failed");
+            const data = await res.json();
+            if (!data.temperature) {
+                console.error("Temperature Unavailable");
+                return;
+            }
+            const temp = useFahrenheit
+                ? `${data.temperature.fahrenheit}°F`
+                : `${data.temperature.celsius}°C`;
+            const weatherEl = document.getElementById("weather");
+            const toggleEl = document.getElementById("toggle");
+            weatherEl.textContent = data.display;
+            weatherEl.classList.add("show");
+            toggleEl.classList.add("show");
+            applyDarkModeClass();
+        } catch (err) {
+            console.error("Weather error:", err);
         }
-        const weatherEl = document.getElementById("weather");
-        const toggleEl = document.getElementById("toggle");
-        weatherEl.innerText = text.replace(/\n/g, " ");
-        weatherEl.textContent = text.replace(/\r?\n|\r/g, " ");
-        weatherEl.classList.add("show");
-        toggleEl.classList.add("show");
-        removePlusSignsFromPage();
-        applyDarkModeClass();
     }
     function removePlusSignsFromPage() {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -301,11 +308,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("toggle")?.addEventListener("click", () => {
         isFahrenheit = !isFahrenheit;
         document.getElementById("toggle").innerText = isFahrenheit ? "°C" : "°F";
-        getWeather(currentCity, isFahrenheit);
+        const city = sessionStorage.getItem("city");
+        const state = sessionStorage.getItem("state");
+        getWeather(city, state, isFahrenheit);
     });
     async function initWeather() {
         await getLocation();
-        getWeather(currentCity, isFahrenheit);
+        const city = sessionStorage.getItem("city");
+        const state = sessionStorage.getItem("state");
+        getWeather(city, state, isFahrenheit);
         removePlusSignsFromPage();
         applyDarkModeClass();
     }
