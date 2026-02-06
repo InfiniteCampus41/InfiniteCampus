@@ -221,7 +221,7 @@ function formatTimestamp(ts) {
     else return `${d.toLocaleDateString()} ${timeString}`;
 }
 function isRestrictedChannel(ch) {
-    return ch === "Admin-Chat";
+    return (ch === "Admin-Chat" || ch === "Premium-Chat");
 }
 async function getUidByDisplayName(name) {
     const snap = await get(ref(db, "users"));
@@ -1110,8 +1110,8 @@ sendBtn.onclick = async () => {
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
-        if (currentPath === "messages/Admin-Chat" && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
-            showError("You Cannot Send Messages To Admin Chat.");
+        if ((currentPath === "messages/Admin-Chat" || currentPath === "messages/Premium-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
+            showError("You Cannot Send Messages To Restricted Channels");
             chatInput.value = "";
             return;
         }
@@ -1229,7 +1229,7 @@ onAuthStateChanged(auth, async user => {
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) {
+    if (currentPath && (currentPath.includes("messages/Admin-Chat") || currentPath.includes("messages/Premium-Chat")) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");
