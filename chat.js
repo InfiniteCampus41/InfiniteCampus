@@ -30,6 +30,9 @@ let isTester = false;
 let isCoOwner = false;
 let isOwner = false;
 let isDev = false;
+let isPre3 = false;
+let isPre2 = false;
+let isPre1 = false;
 let currentPrivateUid = null;
 let currentPrivateName = null;
 let metadataListenerRef = null;
@@ -968,7 +971,7 @@ async function renderChannelsFromDB() {
     }
     const keys = Object.keys(chans).sort();
     keys.forEach(ch => {
-        if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester)) return;
+        if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isPre2 || isPre3)) return;
         const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
@@ -1024,7 +1027,7 @@ async function renderChannelsFromDB() {
     }
 }
 function switchChannel(ch) {
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
     }
@@ -1032,7 +1035,7 @@ function switchChannel(ch) {
     currentPrivateName = null;
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
-    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
+    if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         return;
     } else {
         attachMessageListeners(ref(db, currentPath));
@@ -1207,6 +1210,9 @@ onAuthStateChanged(auth, async user => {
         setTimeout(() => location.href = "InfiniteLogins.html?chat=true", 1000);
         return; 
     }
+    const pre1snap = await get(ref(db, `users/${user.uid}/profile/premium1`));
+    const pre2snap = await get(ref(db, `users/${user.uid}/profile/premium2`));
+    const pre3snap = await get(ref(db, `users/${user.uid}/profile/premium3`));
     const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));
     const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
     const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
@@ -1221,6 +1227,9 @@ onAuthStateChanged(auth, async user => {
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
     isDev = devSnap.exists() ? devSnap.val() : false;
+    isPre1 = pre1snap.exists() ? pre1snap.val() : false;
+    isPre2 = pre2snap.exists() ? pre2snap.val() : false;
+    isPre3 = pre3snap.exists() ? pre3snap.val() : false;
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
     newChannelName.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
@@ -1229,7 +1238,7 @@ onAuthStateChanged(auth, async user => {
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && (currentPath.includes("messages/Admin-Chat") || currentPath.includes("messages/Premium-Chat")) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) {
+    if (currentPath && (currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) || (currentPath.includes("messages/Premium-Chat") && !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre3 || isPre2))) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");
@@ -1256,8 +1265,8 @@ onAuthStateChanged(auth, async user => {
     isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
-    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isDev ? "Developer" : "User")))));
-    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isDev ? "green" : "white")))));
+    roleSpan.textContent = isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" : "User"))))))));
+    roleSpan.style.color = isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" : "white"))))))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
     bioSpan.style.fontSize = "60%";
