@@ -1238,7 +1238,7 @@ onAuthStateChanged(auth, async user => {
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && (currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) || (currentPath.includes("messages/Premium-Chat") && !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre3 || isPre2))) {
+    if (currentPath && ((currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) || (currentPath.includes("messages/Premium-Chat") && !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre3 || isPre2)))) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");
