@@ -1113,7 +1113,7 @@ sendBtn.onclick = async () => {
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
-        if ((currentPath === "messages/Admin-Chat" || currentPath === "messages/Premium-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev )) {
+        if ((currentPath === "messages/Admin-Chat" || currentPath === "messages/Premium-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
             showError("You Cannot Send Messages To Restricted Channels");
             chatInput.value = "";
             return;
@@ -1238,7 +1238,7 @@ onAuthStateChanged(auth, async user => {
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
-    if (currentPath && ((currentPath.includes("messages/Admin-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) || (currentPath.includes("messages/Premium-Chat") && !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre3 || isPre2)))) {
+    if (currentPath && ((currentPath.includes("messages/Admin-Chat")) || (currentPath.includes("messages/Premium-Chat"))) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev)) {
         switchChannel("General");
     }
     if (!currentPath) switchChannel("General");

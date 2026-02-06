@@ -475,7 +475,7 @@ onAuthStateChanged(auth, async (user) => {
     let isTester = testerSnap.exists() && testerSnap.val() === true;
     if (!isOwner && !isCoOwner && !isTester) {
         showError("Access Denied. You Are Not An Approved User.");
-        window.location.href = "chat.html";
+        window.location.href = "InfiniteChatters.html";
         return;
     }
     if (isCoOwner && !isOwner && !isTester) {
