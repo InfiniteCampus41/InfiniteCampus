@@ -96,10 +96,12 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         const userProfileRef = ref(db, `users/${user.uid}/profile`);
         await set(userSettingsRef, {
             color: "#ffffff",
+            showMentions: true,
             userEmail: user.email
         });
         await update(userProfileRef, {
             displayName: displayName,
+            pic: 0
         });
         if (chatparams) {
             window.location.href = "InfiniteAccounts.html?chat=true";
