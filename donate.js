@@ -1,6 +1,6 @@
 import { auth } from "./firebase.js";
 const backend = `${a}`;
-const stripe = Stripe("pk_test_51SwqnpInalZRzJRKVBQTC3l8NDDsOCWTjHVmINXMoKK9GAHcQ0L4yThMfBkHWix6cgnu28vswidluayVGQUg8OeP00CqBY5phP");
+const stripe = Stripe("pk_live_51SwqnVI9WcNth2N5fglWiLYrwZ9Eshebvr7UCENzOJyfjk39tmNaMoVqecNa2sXRFYJYrgpsRlG0n7mQWdPktw1y00AWcjltXi");
 let currentUser = null;
 auth.onAuthStateChanged(user => {
     currentUser = user;
