@@ -51,7 +51,7 @@ async function verifyAdminPassword() {
                     body: JSON.stringify({ password: ADMIN_PASS })
                 });
                 const data = await res.json().catch(() => null);
-                if (data && data.ok) {
+                if (data && data.res || data.ok) {
                     return true;
                 }
             } catch (e) {}
@@ -71,7 +71,7 @@ async function verifyAdminPassword() {
                 body: JSON.stringify({ password: ADMIN_PASS })
             });
             const data = await res.json().catch(() => null);
-            if (data && data.ok) {
+            if (data && data.res || data.ok) {
                 localStorage.setItem("a_pass", ADMIN_PASS);
                 return true;
             }
@@ -90,6 +90,8 @@ async function adminFetch(url, options = {}) {
 const requestQueue = [];
 let isProcessingQueue = false;
 const RATE_LIMIT_DELAY = 3000;
+const messageCache = new Map();
+const MESSAGE_CACHE_TTL = 10_000;
 async function processQueue() {
     if (isProcessingQueue || requestQueue.length === 0) return;
     isProcessingQueue = true;
@@ -136,6 +138,15 @@ function renderTempMessage(content, type='text'){
     li.textContent = type==='text'?`Sending: ${content}...`:`Uploading: ${content}...`;
     list.prepend(li);
     return li;
+}
+function getChannelCache(channelId) {
+    if (!messageCache.has(channelId)) {
+        messageCache.set(channelId, {
+            messages: new Map(),
+            lastFetch: 0
+        });
+    }
+    return messageCache.get(channelId);
 }
 async function renderMessage(msg, list){
     if(displayedMessageIds.has(msg.id)) return updateReactions(msg);
@@ -216,6 +227,16 @@ function updateReactions(msg){
 async function fetchMessages(token = currentChannelToken) {
     const channelId = currentChannelId;
     const messagesList = document.getElementById('messages');
+    const cache = getChannelCache(channelId);
+    if (Date.now() - cache.lastFetch < MESSAGE_CACHE_TTL) {
+        const sortedCached = Array.from(cache.messages.values())
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (const msg of sortedCached) {
+            if (token !== currentChannelToken) return;
+            await renderMessage(msg, messagesList);
+        }
+        return;
+    }
     try {
         const res = await adminFetch(`${apiMessagesUrl}?channelId=${channelId}`, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
@@ -225,15 +246,19 @@ async function fetchMessages(token = currentChannelToken) {
             try {
                 const errJson = await res.json();
                 errorText = errJson?.error || '';
-            } catch {
-            }
+            } catch {}
             if (errorText === 'Discord integration disabled') {
                 throw new Error('DISCORD_LOCKDOWN');
             }
             throw new Error('Backend Unreachable');
         }
         const data = await res.json();
-        const sorted = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (const msg of data) {
+            cache.messages.set(msg.id, msg);
+        }
+        cache.lastFetch = Date.now();
+        const sorted = Array.from(cache.messages.values())
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         for (const msg of sorted) {
             if (token !== currentChannelToken) return;
             await renderMessage(msg, messagesList);
@@ -244,21 +269,22 @@ async function fetchMessages(token = currentChannelToken) {
         const li = document.createElement('li');
         li.style.color = 'red';
         li.style.fontWeight = 'bold';
-        if (err.message === 'DISCORD_LOCKDOWN') {
-            li.textContent = 'Live Discord Chat Is Currently Locked Down';
-        } else {
-            li.textContent = 'Live Discord Chat Is Currently Down, Please Come Back Later';
-        }
+        li.textContent =
+            err.message === 'DISCORD_LOCKDOWN'
+                ? 'Live Discord Chat Is Currently Locked Down'
+                : 'Live Discord Chat Is Currently Down, Please Come Back Later';
         messagesList.appendChild(li);
     }
 }
-setInterval(()=>enqueueRequest(()=>fetchMessages(currentChannelToken)),3000);
-document.getElementById('channelSelector').addEventListener('change',()=>{
+setInterval(()=>enqueueRequest(()=>fetchMessages(currentChannelToken)),5000);
+document.getElementById('channelSelector').addEventListener('change', () => {
     currentChannelId = getSelectedChannelId();
     currentChannelToken = Symbol();
     displayedMessageIds.clear();
-    document.getElementById('messages').innerHTML='';
-    enqueueRequest(()=>fetchMessages(currentChannelToken));
+    document.getElementById('messages').innerHTML = '';
+    const cache = getChannelCache(currentChannelId);
+    cache.lastFetch = 0;
+    enqueueRequest(() => fetchMessages(currentChannelToken));
 });
 document.getElementById('sendForm').addEventListener('submit', e=>{
     e.preventDefault();

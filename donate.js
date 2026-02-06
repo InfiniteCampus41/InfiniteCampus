@@ -67,7 +67,15 @@ if (result && uid) {
             const msg = document.getElementById("msg");
             if (data.status === "success") {
                 if ((data.amount/100).toFixed(2) >= 5) {
-                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium For The Next 3 Months!`
+                    if ((data.amount/100).toFixed(2) >= 10) {
+                        if ((data.amount/100).toFixed(2) >= 15) {
+                            msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium Tier 3 For The Next 3 Months!`
+                        } else {
+                            msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium Tier 2 For The Next 3 Months!`
+                        }
+                    } else {
+                        msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium For The Next 3 Months!`
+                    }
                 } else {
                     msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}.`;
                 }

@@ -85,9 +85,13 @@ if (fileParam) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const uid = user.uid;
-            const snapshot = await get(child(ref(db), `users/${uid}/profile/premium`));
-            const isPremium = snapshot.exists() && snapshot.val() === true;
-            if (isPremium) {
+            const snapshot = await get(child(ref(db), `users/${uid}/profile/premium1`));
+            const isPremium1 = snapshot.exists() && snapshot.val() === true;
+            const twosnapshot = await get(child(ref(db), `users/${uid}/profile/premium2`));
+            const isPremium2 = twosnapshot.exists() && snapshot.val() === true;
+            const threesnapshot = await get(child(ref(db), `users/${uid}/profile/premium3`));
+            const isPremium3 = threesnapshot.exists() && snapshot.val() === true;
+            if (isPremium1 || isPremium2 || isPremium3) {
                 maxFileSize = PREMIUM_MAX_SIZE;
                 premiumInfo.innerHTML = `You Are A Premium User! You Can Upload Files Up To 500MB.`;
             } else {
