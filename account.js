@@ -72,9 +72,9 @@ if (uid) {
         	{ key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
         	{ key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
         	{ key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
-	    	{ key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow"},
-            { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange"},
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red"},
+            { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange"},
+	    	{ key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow"},
         	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100Th Signed Up User", color: "yellow" }
   	    ];
   	    roles.forEach(r => {
@@ -683,16 +683,16 @@ if (uid) {
                         addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
                         hasAnyRole = true;
                     }
-                    if (profile.premium1) {
-                        addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
+                    if (profile.premium3) {
+                        addBadge("This User Has Infinite Campus Premium T3", "red", "bi bi-hearts");
                         hasAnyRole = true;
                     }
                     if (profile.premium2) {
                         addBadge("This User Has Infinite Campus Premium T2", "orange", "bi bi-heart-fill");
                         hasAnyRole = true;
                     }
-                    if (profile.premium3) {
-                        addBadge("This User Has Infinite Campus Premium T3", "red", "bi bi-hearts");
+                    if (profile.premium1) {
+                        addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
                         hasAnyRole = true;
                     }
                     if (profile.mileStone) {
