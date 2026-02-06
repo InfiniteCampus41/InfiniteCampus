@@ -48,43 +48,50 @@ async function donate() {
     const data = await res.json();
     stripe.redirectToCheckout({ sessionId: data.id });
 }
+const msg = document.getElementById("msg");
 const params = new URLSearchParams(location.search);
-const result = params.get("r");
-const uid = sessionStorage.getItem("donUID");
-if (result && uid) {
-    fetch(`${backend}/mark`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, result: result === "success" ? "success" : "cancelled" })
-    }).then(() => {
-        fetch(`${backend}/donstatus`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid })
-        })
-        .then(r => r.json())
-        .then(data => {
-            const msg = document.getElementById("msg");
-            if (data.status === "success") {
-                if ((data.amount/100).toFixed(2) >= 5) {
-                    if ((data.amount/100).toFixed(2) >= 10) {
-                        if ((data.amount/100).toFixed(2) >= 15) {
-                            msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium Tier 3 For The Next 3 Months!`
-                        } else {
-                            msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium Tier 2 For The Next 3 Months!`
-                        }
-                    } else {
-                        msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}. \n You Now Have Infinite Campus Premium For The Next 3 Months!`
-                    }
-                } else {
-                    msg.innerText = `Thank You! \n You Donated $${(data.amount/100).toFixed(2)}.`;
-                }
-            } else {
-                msg.innerText = "Donation Cancelled.";
+const successAmount = params.get("success");
+const cancelled = params.get("cancel");
+if (cancelled) {
+    msg.innerText = "Donation Cancelled.";
+}
+if (successAmount) {
+    msg.innerText = "Processing Your Payment... This Usually Takes A Few Seconds.";
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            msg.innerText = "Login Required To Verify Donation.";
+            return;
+        }
+        const uid = user.uid;
+        let attempts = 0;
+        let found = false;
+        while (attempts < 20 && !found) {
+            await new Promise(r => setTimeout(r, 1000));
+            const snap = await get(ref(db, `users/${uid}/profile`));
+            if (!snap.exists()) continue;
+            const profile = snap.val();
+            if (profile.premium3) {
+                msg.innerText =
+                `Thank You For Your $${(successAmount/100).toFixed(2)} Donation!\nYou Now Have Premium Tier 3 For 3 Months!`;
+                found = true;
             }
-            history.replaceState({}, "", "/");
-            sessionStorage.removeItem("donUID");
-        });
+            else if (profile.premium2) {
+                msg.innerText =
+                `Thank You For Your $${(successAmount/100).toFixed(2)} Donation!\nYou Now Have Premium Tier 2 For 3 Months!`;
+                found = true;
+            }
+            else if (profile.premium1) {
+                msg.innerText =
+                `Thank You For Your $${(successAmount/100).toFixed(2)} Donation!\nYou Now Have Premium For 3 Months!`;
+                found = true;
+            }
+            attempts++;
+        }
+        if (!found) {
+            msg.innerText =
+            `Thank You For Your $${(successAmount/100).toFixed(2)} Donation!\nYour Payment Is Confirmed — Perks Will Appear Shortly.`;
+        }
+        history.replaceState({}, "", "/InfiniteDonaters.html");
     });
 }
 const password = document.getElementById("password");
