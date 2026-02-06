@@ -684,7 +684,7 @@ if (uid) {
                         hasAnyRole = true;
                     }
                     if (profile.premium1) {
-                        addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-currency-dollar");
+                        addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
                         hasAnyRole = true;
                     }
                     if (profile.premium2) {
