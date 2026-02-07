@@ -1,8 +1,9 @@
 import { auth } from "./firebase.js";
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const backend = `${a}`;
 const stripe = Stripe("pk_live_51SwqnVI9WcNth2N5fglWiLYrwZ9Eshebvr7UCENzOJyfjk39tmNaMoVqecNa2sXRFYJYrgpsRlG0n7mQWdPktw1y00AWcjltXi");
 let currentUser = null;
-auth.onAuthStateChanged(user => {
+onAuthStateChanged(auth, user => {
     currentUser = user;
     if(user) {
         sessionStorage.setItem("donUID", user.uid);
@@ -13,7 +14,7 @@ auth.onAuthStateChanged(user => {
 function signup() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    auth.createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
         currentUser = userCredential.user;
         sessionStorage.setItem("donUID", currentUser.uid);
@@ -23,7 +24,7 @@ function signup() {
 function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    auth.signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
         currentUser = userCredential.user;
         sessionStorage.setItem("donUID", currentUser.uid);
@@ -31,7 +32,7 @@ function login() {
     .catch(err => showError(err.message));
 }
 function logout() {
-    auth.signOut();
+    signOut(auth);
     sessionStorage.removeItem("donUID");
 }
 async function donate() {
@@ -57,7 +58,7 @@ if (cancelled) {
 }
 if (successAmount) {
     msg.innerText = "Processing Your Payment... This Usually Takes A Few Seconds.";
-    auth.onAuthStateChanged(async (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
             msg.innerText = "Login Required To Verify Donation.";
             return;
