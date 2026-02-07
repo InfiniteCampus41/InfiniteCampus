@@ -1,6 +1,18 @@
-const allowedHosts = ["infinitecampus.xyz", "www.infinitecampus.xyz", "instructure.space"];
+const allowedHosts = ["infinitecampus.xyz", "www.infinitecampus.xyz", "instructure.space", "localhost:2000"];
 const before = document.getElementById("before");
 const toptext = document.getElementById("tptxt");
+const role1 = document.getElementById('rolesReveal1');
+const role2 = document.getElementById('rolesReveal2');
+const rolecontainer = document.getElementById('rolesContainer');
+const beforecontainer = document.getElementById('beforeContainer');
+role1.addEventListener("click", () => {
+    rolecontainer.style.display = 'block';
+    beforecontainer.style.display = 'none';
+});
+role2.addEventListener("click", () => {
+    rolecontainer.style.display = 'none';
+    beforecontainer.style.display = 'block';
+});
 if (!allowedHosts.includes(window.location.host)) {
     toptext.textContent = "About Infinite Campus";
     before.innerHTML = `
