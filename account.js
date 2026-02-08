@@ -66,6 +66,7 @@ if (uid) {
   	    badgeContainer.style.gap = "6px";
   	    badgeContainer.style.marginLeft = "6px";
   	    const roles = [
+            { key: "isSus", icon: "bi bi-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
         	{ key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
         	{ key: "isTester", icon: "fa-solid fa-cogs", title: "Tester", color: "DarkGoldenRod" },
         	{ key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
@@ -75,7 +76,7 @@ if (uid) {
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red"},
             { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange"},
 	    	{ key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow"},
-        	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100Th Signed Up User", color: "yellow" }
+        	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" }
   	    ];
   	    roles.forEach(r => {
     	    if (profile?.[r.key] === true) {
@@ -658,6 +659,10 @@ if (uid) {
                         badges.appendChild(badge);
                     }
                     let hasAnyRole = false;
+                    if (profile.isSus) {
+                        addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "bi bi-shield-exclamation");
+                        hasAnyRole = true;
+                    }
                     if (profile.isOwner) {
                         addBadge("Owner", "lime", "bi bi-shield-plus");
                         adminBtn.style.display = 'block';
@@ -665,10 +670,12 @@ if (uid) {
                     }
                     if (profile.isTester) {
                         addBadge("Tester", "DarkGoldenRod", "fa-solid fa-cogs");
+                        adminBtn.style.display = 'block';
                         hasAnyRole = true;
                     }
                     if (profile.isCoOwner) {
                         addBadge("Co-Owner", "lightblue", "bi bi-shield-fill");
+                        adminBtn.style.display = 'block';
                         hasAnyRole = true;
                     }
                     if (profile.isHAdmin) {
@@ -681,6 +688,7 @@ if (uid) {
                     }
                     if (profile.isDev) {
                         addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
+                        adminBtn.style.display = 'block';
                         hasAnyRole = true;
                     }
                     if (profile.premium3) {

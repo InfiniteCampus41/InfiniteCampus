@@ -563,7 +563,7 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
         });
         for (const [msgId, msgData] of entries) {
             const senderUid = msgData.sender || uid;
-            if (!userProfiles[senderUid] && senderUid !== "admin") {
+            if (!userProfiles[senderUid] && senderUid !== "jiEcu7wSifMalQxVupmQXRchA9k1") {
                 const userSnap = await get(ref(db, `users/${senderUid}/profile`));
                 const profile = userSnap.exists() ? userSnap.val() : {};
                 userProfiles[senderUid] = {
