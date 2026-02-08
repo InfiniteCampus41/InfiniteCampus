@@ -748,7 +748,8 @@ select {
     pointer-events: none;
 }
 .snowflake {
-    color:red !important;
+    color:brown !important;
+    /* color:red !important; */
     position: absolute;
     top: -10px;
     background: transparent;

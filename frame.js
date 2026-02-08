@@ -283,8 +283,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (monthIndex === 11 || monthIndex === 0) {
                 flake.innerHTML = '<i class="bi bi-snow"></i>';
             } else if (monthIndex === 1) {
-                flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
-                flake.style.color = 'red !important';
+                // flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
+                flake.innerHTML = '<i class="fa-solid fa-football"></i>'
+                // flake.style.color = 'red !important';
+                flake.style.color = 'brown';
             } else if (monthIndex >= 2 && monthIndex <= 9) {
                 flake.style.display = 'none';
             } else if (monthIndex === 10) {
