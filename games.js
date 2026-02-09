@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         fullscreen.onclick = function () {
                             const allIframes = document.querySelectorAll("iframe");
                             let gameIframe = null;
-                                                        for (let i = allIframes.length - 1; i >= 0; i--) {
+                            for (let i = allIframes.length - 1; i >= 0; i--) {
                                 const src = allIframes[i].src || '';
                                 if (!src.includes('google') && !src.includes('doubleclick') && 
                                     !src.includes('ads') && !src.includes('ad-') &&
