@@ -179,8 +179,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (monthIndex === 0) {
             applyTheme('#000000', 'wtr');
         } else if (monthIndex === 1) {
-            // applyTheme('#000000', 'lve');
-            applyTheme('#015200');
+            applyTheme('#000000', 'lve');
         } else if (monthIndex >= 2 && monthIndex <= 9) {
             applyTheme('#8cbe37');
         } else if (monthIndex === 10) {
@@ -230,9 +229,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (monthIndex === 0) {
             const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
         } else if (monthIndex === 1) {
-            const defaultColor = '#015200';
-            isDark = true;
-            // const defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
+            const defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
         } else if (monthIndex >= 2 && monthIndex <= 9) {
             const defaultColor = '#8cbe37';
         } else if (monthIndex === 10) {
