@@ -126,3 +126,15 @@ window.donate = donate;
 window.login = login;
 window.signup = signup;
 window.logout = logout;
+const perks1 = document.getElementById('perks1');
+const perks2 = document.getElementById('perks2');
+const donatecontainer = document.getElementById('pollContainer');
+const perksContainer = document.getElementById('perksContainer');
+perks1.addEventListener("click", () => {
+    perksContainer.style.display = 'block';
+    donatecontainer.style.display = 'none';
+});
+perks2.addEventListener("click", () => {
+    perksContainer.style.display = 'none';
+    donatecontainer.style.display = 'block';
+});

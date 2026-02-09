@@ -3,11 +3,12 @@ async function sendMessage() {
     const nameInput = document.getElementById("name").value.trim();
     const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
+    const url = window.location.host;
     if (!message) {
         showError("ERR#8 Message Cannot Be Empty!")
         return;
     }
-    const fullMessage = `**${name}**\n${message}`;
+    const fullMessage = `**${name}** From ${url} Says:\n${message}`;
     try {
         const response = await fetch(`${a}/send`, {
             method: "POST",
