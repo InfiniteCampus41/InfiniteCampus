@@ -88,17 +88,29 @@ if (fileParam) {
             const snapshot = await get(child(ref(db), `users/${uid}/profile/premium1`));
             const isPremium1 = snapshot.exists() && snapshot.val() === true;
             const twosnapshot = await get(child(ref(db), `users/${uid}/profile/premium2`));
-            const isPremium2 = twosnapshot.exists() && snapshot.val() === true;
+            const isPremium2 = twosnapshot.exists() && twosnapshot.val() === true;
             const threesnapshot = await get(child(ref(db), `users/${uid}/profile/premium3`));
-            const isPremium3 = threesnapshot.exists() && snapshot.val() === true;
-            if (isPremium1 || isPremium2 || isPremium3) {
+            const isPremium3 = threesnapshot.exists() && threesnapshot.val() === true;
+            const devSnap = await get(child(ref(db), `users/${uid}/profile/isDev`));
+            const isDev = devSnap.exists() && devSnap.val() === true;
+            const adminSnap = await get(child(ref(db), `users/${uid}/profile/isAdmin`));
+            const isAdmin = adminSnap.exists() && adminSnap.val() === true;
+            const HAdminsnap = await get(child(ref(db), `users/${uid}/profile/isHAdmin`));
+            const isHAdmin = HAdminsnap.exists() && HAdminsnap.val() === true;
+            const CoOwnerSnap = await get(child(ref(db), `users/${uid}/profile/isCoOwner`));
+            const isCoOwner = CoOwnerSnap.exists() && CoOwnerSnap.val() === true;
+            const testerSnap = await get(child(ref(db), `users/${uid}/profile/isTester`));
+            const isTester = testerSnap.exists() && testerSnap.val() === true;
+            const ownerSnap = await get(child(ref(db), `users/${uid}/profile/isOwner`));
+            const isOwner = ownerSnap.exists() && ownerSnap.val() === true;
+            if (isPremium1 || isPremium2 || isPremium3 || isDev || isAdmin || isHAdmin || isCoOwner || isTester || isOwner) {
                 maxFileSize = PREMIUM_MAX_SIZE;
                 premiumInfo.innerHTML = `You Are A Premium User! You Can Upload Files Up To 500MB.`;
             } else {
-                premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Upgrade To <a href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+                premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Upgrade To <a class="discord" href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
             }
         } else {
-            premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Sign In And Upgrade To <a href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+            premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Sign In And Upgrade To <a class="discord" href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
         }
     });
     input.addEventListener("change", async () => {
@@ -109,7 +121,7 @@ if (fileParam) {
             if (maxFileSize === PREMIUM_MAX_SIZE) {
                 showError("File Too Large! Maximum Allowed Size For Premium Is 500 MB.");
             } else {
-                output.innerHTML = `File Too Large! Maximum Allowed Size Is 100MB. <br>Want to upload up to 500MB? <a href="/premium">Upgrade to Premium</a>`;
+                output.innerHTML = `File Too Large! Maximum Allowed Size Is 100MB. <br>Want To Upload Up To 500MB? <a class="discord" href="/InfiniteDonaters.html">Upgrade To Premium</a>`;
             }
             input.value = "";
             return;
@@ -167,15 +179,23 @@ if (fileParam) {
             return;
         }
         const fileName = finalFileUrl.split("/").pop();
-        const link = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
+        const link = `${f}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
+        const link2 = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
         output.innerHTML = `
             <center>
                 <p>Temporary Download Link (5 Mins):</p>
                 <input type="text" id="fileLink" value="${link}" readonly style="width:80%">
                 <button class="button" onclick="copyLink()">Copy</button>
+                <br>
+                <br>
+                <input type="text" id="fileLink2" value="${link2}" readonly style="width:80%">
+                <button class="button" onclick="copyLink2()">Copy</button>
                 <br><br>
                 <a href="${link}" target="_blank">
-                    <button class="button">Go To Download Page</button>
+                    <button class="button">Go To Download Page (This Site)</button>
+                </a>
+                <a href="${link2}" target="_blank">
+                    <button class="button">Go To Download Page (Official Site)</button>
                 </a>
             </center>
         `;
@@ -187,5 +207,11 @@ if (fileParam) {
         link.select();
         document.execCommand("copy");
         showSuccess("Copied To Clipboard!");
+    };
+    window.copyLink2 = () => {
+        const link2 = document.getElementById("fileLink2");
+        link2.select();
+        document.execCommand("copy");
+        showSuccess("Copied To Clipboard");
     };
 }
