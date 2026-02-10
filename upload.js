@@ -21,45 +21,33 @@ if (fileParam) {
     const btn = document.getElementById("downloadBtn");
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
-    btn.onclick = () => {
+    btn.onclick = async () => {
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
-        fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
-            method: "GET",
+        const response = await fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
             headers: { "ngrok-skip-browser-warning": "true" }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error("Network Response Was Not Ok");
-            const contentLength = response.headers.get("Content-Length");
-            if (!contentLength) return response.blob();
-            const total = parseInt(contentLength, 10);
-            let loaded = 0;
-            const reader = response.body.getReader();
-            const chunks = [];
-            function read() {
-                return reader.read().then(({ done, value }) => {
-                    if (done) return;
-                    chunks.push(value);
-                    loaded += value.length;
-                    const percent = Math.round((loaded / total) * 100);
-                    progressBar.style.width = percent + "%";
-                    return read();
-                });
+        });
+        if (!response.ok) {
+            showError("Download Failed");
+            return;
+        }
+        const contentLength = +response.headers.get("Content-Length") || 0;
+        const reader = response.body.getReader();
+        const fileStream = streamSaver.createWriteStream(fileParam);
+        const writer = fileStream.getWriter();
+        let loaded = 0;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            await writer.write(value);
+            loaded += value.length;
+            if (contentLength) {
+                const percent = Math.round((loaded / contentLength) * 100);
+                progressBar.style.width = percent + "%";
             }
-            return read().then(() => new Blob(chunks));
-        })
-        .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileParam;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            progressBar.style.width = "100%";
-        })
-        .catch(err => { showError("Download Failed: " + err.message); });
+        }
+        await writer.close();
+        progressBar.style.width = "100%";
     };
 } else {
     appDiv.innerHTML = `
@@ -68,7 +56,7 @@ if (fileParam) {
             <p id="premiumInfo" style="color:blue;"></p>
             <input type="file" id="fileInput" style="display:none;">
             <label for="fileInput" class="button">Choose File</label>
-            <p id="fileName"></p>
+            <p id="fileName" class="btxt"></p>
             <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto; text-align:left;">
                 <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;"></div>
             </div>
@@ -131,47 +119,43 @@ if (fileParam) {
         const fileId = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
+        async function uploadChunk(chunk, chunkNumber, totalChunks, fileId, file) {
+            const formData = new FormData();
+            formData.append("file", chunk);
+            const res = await fetch(`${a}/uploadthis`, {
+                method: "POST",
+                headers: {
+                    "X-File-Id": fileId,
+                    "X-Chunk-Number": chunkNumber,
+                    "X-Total-Chunks": totalChunks,
+                    "X-Filename": file.name,
+                    ...(auth.currentUser ? { "X-User-Id": auth.currentUser.uid } : {})
+                },
+                body: formData
+            });
+            if (!res.ok) throw new Error(`Chunk ${chunkNumber} Upload Failed`);
+            return res.text();
+        }
         let uploadedBytes = 0;
         for (let chunkNumber = 1; chunkNumber <= totalChunks; chunkNumber++) {
             const start = (chunkNumber - 1) * CHUNK_SIZE;
             const end = Math.min(start + CHUNK_SIZE, file.size);
             const chunk = file.slice(start, end);
-            const formData = new FormData();
-            formData.append("file", chunk);
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `${a}/uploadthis`, false);
-            xhr.setRequestHeader("X-File-Id", fileId);
-            xhr.setRequestHeader("X-Chunk-Number", chunkNumber);
-            xhr.setRequestHeader("X-Total-Chunks", totalChunks);
-            xhr.setRequestHeader("X-Filename", file.name);
-            if (auth.currentUser) {
-                xhr.setRequestHeader("X-User-Id", auth.currentUser.uid);
-            }
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    uploadedBytes += chunk.size;
-                    const percent = Math.round((uploadedBytes / file.size) * 100);
-                    progressBar.style.width = percent + "%";
-                    progressBar.textContent = `${percent}% — Uploading Chunk ${chunkNumber}/${totalChunks}`;
-                    if (chunkNumber === totalChunks) {
-                        try {
-                            const res = JSON.parse(xhr.responseText);
-                            if (res.fileUrl) {
-                                finalFileUrl = res.fileUrl;
-                            }
-                        } catch (e) {
-                            throw new Error("Invalid Server Response");
-                        }
-                    }
-                } else {
-                    throw new Error(`Chunk ${chunkNumber} Upload Failed`);
+            try {
+                const responseText = await uploadChunk(chunk, chunkNumber, totalChunks, fileId, file);
+                uploadedBytes += chunk.size;
+                const percent = Math.round((uploadedBytes / file.size) * 100);
+                progressBar.style.width = percent + "%";
+                progressBar.textContent = `${percent}% — Uploading Chunk ${chunkNumber}/${totalChunks}`;
+                if (chunkNumber === totalChunks) {
+                    const res = JSON.parse(responseText);
+                    if (res.fileUrl) finalFileUrl = res.fileUrl;
                 }
-            };
-            xhr.onerror = () => {
-                output.innerHTML = `<p class="r">Chunk ${chunkNumber} Upload Failed (Network Error)</p>`;
-                throw new Error(`Chunk ${chunkNumber} Upload Failed`);
-            };
-            xhr.send(formData);
+                await new Promise(r => setTimeout(r, 0));
+            } catch (err) {
+                output.innerHTML = `<p class="r">${err.message}</p>`;
+                return;
+            }
         }
         output.innerHTML = `<p>Upload Complete! Finalizing On Server...</p>`;
         if (!finalFileUrl) {
