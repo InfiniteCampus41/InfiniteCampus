@@ -34,6 +34,42 @@
         </script>
     </head>
     <body>
+        <center id="authContainer" style="display:none">
+            <div id="authActionContainer">
+                <div id="resetPasswordContainer" style="display:none;">
+                    <h2 class="tptxt">
+                        Reset Your Password
+                    </h2>
+                    <br>
+                    <hr>
+                    <div class="passwordField">
+                        <input type="password" id="newPasswordInput" class="button" placeholder="Enter New Password">
+                        <button type="button" class="revealBtn button" data-target="newPasswordInput">
+                            Show
+                        </button>
+                    </div>
+                    <div class="passwordField">
+                        <input type="password" class="button" id="confirmPasswordInput" placeholder="Confirm New Password">
+                        <button type="button" class="revealBtn button" data-target="confirmPasswordInput">
+                            Show
+                        </button>
+                    </div>
+                    <button id="resetPasswordBtn" class="button">
+                        Reset Password
+                    </button>
+                </div>
+                <div id="verifyEmailContainer" style="display:none;">
+                    <h2 class="tptxt">
+                        Verify Your Email
+                    </h2>
+                    <br>
+                    <hr>
+                    <button class="button" id="verifyEmailBtn">
+                        Verify Email
+                    </button>
+                </div>
+            </div>
+        </center>
         <center id="profileView" style="display:none;">
             <div id="profileCard">
                 <div id="loading">

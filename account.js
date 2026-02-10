@@ -2,11 +2,70 @@ import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { applyActionCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode');
+const oobCode = urlParams.get('oobCode');
+const continueUrl = urlParams.get('continueUrl') || "/InfiniteAccounts.html";
 const uid = urlParams.get("user");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
-if (uid) {
+const authcontainer = document.getElementById('authContainer');
+if (mode) {
+    authcontainer.style.display = 'block';
+    settingsPage.style.display = 'none';
+    const resetPasswordContainer = document.getElementById('resetPasswordContainer');
+    const verifyEmailContainer = document.getElementById('verifyEmailContainer');
+    async function handleResetPassword(newPassword) {
+        try {
+            await confirmPasswordReset(auth, oobCode, newPassword);
+            showSuccess("Password Has Been Reset!");
+            window.location.href = continueUrl;
+        } catch (error) {
+            showError("Error: " + error.message);
+        }
+    }
+    async function handleVerifyEmail() {
+        try {
+            await applyActionCode(auth, oobCode);
+            showSuccess("Email Verification Successful!");
+            window.location.href = continueUrl;
+        } catch (error) {
+            showError("Error: " + error.message);
+        }
+    }
+    if (mode === "resetPassword") {
+        resetPasswordContainer.style.display = "block";
+        document.getElementById('resetPasswordBtn').addEventListener('click', () => {
+            const newPassword = document.getElementById('newPasswordInput').value.trim();
+            const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
+            if (!newPassword) return showError("Password Is Required.");
+            if (newPassword.length < 8) return showError("Password Must Be At Least 8 Characters.");
+            if (!confirmPassword) return showError("Please Confirm Your Password.");
+            if (newPassword !== confirmPassword) return showError("Passwords Do Not Match.");
+            handleResetPassword(newPassword);
+        });
+    } else if (mode === "verifyEmail") {
+        verifyEmailContainer.style.display = "block";
+        document.getElementById('verifyEmailBtn').addEventListener('click', handleVerifyEmail);
+    } else {
+        showError("Unknown Mode:", mode);
+        verifyEmailContainer.style.display = "block";
+        document.getElementById('verifyEmailBtn').addEventListener('click', handleVerifyEmail);
+    }
+    document.addEventListener("click", (e) => {
+        if (!e.target.classList.contains("revealBtn")) return;
+        const input = document.getElementById(e.target.dataset.target);
+        if (!input) return;
+        if (input.type === "password") {
+            input.type = "text";
+            e.target.textContent = "Hide";
+        } else {
+            input.type = "password";
+            e.target.textContent = "Show";
+        }
+    });
+} else if (uid) {
     settingsPage.style.display = 'none';
     profileView.style.display = 'block';
     const style = document.createElement("style");
