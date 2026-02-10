@@ -47,11 +47,11 @@ if (mode) {
         });
     } else if (mode === "verifyEmail") {
         verifyEmailContainer.style.display = "block";
-        document.getElementById('verifyEmailBtn').addEventListener('click', handleVerifyEmail);
+        document.getElementById('verifyEmailBtn2').addEventListener('click', handleVerifyEmail);
     } else {
         showError("Unknown Mode:", mode);
         verifyEmailContainer.style.display = "block";
-        document.getElementById('verifyEmailBtn').addEventListener('click', handleVerifyEmail);
+        document.getElementById('verifyEmailBtn2').addEventListener('click', handleVerifyEmail);
     }
     document.addEventListener("click", (e) => {
         if (!e.target.classList.contains("revealBtn")) return;
@@ -334,9 +334,6 @@ if (mode) {
             justify-content:center;
             max-width:900px;
             flex-direction:column;
-        }
-        #settings button {
-            max-width:200px;
         }
     `;
     document.head.appendChild(style);
