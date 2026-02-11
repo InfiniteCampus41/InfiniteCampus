@@ -35,5 +35,18 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error(err);
         }
+        let pxyFcrn = document.getElementById('pxyFcrn');
+        pxyFcrn.addEventListener("click", function () {
+            const sjframe = document.getElementById('sj-frame');
+            sjframe.style.width = '100vw';
+            sjframe.style.height = '100vh';
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const sjframe = document.getElementById('sj-frame');
+                sjframe.style.width = '100vw';
+                sjframe.style.height = '85vh';
+            }
+        });
     });
 });

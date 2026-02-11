@@ -84,8 +84,10 @@ form.addEventListener("submit", async (event) => {
     const fullScreenBtn = document.createElement('button');
     fullScreenBtn.textContent = '⛶';
     fullScreenBtn.classList = 'button';
+    fullScreenBtn.id = 'pxyFcrn';
     fullScreenBtn.style.position = 'fixed';
     fullScreenBtn.style.bottom = '20px';
+    fullScreenBtn.style.zIndex = '9999';
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
     document.body.appendChild(frame.frame);
