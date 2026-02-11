@@ -81,7 +81,13 @@ form.addEventListener("submit", async (event) => {
     }
     const frame = scramjet.createFrame();
     frame.frame.id = "sj-frame";
-    const player = document.getElementById('sjPlayer');
-    player.appendChild(frame.frame);
+    const fullScreenBtn = document.createElement('button');
+    fullScreenBtn.textContent = '⛶';
+    fullScreenBtn.classList = 'button';
+    fullScreenBtn.style.position = 'fixed';
+    fullScreenBtn.style.bottom = '20px';
+    fullScreenBtn.style.right = '20px';
+    document.body.appendChild(fullScreenBtn);
+    document.body.appendChild(frame.frame);
     frame.go(url);
 });
