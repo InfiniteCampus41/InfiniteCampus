@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("sj-form");
     const addressInput = document.getElementById("sj-address");
     const errorEl = document.getElementById("sj-error");
-    let player = null;
+    const player = document.getElementById('sjPlayer');
     let iframe = null;
     let fullscreenBtn = null;
     function setupFullscreen(playerEl, btn) {
