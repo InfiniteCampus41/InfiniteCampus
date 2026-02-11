@@ -4,7 +4,7 @@ const chat = document.getElementById("aiChat");
 let contents = [];
 function addMessage(role, text) {
     const div = document.createElement("div");
-    div.className = `msg ${role}`;
+    div.className = `aiMsg ${role}`;
     if (role === "user") {
         text = "**You:** " + text;
     }

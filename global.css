@@ -48,6 +48,12 @@ a {
 #aiInput::placeholder {
     color:white;
 }
+.aiMsg {
+    padding:12px 14px;
+    border-radius:12px;
+    margin:10px 0;
+    line-height:1.5;
+}
 .analog-clock {
     display: block;
 }
@@ -353,6 +359,15 @@ input[type="range"]::-webkit-slider-thumb {
     background:green; 
     cursor:pointer; 
 }
+#inputBar {
+    position:fixed;
+    bottom:5%;
+    left:0;
+    right:0;
+    padding:20px 0;
+    pointer-events:none;
+    z-index:10;
+}
 @keyframes rgbAnimation {
     0% { background-color: red; }
     33% { background-color: green; }
@@ -514,6 +529,11 @@ input[type="range"]::-webkit-slider-thumb {
     text-align:left;
     border-radius:6px;
 }
+.model { 
+    background:#8cbe37; 
+    border:1px solid #374151; 
+    color:white; 
+}
 #networkWarning {
     display:none; 
     color:darkgoldenrod; 
@@ -521,6 +541,17 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius:5px; 
     margin:10px 0; 
     font-weight:bold;
+}
+:not(pre) > code {
+    background:green;
+    padding:3px 6px;
+    border-radius:6px;
+    color:burlywood;
+}
+:not(pre)>code[class*=language-], pre[class*=language-] {
+    border-radius:12px;
+    position:relative;
+    border:1px solid #1f2937;
 }
 .notes {
     color:white;
@@ -546,6 +577,16 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #panicKeyInput {
     width:90px;
+}
+.perks {
+    list-style-type: disc;
+    padding-left: 25px;
+    text-align: left;
+    display: inline-block;
+}
+#perksContainer ul {
+    text-align:left;
+    max-width:50%;
 }
 #pollContainer {
     background:#111;
@@ -618,6 +659,9 @@ input[type="range"]::-webkit-slider-thumb {
     overflow-y: auto;
     text-align: center;
 }
+pre code {
+    font-size:.75em !important;
+}
 .progress {
     background:black;
     padding:9px;
@@ -672,6 +716,10 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .reaction-trigger {
     display:none;
+}
+#rolesContainer ul {
+    text-align:left;
+    max-width:50%;
 }
 #search {
     width: 100%;
@@ -805,6 +853,9 @@ select {
 .szo2 {
     width:25%;
 }
+.szo3 {
+    width:12.5%;
+}
 table { 
     width: 100%; 
     border-collapse: collapse; 
@@ -825,6 +876,21 @@ th, td {
     border-radius:50%;
     border:1px solid black;
     transition:0.3s all;
+}
+.token.comment { 
+    color:#6b7280 
+}
+.token.string { 
+    color:#34d399 
+}
+.token.keyword { 
+    color:#60a5fa 
+}
+.token.function { 
+    color:#fbbf24 
+}
+.token.number { 
+    color:#f87171 
 }
 .tptxt {
     color:lime;
@@ -861,6 +927,10 @@ th, td {
     margin-bottom:7px;
     border:1px solid white;
     border-radius:15px;
+}
+.user { 
+    background:#0cbe37; 
+    color:white; 
 }
 #videoPlayer {
     width: 95vw;
