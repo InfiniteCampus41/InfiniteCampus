@@ -1,52 +1,35 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("sj-form");
-    const addressInput = document.getElementById("sj-address");
-    const errorEl = document.getElementById("sj-error");
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        let input = addressInput.value.trim();
-        if (!input) {
-            errorEl.textContent = "Please Enter A URL Or Search Term.";
-            return;
-        }
-        let logUrl;
-        try {
-            const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
-            logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
-        } catch {
-            logUrl = input.toLowerCase();
-        }
-        const now = new Date().toISOString();
-        const payload = {
-            url: logUrl,
-            timestamp: now
-        };
-        try {
-            const response = await fetch("/logs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-            addressInput.value = "";
-            errorEl.textContent = "";
-        } catch (err) {
-            console.error(err);
-        }
-        let pxyFcrn = document.getElementById('pxyFcrn');
-        pxyFcrn.addEventListener("click", function () {
-            const sjframe = document.getElementById('sj-frame');
-            sjframe.style.width = '100vw';
-            sjframe.style.height = '100vh';
+window.logProxyVisit = async function(input) {
+    let logUrl;
+    try {
+        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
+        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
+    } catch {
+        logUrl = input.toLowerCase();
+    }
+    const payload = {
+        url: logUrl,
+        timestamp: new Date().toISOString()
+    };
+    try {
+        await fetch("/logs", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
         });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const sjframe = document.getElementById('sj-frame');
-                sjframe.style.width = '100vw';
-                sjframe.style.height = '85vh';
-            }
-        });
+    } catch {}
+};
+const observer = new MutationObserver(() => {
+    const btn = document.getElementById('pxyFcrn');
+    const frame = document.getElementById('sj-frame');
+    if (!btn || !frame) return;
+    btn.onclick = () => {
+        frame.style.width = '100vw';
+        frame.style.height = '100vh';
+    };
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            frame.style.height = '85vh';
+        }
     });
 });
+observer.observe(document.body, {childList:true,subtree:true});

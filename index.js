@@ -55,6 +55,7 @@ function checkBlocked(inputUrl) {
 loadBlockedUrls();
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    await logProxyVisit(address.value);
     const reason = checkBlocked(address.value);
     if (reason) {
         error.textContent = "This URL Is Blocked.";
