@@ -22,20 +22,20 @@ const observer = new MutationObserver(() => {
     const btn = document.getElementById('pxyFcrn');
     const frame = document.getElementById('sj-frame');
     if (!btn || !frame) return;
+    let fullscreen = false;
     btn.onclick = () => {
-        frame.style.width = '100vw';
-        frame.style.height = '100vh';
-        frame.style.marginTop = '0px';
-        frame.style.zIndex = '9998';
-        btn.style.display = 'none';
-    };
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            btn.style.display = 'block';
-            frame.style.height = '85vh';
+        fullscreen = !fullscreen;
+        if (fullscreen) {
+            frame.style.width = '100vw';
+            frame.style.height = '100vh';
+            frame.style.marginTop = '0px';
+            frame.style.zIndex = '9998';
+        } else {
+            frame.style.width = '';
+            frame.style.height = '87vh';
             frame.style.marginTop = '60px';
             frame.style.zIndex = '1';
         }
-    });
+    };
 });
 observer.observe(document.body, {childList:true,subtree:true});
