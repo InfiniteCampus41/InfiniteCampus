@@ -2,42 +2,68 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("sj-form");
     const addressInput = document.getElementById("sj-address");
     const errorEl = document.getElementById("sj-error");
-    const fullscreenBtn = document.getElementById("fullscreen-btn");
-    function isFullscreen() {
-        return document.fullscreenElement ||
-               document.webkitFullscreenElement ||
-               document.msFullscreenElement;
-    }
-    async function enterFullscreen() {
-        const el = document.documentElement;
-        if (el.requestFullscreen) await el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if (el.msRequestFullscreen) el.msRequestFullscreen();
-    }
-    async function exitFullscreen() {
-        if (document.exitFullscreen) await document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        else if (document.msExitFullscreen) document.msExitFullscreen();
-    }
-    fullscreenBtn.addEventListener("click", async () => {
-        try {
-            if (!isFullscreen()) {
-                await enterFullscreen();
-                fullscreenBtn.textContent = "⤢";
-            } else {
-                await exitFullscreen();
-                fullscreenBtn.textContent = "⛶";
-            }
-        } catch (err) {
-            console.error("Fullscreen Error:", err);
+    let player = null;
+    let iframe = null;
+    let fullscreenBtn = null;
+    function setupFullscreen(playerEl, btn) {
+        function isFullscreen() {
+            return document.fullscreenElement === playerEl ||
+                   document.webkitFullscreenElement === playerEl ||
+                   document.msFullscreenElement === playerEl;
         }
-    });
+        async function enterFullscreen() {
+            if (playerEl.requestFullscreen) await playerEl.requestFullscreen();
+            else if (playerEl.webkitRequestFullscreen) playerEl.webkitRequestFullscreen();
+            else if (playerEl.msRequestFullscreen) playerEl.msRequestFullscreen();
+        }
+        async function exitFullscreen() {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+        }
+        btn.addEventListener("click", async () => {
+            try {
+                if (!isFullscreen()) {
+                    await enterFullscreen();
+                } else {
+                    await exitFullscreen();
+                }
+            } catch (err) {
+                console.error("Fullscreen Error:", err);
+            }
+        });
+        document.addEventListener("fullscreenchange", () => {
+            btn.textContent = isFullscreen() ? "⤢" : "⛶";
+        });
+    }
+    function createPlayer() {
+        if (player) return;
+        player = document.createElement("div");
+        player.id = "sjPlayer";
+        fullscreenBtn = document.createElement("button");
+        fullscreenBtn.id = "fullscreen-btn";
+        fullscreenBtn.textContent = "⛶";
+        iframe = document.createElement("iframe");
+        iframe.id = "sj-frame";
+        iframe.allowFullscreen = true;
+        player.appendChild(fullscreenBtn);
+        player.appendChild(iframe);
+        document.body.appendChild(player);
+        setupFullscreen(player, fullscreenBtn);
+    }
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         let input = addressInput.value.trim();
         if (!input) {
             errorEl.textContent = "Please Enter A URL Or Search Term.";
             return;
+        }
+        createPlayer();
+        try {
+            const parsed = new URL(input.startsWith("http") ? input : `https://${input}`);
+            iframe.src = parsed.href;
+        } catch {
+            iframe.src = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
         }
         let logUrl;
         try {
@@ -46,10 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch {
             logUrl = input.toLowerCase();
         }
-        const now = new Date().toISOString();
         const payload = {
             url: logUrl,
-            timestamp: now
+            timestamp: new Date().toISOString()
         };
         try {
             const response = await fetch("/logs", {
@@ -57,9 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-            if (!response.ok) {
-                throw new Error(`Server Error: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Server Error: ${response.status}`);
             addressInput.value = "";
             errorEl.textContent = "";
         } catch (err) {
