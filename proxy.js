@@ -25,10 +25,16 @@ const observer = new MutationObserver(() => {
     btn.onclick = () => {
         frame.style.width = '100vw';
         frame.style.height = '100vh';
+        frame.style.marginTop = '0px';
+        frame.style.zIndex = '9998';
+        btn.style.display = 'none';
     };
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
+            btn.style.display = 'block';
             frame.style.height = '85vh';
+            frame.style.marginTop = '60px';
+            frame.style.zIndex = '1';
         }
     });
 });
