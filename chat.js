@@ -34,6 +34,7 @@ let isPre3 = false;
 let isPre2 = false;
 let isPre1 = false;
 let isSus = false;
+let isPartner = false;
 let currentPrivateUid = null;
 let currentPrivateName = null;
 let metadataListenerRef = null;
@@ -445,7 +446,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -460,7 +461,8 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/premium3`)),
                 get(ref(db, `users/${msg.sender}/profile/isTester`)),
                 get(ref(db, `users/${msg.sender}/profile/mileStone`)),
-                get(ref(db, `users/${msg.sender}/profile/isSus`))
+                get(ref(db, `users/${msg.sender}/profile/isSus`)),
+                get(ref(db, `users/${msg.sender}/profile/isPartner`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
@@ -474,6 +476,7 @@ async function renderMessageInstant(id, msg) {
             const senderPre2 = pre2Snap.exists() ? pre2Snap.val() :false;
             const senderPre3 = pre3Snap.exists() ? pre3Snap.val() :false;
             const senderIsSus = susSnap.exists() ? susSnap.val() : false;
+            const senderIsPartner = partnerSnap.exists() ? partnerSnap.val() : false;
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
@@ -486,6 +489,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
             else if (senderIsDev) badgeText = "Developer";
+            else if (senderIsPartner) badgeText = "Partner";
             else if (senderPre3) badgeText = "Premium3";
             else if (senderPre2) badgeText = "Premium2";
             else if (senderPre1) badgeText = "Premium1";
@@ -633,6 +637,10 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
                     badgeSpan.style.color = "dodgerblue";
                     badgeSpan.title = "Admin";
+                } else if (badgeText === "Partner" && dontShowOthers === false) {
+                    badgeSpan.innerHTML = '<i class="fa fa-handshake"></i>';
+                    badgeSpan.style.color = 'cornflowerblue';
+                    badgeSpan.title = "This User Is A Partner Of Infinite Campus";
                 } else if (badgeText === "Developer" && dontShowOthers === false) {
                     badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
                     badgeSpan.style.color = "green";
@@ -1229,6 +1237,7 @@ onAuthStateChanged(auth, async user => {
     const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
     const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
     const susSnap = await get(ref(db, `users/${user.uid}/profile/isSus`));
+    const partnerSnap = await get(ref(db, `users/${user.uid}/profile/isPartner`));
     currentUser = user;
     const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
     isOwner = ownerSnap.exists() && ownerSnap.val() === true;
@@ -1242,6 +1251,7 @@ onAuthStateChanged(auth, async user => {
     isPre2 = pre2snap.exists() ? pre2snap.val() : false;
     isPre3 = pre3snap.exists() ? pre3snap.val() : false;
     isSus = susSnap.exists() ? susSnap.val() : false;
+    isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
     newChannelName.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
@@ -1277,8 +1287,8 @@ onAuthStateChanged(auth, async user => {
     isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
-    roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" : "User")))))))));
-    roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :"white")))))))));
+    roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" : "User"))))))))));
+    roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isPartner ? "cornflowerblue" :(isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :"white"))))))))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
     bioSpan.style.fontSize = "60%";

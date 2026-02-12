@@ -131,6 +131,7 @@ if (mode) {
         	{ key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
         	{ key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
         	{ key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
+            { key: "isPartner", icon: "fa fa-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue"},
         	{ key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red"},
             { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange"},
@@ -740,6 +741,10 @@ if (mode) {
                     }
                     if (profile.isAdmin) {
                         addBadge("Admin", "dodgerblue", "bi bi-shield");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isPartner) {
+                        addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "fa fa-handshake");
                         hasAnyRole = true;
                     }
                     if (profile.isDev) {
