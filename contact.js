@@ -8,7 +8,7 @@ async function sendMessage() {
         showError("ERR#8 Message Cannot Be Empty!")
         return;
     }
-    const fullMessage = `**${name}** \n Says: ${message} \n-# From ${url}`;
+    const fullMessage = `**${name}** \n${message} \n-# From ${url}`;
     try {
         const response = await fetch(`${a}/send`, {
             method: "POST",
