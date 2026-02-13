@@ -91,7 +91,9 @@ if (fileParam) {
             const isTester = testerSnap.exists() && testerSnap.val() === true;
             const ownerSnap = await get(child(ref(db), `users/${uid}/profile/isOwner`));
             const isOwner = ownerSnap.exists() && ownerSnap.val() === true;
-            if (isPremium1 || isPremium2 || isPremium3 || isDev || isAdmin || isHAdmin || isCoOwner || isTester || isOwner) {
+            const partnerSnap = await get(child(ref(db), `users/${uid}/profile/isPartner`));
+            const isPartner = partnerSnap.exists() && partnerSnap.val() === true;
+            if (isPartner || isPremium1 || isPremium2 || isPremium3 || isDev || isAdmin || isHAdmin || isCoOwner || isTester || isOwner) {
                 maxFileSize = PREMIUM_MAX_SIZE;
                 premiumInfo.innerHTML = `You Are A Premium User! You Can Upload Files Up To 500MB.`;
             } else {

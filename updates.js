@@ -7,6 +7,7 @@ let lastSentKey = null;
 let hasLoaded = false;
 let isOwner = false;
 let isTester = false;
+let isDev = false;
 let cleanupRunning = false;
 function sendToCustomDB(message) {
     const channelId = "1389703415810101308";
@@ -40,7 +41,7 @@ async function enforceUpdateLimit(snapshot) {
     }
 }
 function addUpdate() {
-  	if (!isOwner && !isTester) return;
+  	if (!isOwner && !isTester && !isDev) return;
   	const contentEl = document.getElementById("newUpdate");
   	const content = contentEl.value.trim();
   	if (content) {
@@ -52,12 +53,12 @@ function addUpdate() {
   	}
 }
 function deleteUpdate(key) {
-  	if (!isOwner && !isTester) return;
+  	if (!isOwner && !isTester && !isDev) return;
   	remove(ref(db, "updates/" + key));
   	if (lastSentKey === key) lastSentKey = null;
 }
 function editUpdate(key, currentText) {
-  	if (!isOwner && !isTester) return;
+  	if (!isOwner && !isTester && !isDev) return;
   	const newText = prompt("Edit Update:", currentText);
   	if (newText !== null && newText.trim() !== "") {
     	update(ref(db, "updates/" + key), {
@@ -79,7 +80,7 @@ function renderUpdates(snapshot) {
   	updates.slice(0, 10).forEach((update, index) => {
     	const div = document.createElement("div");
     	div.className = `update-box ${index % 2 === 0 ? "r" : "y"}`;
-    	if (isOwner || isTester) {
+    	if (isOwner || isTester || isDev) {
       		div.innerHTML = `
         		<button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">Edit</button>
         		${index + 1}. ${update.content}
@@ -113,18 +114,24 @@ onAuthStateChanged(auth, async (user) => {
   	const inputBox = document.getElementById("newUpdateContainer") || document.getElementById("newUpdate");
   	isOwner = false;
 	isTester = false;
+	isDev = false;
   	if (user) {
     	const ownerRef = ref(db, `users/${user.uid}/profile/isOwner`);
-    	const ownerSnap = await get(ownerRef);
 		const testerRef = ref(db, `users/${user.uid}/profile/isTester`);
+		const devRef = ref(db, `users/${user.uid}/profile/isDev`);
+    	const ownerSnap = await get(ownerRef);
 		const testerSnap = await get(testerRef);
+		const devSnap = await get(devRef);
     	if (ownerSnap.exists() && ownerSnap.val() === true) {
       		isOwner = true;
       		if (inputBox) inputBox.style.display = "block";
     	} else if (testerSnap.exists() && testerSnap.val() === true) {
       		isTester = true;
       		if (inputBox) inputBox.style.display = "block";
-    	} else {
+    	} else if (devSnap.exists() && devSnap.val() === true) {
+			isDev = true;
+			if (inputBox) inputBox.style.display = "block";
+		}  else {
       		if (inputBox) inputBox.style.display = "none";
     	}
   	} else {

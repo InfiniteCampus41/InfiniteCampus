@@ -4,13 +4,18 @@ import { auth, db } from "./firebase.js";
 const noteInput = document.getElementById('noteInput');
 const saveBtn = document.getElementById('saveBtn');
 const notesContainer = document.getElementById('notesContainer');
+let isOwner = false;
+let isTester = false;
+let isCoOwner = false;
+let isHAdmin = false;
+let isAdmin = false;
+let isDev = false;
 function saveNote() {
     if (!noteInput) return;
     const text = noteInput.value.trim();
-    if (text) {
-        push(ref(db, 'notes'), { text });
-        noteInput.value = '';
-    }
+    if (!text) return;
+    push(ref(db, 'notes'), { text });
+    noteInput.value = '';
 }
 if (saveBtn) saveBtn.addEventListener('click', saveNote);
 if (noteInput) {
@@ -21,20 +26,24 @@ if (noteInput) {
         }
     });
 }
-let isOwner = false;
-let isTester = false;
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         applyOwnerPermissions(false);
         return;
     }
-    const ownerRef = ref(db, `users/${user.uid}/profile/isOwner`);
-    const ownerSnap = await get(ownerRef);
+    const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
+    const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
+    const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
+    const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
+    const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
+    const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));
     isOwner = ownerSnap.exists() && ownerSnap.val() === true;
-    const testerRef = ref(db, `users/${user.uid}/profile/isTester`);
-    const testerSnap = await get(testerRef);
     isTester = testerSnap.exists() && testerSnap.val() === true;
-    applyOwnerPermissions(isOwner || isTester);
+    isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
+    isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
+    isAdmin = adminSnap.exists() && adminSnap.val() === true;
+    isDev = devSnap.exists() && devSnap.val() === true;
+    applyOwnerPermissions(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev);
 });
 function applyOwnerPermissions(owner) {
     if (noteInput) noteInput.style.display = owner ? "block" : "none";
@@ -62,41 +71,38 @@ onValue(ref(db, 'notes'), (snapshot) => {
         `;
         notesContainer.appendChild(div);
     });
-    applyOwnerPermissions(isOwner || isTester);
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            if (!isOwner || !isTester) return;
-            const key = button.getAttribute('data-key');
-            remove(ref(db, 'notes/' + key));
+    applyOwnerPermissions(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev);
+});
+notesContainer.addEventListener('click', (e) => {
+    const button = e.target;
+    const key = button.dataset.key;
+    if (!key) return;
+    if (!(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev)) return;
+    if (button.classList.contains('delete-btn')) {
+        remove(ref(db, 'notes/' + key));
+    }
+    if (button.classList.contains('edit-btn')) {
+        const txtDiv = document.querySelector(`.btxt[data-key="${key}"]`);
+        const saveButton = document.querySelector(`.save-edit-btn[data-key="${key}"]`);
+        if (!txtDiv) return;
+        const currentText = txtDiv.innerText;
+        txtDiv.innerHTML = `<input type="text" class="edit-input button" value="${currentText}">`;
+        const input = txtDiv.querySelector('.edit-input');
+        saveButton.style.display = "inline-block";
+        input.focus();
+        input.select();
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveEdit(key, txtDiv, saveButton);
+            if (e.key === 'Escape') {
+                txtDiv.innerText = currentText;
+                saveButton.style.display = "none";
+            }
         });
-    });
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            if (!isOwner || !isTester) return;
-            const key = button.getAttribute('data-key');
-            const txtDiv = document.querySelector(`.txt[data-key="${key}"]`);
-            const saveButton = document.querySelector(`.save-edit-btn[data-key="${key}"]`);
-            const currentText = txtDiv.innerText;
-            txtDiv.innerHTML = `<input type="text" class="edit-input button" value="${currentText}">`;
-            const input = txtDiv.querySelector('.edit-input');
-            saveButton.style.display = "inline-block";
-            input.focus();
-            input.select();
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveEdit(key, txtDiv, saveButton);
-                }
-                if (e.key === 'Escape') {
-                    txtDiv.innerText = currentText;
-                    saveButton.style.display = "none";
-                }
-            });
-            saveButton.onclick = () => {
-                saveEdit(key, txtDiv, saveButton);
-            };
-        });
-    });
+    }
+    if (button.classList.contains('save-edit-btn')) {
+        const txtDiv = document.querySelector(`.btxt[data-key="${key}"]`);
+        saveEdit(key, txtDiv, button);
+    }
 });
 function saveEdit(key, txtDiv, saveButton) {
     const input = txtDiv.querySelector('.edit-input');
