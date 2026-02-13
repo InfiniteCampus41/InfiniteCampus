@@ -136,7 +136,8 @@ if (mode) {
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
             { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
             { key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
-            { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" }
+            { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
+            { key: "isDonater", icon: "bi bi-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -836,8 +837,17 @@ if (mode) {
                         addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
                         hasAnyRole = true;
                     }
+                    if (profile.isDonater) {
+                        addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "bi bi-balloon-heart");
+                        hasAnyRole = true;
+                    }
                     if (profile.mileStone) {
                         addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
+                        hasAnyRole = true;
+                    }
+                    if (profile.dUsername) {
+                        const discordUser = profile.dUsername;
+                        addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
                         hasAnyRole = true;
                     }
                     if (profile.verified) {

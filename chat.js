@@ -446,7 +446,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -463,7 +463,8 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/mileStone`)),
                 get(ref(db, `users/${msg.sender}/profile/isSus`)),
                 get(ref(db, `users/${msg.sender}/profile/isPartner`)),
-                get(ref(db, `users/${msg.sender}/profile/dUsername`))
+                get(ref(db, `users/${msg.sender}/profile/dUsername`)),
+                get(ref(db, `users/${msg.sender}/profile/isDonater`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
@@ -658,6 +659,14 @@ async function renderMessageInstant(id, msg) {
                     icon.style.color = "yellow";
                     icon.style.marginLeft = "6px";
                     icon.title = `This User Has Infinite Campus Premium T1`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (donSnap.exists() && donSnap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-balloon-heart";
+                    icon.style.color = "#00E5FF";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Has Donated To Infinite Campus`;
                     badgeSpan.appendChild(icon);
                 }
                 if (partnerSnap.exists() && partnerSnap.val() === true) {
