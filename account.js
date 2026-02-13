@@ -118,45 +118,52 @@ if (mode) {
     const messageBtn = document.getElementById("messageUserBtn");
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get("user");
-    function createBadge(profile, isVerified) {
-  	    const badgeContainer = document.createElement("span");
-  	    badgeContainer.style.display = "flex";
-  	    badgeContainer.style.alignItems = "center";
-  	    badgeContainer.style.gap = "6px";
-  	    badgeContainer.style.marginLeft = "6px";
-  	    const roles = [
+    function createBadge(profile, isVerified, dUsername) {
+        const badgeContainer = document.createElement("span");
+        badgeContainer.style.display = "flex";
+        badgeContainer.style.alignItems = "center";
+        badgeContainer.style.gap = "6px";
+        badgeContainer.style.marginLeft = "6px";
+        const roles = [
             { key: "isSus", icon: "bi bi-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
-        	{ key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
-        	{ key: "isTester", icon: "fa-solid fa-cogs", title: "Tester", color: "DarkGoldenRod" },
-        	{ key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
-        	{ key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
-        	{ key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
-            { key: "isPartner", icon: "fa fa-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue"},
-        	{ key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
-            { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red"},
-            { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange"},
-	    	{ key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow"},
-        	{ key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" }
-  	    ];
-  	    roles.forEach(r => {
-    	    if (profile?.[r.key] === true) {
-      	    	const badge = document.createElement("i");
-      	    	badge.className = `${r.icon}`;
-      	    	badge.title = r.title;
-      	    	badge.style.color = r.color;
-      	    	badge.style.fontSize = "1.1em";
-      	    	badgeContainer.appendChild(badge);
-    	    }
-  	    });
-	    if (isVerified === true) {
-        	const verified = document.createElement("i");
-        	verified.className = "bi bi-shield-check";
-        	verified.title = "Verified User";
-        	verified.style.color = "white";
-        	verified.style.fontSize = "1.1em";
-        	badgeContainer.appendChild(verified);
-  	    }
-  	    return badgeContainer;
+            { key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
+            { key: "isTester", icon: "fa-solid fa-cogs", title: "Tester", color: "DarkGoldenRod" },
+            { key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
+            { key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
+            { key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
+            { key: "isPartner", icon: "fa fa-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
+            { key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
+            { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
+            { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
+            { key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
+            { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" }
+        ];
+        roles.forEach(r => {
+            if (profile?.[r.key] === true) {
+                const badge = document.createElement("i");
+                badge.className = `${r.icon}`;
+                badge.title = r.title;
+                badge.style.color = r.color;
+                badge.style.fontSize = "1.1em";
+                badgeContainer.appendChild(badge);
+            }
+        });
+        if (dUsername && dUsername.trim() !== "") {
+            const discordBadge = document.createElement("i");
+            discordBadge.className = "bi bi-discord";
+            discordBadge.title = `Known On Discord As @${dUsername}`;
+            discordBadge.style.color = "#5865F2";
+            badgeContainer.appendChild(discordBadge);
+        }
+        if (isVerified === true) {
+            const verified = document.createElement("i");
+            verified.className = "bi bi-shield-check";
+            verified.title = "Verified User";
+            verified.style.color = "white";
+            verified.style.fontSize = "1.1em";
+            badgeContainer.appendChild(verified);
+        }
+        return badgeContainer;
     }
     if (!uid) {
       	showError("Invalid URL");
@@ -232,7 +239,8 @@ if (mode) {
     		container.appendChild(img);
     		container.appendChild(nameSpan);
     		const isVerified = foundUser.profile?.verified === true;
-    		const badgeEl = createBadge(foundUser.profile, isVerified);
+            const dUsername = foundUser.profile?.dUsername || "";
+            const badgeEl = createBadge(foundUser.profile, isVerified, dUsername);
     		container.appendChild(badgeEl);
         	displayNameEl.appendChild(container);
         	bioEl.textContent = bio;
@@ -595,6 +603,64 @@ if (mode) {
         }
         bioCharCount.textContent = `${bioInput.value.length} / 50`;
     });
+    const disInput = document.getElementById("disInput");
+    const editDisBtn = document.getElementById("editDisBtn");
+    const saveDisBtn = document.getElementById("saveDisBtn");
+    const cancelDisBtn = document.getElementById("cancelDisBtn");
+    let currentDis = "";
+    function autoResizeDis() {
+        disInput.style.height = "auto";
+        disInput.style.height = disInput.scrollHeight + "px";
+    }
+    async function loadUserDis(uid) {
+        const disRef = ref(db, `users/${uid}/profile/dUsername`);
+        const snap = await get(disRef);
+        if (snap.exists()) {
+            currentDis = snap.val() || "";
+            setSetting("dUsername", currentDis);
+            disInput.value = currentDis;
+            disInput.style.color = "white";
+        } else {
+            disInput.value = "";
+            disInput.placeholder = "Enter Discord Username Here";
+        }
+        autoResizeDis();
+    }
+    function enableDisEditing() {
+        disInput.disabled = false;
+        editDisBtn.style.display = "none";
+        saveDisBtn.style.display = "inline";
+        cancelDisBtn.style.display = "inline";
+        disInput.focus();
+    }
+    function disableDisEditing(resetValue = false) {
+        if (resetValue) disInput.value = currentDis || "";
+        disInput.disabled = true;
+        disInput.style.color = "white";
+        editDisBtn.style.display = "inline";
+        saveDisBtn.style.display = "none";
+        cancelDisBtn.style.display = "none";
+        autoResizeDis();
+    }
+    async function saveUserDis() {
+        if (!currentUser) return;
+        const newDis = disInput.value.trim();
+        if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
+        await set(ref(db, `users/${currentUser.uid}/profile/dUsername`), newDis);
+        currentDis = newDis;
+        disableDisEditing();
+        setSetting("dUsername", newDis);
+        showSuccess("Discord Username Saved!");
+    }
+    editDisBtn.addEventListener("click", enableDisEditing);
+    saveDisBtn.addEventListener("click", saveUserDis);
+    cancelDisBtn.addEventListener("click", () => disableDisEditing(true));
+    disInput.addEventListener("input", () => {
+        autoResizeDis();
+        if (disInput.value.length > 50) {
+            disInput.value = disInput.value.slice(0, 50);
+        }
+    });
     const profilePicBtn = document.createElement("button");
     profilePicBtn.className = "btn btn-secondary";
     profilePicBtn.textContent = "Loading Picture";
@@ -694,6 +760,7 @@ if (mode) {
             await loadSettings(user.uid);
             await loadDisplayName(user.uid);
             await loadUserBio(user.uid);
+            await loadUserDis(user.uid);
             await loadUserProfilePic(user.uid);
             const profilePicContainer = document.getElementById("profileContainer");
             profilePicContainer.appendChild(profilePicBtn);
@@ -786,6 +853,7 @@ if (mode) {
             await loadSettings(user.uid);
             await loadDisplayName(user.uid);
             await loadUserBio(user.uid);
+            await loadUserDis(user.uid);
             await loadUserProfilePic(user.uid);
             window.__appResolve();
         }
