@@ -465,7 +465,6 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isPartner`)),
                 get(ref(db, `users/${msg.sender}/profile/dUsername`))
             ]);
-            let discordUsername = discordSnap.exists() ? discordSnap.val() : "";
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
                 displayName = "Spam Account";
@@ -474,16 +473,11 @@ async function renderMessageInstant(id, msg) {
             let badgeText = null;
             const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
             const senderIsDev = devSnap.exists() ? devSnap.val() : false;
-            const senderPre1 = pre1Snap.exists() ? pre1Snap.val() :false;
-            const senderPre2 = pre2Snap.exists() ? pre2Snap.val() :false;
-            const senderPre3 = pre3Snap.exists() ? pre3Snap.val() :false;
             const senderIsSus = susSnap.exists() ? susSnap.val() : false;
-            const senderIsPartner = partnerSnap.exists() ? partnerSnap.val() : false;
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
             const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
             const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
-            const senderIsHUser = hSnap.exists() ? hSnap.val() : false;
             if (senderIsSus) badgeText = "Sus";
             else if (senderIsOwner) badgeText = "OWNR";
             else if (senderIsTester) badgeText = "TSTR";
@@ -491,11 +485,6 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
             else if (senderIsDev) badgeText = "Developer";
-            else if (senderIsPartner) badgeText = "Partner";
-            else if (senderPre3) badgeText = "Premium3";
-            else if (senderPre2) badgeText = "Premium2";
-            else if (senderPre1) badgeText = "Premium1";
-            else if (senderIsHUser) badgeText = "100";
             if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
                 badgeText = badgeSnap.val();
             }
@@ -638,34 +627,54 @@ async function renderMessageInstant(id, msg) {
                     badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
                     badgeSpan.style.color = "dodgerblue";
                     badgeSpan.title = "Admin";
-                } else if (badgeText === "Partner" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="fa fa-handshake"></i>';
-                    badgeSpan.style.color = 'cornflowerblue';
-                    badgeSpan.title = "This User Is A Partner Of Infinite Campus";
                 } else if (badgeText === "Developer" && !dontShowOthers) {
                     badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
                     badgeSpan.style.color = "green";
                     badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz";
-                } else if (badgeText === "Premium3" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-hearts"></i>';
-                    badgeSpan.style.color = 'red';
-                    badgeSpan.title = 'This User Has Infinite Campus Premium T3';
-                } else if (badgeText === "Premium2" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                    badgeSpan.style.color = 'orange';
-                    badgeSpan.title = 'This User Has Infinite Campus Premium T2';
-                } else if (badgeText === "Premium1" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-heart-half"></i>';
-                    badgeSpan.style.color = 'yellow';
-                    badgeSpan.title = 'This User Has Infinite Campus Premium T1';
-                } else if (badgeText === "100" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-award"></i>';
-                    badgeSpan.style.color = "yellow";
-                    badgeSpan.title = "This User Is The 100th Signed Up User";
                 } else {
                     badgeSpan.textContent = `${badgeText}`;
                     badgeSpan.style.color = "pink";
                     badgeSpan.title = "Custom Badge";
+                }
+                if (pre3Snap.exists() && pre3Snap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-hearts";
+                    icon.style.color = "red";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Has Infinite Campus Premium T3`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (pre2Snap.exists() && pre2Snap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-heart-fill";
+                    icon.style.color = "orange";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Has Infinite Campus Premium T2`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (pre1Snap.exists() && pre1Snap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-heart-half";
+                    icon.style.color = "yellow";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Has Infinite Campus Premium T1`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (partnerSnap.exists() && partnerSnap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "fa fa-handshake";
+                    icon.style.color = "cornflowerblue";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Is A Partner Of Infinite Campus`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (hSnap.exists() && hSnap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-award";
+                    icon.style.color = "yellow";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Is The 100th Signed Up User`;
+                    badgeSpan.appendChild(icon);
                 }
                 if (discordSnap.exists() && discordSnap.val().trim() !== "") {
                     const dUsername = discordSnap.val();
