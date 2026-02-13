@@ -11,26 +11,6 @@ onAuthStateChanged(auth, user => {
     document.getElementById("authUI").style.display = user ? "none" : "block";
     document.getElementById("donateUI").style.display = user ? "block" : "none";
 });
-function signup() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    createUserWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-        currentUser = userCredential.user;
-        sessionStorage.setItem("donUID", currentUser.uid);
-    })
-    .catch(err => showError(err.message));
-}
-function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    signInWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-        currentUser = userCredential.user;
-        sessionStorage.setItem("donUID", currentUser.uid);
-    })
-    .catch(err => showError(err.message));
-}
 function logout() {
     signOut(auth);
     sessionStorage.removeItem("donUID");
@@ -123,8 +103,6 @@ if (amount) {
     });
 }
 window.donate = donate;
-window.login = login;
-window.signup = signup;
 window.logout = logout;
 const perks1 = document.getElementById('perks1');
 const perks2 = document.getElementById('perks2');

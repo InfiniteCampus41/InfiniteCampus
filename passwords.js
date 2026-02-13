@@ -3,6 +3,7 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged 
 import { ref, push } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
+const donParams = urlParams.get("donate");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
@@ -40,6 +41,8 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         if (chatparams) {
             window.location.href = "InfiniteAccounts.html?chat=true";
+        } else if (donParams) {
+            window.location.href = "InfiniteAccounts.html?donate=true";
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
@@ -48,6 +51,8 @@ onAuthStateChanged(auth, (user) => {
 signup.addEventListener("click", () => {
     if (chatparams) {
         window.location.href = "InfiniteSignups.html?chat=true";
+    } else if (donParams) {
+        window.location.href = "InfiniteSignups.html?donate=true";
     } else {
         window.location.href = "InfiniteSignups.html";
     }
@@ -63,7 +68,10 @@ async function handleLogin() {
         await signInWithEmailAndPassword(auth, email, password);
         if (chatparams) {
             window.location.href = "InfiniteAccounts.html?chat=true";
-        } else {
+        } else if (donParams) {
+            window.location.href = "InfiniteAccounts.html?donate=true";
+        } 
+        else {
             window.location.href = "InfiniteAccounts.html"
         }
     } catch (error) {

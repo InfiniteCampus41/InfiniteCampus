@@ -372,8 +372,13 @@ if (mode) {
     const userpanel = document.getElementById('userpanel');
     const params = new URLSearchParams(window.location.search);
     const chaturl = params.get("chat");
+    const donUrl = params.get("donate");
+    const donBtn = document.getElementById('donBtn');
     const adminBtn = document.getElementById('adminBtn');
     const chatBtn = document.getElementById('chatBtn');
+    if (donUrl) {
+        donBtn.style.display = 'block';
+    }
     if (chaturl) {
         chatBtn.style.display = 'block';
     }
