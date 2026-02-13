@@ -151,7 +151,7 @@ if (mode) {
         if (dUsername && dUsername.trim() !== "") {
             const discordBadge = document.createElement("i");
             discordBadge.className = "bi bi-discord";
-            discordBadge.title = `Known On Discord As @${dUsername}`;
+            discordBadge.title = `Known As @${dUsername} On Discord`;
             discordBadge.style.color = "#5865F2";
             badgeContainer.appendChild(discordBadge);
         }
