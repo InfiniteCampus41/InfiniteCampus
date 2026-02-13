@@ -138,6 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Wordle", method: ["1", "2"], url: "https://wordleunlimited.org/" },
         { name: "Worldguessr", method: ["1", "2"], url: "https://www.worldguessr.com/" },
         { name: "DELTARUNE", method: ["1", "2"], url: "https://g-mcb.github.io/deltarune/index.html" },
+        { name: "Hollow Knight", method: ["1", "2"], url: "https://orbit.foo.ng/games/hollowknight/index.html" },
         { name: "Tomb Of The Mask", method: ["1", "2"], url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
     ];
     function showGames(method) {
