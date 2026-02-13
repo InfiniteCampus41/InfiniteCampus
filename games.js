@@ -296,3 +296,23 @@ document.addEventListener("DOMContentLoaded", function () {
         showGames("1");
     });
 })
+window.logProxyVisit = async function(input) {
+    let logUrl;
+    try {
+        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
+        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
+    } catch {
+        logUrl = input.toLowerCase();
+    }
+    const payload = {
+        url: logUrl,
+        timestamp: new Date().toISOString()
+    };
+    try {
+        await fetch("/logs", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        });
+    } catch {}
+};
