@@ -760,10 +760,9 @@ async function renderMessageInstant(id, msg) {
                 }
             }
         } catch (err) {
-    console.error("Metadata Fetch Failed:", err);
-    showError("Metadata Fetch Failed: " + (err?.message || err));
-}
-
+            console.error("Metadata Fetch Failed:", err);
+            showError("Metadata Fetch Failed: " + (err?.message || err));
+        }
     })();
     try {
         const mentionedYou = messageMentionsYou(msg.text);
