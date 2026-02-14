@@ -815,11 +815,16 @@ select {
 	border-radius: 6px;
 }
 #sj-error {
+    width:100%;
+    text-align:center;
+    font-size:2em;
 	color: #ff6666 !important;
 	white-space: pre-wrap;
 }
 #sj-error-code {
 	font-size: 12px;
+    width:100%;
+    text-align: center;
 	color: #fff;
 	font-family: "Courier New", Courier, monospace;
 }

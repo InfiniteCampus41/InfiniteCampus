@@ -58,7 +58,7 @@ form.addEventListener("submit", async (event) => {
     await logProxyVisit(address.value);
     const reason = checkBlocked(address.value);
     if (reason) {
-        error.textContent = "This URL Is Blocked.";
+        error.textContent = "The Server Could Not Process This Request. If You Think This Is An Error, Please Send Your Error Code To The Owner";
         errorCode.textContent = reason;
         return;
     }
