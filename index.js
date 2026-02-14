@@ -58,8 +58,8 @@ form.addEventListener("submit", async (event) => {
     await logProxyVisit(address.value);
     const reason = checkBlocked(address.value);
     if (reason) {
-        error.textContent = "The Server Could Not Process This Request. If You Think This Is An Error, Please Send Your Error Code To The Owner";
-        errorCode.textContent = reason;
+        error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Website Chat, Padlet, Live Discord Chat, Contact Me page, Or The Report A Bug Form";
+        errorCode.textContent = `Error Code: ${reason}`;
         return;
     }
     try {
