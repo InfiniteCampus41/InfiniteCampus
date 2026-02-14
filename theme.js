@@ -98,6 +98,9 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (gradientSetting === 'tky') {
                 bg = 'linear-gradient(to right, #be9a37, #be5f37)';
                 isDark = true;
+            } else if (gradientSetting === 'hwn') {
+                bg = 'linear-gradient(to right, #ff9500, #231f1f)';
+                isDark = true;
             } else if (gradientSetting === 'rgb') {
                 bg = 'transparent';
                 isDark = true;
@@ -180,8 +183,10 @@ window.addEventListener('DOMContentLoaded', () => {
             applyTheme('#000000', 'wtr');
         } else if (monthIndex === 1) {
             applyTheme('#000000', 'lve');
-        } else if (monthIndex >= 2 && monthIndex <= 9) {
+        } else if (monthIndex >= 2 && monthIndex <= 8) {
             applyTheme('#8cbe37');
+        } else if (monthIndex === 9) {
+            applyTheme('#000000', 'hwn');
         } else if (monthIndex === 10) {
             applyTheme('#000000', 'tky');
         } else if (monthIndex === 11) {
@@ -230,8 +235,10 @@ window.addEventListener('DOMContentLoaded', () => {
             const defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
         } else if (monthIndex === 1) {
             const defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
-        } else if (monthIndex >= 2 && monthIndex <= 9) {
+        } else if (monthIndex >= 2 && monthIndex <= 8) {
             const defaultColor = '#8cbe37';
+        } else if (monthIndex === 9) {
+            const defaultColor = 'linear-gradient(to right, #ff9500, #231f1f)';
         } else if (monthIndex === 10) {
             const defaultColor = 'linear-gradient(to right, #be9a37, #be5f37)';
         } else if (monthIndex === 11) {

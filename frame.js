@@ -290,8 +290,10 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleBtn.textContent = "Toggle Snow";
         } else if (monthIndex === 1) {
             toggleBtn.textContent = 'Toggle Hearts';
-        } else if (monthIndex >= 2 && monthIndex <= 9) {
+        } else if (monthIndex >= 2 && monthIndex <= 8) {
             toggleBtn.style.display = 'none';
+        } else if (monthIndex === 9) {
+            toggleBtn.textContent = 'Toggle Pumpkins';
         } else if (monthIndex === 10) {
             toggleBtn.textContent = 'Toggle Leaves';
         }
@@ -302,19 +304,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
     function initSnowflakeAnimations() {
+        const monthIndex = new Date().getMonth();
         snowflakes.forEach((flake) => {
-            const monthIndex = new Date().getMonth();
+            flake.style.display = "";
+            let iconClass = "";
+            let iconColor = "";
             if (monthIndex === 11 || monthIndex === 0) {
-                flake.innerHTML = '<i class="bi bi-snow"></i>';
-            } else if (monthIndex === 1) {
-                flake.innerHTML = '<i class="bi bi-suit-heart-fill"></i>';
-                flake.style.color = 'red !important';
-            } else if (monthIndex >= 2 && monthIndex <= 9) {
-                flake.style.display = 'none';
-            } else if (monthIndex === 10) {
-                flake.innerHTML = '<i class="bi bi-leaf-fill"></i>';
-                flake.style.color = 'darkgoldenrod';
+                iconClass = "bi bi-snow";
+                iconColor = "white";
+            } 
+            else if (monthIndex === 1) {
+                iconClass = "bi bi-suit-heart-fill";
+                iconColor = "red";
+            } 
+            else if (monthIndex >= 2 && monthIndex <= 8) {
+                flake.style.display = "none";
+                return;
+            } 
+            else if (monthIndex === 9) {
+                iconClass = "fa-solid fa-pumpkin";
+                iconColor = "orange";
+            } 
+            else if (monthIndex === 10) {
+                iconClass = "bi bi-leaf-fill";
+                iconColor = "darkgoldenrod";
             }
+            flake.innerHTML = `<i class="${iconClass}" style="color:${iconColor}"></i>`;
             let y = Math.random() * 60;
             let swayOffset = Math.random() * Math.PI * 2;
             let running = false;
