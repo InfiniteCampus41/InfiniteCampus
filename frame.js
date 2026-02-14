@@ -1,3 +1,27 @@
+let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
+let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
+const today = new Date();
+const month = today.getMonth() + 1;
+const day = today.getDate();
+if (month === 1 && day === 1) {
+    rightFtMsg = `New Year, Same Chaos Since 2024`;
+    leftFtMsg = `Starting The Year Questionably!`;
+} else if (month === 2 && day === 14) {
+    rightFtMsg = `Spreading Love (And Mild Annoyance) Since 2024`;
+    leftFtMsg = `Made With Slightly Extra Love Today`;
+} else if (month === 7 && day === 4) {
+    rightFtMsg = `Independently Annoying Since 2024`;
+    leftFtMsg = `Red, White, And Playing Games At School`;
+} else if (month === 10 && day === 31) {
+    rightFtMsg = `Scaring Teachers Since 2024`;
+    leftFtMsg = `Powered By Sugar And Bad Decisions`;
+} else if (month === 11 && day >= 22 && day <= 28 && today.getDay() === 4) {
+    rightFtMsg = `Thankful For Chaos Since 2024`;
+    leftFtMsg = `Stuffed With Code And Regret`;
+} else if (month === 12 && day === 25) {
+    rightFtMsg = `Sleighing Teachers Since 2024`;
+    leftFtMsg = `Made With Festive Mischief`;
+}
 const headerHTML = `
     <header id="site-header" class="rgb-element">
         <div id="header-left">
@@ -161,10 +185,10 @@ const headerHTML = `
     </div>
     <footer id="site-footer" class="rgb-element">
         <span>
-            Made With All The Love We Are Legally Allowed To Give!
+            ${leftFtMsg}
         </span>
         <span>
-            Pissing Off Your Teachers Since 2024
+            ${rightFtMsg}
         </span>
     </footer>
     <br>
