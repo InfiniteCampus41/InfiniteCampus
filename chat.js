@@ -446,7 +446,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, guessSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -464,7 +464,8 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isSus`)),
                 get(ref(db, `users/${msg.sender}/profile/isPartner`)),
                 get(ref(db, `users/${msg.sender}/profile/dUsername`)),
-                get(ref(db, `users/${msg.sender}/profile/isDonater`))
+                get(ref(db, `users/${msg.sender}/profile/isDonater`)),
+                get(ref(db, `users/${msg.sender}/profile/isGuesser`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
             if (!displayName || displayName.trim() === "") {
@@ -683,6 +684,14 @@ async function renderMessageInstant(id, msg) {
                     icon.style.color = "yellow";
                     icon.style.marginLeft = "6px";
                     icon.title = `This User Is The 100th Signed Up User`;
+                    badgeSpan.appendChild(icon);
+                }
+                if (guessSnap.exists() && guessSnap.val() === true) {
+                    const icon = document.createElement("i");
+                    icon.className = "bi bi-stopwatch";
+                    icon.style.color = "#ff0000";
+                    icon.style.marginLeft = "6px";
+                    icon.title = `This User Has A Lot Of Freetime`;
                     badgeSpan.appendChild(icon);
                 }
                 if (discordSnap.exists() && discordSnap.val().trim() !== "") {

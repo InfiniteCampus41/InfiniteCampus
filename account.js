@@ -136,8 +136,9 @@ if (mode) {
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
             { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
             { key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
+            { key: "isDonater", icon: "bi bi-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"},
             { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
-            { key: "isDonater", icon: "bi bi-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"}
+            { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" }
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -843,6 +844,10 @@ if (mode) {
                     }
                     if (profile.mileStone) {
                         addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isGuesser) {
+                        addBadge("This User Has A Lot Of Freetime", "#FF0000", "bi bi-stopwatch");
                         hasAnyRole = true;
                     }
                     if (profile.dUsername) {
