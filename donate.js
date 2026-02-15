@@ -96,10 +96,12 @@ if (email) {
 const amount = document.getElementById("amount");
 if (amount) {
     amount.addEventListener("keydown", (e) => {
-      	if (e.key === "Enter") {
-        	e.preventDefault();
-        	donate();
-      	}
+        if ((amount.value > 0) && (amount.value < 999999)) {
+            if (e.key === "Enter") {
+        	    e.preventDefault();
+        	    donate();
+      	    }
+        }
     });
 }
 window.donate = donate;
