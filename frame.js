@@ -441,3 +441,34 @@ document.addEventListener("DOMContentLoaded", () => {
         overlay.style.display = 'none';
     });
 });
+const LOADER_CONFIG = {
+    mode: "auto", 
+};
+const loader = document.createElement("div");
+loader.id = "planet-loader";
+loader.innerHTML = `
+    <div class="planet-wrapper">
+        <div class="ring ring1">
+        </div>
+        <div class="ring ring2">
+        </div>
+        <div class="ring ring3">
+        </div>
+        <div class="letter">
+            C
+        </div>
+    </div>
+`;
+document.body.prepend(loader);
+function hideLoader() {
+    loader.style.opacity = "0";
+    setTimeout(() => loader.remove(), 1000);
+}
+if (LOADER_CONFIG.mode === "auto") {
+    window.addEventListener("load", hideLoader);
+}
+else if (LOADER_CONFIG.mode === "time") {
+    setTimeout(hideLoader, LOADER_CONFIG.duration);
+}
+else if (LOADER_CONFIG.mode === "infinite") {
+}
