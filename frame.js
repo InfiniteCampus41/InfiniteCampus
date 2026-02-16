@@ -460,9 +460,18 @@ loader.innerHTML = `
     </div>
 `;
 document.body.prepend(loader);
+function showLoader() {
+    if (!document.getElementById("planet-loader")) {
+        document.body.prepend(loader);
+    }
+    loader.style.display = "flex";
+    loader.style.opacity = "1";
+}
 function hideLoader() {
     loader.style.opacity = "0";
-    setTimeout(() => loader.remove(), 1000);
+    setTimeout(() => {
+        loader.style.display = "none";
+    }, 600);
 }
 if (LOADER_CONFIG.mode === "auto") {
     window.addEventListener("load", hideLoader);
