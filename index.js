@@ -95,7 +95,6 @@ form.addEventListener("submit", async (event) => {
     const proxyContainer = document.createElement("div");
     proxyContainer.id = "proxy-container";
     proxyContainer.style.height = "87vh";
-    proxyContainer.style.marginTop = "60px";
     document.body.appendChild(proxyContainer);
     proxyContainer.appendChild(frame.frame);
     frame.go(url);
