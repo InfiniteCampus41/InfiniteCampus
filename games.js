@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const before = document.getElementById("before");
     const games = [
-        { name: "Slope", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/slope/index.html"},
+        { name: "Slope", method: ["2"], url: "https://play.infinitecampus.xyz/games/slope/index.html"},
         { name: "Slope 2", method: ["2"], url: "https://mathadventure1.github.io/slope/slope/index.html"},
         { name: "NettleWeb (1)", method: ["2"], url: "https://nettleweb.com"},
         { name: "NettleWeb (2)", method: ["2"], url: "https://sigmasigmatoiletedge.github.io" },
