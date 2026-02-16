@@ -1,14 +1,9 @@
 "use strict";
 
-/** @type {HTMLFormElement} */
 const form = document.getElementById("sj-form");
-/** @type {HTMLInputElement} */
 const address = document.getElementById("sj-address");
-/** @type {HTMLInputElement} */
 const searchEngine = document.getElementById("sj-search-engine");
-/** @type {HTMLParagraphElement} */
 const error = document.getElementById("sj-error");
-/** @type {HTMLPreElement} */
 const errorCode = document.getElementById("sj-error-code");
 
 const { ScramjetController } = $scramjetLoadController();
@@ -72,16 +67,18 @@ form.addEventListener("submit", async (event) => {
     error.textContent = "";
     errorCode.textContent = "";
 
+    const oldFrame = document.getElementById("sj-frame");
+    const oldBtn = document.getElementById("pxyFcrn");
+    if (oldFrame) oldFrame.remove();
+    if (oldBtn) oldBtn.remove();
+
     try {
         await logProxyVisit(address.value);
-    } catch (e) {
-        console.warn("Logging failed:", e);
-    }
+    } catch {}
 
     const reason = checkBlocked(address.value);
     if (reason) {
-        error.textContent =
-            "The Server Could Not Process This Request.";
+        error.textContent = "The Server Could Not Process This Request.";
         errorCode.textContent = `Error Code: ${reason}`;
         return;
     }
@@ -103,15 +100,12 @@ form.addEventListener("submit", async (event) => {
         "/wisp/";
 
     try {
-        if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
-            await connection.setTransport("/libcurl/index.mjs", [
-                { websocket: wispUrl },
-            ]);
-        }
-    } catch (err) {
+        await connection.setTransport("/libcurl/index.mjs", [
+            { websocket: wispUrl },
+        ]);
+    } catch {
         error.textContent = "Proxy Transport Failed.";
-        errorCode.textContent =
-            "No Available Port Or WebSocket Failed.";
+        errorCode.textContent = "WebSocket Or Port Not Available.";
         return;
     }
 
@@ -120,56 +114,37 @@ form.addEventListener("submit", async (event) => {
 
     const fullScreenBtn = document.createElement("button");
     fullScreenBtn.textContent = "⛶";
-    fullScreenBtn.classList = "button";
+    fullScreenBtn.className = "button";
     fullScreenBtn.id = "pxyFcrn";
     fullScreenBtn.style.position = "fixed";
     fullScreenBtn.style.bottom = "20px";
-    fullScreenBtn.style.zIndex = "9999";
     fullScreenBtn.style.right = "20px";
+    fullScreenBtn.style.zIndex = "9999";
 
     document.body.appendChild(fullScreenBtn);
     document.body.appendChild(frame.frame);
 
-    let loaded = false;
+    let responded = false;
 
-    frame.frame.addEventListener("load", () => {
-        loaded = true;
+    frame.frame.onload = () => {
+        responded = true;
+    };
 
-        try {
-            const doc = frame.frame.contentDocument;
-
-            if (!doc || doc.body.innerHTML.trim() === "") {
-                throw new Error("Blank response");
-            }
-
-            clearTimeout(loadTimeout);
-
-        } catch {
-            error.textContent =
-                "Proxy Connected But Returned No Data.";
-            errorCode.textContent =
-                "Backend Port Exists But Is Not Responding.";
-
-            frame.frame.remove();
-            fullScreenBtn.remove();
-        }
-    });
-
-    const loadTimeout = setTimeout(() => {
-        if (!loaded) {
+    const timeout = setTimeout(() => {
+        if (!responded) {
             error.textContent = "Proxy Failed To Connect.";
             errorCode.textContent =
-                "Server Did Not Respond. This Usually Means No Port Is Available.";
+                "Backend Did Not Respond (No Available Port).";
 
             frame.frame.remove();
             fullScreenBtn.remove();
         }
-    }, 6000);
+    }, 7000);
 
     try {
         frame.go(url);
     } catch (err) {
-        clearTimeout(loadTimeout);
+        clearTimeout(timeout);
 
         error.textContent = "Proxy Crashed.";
         errorCode.textContent = err.toString();
