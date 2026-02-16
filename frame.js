@@ -1,8 +1,8 @@
 let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
 let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
-const today = new Date();
-const month = today.getMonth() + 1;
-const day = today.getDate();
+const frameToday = new Date();
+const month = frameToday.getMonth() + 1;
+const day = frameToday.getDate();
 if (month === 1 && day === 1) {
     rightFtMsg = `New Year, Same Chaos Since 2024`;
     leftFtMsg = `Starting The Year Questionably!`;
@@ -15,7 +15,7 @@ if (month === 1 && day === 1) {
 } else if (month === 10 && day === 31) {
     rightFtMsg = `Scaring Teachers Since 2024`;
     leftFtMsg = `Powered By Sugar And Bad Decisions`;
-} else if (month === 11 && day >= 22 && day <= 28 && today.getDay() === 4) {
+} else if (month === 11 && day >= 22 && day <= 28 && frameToday.getDay() === 4) {
     rightFtMsg = `Thankful For Chaos Since 2024`;
     leftFtMsg = `Stuffed With Code And Regret`;
 } else if (month === 12 && day === 25) {
