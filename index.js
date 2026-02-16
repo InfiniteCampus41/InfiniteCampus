@@ -69,6 +69,7 @@ form.addEventListener("submit", async (event) => {
         errorCode.textContent = err.toString();
         throw err;
     }
+    showLoader();
     const url = search(address.value, searchEngine.value);
     let wispUrl =
         (location.protocol === "https:" ? "wss" : "ws") +

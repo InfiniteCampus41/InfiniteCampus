@@ -8,7 +8,6 @@ loader.innerHTML = `
         <div class="letter">C</div>
     </div>
 `;
-document.body.prepend(loader);
 const style = document.createElement("style");
 style.innerHTML = `
 #planet-loader {
@@ -79,8 +78,11 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 function showLoader() {
-    loader.style.opacity = "1";
+    if (!document.getElementById("planet-loader")) {
+        document.body.prepend(loader);
+    }
     loader.style.display = "flex";
+    loader.style.opacity = "1";
 }
 function hideLoader() {
     loader.style.opacity = "0";
@@ -115,13 +117,6 @@ const observer = new MutationObserver(() => {
     frame.addEventListener("load", () => {
         hideLoader();
     });
-    const originalSetAttribute = frame.setAttribute;
-    frame.setAttribute = function(name, value) {
-        if (name === "src") {
-            showLoader();
-        }
-        return originalSetAttribute.apply(this, arguments);
-    };
     if (btn) {
         let fullscreen = false;
         btn.onclick = () => {
