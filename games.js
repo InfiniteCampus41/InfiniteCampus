@@ -196,9 +196,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 const event = new Event("submit", { bubbles: true, cancelable: true });
                                 form.dispatchEvent(event);
                                 const waitForIframe = setInterval(() => {
-                                    const iframes = document.getElementById("sj-frame");
-                                    if (iframes.length > 0) {
-                                        const gameIframe = iframes[iframes.length - 1];
+                                    const gameIframe = document.getElementById("sj-frame");
+                                    if (gameIframe) {
                                         clearInterval(waitForIframe);
                                         gameIframe.addEventListener("load", () => {
                                             hideLoader();
