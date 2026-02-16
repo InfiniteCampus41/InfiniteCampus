@@ -41,40 +41,40 @@ function updateClockMode() {
 }
 clockMode.addEventListener("change", updateClockMode);
 function update() {
-	const now = new Date();
-	let diff = Math.floor((targetDate - now) / 1000);
-	const totalMinutes = Math.floor(diff / 60);
-	const hoursLeft = Math.floor(totalMinutes / 60);
-	const minutesLeft = totalMinutes % 60;
-	const secondsLeft = diff % 60;
-	digitalClock.textContent =
-		`${hoursLeft.toString().padStart(2, "0")}H:` +
-		`${minutesLeft.toString().padStart(2, "0")}M:` +
-		`${secondsLeft.toString().padStart(2, "0")}S`;
-	if (diff <= 58.5 && !audioStarted) {
-		audio.play().catch(() => {});
-		audioStarted = true;
-	}
-	if (diff <= 0) {
-		clearInterval(timer);
-		dateText.textContent = "Times Up!";
-        localStorage.removeItem("countdownTarget");
-		return;
-	}
-	let days = Math.floor(diff / 86400);
-	let months = Math.floor(days / 30);
-	let years = Math.floor(months / 12);
-	dateText.textContent =
-		`${years} Years • ${months % 12} Months • ${days % 30} Days`;
-	const totalMinutesLeft = Math.floor(diff / 60);
-	const minutesLeftAnalog = totalMinutesLeft % 60;
-	const hoursLeftAnalog = Math.floor(totalMinutesLeft / 60) % 12;
+  	const now = new Date();
+  	let diff = Math.floor((targetDate - now) / 1000);
+  	const totalMinutes = Math.floor(diff / 60);
+  	const hoursLeft = Math.floor((diff % 86400) / 3600);
+  	const minutesLeft = Math.floor(totalMinutes % 60);
+  	const secondsLeft = diff % 60;
+  	digitalClock.textContent =
+    	`${hoursLeft.toString().padStart(2, "0")}H:` +
+    	`${minutesLeft.toString().padStart(2, "0")}M:` +
+    	`${secondsLeft.toString().padStart(2, "0")}S`;
+  	if (diff <= 58.5 && !audioStarted) {
+    	audio.play().catch(() => {});
+    	audioStarted = true;
+  	}
+  	if (diff <= 0) {
+    	clearInterval(timer);
+    	dateText.textContent = "Times Up!";
+    	localStorage.removeItem("countdownTarget");
+    	return;
+  	}
+  	let days = Math.floor(diff / 86400);
+  	let months = Math.floor(days / 30);
+  	let years = Math.floor(months / 12);
+  	dateText.textContent =
+    	`${years} Years • ${months % 12} Months • ${days % 30} Days`;
+  	const totalMinutesLeft = Math.floor(diff / 60);
+  	const minutesLeftAnalog = totalMinutesLeft % 60;
+  	const hoursLeftAnalog = Math.floor(totalMinutesLeft / 60) % 12;
 	const smoothSeconds = secondsLeft;
-	const smoothMinutes = minutesLeftAnalog + smoothSeconds / 60;
-	const smoothHours = hoursLeftAnalog + smoothMinutes / 60;
-	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg) translateY(-1px)`;
-	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg) translateY(-2px)`;
-	hourHand.style.transform   = `rotate(${smoothHours * 30}deg) translateY(-4px)`;
+  	const smoothMinutes = minutesLeftAnalog + smoothSeconds / 60;
+  	const smoothHours = hoursLeftAnalog + smoothMinutes / 60;
+  	secondHand.style.transform = `rotate(${smoothSeconds * 6}deg) translateY(-1px)`;
+  	minuteHand.style.transform = `rotate(${smoothMinutes * 6}deg) translateY(0px)`;
+  	hourHand.style.transform   = `rotate(${smoothHours * 30}deg) translateY(-2px)`;
 }
 reset.addEventListener("click", () => {
 	localStorage.removeItem("countdownTarget");
