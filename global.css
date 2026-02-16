@@ -1,6 +1,36 @@
 a {
     text-decoration:none;
 }
+#add-close {
+    float: right;
+    cursor: pointer;
+    font-size: 20px;
+}
+#add-error {
+    color: red;
+    font-size: 13px;
+}
+#add-inner input {
+    width: 100%;
+    padding: 7px;
+    margin: 8px 0;
+}
+#add-panel {
+    position: fixed;
+    top: -300px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background: #222;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    transition: top 0.3s ease;
+    z-index: 1000;
+}
+#add-panel.open {
+    top: 80px;
+}
 #aiChat {
     position:fixed;
     top:60px;
@@ -82,6 +112,20 @@ a {
     left: 20px;
     border-radius: 6px;
     cursor: pointer;
+}
+.blocked-item {
+    background: #222;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+.blocked-item .reason {
+    font-size: 12px;
+    color: #aaa;
+}
+.blocked-item .url {
+    font-size: 15px;
+    color: white;
 }
 body {
     background-image:url('/res/bg.png');
@@ -374,8 +418,32 @@ input[type="range"]::-webkit-slider-thumb {
     66% { background-color: blue; }
     100% { background-color: red; }
 }
+@keyframes spin1 {
+    from { transform: rotateX(70deg) rotateZ(0deg); }
+    to   { transform: rotateX(70deg) rotateZ(360deg); }
+}
+@keyframes spin2 {
+    from { transform: rotateX(65deg) rotateZ(360deg); }
+    to   { transform: rotateX(65deg) rotateZ(0deg); }
+}
+@keyframes spin3 {
+    from { transform: rotateX(75deg) rotateZ(0deg); }
+    to   { transform: rotateX(75deg) rotateZ(-360deg); }
+}
 .left-margin {
 	margin: 0px 16px;
+}
+.letter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 120px;
+    font-weight: bold;
+    color: #8cbe37;
+    transform: rotateX(20deg);
+    text-shadow: 0 0 20px rgba(255,255,255,0.6);
 }
 #logo {
     height: 60px;
@@ -575,6 +643,36 @@ input[type="range"]::-webkit-slider-thumb {
     text-align:left;
     width:100%;
 }
+#panel {
+    overflow:scroll;
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background: #111;
+    color: white;
+    padding: 20px;
+    transition: right 0.3s ease;
+    z-index: 998;
+    display: flex;
+    flex-direction: column;
+}
+#panel.open {
+    right: 0;
+}
+#panel-btn {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 999;
+}
+#panel-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
 #panicKeyInput {
     width:90px;
 }
@@ -587,6 +685,23 @@ input[type="range"]::-webkit-slider-thumb {
 #perksContainer ul {
     text-align:left;
     max-width:50%;
+}
+#planet-loader {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, #0d1117, #000);
+    display: flex;
+    top:60px;
+    bottom:30px;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.6s ease;
+}
+.planet-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
 }
 #pollContainer {
     background:#111;
@@ -716,6 +831,32 @@ pre code {
 }
 .reaction-trigger {
     display:none;
+}
+.ring {
+    position: absolute;
+    border: 3px solid rgba(0,255,0,0.6);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform-style: preserve-3d;
+}
+.ring1 {
+    width: 220px;
+    height: 80px;
+    margin: -40px 0 0 -110px;
+    animation: spin1 3s linear infinite;
+}
+.ring2 {
+    width: 180px;
+    height: 60px;
+    margin: -30px 0 0 -90px;
+    animation: spin2 4s linear infinite;
+}
+.ring3 {
+    width: 250px;
+    height: 100px;
+    margin: -50px 0 0 -125px;
+    animation: spin3 5s linear infinite;
 }
 #rolesContainer ul {
     text-align:left;
@@ -931,6 +1072,17 @@ th, td {
     margin-bottom:7px;
     border:1px solid white;
     border-radius:15px;
+}
+#url-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#url-table tbody tr td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
 }
 .user { 
     background:#0cbe37; 
