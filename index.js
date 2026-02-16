@@ -94,7 +94,6 @@ form.addEventListener("submit", async (event) => {
     document.body.appendChild(fullScreenBtn);
     const proxyContainer = document.createElement("div");
     proxyContainer.id = "proxy-container";
-    proxyContainer.style.position = "relative";
     proxyContainer.style.height = "87vh";
     proxyContainer.style.marginTop = "60px";
     document.body.appendChild(proxyContainer);
