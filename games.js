@@ -165,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     button.style.cursor = "pointer";
                     button.onclick = function () {
                         container.style.display = "none";
+                        showLoader();
                         const backButton = document.createElement("button");
                         backButton.textContent = "← Back";
                         backButton.className = "button";
@@ -194,6 +195,16 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (form) {
                                 const event = new Event("submit", { bubbles: true, cancelable: true });
                                 form.dispatchEvent(event);
+                                const waitForIframe = setInterval(() => {
+                                    const iframes = document.querySelectorAll("iframe");
+                                    if (iframes.length > 0) {
+                                        const gameIframe = iframes[iframes.length - 1];
+                                        gameIframe.onload = function () {
+                                            hideLoader();
+                                        };
+                                        clearInterval(waitForIframe);
+                                    }
+                                }, 100);
                             }
                         }
                         fullscreen.onclick = function () {
