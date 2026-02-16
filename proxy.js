@@ -11,13 +11,13 @@ loader.innerHTML = `
 const style = document.createElement("style");
 style.innerHTML = `
 #planet-loader {
-    position: fixed;
+    position: absolute;
     inset: 0;
     background: radial-gradient(circle at center, #0d1117, #000);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 999999;
+    z-index: 10;
     transition: opacity 0.6s ease;
 }
 .planet-wrapper {

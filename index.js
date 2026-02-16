@@ -92,6 +92,12 @@ form.addEventListener("submit", async (event) => {
     fullScreenBtn.style.zIndex = '9999';
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
-    document.body.appendChild(frame.frame);
+    const proxyContainer = document.createElement("div");
+    proxyContainer.id = "proxy-container";
+    proxyContainer.style.position = "relative";
+    proxyContainer.style.height = "87vh";
+    proxyContainer.style.marginTop = "60px";
+    document.body.appendChild(proxyContainer);
+    proxyContainer.appendChild(frame.frame);
     frame.go(url);
 });
