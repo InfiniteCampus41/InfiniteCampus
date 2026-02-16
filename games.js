@@ -196,13 +196,16 @@ document.addEventListener("DOMContentLoaded", function () {
                                 const event = new Event("submit", { bubbles: true, cancelable: true });
                                 form.dispatchEvent(event);
                                 const waitForIframe = setInterval(() => {
-                                    const iframes = document.querySelectorAll("iframe");
+                                    const iframes = document.getElementById("sj-frame");
                                     if (iframes.length > 0) {
                                         const gameIframe = iframes[iframes.length - 1];
-                                        gameIframe.onload = function () {
-                                            hideLoader();
-                                        };
                                         clearInterval(waitForIframe);
+                                        gameIframe.addEventListener("load", () => {
+                                            hideLoader();
+                                        });
+                                        setTimeout(() => {
+                                            hideLoader();
+                                        }, 10000);
                                     }
                                 }, 100);
                             }
@@ -230,6 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         };
                         backButton.onclick = function () {
+                            hideLoader();
                             const iframes = document.querySelectorAll("iframe");
                             iframes.forEach(iframe => iframe.remove());
                             backButton.remove();
