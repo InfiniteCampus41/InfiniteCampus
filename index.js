@@ -55,10 +55,16 @@ function checkBlocked(inputUrl) {
 loadBlockedUrls();
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await logProxyVisit(address.value);
+    error.textContent = "";
+    errorCode.textContent = "";
+    try {
+        await logProxyVisit(address.value);
+    } catch (e) {
+        console.warn("Log Failed:", e);
+    }
     const reason = checkBlocked(address.value);
     if (reason) {
-        error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Website Chat, Padlet, Live Discord Chat, Contact Me page, Or The Report A Bug Form";
+        error.textContent = "The Server Could Not Process This Request.";
         errorCode.textContent = `Error Code: ${reason}`;
         return;
     }
@@ -67,7 +73,7 @@ form.addEventListener("submit", async (event) => {
     } catch (err) {
         error.textContent = "Failed To Register Service Worker.";
         errorCode.textContent = err.toString();
-        throw err;
+        return;
     }
     const url = search(address.value, searchEngine.value);
     let wispUrl =
@@ -75,10 +81,16 @@ form.addEventListener("submit", async (event) => {
         "://" +
         location.host +
         "/wisp/";
-    if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
-        await connection.setTransport("/libcurl/index.mjs", [
-            { websocket: wispUrl },
-        ]);
+    try {
+        if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
+            await connection.setTransport("/libcurl/index.mjs", [
+                { websocket: wispUrl },
+            ]);
+        }
+    } catch (err) {
+        error.textContent = "Proxy Transport Failed To Start.";
+        errorCode.textContent = "No Available Port Or WebSocket Connection Failed.";
+        return;
     }
     const frame = scramjet.createFrame();
     frame.frame.id = "sj-frame";
@@ -92,5 +104,20 @@ form.addEventListener("submit", async (event) => {
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
     document.body.appendChild(frame.frame);
-    frame.go(url);
+    const loadTimeout = setTimeout(() => {
+        error.textContent = "Proxy Failed To Connect.";
+        errorCode.textContent = "Server Did Not Respond. This Usually Means No Port Is Available.";
+        frame.frame.remove();
+        fullScreenBtn.remove();
+    }, 8000);
+    try {
+        await frame.go(url);
+        clearTimeout(loadTimeout);
+    } catch (err) {
+        clearTimeout(loadTimeout);
+        error.textContent = "Proxy Failed To Load The Page.";
+        errorCode.textContent = err.toString();
+        frame.frame.remove();
+        fullScreenBtn.remove();
+    }
 });
