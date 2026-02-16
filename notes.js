@@ -1,6 +1,7 @@
 import { ref, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { auth, db } from "./firebase.js";
+// The Fifth Digit Is 5
 const noteInput = document.getElementById('noteInput');
 const saveBtn = document.getElementById('saveBtn');
 const notesContainer = document.getElementById('notesContainer');
