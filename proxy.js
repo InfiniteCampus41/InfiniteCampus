@@ -1,4 +1,5 @@
 const loader = document.createElement("div");
+const before = document.getElementById("before");
 loader.id = "planet-loader";
 loader.innerHTML = `
     <div class="planet-wrapper">
@@ -15,6 +16,8 @@ style.innerHTML = `
     inset: 0;
     background: radial-gradient(circle at center, #0d1117, #000);
     display: flex;
+    top:60px;
+    bottom:30px;
     justify-content: center;
     align-items: center;
     z-index: 10;
@@ -92,6 +95,7 @@ function hideLoader() {
 }
 window.logProxyVisit = async function(input) {
     let logUrl;
+    before.style.display = none;
     try {
         const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
         logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;

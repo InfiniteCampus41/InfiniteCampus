@@ -45,23 +45,25 @@
         </script>
 	</head>
 	<body>
-		<center>
-			<div>
-				<h1 style="color:lime">
-					Infinite Campus Web Browser
-				</h1>
-				<img src="/res/icon.png" style="border-radius:20px;height:100px;">
+		<div id="before">
+			<center>
+				<div>
+					<h1 style="color:lime">
+						Infinite Campus Web Browser
+					</h1>
+					<img src="/res/icon.png" style="border-radius:20px;height:100px;">
+				</div>
+			</center>
+			<form id="sj-form" class="flex-center">
+				<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
+				<input id="sj-address" type="text" placeholder="Search The Web" />
+			</form>
+			<div class="desc left-margin">
+				<p id="sj-error">
+				</p>
+				<pre id="sj-error-code">
+				</pre>
 			</div>
-		</center>
-		<form id="sj-form" class="flex-center">
-			<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
-			<input id="sj-address" type="text" placeholder="Search The Web" />
-		</form>
-		<div class="desc left-margin">
-			<p id="sj-error">
-			</p>
-			<pre id="sj-error-code">
-			</pre>
 		</div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
