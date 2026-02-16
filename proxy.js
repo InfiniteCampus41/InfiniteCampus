@@ -1,155 +1,41 @@
-"use strict";
-
-const form = document.getElementById("sj-form");
-const address = document.getElementById("sj-address");
-const searchEngine = document.getElementById("sj-search-engine");
-const error = document.getElementById("sj-error");
-const errorCode = document.getElementById("sj-error-code");
-
-const { ScramjetController } = $scramjetLoadController();
-
-const scramjet = new ScramjetController({
-    files: {
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
-    },
-});
-
-scramjet.init();
-
-const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-
-let blockedUrls = [];
-
-
-async function loadBlockedUrls() {
+window.logProxyVisit = async function(input) {
+    let logUrl;
     try {
-        const res = await fetch("/edit-urls");
-        if (!res.ok) throw new Error("Failed to fetch blocked URLs");
-        const data = await res.json();
-        blockedUrls = Object.entries(data).map(([url, reason]) => ({
-            url,
-            reason
-        }));
-    } catch (err) {
-        console.error("Error Loading URLs:", err);
-        blockedUrls = [];
-    }
-}
-
-function getBaseDomain(input) {
-    try {
-        const u = new URL(input.startsWith("http") ? input : "https://" + input);
-        return u.hostname.toLowerCase();
+        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
+        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
     } catch {
-        return "";
+        logUrl = input.toLowerCase();
     }
-}
-
-function checkBlocked(inputUrl) {
-    const domain = getBaseDomain(inputUrl);
-    for (const entry of blockedUrls) {
-        const blockedDomain = getBaseDomain(entry.url);
-        if (domain === blockedDomain) {
-            return entry.reason || "Blocked.";
-        }
-    }
-    return null;
-}
-
-loadBlockedUrls();
-
-
-form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    error.textContent = "";
-    errorCode.textContent = "";
-
-    const oldFrame = document.getElementById("sj-frame");
-    const oldBtn = document.getElementById("pxyFcrn");
-    if (oldFrame) oldFrame.remove();
-    if (oldBtn) oldBtn.remove();
-
-    try {
-        await logProxyVisit(address.value);
-    } catch {}
-
-    const reason = checkBlocked(address.value);
-    if (reason) {
-        error.textContent = "The Server Could Not Process This Request.";
-        errorCode.textContent = `Error Code: ${reason}`;
-        return;
-    }
-
-    try {
-        await registerSW();
-    } catch (err) {
-        error.textContent = "Failed To Register Service Worker.";
-        errorCode.textContent = err.toString();
-        return;
-    }
-
-    const url = search(address.value, searchEngine.value);
-
-    let wispUrl =
-        (location.protocol === "https:" ? "wss" : "ws") +
-        "://" +
-        location.host +
-        "/wisp/";
-
-    try {
-        await connection.setTransport("/libcurl/index.mjs", [
-            { websocket: wispUrl },
-        ]);
-    } catch {
-        error.textContent = "Proxy Transport Failed.";
-        errorCode.textContent = "WebSocket Or Port Not Available.";
-        return;
-    }
-
-    const frame = scramjet.createFrame();
-    frame.frame.id = "sj-frame";
-
-    const fullScreenBtn = document.createElement("button");
-    fullScreenBtn.textContent = "⛶";
-    fullScreenBtn.className = "button";
-    fullScreenBtn.id = "pxyFcrn";
-    fullScreenBtn.style.position = "fixed";
-    fullScreenBtn.style.bottom = "20px";
-    fullScreenBtn.style.right = "20px";
-    fullScreenBtn.style.zIndex = "9999";
-
-    document.body.appendChild(fullScreenBtn);
-    document.body.appendChild(frame.frame);
-
-    let responded = false;
-
-    frame.frame.onload = () => {
-        responded = true;
+    const payload = {
+        url: logUrl,
+        timestamp: new Date().toISOString()
     };
-
-    const timeout = setTimeout(() => {
-        if (!responded) {
-            error.textContent = "Proxy Failed To Connect.";
-            errorCode.textContent =
-                "Backend Did Not Respond (No Available Port).";
-
-            frame.frame.remove();
-            fullScreenBtn.remove();
-        }
-    }, 7000);
-
     try {
-        frame.go(url);
-    } catch (err) {
-        clearTimeout(timeout);
-
-        error.textContent = "Proxy Crashed.";
-        errorCode.textContent = err.toString();
-
-        frame.frame.remove();
-        fullScreenBtn.remove();
-    }
+        await fetch("/logs", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        });
+    } catch {}
+};
+const observer = new MutationObserver(() => {
+    const btn = document.getElementById('pxyFcrn');
+    const frame = document.getElementById('sj-frame');
+    if (!btn || !frame) return;
+    let fullscreen = false;
+    btn.onclick = () => {
+        fullscreen = !fullscreen;
+        if (fullscreen) {
+            frame.style.width = '100vw';
+            frame.style.height = '100vh';
+            frame.style.marginTop = '0px';
+            frame.style.zIndex = '9998';
+        } else {
+            frame.style.width = '';
+            frame.style.height = '87vh';
+            frame.style.marginTop = '60px';
+            frame.style.zIndex = '1';
+        }
+    };
 });
+observer.observe(document.body, {childList:true,subtree:true});
