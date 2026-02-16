@@ -487,9 +487,6 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
             else if (senderIsDev) badgeText = "Developer";
-            if (badgeSnap.exists() && badgeSnap.val().trim() !== "") {
-                badgeText = badgeSnap.val();
-            }
             const picVal = picSnap.exists() ? picSnap.val() : 0;
             const picIndex = (picVal >= 0 && picVal <= 13) ? picVal : 0;
             profilePic.src = profilePics[picIndex];
@@ -599,112 +596,107 @@ async function renderMessageInstant(id, msg) {
                     document.addEventListener("click", closeMenu);
                 });
             }
-            if (badgeText) {
-                const badgeSpan = document.createElement("span");
-                badgeSpan.style.marginLeft = "6px";
-                badgeSpan.style.fontWeight = "bold";
-                let dontShowOthers = false;
-                if (badgeText === "Sus") {
-                    dontShowOthers = true;
-                    badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
-                    badgeSpan.style.color = 'red';
-                    badgeSpan.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
-                } else if (badgeText === "OWNR" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-shield-plus"></i>';
-                    badgeSpan.style.color = "lime";
-                    badgeSpan.title = "Owner";
-                } else if (badgeText === "TSTR" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
-                    badgeSpan.style.color = "DarkGoldenRod";
-                    badgeSpan.title = "Tester";
-                } else if (badgeText === "COWNR" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
-                    badgeSpan.style.color = "lightblue";
-                    badgeSpan.title = "Co-Owner";
-                } else if (badgeText === "HADMIN" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
-                    badgeSpan.style.color = "#00cc99";
-                    badgeSpan.title = "Head Admin";
-                } else if (badgeText === "ADMN" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
-                    badgeSpan.style.color = "dodgerblue";
-                    badgeSpan.title = "Admin";
-                } else if (badgeText === "Developer" && !dontShowOthers) {
-                    badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
-                    badgeSpan.style.color = "green";
-                    badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz";
-                } else {
-                    badgeSpan.textContent = `${badgeText}`;
-                    badgeSpan.style.color = "pink";
-                    badgeSpan.title = "Custom Badge";
-                }
-                if (pre3Snap.exists() && pre3Snap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-hearts";
-                    icon.style.color = "red";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Has Infinite Campus Premium T3`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (pre2Snap.exists() && pre2Snap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-heart-fill";
-                    icon.style.color = "orange";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Has Infinite Campus Premium T2`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (pre1Snap.exists() && pre1Snap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-heart-half";
-                    icon.style.color = "yellow";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Has Infinite Campus Premium T1`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (donSnap.exists() && donSnap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-balloon-heart";
-                    icon.style.color = "#00E5FF";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Has Donated To Infinite Campus`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (partnerSnap.exists() && partnerSnap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "fa fa-handshake";
-                    icon.style.color = "cornflowerblue";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Is A Partner Of Infinite Campus`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (hSnap.exists() && hSnap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-award";
-                    icon.style.color = "yellow";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Is The 100th Signed Up User`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (guessSnap.exists() && guessSnap.val() === true) {
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-stopwatch";
-                    icon.style.color = "#ff0000";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `This User Has A Lot Of Freetime`;
-                    badgeSpan.appendChild(icon);
-                }
-                if (discordSnap.exists() && discordSnap.val().trim() !== "") {
-                    const dUsername = discordSnap.val();
-                    const icon = document.createElement("i");
-                    icon.className = "bi bi-discord";
-                    icon.style.color = "#5865F2";
-                    icon.style.marginLeft = "6px";
-                    icon.title = `Known As @${dUsername} On Discord`;
-                    badgeSpan.appendChild(icon);
-                }
-                leftWrapper.appendChild(badgeSpan);
+            const badgeSpan = document.createElement("span");
+            badgeSpan.style.marginLeft = "6px";
+            badgeSpan.style.fontWeight = "bold";
+            let dontShowOthers = false;
+            if (badgeText === "Sus") {
+                dontShowOthers = true;
+                badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
+                badgeSpan.style.color = 'red';
+                badgeSpan.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
+            } else if (badgeText === "OWNR" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="bi bi-shield-plus"></i>';
+                badgeSpan.style.color = "lime";
+                badgeSpan.title = "Owner";
+            } else if (badgeText === "TSTR" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
+                badgeSpan.style.color = "DarkGoldenRod";
+                badgeSpan.title = "Tester";
+            } else if (badgeText === "COWNR" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
+                badgeSpan.style.color = "lightblue";
+                badgeSpan.title = "Co-Owner";
+            } else if (badgeText === "HADMIN" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                badgeSpan.style.color = "#00cc99";
+                badgeSpan.title = "Head Admin";
+            } else if (badgeText === "ADMN" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
+                badgeSpan.style.color = "dodgerblue";
+                badgeSpan.title = "Admin";
+            } else if (badgeText === "Developer" && !dontShowOthers) {
+                badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
+                badgeSpan.style.color = "green";
+                badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz";
+            } else {
             }
+            if (pre3Snap.exists() && pre3Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-hearts";
+                icon.style.color = "red";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T3`;
+                badgeSpan.appendChild(icon);
+            }
+            if (pre2Snap.exists() && pre2Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-heart-fill";
+                icon.style.color = "orange";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T2`;
+                badgeSpan.appendChild(icon);
+            }
+            if (pre1Snap.exists() && pre1Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-heart-half";
+                icon.style.color = "yellow";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T1`;
+                badgeSpan.appendChild(icon);
+            }
+            if (donSnap.exists() && donSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-balloon-heart";
+                icon.style.color = "#00E5FF";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Donated To Infinite Campus`;
+                badgeSpan.appendChild(icon);
+            }
+            if (partnerSnap.exists() && partnerSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "fa fa-handshake";
+                icon.style.color = "cornflowerblue";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is A Partner Of Infinite Campus`;
+                badgeSpan.appendChild(icon);
+            }
+            if (hSnap.exists() && hSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-award";
+                icon.style.color = "yellow";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is The 100th Signed Up User`;
+                badgeSpan.appendChild(icon);
+            }
+            if (guessSnap.exists() && guessSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-stopwatch";
+                icon.style.color = "#ff0000";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has A Lot Of Freetime`;
+                badgeSpan.appendChild(icon);
+            }
+            if (discordSnap.exists() && discordSnap.val().trim() !== "") {
+                const dUsername = discordSnap.val();
+                const icon = document.createElement("i");
+                icon.className = "bi bi-discord";
+                icon.style.color = "#5865F2";
+                icon.style.marginLeft = "6px";
+                icon.title = `Known As @${dUsername} On Discord`;
+                badgeSpan.appendChild(icon);
+            }
+            leftWrapper.appendChild(badgeSpan);
             const isSelf = msg.sender === currentUser.uid;
             if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
                 let canDelete = false;
