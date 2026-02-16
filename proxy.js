@@ -1,5 +1,5 @@
 const before = document.getElementById("before");
-window.logProxyVisit = async function(input) {
+async function logProxyVisit(input) {
     let logUrl;
     before.style.display = 'none';
     try {
