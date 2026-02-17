@@ -177,6 +177,9 @@ if (fileParam) {
                 <input type="text" id="fileLink2" value="${link2}" readonly style="width:80%">
                 <button class="button" onclick="copyLink2()">Copy</button>
                 <br><br>
+                <p class="btxt">
+                    The Second Digit Is 4
+                </p>
                 <a href="${link}" target="_blank">
                     <button class="button">Go To Download Page (This Site)</button>
                 </a>
