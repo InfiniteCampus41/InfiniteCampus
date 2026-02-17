@@ -1,5 +1,5 @@
 import { auth } from "./firebase.js";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 const backend = `${a}`;
 const stripe = Stripe("pk_live_51T0BHXBYxOIeQqwPGMQ05ZHFdlAJyK4k1drz0H5PxY6zCii6aIjcsbPrFqsu1208HrYGBEpkcZGtFKDQqMgSdH6a00RvADSXaA");
 let currentUser = null;
@@ -73,24 +73,6 @@ if (successAmount) {
             `Thank You For Your $${(successAmount/100).toFixed(2)} Donation!\nYour Payment Is Confirmed — Perks Will Appear Shortly.`;
         }
         history.replaceState({}, "", "/InfiniteDonaters.html");
-    });
-}
-const password = document.getElementById("password");
-if (password) {
-    password.addEventListener("keydown", (e) => {
-      	if (e.key === "Enter") {
-        	e.preventDefault();
-        	login();
-      	}
-    });
-}
-const email = document.getElementById("email");
-if (email) {
-    email.addEventListener("keydown", (e) => {
-      	if (e.key === "Enter") {
-        	e.preventDefault();
-        	login();
-      	}
     });
 }
 const amount = document.getElementById("amount");

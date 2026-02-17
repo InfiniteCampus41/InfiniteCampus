@@ -1,5 +1,5 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { ref, get, child } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, get, child } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { auth, db } from "./firebase.js";
 const DEFAULT_MAX_SIZE = 100 * 1024 * 1024;
 const PREMIUM_MAX_SIZE = 500 * 1024 * 1024;
@@ -169,7 +169,7 @@ if (fileParam) {
         const link2 = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
         output.innerHTML = `
             <center>
-                <p>Temporary Download Link (5 Mins):</p>
+                <p class="btxt">Temporary Download Link (5 Mins):</p>
                 <input type="text" id="fileLink" value="${link}" readonly style="width:80%">
                 <button class="button" onclick="copyLink()">Copy</button>
                 <br>
