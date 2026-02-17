@@ -1,6 +1,6 @@
-import { ref, onValue, push, remove, update, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { ref, onValue, push, remove, update, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 forceWebSockets();
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { auth, db } from "./firebase.js";
 const updatesRef = ref(db, "updates");
 let lastSentKey = null;

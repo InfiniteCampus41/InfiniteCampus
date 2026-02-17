@@ -1,5 +1,5 @@
-import { ref, get, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { ref, get, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { auth, db } from "./firebase.js";
 let uid = null;
 let displayName = "Anonymous";

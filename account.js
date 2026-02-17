@@ -1,7 +1,8 @@
 import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { sendEmailVerification, applyActionCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { applyActionCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode');
 const oobCode = urlParams.get('oobCode');

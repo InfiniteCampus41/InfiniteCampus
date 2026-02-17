@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase.js";
-import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, push } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, push } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
