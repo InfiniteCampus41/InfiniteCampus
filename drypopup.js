@@ -90,6 +90,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     </a>
                     <br>
                     <br>
+                    <a href="InfinitePolls.html">
+                        Take Part In A Poll
+                    </a>
+                    <br>
+                    <br>
                     <a id="resetAllBtn">
                         Clear Data
                     </a>
