@@ -419,16 +419,25 @@ input[type="range"]::-webkit-slider-thumb {
     100% { background-color: red; }
 }
 @keyframes spin1 {
-    from { transform: rotateX(70deg) rotateZ(0deg); }
-    to   { transform: rotateX(70deg) rotateZ(360deg); }
+    0%   { transform: rotateX(70deg) rotateZ(0deg) scale(1); }
+    25%  { transform: rotateX(70deg) rotateZ(22.5deg) scale(1.05); }
+    50%  { transform: rotateX(70deg) rotateZ(45deg) scale(1); }
+    75%  { transform: rotateX(70deg) rotateZ(22.5deg) scale(0.95); }
+    100% { transform: rotateX(70deg) rotateZ(0deg) scale(1); }
 }
 @keyframes spin2 {
-    from { transform: rotateX(65deg) rotateZ(360deg); }
-    to   { transform: rotateX(65deg) rotateZ(0deg); }
+    0%   { transform: rotateX(70deg) rotateZ(36deg) scale(1); }
+    25%  { transform: rotateX(70deg) rotateZ(24deg) scale(0.95); }
+    50%  { transform: rotateX(70deg) rotateZ(12deg) scale(1); }
+    75%  { transform: rotateX(70deg) rotateZ(24deg) scale(1.05); }
+    100% { transform: rotateX(70deg) rotateZ(36deg) scale(1); }
 }
 @keyframes spin3 {
-    from { transform: rotateX(75deg) rotateZ(0deg); }
-    to   { transform: rotateX(75deg) rotateZ(-360deg); }
+    0%   { transform: rotateX(70deg) rotateZ(4deg) scale(1); }
+    25%  { transform: rotateX(70deg) rotateZ(6.5deg) scale(1.05); }
+    50%  { transform: rotateX(70deg) rotateZ(9deg) scale(1); }
+    75%  { transform: rotateX(70deg) rotateZ(6.5deg) scale(0.95); }
+    100% { transform: rotateX(70deg) rotateZ(4deg) scale(1); }
 }
 .left-margin {
 	margin: 0px 16px;
@@ -844,19 +853,19 @@ pre code {
     width: 220px;
     height: 80px;
     margin: -40px 0 0 -110px;
-    animation: spin1 3s linear infinite;
+    animation: spin1 6s linear infinite;
 }
 .ring2 {
     width: 180px;
     height: 60px;
     margin: -30px 0 0 -90px;
-    animation: spin2 4s linear infinite;
+    animation: spin2 6.5s linear infinite;
 }
 .ring3 {
     width: 250px;
     height: 100px;
     margin: -50px 0 0 -125px;
-    animation: spin3 5s linear infinite;
+    animation: spin3 7s linear infinite;
 }
 #rolesContainer ul {
     text-align:left;
