@@ -76,8 +76,8 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         showError("Display Name Cannot Exceed 20 Characters.");
         return;
     }
-    if (!/^[a-zA-Z0-9 _-]+$/.test(displayName)) {
-        showError("Invalid Display Name. Use Only Letters, Numbers, Spaces, Underscores, Or Dashes.");
+    if (!/^[a-zA-Z0-9_-]+$/.test(displayName)) {
+        showError("Invalid Display Name. Use Only Letters, Numbers, Underscores, Or Dashes. (No Spaces)");
         return;
     }
     try {
