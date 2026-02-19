@@ -71,13 +71,7 @@ if (mode) {
     const style = document.createElement("style");
     style.innerHTML = `
         body {
-            background:#121212;
             font-family: sans-serif;
-            color: #eee;
-        }
-        #profileCard {
-            padding:20px 30px;
-            max-width:60%;
         }
         .displayName {
             font-size:1.6em;
@@ -103,9 +97,6 @@ if (mode) {
         .error {
             color:red;
             font-weight:bold;
-        }
-        hr {
-            max-width:100%;
         }
     `;
     document.head.appendChild(style);
@@ -278,9 +269,6 @@ if (mode) {
             background-color: #000;
             border: 1px solid transparent;
         }
-        #profileContainer {
-            justify-content:center;
-        }
         .form-control:disabled {
             background:transparent;
         }
@@ -306,11 +294,6 @@ if (mode) {
             color:#777;
             text-align:center;
         }
-        #userpanel {
-            display:flex;
-            justify-content:center;
-            display:none;
-        }
         .btn {
             border:none;
         }
@@ -319,32 +302,6 @@ if (mode) {
         }
         .btn:active {
             border:none;
-        }
-        .tinput {
-            background:transparent;
-            border:none;
-            min-height: calc(1.5em + .75rem + calc(var(--bs-border-width) * 2));
-            margin-left:10px;
-            width:100%;
-        }
-        .tinput:active {
-            border:1px solid white;
-            border-radius:5px;
-        }
-        #stats button {
-            color:white;
-            transition:0.3s all;
-            background:none;
-            border:none;
-        }
-        #stats button:hover {
-            color:#888;
-        }
-        #settings {
-            display:flex;
-            justify-content:center;
-            max-width:900px;
-            flex-direction:column;
         }
     `;
     document.head.appendChild(style);
@@ -572,7 +529,6 @@ if (mode) {
             bioInput.placeholder = "Enter Bio Here";
         }
         bioCharCount.textContent = `${bioInput.value.length} / 50`;
-        autoResizeBio();
     }
     function enableBioEditing() {
         bioInput.disabled = false;

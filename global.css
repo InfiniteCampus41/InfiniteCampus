@@ -786,6 +786,13 @@ input[type="range"]::-webkit-slider-thumb {
 pre code {
     font-size:.75em !important;
 }
+#profileCard {
+    padding:20px 30px;
+    max-width:60%;
+}
+#profileContainer {
+    justify-content:center;
+}
 .progress {
     background:black;
     padding:9px;
@@ -890,6 +897,12 @@ select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+}
+#settings {
+    display:flex;
+    justify-content:center;
+    max-width:900px;
+    flex-direction:column;
 }
 .settings-button {
     position: fixed;
@@ -1004,6 +1017,18 @@ select {
     border-radius: 50%;
     opacity: 0.8;
 }
+#stats button {
+    color:white;
+    transition:0.3s all;
+    background:none;
+    border:none;
+}
+#stats button:hover {
+    color:#888;
+}
+#stats small {
+    margin-bottom:10px;
+}
 .szo2 {
     width:25%;
 }
@@ -1024,12 +1049,27 @@ th, td {
     border: 1px solid #444; 
     text-align: left; 
 }
+.tinput {
+    outline:none;
+    background:transparent;
+    border:none;
+    min-height: calc(1.5em + .75rem + calc(var(--bs-border-width) * 2));
+    margin-left:10px;
+    width:100%;
+}
+.tinput:active {
+    border:none;
+    outline:none;
+}
 #toggle {
     background:none;
     color:black;
     border-radius:50%;
     border:1px solid black;
     transition:0.3s all;
+}
+.toggled::after {
+    content: "On"
 }
 .token.comment { 
     color:#6b7280 
@@ -1070,9 +1110,6 @@ th, td {
 .track span {
     margin-right:20px;
 }
-.toggled::after {
-    content: "On"
-}
 .update-box {
     padding: 0px;
     max-width:75%;
@@ -1096,6 +1133,11 @@ th, td {
 .user { 
     background:#0cbe37; 
     color:white; 
+}
+#userpanel {
+    display:flex;
+    justify-content:center;
+    display:none;
 }
 #videoPlayer {
     width: 95vw;
