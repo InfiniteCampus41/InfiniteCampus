@@ -199,9 +199,16 @@ function refreshListUI() {
         li.draggable = true;
         li.dataset.id = t.id;
         li.innerHTML = `
-            <span class="drag-handle" title="Drag">☰</span>
-            <span class="index">${i+1}</span>
-            <span class="track-title" title="${t.title}">${t.title}</span>
+            <span class="drag-handle" title="Drag">
+                <i class="bi bi-grip-vertical">
+                </i>
+            </span>
+            <span class="index">
+                ${i+1}
+            </span>
+            <span class="track-title" title="${t.title}">
+                ${t.title}
+            </span>
         `;
         li.addEventListener('click', () => {
             if (currentIndex !== i) {
@@ -267,7 +274,7 @@ function loadCurrentTrack(autoplay=false, keepTime=false) {
     saveAll();
 }
 function setPlayButtons(playing) {
-    els.btnPlay.innerHTML = playing ? '<i class="bi bi-pause"></i>' : '<i class="bi bi-play"></i>';
+    els.btnPlay.innerHTML = playing ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
 }
 function nextTrack(autoplay=true) {
     if (tracks.length === 0) return;

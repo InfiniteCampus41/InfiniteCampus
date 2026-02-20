@@ -10,12 +10,19 @@ let finalFileUrl = null;
 if (fileParam) {
     appDiv.innerHTML = `
         <center>
-            <h2 class="tptxt">Download Your File</h2>
-            <p class="btxt">${fileParam}</p>
+            <h2 class="tptxt">
+                Download Your File
+            </h2>
+            <p class="btxt">
+                ${fileParam}
+            </p>
             <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto;">
-                <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px;"></div>
+                <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px;">
+                </div>
             </div>
-            <button class="button" id="downloadBtn">Download</button>
+            <button class="button" id="downloadBtn">
+                Download
+            </button>
         </center>
     `;
     const btn = document.getElementById("downloadBtn");
@@ -52,15 +59,23 @@ if (fileParam) {
 } else {
     appDiv.innerHTML = `
         <center>
-            <h2 class="tptxt">Upload A File → Get A 5 Minute Download Link</h2>
-            <p id="premiumInfo" style="color:blue;"></p>
+            <h2 class="tptxt">
+                Upload A File And Get A 5 Minute Download Link
+            </h2>
+            <p id="premiumInfo" style="color:blue;">
+            </p>
             <input type="file" id="fileInput" style="display:none;">
-            <label for="fileInput" class="button">Choose File</label>
-            <p id="fileName" class="btxt"></p>
+            <label for="fileInput" class="button">
+                Choose File
+            </label>
+            <p id="fileName" class="btxt">
+            </p>
             <div id="progressContainer" style="display:none; width:80%; background:#333; border-radius:4px; margin:10px auto; text-align:left;">
-                <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;"></div>
+                <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px; color:#000; text-align:left; font-weight:bold;">
+                </div>
             </div>
-            <p id="output"></p>
+            <p id="output" class="btxt">
+            </p>
         </center>
     `;
     const input = document.getElementById("fileInput");
@@ -95,12 +110,32 @@ if (fileParam) {
             const isPartner = partnerSnap.exists() && partnerSnap.val() === true;
             if (isPartner || isPremium1 || isPremium2 || isPremium3 || isDev || isAdmin || isHAdmin || isCoOwner || isTester || isOwner) {
                 maxFileSize = PREMIUM_MAX_SIZE;
-                premiumInfo.innerHTML = `You Are A Premium User! You Can Upload Files Up To 500MB.`;
+                premiumInfo.innerHTML = `
+                    You Are A Premium User! You Can Upload Files Up To 500MB.
+                    <br>
+                    And Your Links Last 15 Minutes Now!
+                `;
             } else {
-                premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Upgrade To <a class="discord" href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+                premiumInfo.innerHTML = `
+                    You Can Upload Files Up To 100MB. 
+                    <br>
+                    Upgrade To 
+                    <a class="discord" href="/InfiniteDonaters.html">
+                        Premium
+                    </a> 
+                    To Upload Up To 500MB.
+                `;
             }
         } else {
-            premiumInfo.innerHTML = `You Can Upload Files Up To 100MB. Sign In And Upgrade To <a class="discord" href="/InfiniteDonaters.html">Premium</a> To Upload Up To 500MB.`;
+            premiumInfo.innerHTML = `
+                You Can Upload Files Up To 100MB.
+                <br>
+                Sign In And Upgrade To 
+                <a class="discord" href="/InfiniteDonaters.html">
+                    Premium
+                </a> 
+                To Upload Up To 500MB.
+            `;
         }
     });
     input.addEventListener("change", async () => {
@@ -111,7 +146,14 @@ if (fileParam) {
             if (maxFileSize === PREMIUM_MAX_SIZE) {
                 showError("File Too Large! Maximum Allowed Size For Premium Is 500 MB.");
             } else {
-                output.innerHTML = `File Too Large! Maximum Allowed Size Is 100MB. <br>Want To Upload Up To 500MB? <a class="discord" href="/InfiniteDonaters.html">Upgrade To Premium</a>`;
+                output.innerHTML = `
+                    File Too Large! Maximum Allowed Size Is 100MB. 
+                    <br>
+                    Want To Upload Up To 500MB? 
+                    <a class="discord" href="/InfiniteDonaters.html">
+                        Upgrade To Premium Here!
+                    </a>
+                `;
             }
             input.value = "";
             return;
@@ -155,37 +197,72 @@ if (fileParam) {
                 }
                 await new Promise(r => setTimeout(r, 0));
             } catch (err) {
-                output.innerHTML = `<p class="r">${err.message}</p>`;
+                output.innerHTML = `
+                    <p class="r">
+                        ${err.message}
+                    </p>
+                `;
                 return;
             }
         }
-        output.innerHTML = `<p>Upload Complete! Finalizing On Server...</p>`;
+        output.innerHTML = `
+            <p>
+                Upload Complete! Finalizing On Server
+            </p>
+        `;
         if (!finalFileUrl) {
-            output.innerHTML = `<p class="r">Upload Finished, But Final File URL Missing.</p>`;
+            output.innerHTML = `
+                <p class="r">
+                    Upload Finished, But Final File URL Missing.
+                </p>
+            `;
             return;
         }
         const fileName = finalFileUrl.split("/").pop();
         const link = `${f}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
         const link2 = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
+        const hiddenlinkdomains = [
+            "www.infinitecampus.xyz",
+            "infinitecampus.xyz",
+            "instructure.space",
+            "backup.infinitecampus.xyz",
+            "backup.instructure.space"
+        ];
+        const hideSecondLink = hiddenlinkdomains.includes(window.location.host);
         output.innerHTML = `
             <center>
-                <p class="btxt">Temporary Download Link (5 Mins):</p>
-                <input type="text" id="fileLink" value="${link}" readonly style="width:80%">
-                <button class="button" onclick="copyLink()">Copy</button>
+                <p class="btxt">
+                    Temporary Download Link:
+                </p>
+                <input type="text" class="button" id="fileLink" value="${link}" readonly style="width:80%">
+                <button class="button" onclick="copyLink()">
+                    Copy
+                </button>
                 <br>
                 <br>
-                <input type="text" id="fileLink2" value="${link2}" readonly style="width:80%">
-                <button class="button" onclick="copyLink2()">Copy</button>
-                <br><br>
+                ${!hideSecondLink ? `
+                    <input type="text" class="button" id="fileLink2" value="${link2}" readonly style="width:80%">
+                    <button class="button" onclick="copyLink2()">
+                        Copy
+                    </button>
+                    <br>
+                    <br>
+                ` : ``}
                 <p class="btxt">
                     The Second Digit Is 4
                 </p>
                 <a href="${link}" target="_blank">
-                    <button class="button">Go To Download Page (This Site)</button>
+                    <button class="button">
+                        Go To Download Page (This Site)
+                    </button>
                 </a>
-                <a href="${link2}" target="_blank">
-                    <button class="button">Go To Download Page (Official Site)</button>
-                </a>
+                ${!hideSecondLink ? `
+                    <a href="${link2}" target="_blank">
+                        <button class="button">
+                            Go To Download Page (Official)
+                        </button>
+                    </a>
+                ` : ``}
             </center>
         `;
         progressBar.style.width = "100%";

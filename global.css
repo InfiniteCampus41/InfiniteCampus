@@ -234,6 +234,11 @@ body {
     display: block;
     color:cyan;
     width:fit-content;
+    transition:0.3s all;
+}
+.discord:hover {
+    cursor:pointer;
+    color:lightseagreen;
 }
 .dropdown {
     display: none;

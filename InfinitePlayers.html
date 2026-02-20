@@ -49,12 +49,12 @@
                 </label>
                 <br>
                 <br>
-                <a class="button" onclick="converter()">
+                <a class="button" href="https://spotidownloader.com/en">
                     Convert Spotify Songs To Mp3
                 </a>
                 <br>
                 <br>
-                <a class="button" onclick="thumbnail()">
+                <a class="button" href="https://tagmp3.net/">
                     Add Thumbnails To Your Files
                 </a>
                 <input id="fileInput" style="display:none;" type="file" accept="audio/*" multiple />
@@ -67,7 +67,9 @@
                             <h2>
                                 Now Playing:
                             </h2>
-                            <h3 id="nowTitle">–</h3>
+                            <h3 id="nowTitle">
+                                –
+                            </h3>
                             <div class="controls">
                                 <div class="progress">
                                     <input id="seek" type="range" min="0" max="1000" value="0" step="1" />
@@ -76,16 +78,20 @@
                                     </div>
                                 </div>
                                 <button class="button" id="btnPrev" title="Previous (or restart)">
-                                    |◁
+                                    <i class="bi bi-skip-start-fill">
+                                    </i>                                
                                 </button>
                                 <button class="button" id="btnPlay">
-                                    <i class="bi bi-play"></i>
+                                    <i class="bi bi-play-fill">
+                                    </i>
                                 </button>
                                 <button class="button" id="btnNext" title="Next">
-                                    ▷|
+                                    <i class="bi bi-skip-end-fill">
+                                    </i>                               
                                 </button>
                                 <button class="button" id="btnLoop" title="Loop playlist">
-                                    ↺ 
+                                    <i class="bi bi-arrow-repeat">
+                                    </i>                          
                                 </button>
                                 <button class="button" id="btnClear" title="Clear Playlist">
                                     Clear Playlist
@@ -117,7 +123,8 @@
                 <br>
             </div>
         </center>
-        <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+        <audio id="audio" preload="metadata" crossorigin="anonymous">
+        </audio>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="mediaplayer.js">

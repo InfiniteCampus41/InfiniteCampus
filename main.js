@@ -179,10 +179,6 @@ function showSuccess(success) {
     });
     document.body.insertBefore(successDiv, document.body.firstChild);
 }
-function padlet() { window.open("https://padlet.com/newsomr95/chat-room-br2tjbusbebezr2n"); }
-function converter() { window.open("https://spotidownloader.com/en"); }
-function puter() { window.open("https://puter.com"); }
-function thumbnail() { window.open("https://tagmp3.net/"); }
 window.addEventListener('DOMContentLoaded', () => {
     if (e.includes(window.location.host)) {
     } else {

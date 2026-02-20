@@ -70,7 +70,7 @@ const headerHTML = `
                         Chat
                     </button>
                     <div class="dropdown test" id="chatDropdown">
-                        <button onclick="location.href='InfiniteTalkers.html'">
+                        <button onclick="location.href='InfiniteEmbeds.html?choice=1'">
                             Padlet
                         </button>
                         <button onclick="location.href='InfiniteChatters.html'">
@@ -140,7 +140,7 @@ const headerHTML = `
         <a href="InfiniteApps.html" class="darkbuttons">
             Apps
         </a>
-        <a href="InfiniteTalkers.html" class="darkbuttons">
+        <a href="InfiniteEmbeds.html?choice=1" class="darkbuttons">
             Padlet
         </a>
         <a href="InfiniteChatters.html" class="darkbuttons">
@@ -152,7 +152,7 @@ const headerHTML = `
         <a href="InfiniteQuestions.html" class="darkbuttons">
             FAQ
         </a>
-        <a href="InfiniteEmbeds.html?choice=4" class="darkbuttons">
+        <a href="InfiniteEmbeds.html?choice=5" class="darkbuttons">
             Report A Bug
         </a>
         <a href="InfiniteErrors.html" class="darkbuttons">

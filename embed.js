@@ -3,13 +3,17 @@ const choice = params.get("choice");
 const iframe = document.getElementById('frame');
 const tptxt = document.getElementById('rpbgtxt');
 const hr = document.getElementById('rphr');
+const cEmbBtn = document.getElementById('cEmbBtn');
 if (choice == 1) {
+    iframe.src = 'https://padlet.com/newsomr95/chat-room-br2tjbusbebezr2n';
+    cEmbBtn.style.display = 'block';
+}else if (choice == 2) {
     iframe.src = 'https://nettleweb.com';
-} else if (choice == 2) {
-    iframe.src = 'https://sigmasigmatoiletedge.github.io';
 } else if (choice == 3) {
+    iframe.src = 'https://sigmasigmatoiletedge.github.io';
+} else if (choice == 4) {
     iframe.src = 'https://dfs3rzq44v6as.cloudfront.net/place/';
-} else if(choice == 4) {
+} else if(choice == 5) {
     iframe.src = 'https://docs.google.com/forms/d/e/1FAIpQLSfcgIrELDOk41dsNC_CmCBfT8dLCidiYC_ZBB9F1kfO_cuNKg/viewform?embedded=true';
     iframe.width = '640';
     iframe.height = '852';
@@ -18,9 +22,9 @@ if (choice == 1) {
     iframe.marginwidth = '0';
     tptxt.style.display = 'block';
     hr.style.display = 'block';
-} else if(choice == 5) {
+} else if(choice == 6) {
     iframe.src = 'https://calc-one-ruby.vercel.app/';
-} else if (choice == 6) {
+} else if (choice == 7) {
     showError('WARNING: Use at your own risk. We are NOT responsible if you get caught or get in trouble for using this.');
     iframe.src = 'https://proxyman15.github.io/';
 } else {

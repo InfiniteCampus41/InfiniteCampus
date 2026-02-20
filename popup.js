@@ -118,7 +118,7 @@
         title.textContent='Now Playing';
         top.appendChild(title);
         const closeBtn = document.createElement('button');
-        closeBtn.textContent='✕';
+        closeBtn.innerHTML='<i class="bi bi-x-circle"></i>';
         closeBtn.style.appearance='none';
         closeBtn.style.border='none';
         closeBtn.style.background='transparent';
@@ -155,10 +155,10 @@
         controls.style.display='flex';
         controls.style.gap='8px';
         controls.style.marginTop='10px';
-        const btnPrev = document.createElement('button'); btnPrev.textContent='|◁'; controls.appendChild(btnPrev);
-        const btnPlay = document.createElement('button'); btnPlay.innerHTML='<i class="bi bi-play"></i>'; controls.appendChild(btnPlay);
-        const btnNext = document.createElement('button'); btnNext.textContent='▷|'; controls.appendChild(btnNext);
-        const btnLoop = document.createElement('button'); btnLoop.textContent='↺ Off'; controls.appendChild(btnLoop);
+        const btnPrev = document.createElement('button'); btnPrev.innerHTML='<i class="bi bi-skip-start-fill"></i>'; controls.appendChild(btnPrev);
+        const btnPlay = document.createElement('button'); btnPlay.innerHTML='<i class="bi bi-play-fill"></i>'; controls.appendChild(btnPlay);
+        const btnNext = document.createElement('button'); btnNext.innerHTML='<i class="bi bi-skip-end-fill"></i>'; controls.appendChild(btnNext);
+        const btnLoop = document.createElement('button'); btnLoop.innerHTML='<i class="bi bi-arrow-repeat"></i> Off'; controls.appendChild(btnLoop);
         [btnPrev, btnPlay, btnNext, btnLoop].forEach(b=>{
             b.style.background='#0007';
             b.style.border='1px solid #ffffff33';
@@ -181,8 +181,8 @@
             const t = tracks[currentIndex];
             audio.src = URL.createObjectURL(t.blob);
             setTrackUI();
-            if(autoplay) audio.play().catch(()=>{}), btnPlay.innerHTML='<i class="bi bi-pause"></i>';
-            else btnPlay.innerHTML='<i class="bi bi-play"></i>';
+            if(autoplay) audio.play().catch(()=>{}), btnPlay.innerHTML='<i class="bi bi-pause-fill"></i>';
+            else btnPlay.innerHTML='<i class="bi bi-play-fill"></i>';
         }
         audio.addEventListener('timeupdate', ()=>{
             const cur = audio.currentTime||0;
@@ -198,11 +198,11 @@
         btnLoop.addEventListener('click', async ()=> {
             isLooping = !isLooping;
             await saveState("isLooping", isLooping);
-            btnLoop.textContent = isLooping ? "↺ On" : "↺ Off";
-            btnLoop.style.outline = isLooping ? "2px solid #4c9aff" : "none";
+            btnLoop.innerHTML = isLooping ? "<i class='bi bi-arrow-repeat'></i> On" : "<i class='bi bi-arrow-repeat'></i> Off";
+            btnLoop.style.outline = isLooping ? "1px solid lime" : "none";
         });
-        audio.addEventListener('play', ()=> btnPlay.innerHTML='<i class="bi bi-pause"></i>');
-        audio.addEventListener('pause', ()=> btnPlay.innerHTML='<i class="bi bi-play"></i>');
+        audio.addEventListener('play', ()=> btnPlay.innerHTML='<i class="bi bi-pause-fill"></i>');
+        audio.addEventListener('pause', ()=> btnPlay.innerHTML='<i class="bi bi-play-fill"></i>');
         btnNext.addEventListener('click', ()=> nextTrack());
         btnPrev.addEventListener('click', ()=> prevTrack());
         closeBtn.addEventListener('click', ()=> { audio.pause(); floating.style.display='none'; localStorage.setItem('showpopup', 'false'); location.reload(); });
@@ -232,15 +232,15 @@
                 const savedLoop = await loadState("looping");
                 if (savedLoop !== null) {
                     isLooping = savedLoop;
-                    btnLoop.textContent = isLooping ? "↺ On" : "↺ Off";
-                    btnLoop.style.outline = isLooping ? "2px solid #4c9aff" : "none";
+                    btnLoop.innerHTML = isLooping ? "<i class='bi bi-arrow-repeat'></i> On" : "<i class='bi bi-arrow-repeat'></i> Off";
+                    btnLoop.style.outline = isLooping ? "1px solid lime" : "none";
                 }
                 loadTrack(false);
             }
         })();
     } else {
         const showpopup = document.createElement("div");
-        showpopup.textContent = "^";
+        showpopup.innerHTML = "<i class='bi bi-chevron-up'></i>";
         showpopup.className = "showpopup";
         showpopup.addEventListener('click', ()=> {
             localStorage.setItem('showpopup', "true");

@@ -82,9 +82,13 @@ function renderUpdates(snapshot) {
     	div.className = `update-box ${index % 2 === 0 ? "r" : "y"}`;
     	if (isOwner || isTester || isDev) {
       		div.innerHTML = `
-        		<button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">Edit</button>
+        		<button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">
+					Edit
+				</button>
         		${index + 1}. ${update.content}
-        		<button class="button" onclick="deleteUpdate('${update.key}')">Delete</button>
+        		<button class="button" onclick="deleteUpdate('${update.key}')">
+					Delete
+				</button>
       		`;
     	} else {
       		div.innerHTML = `${index + 1}. ${update.content}`;
