@@ -13,6 +13,9 @@ if (fileParam) {
             <h2 class="tptxt">
                 Download Your File
             </h2>
+            <br>
+            <hr>
+            <br>
             <p class="btxt">
                 ${fileParam}
             </p>
@@ -62,6 +65,9 @@ if (fileParam) {
             <h2 class="tptxt">
                 Upload A File And Get A 5 Minute Download Link
             </h2>
+            <br>
+            <hr>
+            <br>
             <p id="premiumInfo" style="color:blue;">
             </p>
             <input type="file" id="fileInput" style="display:none;">
