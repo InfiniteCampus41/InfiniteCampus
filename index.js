@@ -92,10 +92,15 @@ form.addEventListener("submit", async (event) => {
     fullScreenBtn.style.zIndex = '9999';
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
-    const proxyContainer = document.createElement("div");
-    proxyContainer.id = "proxy-container";
-    proxyContainer.style.height = "87vh";
-    document.body.appendChild(proxyContainer);
-    proxyContainer.appendChild(frame.frame);
-    frame.go(url);
+    const proxyContainerOld = document.getElementById('proxy-container');
+    if (!proxyContainerOld) {
+        const proxyContainer = document.createElement("div");
+        proxyContainer.id = "proxy-container";
+        proxyContainer.style.height = "87vh";
+        document.body.appendChild(proxyContainer);
+        proxyContainer.appendChild(frame.frame);
+        frame.go(url);
+    } else {
+        frame.go(url);
+    }
 });
