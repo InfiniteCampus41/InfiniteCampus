@@ -165,7 +165,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     button.style.cursor = "pointer";
                     button.onclick = function () {
                         const proxyContainer = document.getElementById('proxy-container');
-                        proxyContainer.style.display = 'block';
+                        if (proxyContainer) {
+                            proxyContainer.style.display = 'block';
+                        }
                         container.style.display = "none";
                         showLoader();
                         const backButton = document.createElement("button");
