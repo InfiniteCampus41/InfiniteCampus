@@ -92,7 +92,7 @@ form.addEventListener("submit", async (event) => {
     fullScreenBtn.style.zIndex = '9999';
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
-    const proxyContainerOld = document.getElementById('proxy-container');
+    let proxyContainerOld = document.querySelectorAll('#proxy-container');
     if (!proxyContainerOld) {
         const proxyContainer = document.createElement("div");
         proxyContainer.id = "proxy-container";
