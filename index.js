@@ -84,7 +84,7 @@ form.addEventListener("submit", async (event) => {
     const frame = scramjet.createFrame();
     frame.frame.id = "sj-frame";
     const fullScreenBtn = document.createElement('button');
-    fullScreenBtn.textContent = '<i class="bi bi-fullscreen"></i>';
+    fullScreenBtn.innerHTML = '<i class="bi bi-fullscreen"></i>';
     fullScreenBtn.classList = 'button';
     fullScreenBtn.id = 'pxyFcrn';
     fullScreenBtn.style.position = 'fixed';
@@ -92,7 +92,7 @@ form.addEventListener("submit", async (event) => {
     fullScreenBtn.style.zIndex = '9999';
     fullScreenBtn.style.right = '20px';
     document.body.appendChild(fullScreenBtn);
-    let proxyContainerOld = document.querySelectorAll('#proxy-container');
+    let proxyContainerOld = document.querySelector('#proxy-container');
     if (!proxyContainerOld) {
         const proxyContainer = document.createElement("div");
         proxyContainer.id = "proxy-container";
@@ -101,6 +101,7 @@ form.addEventListener("submit", async (event) => {
         proxyContainer.appendChild(frame.frame);
         frame.go(url);
     } else {
+        proxyContainerOld.appendChild(frame.frame);
         frame.go(url);
     }
 });
