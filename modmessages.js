@@ -332,7 +332,7 @@ async function fetchDiscordPresence() {
     try {
         const response = await fetch(m);
         if (!response.ok) {
-            throw new Error("ERR#13 Failed To Fetch Data: " + response.status);
+            throw new Error("Error: Failed To Fetch Data: " + response.status);
         }
         const data = await response.json();
         if (Array.isArray(data.members) && data.members.length > 0) {
@@ -344,7 +344,7 @@ async function fetchDiscordPresence() {
             presenceCountEl.textContent = "No Members Online.";
         }
     } catch (error) {
-        presenceCountEl.textContent = "ERR#13 Error Fetching Presence Count.";
+        presenceCountEl.textContent = "Error: Error Fetching Presence Count.";
         console.error(error);
     }
 }

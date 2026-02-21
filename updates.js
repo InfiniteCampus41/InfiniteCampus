@@ -18,7 +18,7 @@ function sendToCustomDB(message) {
             message: message,
             channelId: channelId
         })
-    }).catch((e) => console.error("ERR#7 Server Post Error:", e));
+    }).catch((e) => console.error("Error: Server Post Error:", e));
 }
 async function enforceUpdateLimit(snapshot) {
     if (cleanupRunning) return;

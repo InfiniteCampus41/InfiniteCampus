@@ -33,7 +33,7 @@ function openGame(url) {
 
         win.document.close();
     } else {
-        showError("Err#1 Popup Blocked");
+        showError("Popup Blocked");
     }
 }
 function normalizeUrl(url) {
@@ -114,7 +114,7 @@ document.getElementById('openCustomUrl').addEventListener('click', async () => {
             .getElementById('openCustomUrl')
             .insertAdjacentElement('afterend', container);
     } else {
-        showError('ERR#15 Website Does Not Exist');
+        showError('Error: Website Does Not Exist');
     }
 });
 document.getElementById('openInfiniteCampus').addEventListener('click', () => {

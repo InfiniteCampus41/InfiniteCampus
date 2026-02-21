@@ -50,7 +50,7 @@ async function uploadApply() {
         if (!data.ok) {
             clearInterval(dotInterval);
             if (finishingTimeout) clearTimeout(finishingTimeout);
-                percentText.innerText = "Uploaded!";
+            percentText.innerText = "Uploaded!";
             document.getElementById("upload-status").innerText =
                 "Upload Failed: " + data.message;
             return;
@@ -64,6 +64,7 @@ async function uploadApply() {
             uploadText.style.display = "none";
             let finishingTimeout = setTimeout(() => {
                 percentText.innerText = "Uploaded!";
+                showSuccess('Uploaded File Successfully');
             }, 120000);
         } else {
             bar.style.width = percent + "%";
@@ -101,6 +102,7 @@ async function loadMovies() {
         MOVIE_CACHE = data.videos;
         renderMovies(data.videos);
     } catch (e) {
+        showError("Failed To Load Movies, Check Server Status")
         box.innerHTML = "Could Not Reach Server.";
     }
 }

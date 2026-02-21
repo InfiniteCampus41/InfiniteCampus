@@ -19,7 +19,6 @@ function printBanner() {
 		|   d88P  Y88b   |
 		|   888    888   |
 		|   888          |
-		|   888          |
 		|   888    888   |
 		|   Y88b  d88P   |
 		|    "Y8888P"    |    

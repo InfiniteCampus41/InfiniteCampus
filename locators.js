@@ -25,8 +25,7 @@ async function showLocationAndIp() {
             infoEl.id = "ligma";
             document.body.appendChild(infoEl);
         }
-        infoEl.innerText = "Error #3";
-        infoEl.classList.add("show");
+        showError("Error Fetching Location:", err);
     }
 }
 function init() {

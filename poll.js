@@ -67,7 +67,7 @@ function openVoteForm(card, iconHTML) {
     wrapper.querySelector('.small-submit').onclick = async () => {
         const text = wrapper.querySelector('.vote-text').value.trim();
         if (!text) {
-            showSuccess('Please Enter What The Icon Should Represent.');
+            showError('Please Enter What The Icon Should Represent.');
             return;
         }
         const iconNum = card.dataset.iconNum;
@@ -101,7 +101,7 @@ function showPollResults() {
     onValue(pollRef, async (snapshot) => {
         const data = snapshot.val();
         if (!data) {
-            resultsDiv.innerHTML = `<h1 class="tptxt">Poll Results</h1><hr><div class="mdtxt">No Votes Yet.</div>`;
+            resultsDiv.innerHTML = `<h1 class="tptxt">Poll Results</h1><hr><br><div class="mdtxt">No Votes Yet.</div>`;
             return;
         }
         const iconCards = Array.from(iconsGrid.querySelectorAll('.icon-card'));

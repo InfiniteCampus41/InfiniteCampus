@@ -27,7 +27,7 @@ onAuthStateChanged(auth, async (user) => {
             window.location.href = "InfiniteAccounts.html";
         }
     } catch (err) {
-        console.error("Permission Check Failed:", err);
+        showError("Permission Check Failed:", err);
         window.location.href = "InfiniteLogins.html";
     }
 });

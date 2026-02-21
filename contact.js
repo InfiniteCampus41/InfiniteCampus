@@ -1,11 +1,34 @@
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+const nameInput = document.getElementById("name");
+onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+    try {
+        const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
+        const snapshot = await get(displayNameRef);
+        if (snapshot.exists()) {
+            nameInput.value = snapshot.val();
+        } else {
+            if (user.displayName) {
+                nameInput.value = user.displayName;
+            }
+        }
+    } catch (error) {
+        console.error("Error Fetching Display Name:", error);
+    }
+});
 async function sendMessage() {
     const channel = ( window.location.pathname == '/InfiniteContacts.html' ) ? '1389334335114580229' : '1334377158789042226';
-    const nameInput = document.getElementById("name").value.trim();
-    const name = nameInput ? nameInput : "Website User";
     const message = document.getElementById("message").value.trim();
+    const name = nameInput.value;
     const url = window.location.host;
+    if (!name) {
+        showError("Name Cannot Be Empty");
+        return
+    }
     if (!message) {
-        showError("ERR#8 Message Cannot Be Empty!")
+        showError("Message Cannot Be Empty!")
         return;
     }
     const fullMessage = `**${name}** \n${message} \n-# From ${url}`;
@@ -23,9 +46,10 @@ async function sendMessage() {
             document.getElementById("name").value = "";
             document.getElementById("message").value = "";
         } else {
-            showError("ERR#7 Failed To Send Message.");
+            showError("Failed To Send Message.");
         }
     } catch (error) {
-        showError("ERR#7 Error Sending Message.");
+        showError("Error Sending Message.");
     }
 }
+window.sendMessage = sendMessage;

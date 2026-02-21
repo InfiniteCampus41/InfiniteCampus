@@ -128,7 +128,7 @@ async function generateDataUrl() {
         }
     }
     else if (check.status === "not-exist") {
-        showError("ERR#15 Website Does Not Exist");
+        showError("Error: Website Does Not Exist");
         document.getElementById('output').value = '';
     }
     else if (check.status === "network-blocked") {
@@ -157,5 +157,5 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     }
     navigator.clipboard.writeText(output)
     .then(() => showSuccess("Copied To Clipboard!"))
-    .catch(() => showError("ERR#14 Failed To Copy."));
+    .catch(() => showError("Error: Failed To Copy."));
 });

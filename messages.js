@@ -28,7 +28,7 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
     } catch (error) {
-        console.error("Error Fetching Display Name:", error);
+        showError("Error Fetching Display Name:", error);
     }
 });
 async function processQueue() {
@@ -93,9 +93,7 @@ async function renderMessage(msg, list){
     list.prepend(li);
     const avatarImg = document.createElement('img');
     avatarImg.classList.add('avatar');
-    avatarImg.src = msg.author.avatar
-        ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-        : `/res/default.png`;
+    avatarImg.src = msg.author.avatar ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png` : `/res/default.png`;
     li.appendChild(avatarImg);
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content');
@@ -251,7 +249,7 @@ async function fetchDiscordPresence() {
     try {
         const response = await fetch(m);
         if (!response.ok) {
-            throw new Error("ERR#13 Failed To Fetch Data: " + response.status);
+            throw new Error("Error: Failed To Fetch Data: " + response.status);
         }
         const data = await response.json();
         if (Array.isArray(data.members) && data.members.length > 0) {
@@ -263,7 +261,7 @@ async function fetchDiscordPresence() {
             presenceCountEl.textContent = "No Members Online.";
         }
     } catch (error) {
-        presenceCountEl.textContent = "ERR#13 Error Fetching Presence Count.";
+        presenceCountEl.textContent = "Error: Error Fetching Presence Count.";
         console.error(error);
     }
 }

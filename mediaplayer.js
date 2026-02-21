@@ -224,7 +224,7 @@ function refreshListUI() {
 function setNowPlayingUI() {
     const t = tracks[currentIndex];
     if (!t) {
-        els.nowTitle.textContent = '–';
+        els.nowTitle.innerHTML = '<i class="bi bi-dash"></i>';
         els.artImg.src = FALLBACK_ART;
         return;
     }
