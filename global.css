@@ -240,6 +240,10 @@ body {
     cursor:pointer;
     color:lightseagreen;
 }
+.drag-handle {
+    margin-right: 8px;
+    cursor: grab;
+}
 .dropdown {
     display: none;
     position: absolute;
@@ -273,6 +277,39 @@ body {
 .dropdown-wrap {
     position: relative;
     transition:0.3s all;
+}
+#editMoviesContainer {
+    right:-500px;
+    position:absolute;
+    width:500px;
+    background:#222;
+    z-index:2;
+    margin-top:-12px;
+    height:86.8%;
+    transition:0.5s all;
+    border:1px solid #444;
+    border-bottom-left-radius: 15px;
+    border-top-left-radius: 15px;
+}
+#expandMoviesOrder {
+    z-index:1;
+    right:-2px;
+    position:fixed;
+    top:50%;
+    padding:7px;
+    background:#222;
+    color:white;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-top:1px solid #777;
+    border-bottom:1px solid #777;
+    border-left:1px solid #777;
+    cursor:pointer;
+    transition:0.5s all;
+}
+#expandMoviesOrder:hover {
+    background:#444;
+    cursor:pointer;
 }
 #entries div {
     max-width:75%;
@@ -615,6 +652,26 @@ input[type="range"]::-webkit-slider-thumb {
     background:#8cbe37; 
     border:1px solid #374151; 
     color:white; 
+}
+.movie-item {
+    padding: 10px;
+    margin-bottom: 6px;
+    max-width:75%;
+    text-align:left;
+    background: #222;
+    border: 1px solid #444;
+    border-radius:10px;
+    cursor: grab;
+    color:white;
+    user-select: none;
+}
+.movie-item.dragging {
+    opacity: 0.5;
+}
+#moviesOrder {
+    max-height: 75%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 #networkWarning {
     display:none; 

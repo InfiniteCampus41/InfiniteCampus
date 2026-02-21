@@ -3,6 +3,23 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/fi
 import { ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import { auth, db } from "./firebase.js";
 forceWebSockets();
+const expandEdit = document.getElementById('expandMoviesOrder');
+const editOrderContainer = document.getElementById('editMoviesContainer');
+let isOpen = false;
+expandEdit.addEventListener("click", function () {
+    if (isOpen) {
+        editOrderContainer.style.right = '-500px';
+        expandEdit.style.right = '-2px';
+        expandEdit.innerHTML = '<i class="bi bi-chevron-left"></i>';
+        isOpen = false;
+    } else {
+        editOrderContainer.style.right = '-2px';
+        expandEdit.style.right = '496px';
+        expandEdit.innerHTML = '<i class="bi bi-chevron-right"></i>';
+        isOpen = true;
+        loadMoviesOrder();
+    }
+});
 let BACKEND = `${a}`;
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 const socket = io(BACKEND, { 
@@ -327,6 +344,140 @@ function showAcceptProgress() {
 function hideAcceptProgress() {
     const wrap = document.getElementById("acceptProgress");
     wrap.style.display = "none";
+}
+let moviesData = null;
+let draggedEl = null;
+async function loadMoviesOrder() {
+    const isAuthenticated = await checkUserAuthentication();
+    if (!isAuthenticated) return;
+    const container = document.getElementById("moviesOrder");
+    if (!container) return;
+    container.innerHTML = "Loading Movies...";
+    try {
+        const res = await adminFetch(BACKEND + "/api/movies-json", {
+            headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const rawData = await res.json();
+        if (rawData && !Array.isArray(rawData)) {
+            moviesData = Object.entries(rawData)
+                .map(([filename, data]) => ({
+                    filename,
+                    order: data.order
+                }))
+                .sort((a, b) => a.order - b.order);
+        } else {
+            moviesData = rawData;
+        }
+        renderMoviesList();
+    } catch (err) {
+        container.innerHTML = "Failed To Load Movies";
+        console.error(err);
+    }
+}
+function renderMoviesList() {
+    const container = document.getElementById("moviesOrder");
+    container.innerHTML = "";
+    if (!moviesData || !Array.isArray(moviesData)) {
+        container.innerHTML = "Movies Must Be In An Array.";
+        return;
+    }
+    moviesData.forEach((movie, index) => {
+        const item = document.createElement("div");
+        item.className = "movie-item";
+        item.draggable = true;
+        item.dataset.index = index;
+        item.innerHTML = `
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            ${movie.filename}
+        `;
+        addDragEvents(item);
+        container.appendChild(item);
+    });
+    addSaveButton();
+}
+function addDragEvents(item) {
+    item.addEventListener("dragstart", () => {
+        draggedEl = item;
+        item.classList.add("dragging");
+    });
+    item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+        draggedEl = null;
+        updateMoviesFromDOM();
+    });
+    item.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        const container = document.getElementById("moviesOrder");
+        const afterElement = getDragAfterElement(container, e.clientY);
+        if (afterElement == null) {
+            container.appendChild(draggedEl);
+        } else {
+            container.insertBefore(draggedEl, afterElement);
+        }
+    });
+}
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll(".movie-item:not(.dragging)")];
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+function updateMoviesFromDOM() {
+    const items = document.querySelectorAll("#moviesOrder .movie-item");
+    const newOrder = [];
+    items.forEach(item => {
+        const index = parseInt(item.dataset.index);
+        newOrder.push(moviesData[index]);
+    });
+    moviesData = newOrder;
+}
+function addSaveButton() {
+    const container = document.getElementById("moviesOrder");
+    let existing = document.getElementById("saveMoviesOrderBtn");
+    if (existing) return;
+    const btn = document.createElement("button");
+    btn.id = "saveMoviesOrderBtn";
+    btn.className = "button";
+    btn.style.marginTop = "10px";
+    btn.innerText = "Save Order";
+    btn.onclick = saveMoviesOrder;
+    container.parentNode.appendChild(btn);
+}
+async function saveMoviesOrder() {
+    const isAuthenticated = await checkUserAuthentication();
+    if (!isAuthenticated) return;
+    try {
+        const formatted = {};
+        moviesData.forEach((movie, index) => {
+            formatted[movie.filename] = {
+                order: (index + 1) * 10
+            };
+        });
+        const res = await adminFetch(BACKEND + "/api/movies-json", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true"
+            },
+            body: JSON.stringify(formatted)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showSuccess("Movies Order Saved.");
+            loadMoviesOrder();
+        } else {
+            showError("Failed To Save Movies.");
+        }
+    } catch (err) {
+        console.error(err);
+        showError("Failed To Save Movies.");
+    }
 }
 (async () => {
     await verifyAdminPassword();
