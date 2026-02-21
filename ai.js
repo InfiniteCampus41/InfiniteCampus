@@ -45,13 +45,13 @@ function enhanceCodeBlocks(container) {
     container.querySelectorAll("pre").forEach(pre => {
         if (pre.querySelector(".aicopy-btn")) return;
         const button = document.createElement("button");
-        button.textContent = "Copy";
+        button.innerHTML = "<i class='bi bi-copy'></i>";
         button.className = "aicopy-btn";
         const code = pre.querySelector("code");
         button.onclick = () => {
             navigator.clipboard.writeText(code.innerText).then(() => {
                 button.textContent = "Copied!";
-                setTimeout(() => button.textContent = "Copy", 1200);
+                setTimeout(() => button.innerHTML = "<i class='bi bi-copy'></i>", 1200);
             });
         };
         pre.appendChild(button);

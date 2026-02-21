@@ -84,7 +84,7 @@ form.addEventListener("submit", async (event) => {
     const frame = scramjet.createFrame();
     frame.frame.id = "sj-frame";
     const fullScreenBtn = document.createElement('button');
-    fullScreenBtn.textContent = '⛶';
+    fullScreenBtn.textContent = '<i class="bi bi-fullscreen"></i>';
     fullScreenBtn.classList = 'button';
     fullScreenBtn.id = 'pxyFcrn';
     fullScreenBtn.style.position = 'fixed';

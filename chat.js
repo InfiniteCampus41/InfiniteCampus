@@ -342,7 +342,7 @@ async function renderMessageInstant(id, msg) {
             if (typeof switchChannel === "function") {
                 switchChannel(ch);
             } else {
-                console.warn("switchChannel() not defined, cannot change channel:", ch);
+                showError("switchChannel() Not Defined, Cannot Change Channel:", ch);
             }
         });
     });
@@ -1029,7 +1029,7 @@ async function renderChannelsFromDB() {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const renameBtn = document.createElement("button");
-            renameBtn.textContent = "✎";
+            renameBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
             renameBtn.onclick = async (e) => {
                 e.stopPropagation();
                 const newName = prompt("Rename Channel:", ch);
@@ -1045,14 +1045,14 @@ async function renderChannelsFromDB() {
                         }
                         await remove(ref(db, `channels/${ch}`));
                         await remove(ref(db, `messages/${ch}`));
-                        showError(`Channel Renamed From ${ch} To ${newName}`);
+                        showSuccess(`Channel Renamed From ${ch} To ${newName}`);
                     } catch (err) {
                         showError("Error Renaming Channel:", err);
                     }
                 }
             };
             const delBtn = document.createElement("button");
-            delBtn.textContent = "🗑";
+            delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
             delBtn.onclick = async (e) => {
                 e.stopPropagation();
                 if (confirm(`Delete Channel ${ch}? This Will Remove All Messages.`)) {

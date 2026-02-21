@@ -1,3 +1,6 @@
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const backendUrl = `${a}`;
 const apiMessagesUrl = `${backendUrl}/api/messages`;
 const widgetUrl = 'https://discord.com/api/guilds/1002698920809463808/widget.json';
@@ -11,6 +14,23 @@ let isProcessingQueue = false;
 const RATE_LIMIT_DELAY = 3000;
 const messageCache = new Map();
 const MESSAGE_CACHE_TTL = 10_000;
+const nameInput = document.getElementById('nameInput');
+onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+    try {
+        const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
+        const snapshot = await get(displayNameRef);
+        if (snapshot.exists()) {
+            nameInput.value = snapshot.val();
+        } else {
+            if (user.displayName) {
+                nameInput.value = user.displayName;
+            }
+        }
+    } catch (error) {
+        console.error("Error Fetching Display Name:", error);
+    }
+});
 async function processQueue() {
     if (isProcessingQueue || requestQueue.length === 0) return;
     isProcessingQueue = true;

@@ -89,7 +89,7 @@ const headerHTML = `
                         <button onclick="location.href='InfiniteQuestions.html'">
                             FAQ
                         </button>
-                        <button onclick="location.href='InfiniteEmbeds.html?choice=4'">
+                        <button onclick="location.href='InfiniteEmbeds.html?choice=5'">
                             Report A Bug
                         </button>
                         <button onclick="location.href='InfiniteErrors.html'">
@@ -132,7 +132,8 @@ const headerHTML = `
             <img src="/res/logo.svg" id="logo" style="width:fit-content; margin-bottom:-60px; display:block;">
         </a>
         <button id="closeMobilePanel" class="darkbuttons">
-            x
+            <i class="bi bi-x-lg">
+            </i>
         </button>
         <a href="InfiniteAbouts.html" class="darkbuttons">
             About

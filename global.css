@@ -33,7 +33,7 @@ a {
 }
 #aiChat {
     position:fixed;
-    top:60px;
+    top:120px;
     height:75%;
     left:0;
     right:0;
@@ -206,6 +206,7 @@ body {
 #CTCbtn {
     color:black;
     border:none !important;
+    transition:0.3s all;
 }
 .desc p {
 	width: 560px;
@@ -1063,6 +1064,28 @@ select {
 	margin-top:60px;
 	background-color: #111;
 }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 34px;
+}
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
 #snowContainer {
     position: fixed;
     top: 0;
@@ -1090,6 +1113,26 @@ select {
 }
 #stats small {
     margin-bottom:10px;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch input:checked + .slider {
+    background-color: #4CAF50;
+}
+.switch input:checked + .slider::before {
+    transform: translateX(26px);
+}
+.switch input:focus + .slider {
+    box-shadow: 0 0 1px #4CAF50;
 }
 .szo2 {
     width:25%;

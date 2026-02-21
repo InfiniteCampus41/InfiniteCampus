@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         container.style.display = "none";
                         showLoader();
                         const backButton = document.createElement("button");
-                        backButton.textContent = "← Back";
+                        backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
                         backButton.style.top = "70px";
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.cursor = "pointer";
                         document.body.appendChild(backButton);
                         const fullscreen = document.createElement("button");
-                        fullscreen.textContent = "⛶";
+                        fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
                         fullscreen.style.bottom = "10px";
@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     button.onclick = function () {
                         container.style.display = "none";
                         const backButton = document.createElement("button");
-                        backButton.textContent = "← Back";
+                        backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
                         backButton.style.top = "70px";
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.cursor = "pointer";
                         document.body.appendChild(backButton);
                         const fullscreen = document.createElement("button");
-                        fullscreen.textContent = "⛶";
+                        fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
                         fullscreen.style.bottom = "60px";

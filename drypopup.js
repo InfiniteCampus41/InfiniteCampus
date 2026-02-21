@@ -37,22 +37,22 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <hr>
                 <div class="section">
-                    <button id="toggleSnowBtn" class="button">
+                    <button class="button" id="toggleSnowBtn" class="button">
                         Toggle Snow
                     </button>
                     <br>
-                    <input type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
-                    <button id="saveTitleBtn">
+                    <input class="button" type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
+                    <button id="saveTitleBtn" class="button">
                         Save
                     </button>
-                    <button id="resetTitleBtn">
+                    <button id="resetTitleBtn" class="button">
                         Reset
                     </button>
                     <br>
-                    <label id="fLabel" for="faviconInput">
+                    <label id="fLabel" for="faviconInput" class="button">
                         Choose Favicon Image
                     </label>
-                    <input type="file" id="faviconInput" accept="image/*" hidden>
+                    <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
                     <button class="button" id="setFaviconBtn">
                         Save
                     </button>
@@ -62,12 +62,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <hr>
                 <div class="section">
-                    <input id="panicKeyInput" placeholder="Panic Key" readonly>
-                    <input id="panicUrlInput" placeholder="Set Panic URL">
-                    <button id="savePanicBtn">
+                    <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
+                    <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
+                    <button id="savePanicBtn" class="button">
                         Save
                     </button>
-                    <button id="clearPanicBtn">
+                    <button id="clearPanicBtn" class="button">
                         Reset
                     </button>
                 </div>
@@ -77,25 +77,25 @@ window.addEventListener('DOMContentLoaded', () => {
                     <a class="test button darkbuttons rgb-element" href="InfiniteColors.html">
                         Change Site Theme
                     </a>
-                    <a href="InfiniteDonaters.html">
+                    <a class="button" href="InfiniteDonaters.html">
                         Help Support By Donating
                     </a>
                     <br>
                     <br>
-                    <a href="InfiniteBypassers.html">
+                    <a class="button" href="InfiniteBypassers.html">
                         Open In About:Blank
                     </a>
-                    <a href="InfiniteFeatures.html">
+                    <a class="button" href="InfiniteFeatures.html">
                         Suggest A Feature
                     </a>
                     <br>
                     <br>
-                    <a href="InfinitePolls.html">
+                    <a class="button" href="InfinitePolls.html">
                         Take Part In A Poll
                     </a>
                     <br>
                     <br>
-                    <a id="resetAllBtn">
+                    <a class="button" id="resetAllBtn">
                         Clear Data
                     </a>
                     <br>

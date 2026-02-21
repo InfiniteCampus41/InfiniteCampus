@@ -610,7 +610,7 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
           	text.className = "msg-text";
           	text.style.marginLeft = "50px";
           	text.style.marginTop = "-10px";
-          	text.textContent = msgData.text || "(no text)";
+          	text.textContent = msgData.text || "(No Text)";
           	const deleteBtn = document.createElement("button");
           	deleteBtn.textContent = "Delete";
           	deleteBtn.className = "deleteBtn";

@@ -247,7 +247,7 @@ function handleJobStarted(data) {
 }
 function handleJobDone(data) {
     showSuccess(`File Accepted: ${data.finalName}`);
-    appendLog(`✔ Accept Completed: ${data.finalName}`);
+    appendLog(`Accept Completed: ${data.finalName}`);
     hideAcceptProgress();
 }
 function isCopyFile(name) {
