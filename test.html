@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+        </script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-7SV03ZXJ9R');
+        </script>
+		<title>
+			Infinite Campus
+		</title>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1552065282214890" crossorigin="anonymous">
+        </script>
+		<link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+        <link rel="stylesheet" href="global.css">
+        <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
+        <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
+        <meta property="og:title" content="Infinite Campus">
+        <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
+        <meta property="og:url" content="https://www.infinitecampus.xyz">
+        <meta name="theme-color" content="#8cbe37">
+        <link rel="manifest" href="/manifest.json">
+        <meta content="/res/icon.png" property="og:image">
+		<script src="/scram/scramjet.all.js">
+		</script>
+		<script src="/baremux/index.js">
+		</script>
+		<script src="register-sw.js" defer>
+		</script>
+		<script src="search.js" defer>
+		</script>
+		<script src="index.js" defer>
+		</script>
+		<script src="main.js">
+        </script>
+        <script src="theme.js">
+        </script>
+		<style>
+			body {
+    			margin: 0;
+    			background: #1e1e1e;
+    			font-family: Arial, sans-serif;
+    			overflow: hidden;
+			}
+			#browser {
+    			background: #2b2b2b;
+    			border-bottom: 1px solid #444;
+			}
+			#tabs-bar {
+    			display: flex;
+    			align-items: center;
+    			padding: 6px;
+    			background: #202020;
+			}
+			.tab {
+    			background: #2e2e2e;
+    			padding: 6px 14px;
+    			border-radius: 8px 8px 0 0;
+    			margin-right: 6px;
+    			color: white;
+    			cursor: pointer;
+			}
+			.tab.active {
+    			background: #3a3a3a;
+			}
+			#toolbar {
+    			padding: 8px;
+    			background: #2b2b2b;
+			}
+			#sj-address {
+    			border-radius: 30px;
+    			padding: 8px 15px;
+			}
+			#content-area {
+    			height: calc(100vh - 90px);
+    			background: #121212;
+    			position: relative;
+			}
+			#newtab-page {
+    			position: absolute;
+    			width: 100%;
+    			height: 100%;
+    			text-align: center;
+    			color: white;
+    			display: flex;
+    			flex-direction: column;
+    			justify-content: center;
+			}
+			#clock {
+    			font-size: 80px;
+    			font-weight: bold;
+    			color: lime;
+			}
+			#date {
+    			font-size: 20px;
+    			margin-bottom: 40px;
+    			color: #ccc;
+			}
+			#apps {
+    			display: flex;
+    			justify-content: center;
+    			gap: 40px;
+			}
+			.app {
+    			display: flex;
+    			flex-direction: column;
+    			align-items: center;
+    			cursor: pointer;
+    			font-size: 40px;
+    			color: white;
+			}
+			.app span {
+    			font-size: 14px;
+    			margin-top: 8px;
+			}
+			.app:hover {
+    			transform: scale(1.1);
+    			transition: 0.2s;
+			}
+			#sj-frame {
+    			width: 100%;
+    			height: 100%;
+    			border: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="browser">
+    		<div id="tabs-bar">
+        		<div class="tab active" data-tab="home">
+            		<i class="bi bi-house">
+					</i> New Tab
+        		</div>
+        		<button id="new-tab-btn" class="btn btn-sm btn-dark">
+            		<i class="bi bi-plus">
+					</i>
+        		</button>
+    		</div>
+    		<div id="toolbar">
+        		<form id="sj-form" class="d-flex w-100">
+            		<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
+            		<input id="sj-address" class="form-control" type="text" placeholder="Search Google or type a URL"/>
+        		</form>
+    		</div>
+		</div>
+		<div id="content-area">
+    		<div id="newtab-page">
+        		<div id="clock">
+				</div>
+        		<div id="date">
+				</div>
+        		<div id="apps">
+            		<div class="app" data-url="https://discord.com">
+                		<i class="fa-brands fa-discord">
+						</i>
+                		<span>
+							Discord
+						</span>
+            		</div>
+            		<div class="app" data-url="https://chatgpt.com">
+                		<i class="bi bi-openai">
+						</i>
+                		<span>
+							ChatGPT
+						</span>
+            		</div>
+            		<div class="app" data-url="https://youtube.com">
+                		<i class="fa-brands fa-youtube">
+						</i>
+                		<span>
+							YouTube
+						</span>
+            		</div>
+        		</div>
+    		</div>
+    		<iframe id="sj-frame" style="display:none;">
+			</iframe>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+		</script>
+		<script src="frame.js">
+		</script>
+		<script src="proxy.js" defer>
+		</script>
+	</body>
+</html>
