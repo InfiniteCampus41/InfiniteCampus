@@ -6,6 +6,9 @@ const error = document.getElementById("sj-error");
 const errorCode = document.getElementById("sj-error-code");
 const tabsContainer = document.getElementById("tabs");
 const content = document.getElementById("content");
+const backBtn = document.getElementById("nav-back");
+const forwardBtn = document.getElementById("nav-forward");
+const reloadBtn = document.getElementById("nav-reload");
 const { ScramjetController } = $scramjetLoadController();
 const scramjet = new ScramjetController({
     files: {
@@ -64,6 +67,7 @@ function createTab(isNTP = false) {
     const tabBtn = document.createElement("div");
     tabBtn.className = "chrome-tab active";
     tabBtn.innerHTML = `
+        <img class="tab-favicon" src="" style="width:16px;height:16px;margin-right:6px;display:none;">
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
         <i class="bi bi-x close-tab"></i>
     `;
@@ -114,6 +118,11 @@ function switchTab(id) {
     } else {
         if (ntp) ntp.style.display = "none";
         if (tab.frame) tab.frame.style.display = "block";
+    }
+    if (tab.frame && tab.frame.contentWindow) {
+        try {
+            addressBar.value = tab.frame.contentWindow.location.href;
+        } catch {}
     }
 }
 function closeTab(id) {
@@ -172,7 +181,23 @@ async function loadIntoActiveTab(input) {
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
     tab.frameObj.go(url);
     tab.frame.onload = () => {
-        tab.tabBtn.querySelector(".tab-title").textContent = getBaseDomain(input);
+        try {
+            const doc = tab.frame.contentDocument || tab.frame.contentWindow.document;
+            const pageTitle = doc.title || getBaseDomain(input);
+            tab.tabBtn.querySelector(".tab-title").textContent = pageTitle;
+            let icon = doc.querySelector("link[rel~='icon']");
+            const faviconImg = tab.tabBtn.querySelector(".tab-favicon");
+            if (icon && icon.href) {
+                faviconImg.src = icon.href;
+                faviconImg.style.display = "inline-block";
+            } else {
+                const fallback = new URL(input.startsWith("http") ? input : "https://" + input);
+                faviconImg.src = fallback.origin + "/favicon.ico";
+                faviconImg.style.display = "inline-block";
+            }
+        } catch (err) {
+            tab.tabBtn.querySelector(".tab-title").textContent = getBaseDomain(input);
+        }
     };
 }
 form.addEventListener("submit", async (e) => {
@@ -186,7 +211,7 @@ function updateClock() {
     const ampm = hours >= 12 ? "PM" : "AM"; 
     hours = hours % 12; 
     hours = hours ? hours : 12;
-    document.getElementById("time").textContent = `${hours}:${minutes},${ampm}`; 
+    document.getElementById("time").textContent = `${hours}:${minutes}${ampm}`; 
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }; 
     document.getElementById("date").textContent = now.toLocaleDateString(undefined, options);
 } 
@@ -210,5 +235,26 @@ function setRandomPhrase() {
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 
 } 
+function getActiveTab() {
+    return tabs.find(t => t.id === activeTabId);
+}
+backBtn.addEventListener("click", () => {
+    const tab = getActiveTab();
+    if (tab && tab.frame && tab.frame.contentWindow.history.length > 0) {
+        tab.frame.contentWindow.history.back();
+    }
+});
+forwardBtn.addEventListener("click", () => {
+    const tab = getActiveTab();
+    if (tab && tab.frame) {
+        tab.frame.contentWindow.history.forward();
+    }
+});
+reloadBtn.addEventListener("click", () => {
+    const tab = getActiveTab();
+    if (tab && tab.frame) {
+        tab.frame.contentWindow.location.reload();
+    }
+});
 setRandomPhrase();
 createTab(true);

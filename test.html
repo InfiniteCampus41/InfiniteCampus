@@ -85,6 +85,8 @@
                 cursor: pointer;
                 color:white;
                 margin-left:10px;
+                border-radius:50%;
+                transition:0.3s all;
             }
             .chrome-newtab:hover {
                 background:#333;
@@ -114,7 +116,7 @@
             }
             .tab-frame {
                 width: 100%;
-                height: calc(100vh - 110px);
+                height: calc(100vh - 140px);
                 border: none;
             }
             #nav-buttons {
@@ -199,15 +201,15 @@
                 </div>
                 <div id="search">
                     <div id="nav-buttons">
-                        <button type="button" id="back-btn">
+                        <button type="button" id="nav-back">
                             <i class="bi bi-arrow-left">
                             </i>
                         </button>
-                        <button type="button" id="forward-btn">
+                        <button type="button" id="nav-forward">
                             <i class="bi bi-arrow-right">
                             </i>
                         </button>
-                        <button type="button" id="reload-btn">
+                        <button type="button" id="nav-reload">
                             <i class="bi bi-arrow-clockwise">
                             </i>
                         </button>
