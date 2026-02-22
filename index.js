@@ -17,7 +17,6 @@ const scramjet = new ScramjetController({
         sync: "/scram/scramjet.sync.js",
     },
 });
-window.scramjet = scramjet;
 scramjet.init();
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];

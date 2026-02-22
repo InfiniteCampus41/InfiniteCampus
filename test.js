@@ -6,7 +6,6 @@ let activeTabId = null;
 let tabCounter = 0;
 async function logProxyVisit(input) {
     let logUrl;
-    before.style.display = 'none';
     try {
         const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
         logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
