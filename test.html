@@ -87,18 +87,20 @@
             #search {
                 background: #333;
                 border-top:1px solid #999;
-                padding-top:5px;
-                padding-bottom:5px;
+                padding:5px;
+                align-items:center;
                 margin:0;
+                display:flex;
             }
             #sj-form {
                 height:30px;
                 width:90%;
+                flex:1;
+                margin-left:10px;
             }
             #sj-address {
                 background:#444;
                 width: 100%;
-                margin-left:40px;
                 padding: 6px 12px;
                 height:30px;
                 border-radius: 20px;
@@ -110,6 +112,22 @@
                 height: calc(100vh - 110px);
                 border: none;
             }
+            #nav-buttons {
+                display:flex;
+                gap:6px;
+                margin-left:10px;
+            }
+            #nav-buttons button {
+                background:#444;
+                border:none;
+                color:white;
+                padding:5px 8px;
+                border-radius:6px;
+                cursor:pointer;
+            }
+            #nav-buttons button:hover {
+                background:#555;
+            }
         </style>
 	</head>
 	<body>
@@ -118,8 +136,22 @@
                 <div id="tabs">
                 </div>
                 <div id="search">
+                    <div id="nav-buttons">
+                        <button type="button" id="back-btn">
+                            <i class="bi bi-arrow-left">
+                            </i>
+                        </button>
+                        <button type="button" id="forward-btn">
+                            <i class="bi bi-arrow-right">
+                            </i>
+                        </button>
+                        <button type="button" id="reload-btn">
+                            <i class="bi bi-arrow-clockwise">
+                            </i>
+                        </button>
+                    </div>
                     <form id="sj-form">
-                        <input id="sj-address" type="text" placeholer="Search Or Type Url Here">
+                        <input id="sj-address" type="text" placeholder="Search Or Type Url Here">
                     </form>
                 </div>
             </div>
