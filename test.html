@@ -64,11 +64,13 @@
             .chrome-tab {
                 display: flex;
                 align-items: center;
-                padding: 6px 12px;
+                max-width: 180px;
+                padding: 6px 10px;
                 margin-right: 4px;
                 background: #333;
                 border-radius: 8px 8px 0 0;
                 cursor: pointer;
+                position:relative;
                 font-size: 14px;
                 color:white;
             }
@@ -191,6 +193,40 @@
             #apps .btxt {
                 font-size: 14px;
                 margin: 0;
+            }
+            .tab-title {
+                max-width: 80px;
+                white-space: nowrap;
+                overflow: hidden;
+                position: relative;
+                display: inline-block;
+            }
+            .tab-title::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 20px;
+                height: 100%;
+                pointer-events: none;
+                background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+            }
+            .chrome-tab:not(:hover) .tab-title {
+                text-overflow: clip;
+            }
+            .chrome-tab:hover::after {
+                content: attr(data-fulltitle);
+                position: absolute;
+                bottom: -28px;
+                left: 0;
+                background: #222;
+                color: white;
+                font-size: 12px;
+                padding: 4px 8px;
+                border-radius: 6px;
+                white-space: nowrap;
+                z-index: 9999;
+                pointer-events: none;
             }
         </style>
 	</head>

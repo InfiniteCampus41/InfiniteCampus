@@ -184,7 +184,9 @@ async function loadIntoActiveTab(input) {
         try {
             const doc = tab.frame.contentDocument || tab.frame.contentWindow.document;
             const pageTitle = doc.title || getBaseDomain(input);
-            tab.tabBtn.querySelector(".tab-title").textContent = pageTitle;
+            const titleElement = tab.tabBtn.querySelector(".tab-title");
+            titleElement.textContent = pageTitle;
+            tab.tabBtn.setAttribute("data-fulltitle", pageTitle);            
             let icon = doc.querySelector("link[rel~='icon']");
             const faviconImg = tab.tabBtn.querySelector(".tab-favicon");
             if (icon && icon.href) {
@@ -196,7 +198,10 @@ async function loadIntoActiveTab(input) {
                 faviconImg.style.display = "inline-block";
             }
         } catch (err) {
-            tab.tabBtn.querySelector(".tab-title").textContent = getBaseDomain(input);
+            const fallbackTitle = getBaseDomain(input);
+            const titleElement = tab.tabBtn.querySelector(".tab-title");
+            titleElement.textContent = fallbackTitle;
+            tab.tabBtn.setAttribute("data-fulltitle", fallbackTitle);
         }
     };
 }
