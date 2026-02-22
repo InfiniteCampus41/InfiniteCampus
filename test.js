@@ -13,12 +13,20 @@ function createTab(url = null, isNTP = false) {
         <i class="bi bi-x close-tab"></i>
     `;
     tabsContainer.appendChild(tabBtn);
-    const frame = document.createElement("iframe");
-    frame.id = id;
-    frame.className = "tab-frame";
-    frame.style.display = "none";
+    let frame;
+    let frameObj = null;
     if (!isNTP && url) {
-        frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+        frameObj = window.scramjet.createFrame();
+        frame = frameObj.frame;
+        frame.id = id;
+        frame.className = "tab-frame";
+        frame.style.display = "none";
+        frameObj.go(url);
+    } else {
+        frame = document.createElement("iframe");
+        frame.id = id;
+        frame.className = "tab-frame";
+        frame.style.display = "none";
     }
     content.appendChild(frame);
     tabs.push({ id, tabBtn, frame });
@@ -30,12 +38,6 @@ function createTab(url = null, isNTP = false) {
         e.stopPropagation();
         closeTab(id);
     });
-    if (!isNTP && url) {
-        frame.onload = () => {
-            tabBtn.querySelector(".tab-title").textContent =
-                frame.contentDocument?.title || url;
-        };
-    }
     switchTab(id);
 }
 function switchTab(id) {
