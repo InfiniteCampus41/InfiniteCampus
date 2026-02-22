@@ -33,21 +33,13 @@ function createTab(url = null, isNTP = false) {
         <i class="bi bi-x close-tab"></i>
     `;
     tabsContainer.insertBefore(tabBtn, newTabBtn);
-    let frame;
-    let frameObj = null;
-    if (!isNTP && url) {
-        frameObj = window.scramjet.createFrame();
-        frame = frameObj.frame;
-        frameObj.go(url);
-    } else {
-        frame = document.createElement("iframe");
-        frame.src = "about:blank";
-    }
+    const frame = document.createElement("iframe");
+    frame.src = "about:blank";
     frame.id = id;
     frame.className = "tab-frame";
     frame.style.display = "none";
     content.appendChild(frame);
-    tabs.push({ id, tabBtn, frame, frameObj });
+    tabs.push({ id, tabBtn, frame });
     tabBtn.addEventListener("click", (e) => {
         if (e.target.classList.contains("close-tab")) return;
         switchTab(id);
@@ -87,17 +79,11 @@ async function loadIntoActiveTab(input) {
     const tab = tabs.find(t => t.id === activeTabId);
     if (!tab) return;
     const url = search(input, document.getElementById("sj-form").value);
-    if (!tab.frameObj) {
-        const frameObj = window.scramjet.createFrame();
-        const newFrame = frameObj.frame;
-        newFrame.id = tab.id;
-        newFrame.className = "tab-frame";
-        newFrame.style.display = "block";
-        tab.frame.replaceWith(newFrame);
-        tab.frame = newFrame;
-        tab.frameObj = frameObj;
-    }
-    tab.frameObj.go(url);
+    const sjFrame = document.getElementById("sj-frame");
+    if (!sjFrame) return;
+    tab.frame.replaceWith(sjFrame);
+    sjFrame.style.display = "block";
+    tab.frame = sjFrame;
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
 }
 form.addEventListener("submit", async (e) => {
