@@ -173,8 +173,37 @@ function loadNewTabPage(frame) {
             height:100vh;
             font-family:sans-serif;
         ">
-            <h1 id="time"></h1>
-            <p id="date"></p>
+            <div id="ntp">
+                    <div id="clock">
+                        <span id="time">
+                        </span>
+                        <br>
+                        <p id="date">
+                        </p>
+                    </div>
+                    <div id="phrase">
+                    </div>
+                    <div id="apps">
+                        <div>
+                            <img src="/res/chatgpt.png" alt="ChatGPT">
+                            <p class="btxt">
+                                ChatGPT
+                            </p>
+                        </div>
+                        <div>
+                            <img src="/res/discord.png" alt="Discord">
+                            <p class="btxt">
+                                Discord
+                            </p>
+                        </div>
+                        <div>
+                            <img src="/res/youtube.png" alt="Youtube">
+                            <p class="btxt">
+                                Youtube
+                            </p>
+                        </div>
+                    </div>
+                </div>
             <script>
                 function updateClock(){
                     const now=new Date();
