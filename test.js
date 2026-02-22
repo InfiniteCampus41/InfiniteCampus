@@ -267,7 +267,7 @@ function loadNewTabPage(frame) {
                         const ampm = hours >= 12 ? "PM" : "AM"; 
                         hours = hours % 12; 
                         hours = hours ? hours : 12;
-                        document.getElementById("time").textContent = ${hours}:${minutes} ${ampm}; 
+                        document.getElementById("time").textContent = hours, ':', minutes, ampm; 
                         const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }; 
                         document.getElementById("date").textContent = now.toLocaleDateString(undefined, options);
                     } 
