@@ -12,24 +12,22 @@ function createTab(url = null, isNTP = false) {
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
         <i class="bi bi-x close-tab"></i>
     `;
-    tabsContainer.appendChild(tabBtn);
+    tabsContainer.insertBefore(tabBtn, newTabBtn);
     let frame;
     let frameObj = null;
     if (!isNTP && url) {
         frameObj = window.scramjet.createFrame();
         frame = frameObj.frame;
-        frame.id = id;
-        frame.className = "tab-frame";
-        frame.style.display = "none";
         frameObj.go(url);
     } else {
         frame = document.createElement("iframe");
-        frame.id = id;
-        frame.className = "tab-frame";
-        frame.style.display = "none";
+        frame.src = "about:blank";
     }
+    frame.id = id;
+    frame.className = "tab-frame";
+    frame.style.display = "none";
     content.appendChild(frame);
-    tabs.push({ id, tabBtn, frame });
+    tabs.push({ id, tabBtn, frame, frameObj });
     tabBtn.addEventListener("click", (e) => {
         if (e.target.classList.contains("close-tab")) return;
         switchTab(id);
@@ -64,18 +62,27 @@ function closeTab(id) {
         switchTab(tabs[Math.max(0, index - 1)].id);
     }
 }
-form.addEventListener("submit", e => {
-    e.preventDefault();
-    const input = addressBar.value.trim();
-    if (!input) return;
-    let url;
-    try {
-        url = new URL(input.startsWith("http") ? input : `https://${input}`).href;
-    } catch {
-        url = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+async function loadIntoActiveTab(input) {
+    if (!activeTabId) return;
+    const tab = tabs.find(t => t.id === activeTabId);
+    if (!tab) return;
+    const url = search(input, document.getElementById("sj-search-engine").value);
+    if (!tab.frameObj) {
+        const frameObj = window.scramjet.createFrame();
+        const newFrame = frameObj.frame;
+        newFrame.id = tab.id;
+        newFrame.className = "tab-frame";
+        newFrame.style.display = "block";
+        tab.frame.replaceWith(newFrame);
+        tab.frame = newFrame;
+        tab.frameObj = frameObj;
     }
-    createTab(url);
-    addressBar.value = "";
+    tab.frameObj.go(url);
+    tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
+}
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await loadIntoActiveTab(addressBar.value);
 });
 const newTabBtn = document.createElement("div");
 newTabBtn.className = "chrome-newtab";
