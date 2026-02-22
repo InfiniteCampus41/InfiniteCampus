@@ -209,7 +209,7 @@
                 width: 20px;
                 height: 100%;
                 pointer-events: none;
-                background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+                background: linear-gradient(to right, transparent, #444);
             }
             .chrome-tab:not(:hover) .tab-title {
                 text-overflow: clip;
@@ -268,19 +268,19 @@
                     <div id="phrase">
                     </div>
                     <div id="apps">
-                        <div>
+                        <div data-url="https://chatgpt.com">
                             <img src="/res/chatgpt.png" alt="ChatGPT">
                             <p class="btxt">
                                 ChatGPT
                             </p>
                         </div>
-                        <div>
+                        <div data-url="https://discord.com">
                             <img src="/res/discord.png" alt="Discord">
                             <p class="btxt">
                                 Discord
                             </p>
                         </div>
-                        <div>
+                        <div data-url="https://youtube.com">
                             <img src="/res/youtube.png" alt="Youtube">
                             <p class="btxt">
                                 Youtube

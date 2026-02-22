@@ -262,4 +262,14 @@ reloadBtn.addEventListener("click", () => {
     }
 });
 setRandomPhrase();
+document.querySelectorAll("#apps div").forEach(app => {
+    app.addEventListener("click", async () => {
+        const url = app.getAttribute("data-url");
+        if (!url) return;
+        if (!activeTabId) {
+            createTab(true);
+        }
+        await loadIntoActiveTab(url);
+    });
+});
 createTab(true);
