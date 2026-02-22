@@ -4,6 +4,27 @@ const addressBar = document.getElementById("sj-address");
 let tabs = [];
 let activeTabId = null;
 let tabCounter = 0;
+async function logProxyVisit(input) {
+    let logUrl;
+    before.style.display = 'none';
+    try {
+        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
+        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
+    } catch {
+        logUrl = input.toLowerCase();
+    }
+    const payload = {
+        url: logUrl,
+        timestamp: new Date().toISOString()
+    };
+    try {
+        await fetch("/logs", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        });
+    } catch {}
+};
 function createTab(url = null, isNTP = false) {
     const id = "tab-" + (++tabCounter);
     const tabBtn = document.createElement("div");
@@ -66,7 +87,7 @@ async function loadIntoActiveTab(input) {
     if (!activeTabId) return;
     const tab = tabs.find(t => t.id === activeTabId);
     if (!tab) return;
-    const url = search(input, document.getElementById("sj-search-engine").value);
+    const url = search(input, document.getElementById("sj-form").value);
     if (!tab.frameObj) {
         const frameObj = window.scramjet.createFrame();
         const newFrame = frameObj.frame;
