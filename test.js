@@ -97,4 +97,36 @@ tabsContainer.appendChild(newTabBtn);
 newTabBtn.addEventListener("click", () => {
     createTab(null, true);
 });
+function updateClock() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    document.getElementById("time").textContent = `${hours}:${minutes} ${ampm}`;
+    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+    document.getElementById("date").textContent = now.toLocaleDateString(undefined, options);
+}
+setInterval(updateClock, 1000);
+updateClock();
+const phrases = [
+    "Random Phrase1",
+    "Random Phrase2",
+    "Random Phrase3",
+    "Random Phrase4",
+    "Random Phrase5",
+    "Random Phrase6",
+    "Random Phrase7",
+    "Random Phrase8",
+    "Random Phrase9",
+    "Random Phrase10",
+    "Random Phrase11",
+    "Random Phrase12"
+];
+function setRandomPhrase() {
+    const random = phrases[Math.floor(Math.random() * phrases.length)];
+    document.getElementById("phrase").textContent = random;
+}
+setRandomPhrase();
 createTab(null, true);

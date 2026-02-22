@@ -176,7 +176,7 @@ async function renderMessage(msg, list){
     avatarImg.classList.add('avatar');
     avatarImg.src = msg.author.avatar
         ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-        : `/res/default.png`;
+        : `/res/discord.png`;
     li.appendChild(avatarImg);
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content');
