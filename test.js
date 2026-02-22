@@ -162,18 +162,71 @@ function loadNewTabPage(frame) {
     if (!doc) return;
     doc.open();
     doc.write(`
+        <!DOCTYPE html>
         <html>
-        <body style="
-            background:black;
-            color:#00ff66;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            flex-direction:column;
-            height:100vh;
-            font-family:sans-serif;
-        ">
-            <div id="ntp">
+	        <head>
+                <style>
+                    #ntp {
+                        height: calc(100vh - 140px);
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        background: #111;
+                        color: white;
+                        text-align: center;
+                    }
+                    #clock #time {
+                        font-size: 80px;
+                        font-weight: 600;
+                        color: #8cbe37;
+                    }
+                    #clock #date {
+                        font-size: 18px;
+                        margin-top: 5px;
+                        opacity: 0.8;
+                    }
+                    #phrase {
+                        margin-top: 20px;
+                        font-size: 18px;
+                        opacity: 0.9;
+                    }
+                    #apps {
+                        display: grid;
+                        width:100%;
+                        grid-template-columns: repeat(auto-fit, 100px);
+                        gap: 30px;
+                        margin-top: 40px;
+                        justify-content: center;
+                    }
+                    #apps div {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 12px;
+                        border-radius: 18px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+                    #apps div:hover {
+                        background: rgba(255,255,255,0.08);
+                        transform: scale(1.05);
+                    }
+                    #apps img {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 12px;
+                        margin-bottom: 8px;
+                    }
+                    #apps .btxt {
+                        font-size: 14px;
+                        margin: 0;
+                    }
+                </style>
+	        </head>
+	        <body>
+                <div id="ntp">
                     <div id="clock">
                         <span id="time">
                         </span>
@@ -204,20 +257,43 @@ function loadNewTabPage(frame) {
                         </div>
                     </div>
                 </div>
-            <script>
-                function updateClock(){
-                    const now=new Date();
-                    let h=now.getHours();
-                    const m=now.getMinutes().toString().padStart(2,"0");
-                    const ampm=h>=12?"PM":"AM";
-                    h=h%12||12;
-                    document.getElementById("time").innerText=h+":"+m+" "+ampm;
-                    document.getElementById("date").innerText=now.toDateString();
-                }
-                setInterval(updateClock,1000);
-                updateClock();
-            </script>
-        </body>
+		        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+                </script>
+                <script>
+                    function updateClock() { 
+                        const now = new Date(); 
+                        let hours = now.getHours(); 
+                        const minutes = now.getMinutes().toString().padStart(2, "0"); 
+                        const ampm = hours >= 12 ? "PM" : "AM"; 
+                        hours = hours % 12; 
+                        hours = hours ? hours : 12;
+                        document.getElementById("time").textContent = ${hours}:${minutes} ${ampm}; 
+                        const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }; 
+                        document.getElementById("date").textContent = now.toLocaleDateString(undefined, options);
+                    } 
+                    setInterval(updateClock, 1000); 
+                    updateClock(); 
+                    const phrases = [ 
+                        "Random Phrase1", 
+                        "Random Phrase2", 
+                        "Random Phrase3", 
+                        "Random Phrase4", 
+                        "Random Phrase5", 
+                        "Random Phrase6", 
+                        "Random Phrase7", 
+                        "Random Phrase8", 
+                        "Random Phrase9", 
+                        "Random Phrase10", 
+                        "Random Phrase11", 
+                        "Random Phrase12" 
+                    ]; 
+                    function setRandomPhrase() { 
+                        const random = phrases[Math.floor(Math.random() * phrases.length)];
+                        document.getElementById("phrase").textContent = random; 
+                    } 
+                    setRandomPhrase();
+                </script>
+	        </body>
         </html>
     `);
     doc.close();
