@@ -254,9 +254,6 @@ if (fileParam) {
                     <br>
                     <br>
                 ` : ``}
-                <p class="btxt">
-                    The Second Digit Is 4
-                </p>
                 <a href="${link}" target="_blank">
                     <button class="button">
                         Go To Download Page (This Site)
