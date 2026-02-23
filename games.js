@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Brutal.io", method: ["1", "2"], url: "https://brutal.io/" },
         { name: "Bonk.io", method: ["1", "2"], url: "https://bonk.io/" },
         { name: "Slither.io", method: ["1", "2"], url: "https://slithergame.io/slither-io.embed" },
-        { name: "Ninja.io", method: ["1", "2"], url: "https://ninja.io/" },
         { name: "Wings.io", method: ["1", "2"], url: "https://wings.io/" },
         { name: "Mope.io", method: ["1", "2"], url: "https://mope.io/" },
         { name: "Warbot.io", method: ["1", "2"], url: "https://warbot.io/"},
