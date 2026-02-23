@@ -228,6 +228,7 @@ async function loadIntoActiveTab(input) {
     } catch (err) {
         error.textContent = "Service Worker failed.";
         errorCode.textContent = err.toString();
+        hidePxyLoader();
         return;
     }
     let wispUrl =
@@ -242,15 +243,16 @@ async function loadIntoActiveTab(input) {
     }
     const url = search(input, searchEngine.value);
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
-    tab.frameObj.go(url);
+    showPxyLoader();
+    tab.frame.onload = null;
     tab.frame.onload = () => {
         try {
             const doc = tab.frame.contentDocument || tab.frame.contentWindow.document;
             const pageTitle = doc.title || getBaseDomain(input);
             const titleElement = tab.tabBtn.querySelector(".tab-title");
             titleElement.textContent = pageTitle;
-            tab.tabBtn.setAttribute("data-fulltitle", pageTitle);      
-            tab.title = pageTitle;      
+            tab.tabBtn.setAttribute("data-fulltitle", pageTitle);
+            tab.title = pageTitle;
             let icon = doc.querySelector("link[rel~='icon']");
             const faviconImg = tab.tabBtn.querySelector(".tab-favicon");
             if (icon && icon.href) {
@@ -267,8 +269,10 @@ async function loadIntoActiveTab(input) {
             titleElement.textContent = fallbackTitle;
             tab.tabBtn.setAttribute("data-fulltitle", fallbackTitle);
         }
+        hidePxyLoader();
         createFullscreenButton();
     };
+    tab.frameObj.go(url);
 }
 form.addEventListener("submit", async (e) => {
     e.preventDefault();

@@ -465,11 +465,28 @@ function showLoader() {
     if (!document.getElementById("planet-loader")) {
         document.body.prepend(loader);
     }
+    loader.style.top = 'auto';
     loader.style.display = "flex";
     loader.style.opacity = "1";
 }
+function showPxyLoader() {
+    if (!document.getElementById("planet-loader")) {
+        document.bosy.prepend(loader);
+    }
+    loader.style.display = "flex";
+    loader.style.top = "134.8px";
+    loader.style.opacity = "1";
+}
+function hidePxyLoader() {
+    loader.style.opacity = "0";
+    loader.style.top = 'auto';
+    setTimeout(() => {
+        loader.style.display = "none";
+    }, 600);
+}
 function hideLoader() {
     loader.style.opacity = "0";
+    loader.style.top = 'auto';
     setTimeout(() => {
         loader.style.display = "none";
     }, 600);
