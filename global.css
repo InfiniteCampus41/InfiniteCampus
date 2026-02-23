@@ -206,6 +206,16 @@ body {
     pointer-events: none;
     background: linear-gradient(to right, transparent, transparent, transparent, transparent, transparent, transparent, transparent, #333);
 }
+.chrome-tab.active .tab-title::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, transparent, transparent, transparent, transparent, transparent, transparent, #444);
+}
 .chrome-tab:not(:hover) .tab-title {
     text-overflow: clip;
 }
@@ -1309,7 +1319,6 @@ table {
     width: 20px;
     height: 100%;
     pointer-events: none;
-    background: linear-gradient(to right, transparent, transparent, transparent, transparent, transparent, transparent, transparent, #333);
 }
 #tabs {
     display: flex;
