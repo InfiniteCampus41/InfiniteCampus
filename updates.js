@@ -83,11 +83,11 @@ function renderUpdates(snapshot) {
     	if (isOwner || isTester || isDev) {
       		div.innerHTML = `
         		<button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">
-					Edit
+					<i class='bi bi-pencil-square'></i>
 				</button>
         		${index + 1}. ${update.content}
         		<button class="button" onclick="deleteUpdate('${update.key}')">
-					Delete
+					<i class='bi bi-trash-fill'></i>
 				</button>
       		`;
     	} else {

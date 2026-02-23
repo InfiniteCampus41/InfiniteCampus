@@ -246,6 +246,8 @@ async function renderMessageInstant(id, msg) {
     div.className = "msg";
     div.id = "msg-" + id;
     div.dataset.timestamp = msg.timestamp || Date.now();
+    const msgBtns = document.createElement("div");
+    msgBtns.id = 'msgBtns';
     const topRow = document.createElement("div");
     topRow.id = "topRow";
     const nameSpan = document.createElement("span");
@@ -441,6 +443,7 @@ async function renderMessageInstant(id, msg) {
     const editedSpan = document.createElement("div");
     editedSpan.className = "edited-label";
     editedSpan.textContent = msg.edited ? "(Edited)" : "";
+    div.appendChild(msgBtns);
     div.appendChild(topRow);
     div.appendChild(textDiv);
     div.appendChild(editedSpan);
@@ -709,15 +712,10 @@ async function renderMessageInstant(id, msg) {
                 if (isSelf) canEdit = true;
                 else if (isOwner || isTester) canEdit = true;
                 else if (isCoOwner && !senderIsOwner && !senderIsTester && !senderIsCoOwner && !senderIsHAdmin) canEdit = true;
-                if (canDelete) {
-                    const delBtn = document.createElement("button");
-                    delBtn.textContent = "Delete";
-                    delBtn.onclick = () => remove(ref(db, currentPath + "/" + id));
-                    div.appendChild(delBtn);
-                }
                 if (canEdit) {
                     const editBtn = document.createElement("button");
-                    editBtn.textContent = "Edit";
+                    editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
+                    editBtn.title = 'Edit Message';
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
@@ -766,7 +764,14 @@ async function renderMessageInstant(id, msg) {
                             }
                         });
                     };
-                    div.appendChild(editBtn);
+                    msgBtns.appendChild(editBtn);
+                }
+                if (canDelete) {
+                    const delBtn = document.createElement("button");
+                    delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
+                    delBtn.title = 'Delete Message';
+                    delBtn.onclick = () => remove(ref(db, currentPath + "/" + id));
+                    msgBtns.appendChild(delBtn);
                 }
             }
         } catch (err) {
@@ -870,7 +875,7 @@ async function attachMessageListeners(msgRef) {
         if (msgRef !== currentMsgRef) return;
         const el = document.getElementById("msg-" + snap.key);
         if (el) {
-            const textDiv = el.querySelector("div:nth-child(2)");
+            const textDiv = el.querySelector("div:nth-child(3)");
             const editedSpan = el.querySelector(".edited-label");
             const updatedMsg = snap.val();
             let safeText = (updatedMsg.text || "");

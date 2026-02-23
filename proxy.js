@@ -45,7 +45,7 @@ async function logProxyVisit(input) {
 async function loadBlockedUrls() {
     try {
         const res = await fetch("/edit-urls");
-        if (!res.ok) throw new Error("Failed to fetch blocked URLs");
+        if (!res.ok) throw new Error("Failed To Fetch URLs");
         const data = await res.json();
         blockedUrls = Object.entries(data).map(([url, reason]) => ({
             url,
@@ -91,7 +91,7 @@ function createTab(isNTP = false) {
     tabBtn.innerHTML = `
         <img class="tab-favicon" src="" style="width:16px;height:16px;margin-right:6px;display:none;">
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
-        <i class="bi bi-x close-tab"title="Close Tab"></i>
+        <i class="bi bi-x close-tab" title="Close Tab"></i>
     `;
     tabsContainer.insertBefore(tabBtn, newTabBtn);
     let frame = null;
@@ -250,7 +250,7 @@ async function loadIntoActiveTab(input) {
     if (!activeTabId) return;
     const reason = checkBlocked(input);
     if (reason) {
-        error.textContent = "Blocked request.";
+        error.textContent = "Error";
         errorCode.textContent = `Error Code: ${reason}`;
         return;
     }

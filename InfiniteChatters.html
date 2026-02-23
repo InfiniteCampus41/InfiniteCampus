@@ -50,11 +50,13 @@
             }
             .msg { 
                 margin: 6px 0; 
+                transition:0.3s all;
             }
             #topRow {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 2px;
+                width:93%;
             }
             #msgName {
                 color: #aaa;
@@ -263,11 +265,23 @@
             .mention:hover, .mention-self:hover {
                 text-decoration: underline;
             }
+            #msgBtns {
+                height:0px;
+                justify-content:flex-end;
+                display:none;
+                transition:0.3s all;
+            }
+            #msgBtns button {
+                height:fit-content;
+            }
+            .msg:hover #msgBtns {
+                display:flex;
+            }
         </style>
     </head>
     <body>
         <button id="mobileToggle" class="btn btn-secondary btn-sm">
-            <i class="bi bi-list"></i> Menu
+            <i class="bi bi-list"></i>
         </button>
         <div id="main" style="color:white">
             <div id="sidebar">
@@ -325,7 +339,7 @@
                     </div>
                     <textarea id="chatInput" placeholder="Type A Message" rows="3"></textarea>
                     <button id="sendBtn">
-                        Send
+                        <i class="bi bi-send"></i>
                     </button>
                 </div>
             </div>
