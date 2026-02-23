@@ -79,7 +79,7 @@ let activeTabId = null;
 let tabCounter = 0;
 const newTabBtn = document.createElement("div");
 newTabBtn.className = "chrome-newtab";
-newTabBtn.innerHTML = `<i class="bi bi-plus"></i>`;
+newTabBtn.innerHTML = `<i class="bi bi-plus" title="New Tab"></i>`;
 tabsContainer.appendChild(newTabBtn);
 newTabBtn.addEventListener("click", () => {
     createTab(true);
@@ -91,7 +91,7 @@ function createTab(isNTP = false) {
     tabBtn.innerHTML = `
         <img class="tab-favicon" src="" style="width:16px;height:16px;margin-right:6px;display:none;">
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
-        <i class="bi bi-x close-tab"></i>
+        <i class="bi bi-x close-tab"title="Close Tab"></i>
     `;
     tabsContainer.insertBefore(tabBtn, newTabBtn);
     let frame = null;
@@ -104,13 +104,15 @@ function createTab(isNTP = false) {
         frame.style.display = "none";
         content.appendChild(frame);
         attachFrameLoadEvents(tabData);
+        startUrlWatcher(tabData);
     }
     const tabData = {
         id,
         tabBtn,
         frame,
         frameObj,
-        isNTP
+        isNTP,
+        displayUrl: ""
     };
     tabs.push(tabData);
     tabBtn.addEventListener("click", (e) => {
@@ -155,11 +157,39 @@ function switchTab(id) {
         if (ntp) ntp.style.display = "none";
         if (tab.frame) tab.frame.style.display = "block";
     }
-    if (tab.frame && tab.frame.contentWindow) {
-        try {
-            addressBar.value = tab.frame.contentWindow.location.href;
-        } catch {}
+    if (!tab.isNTP) {
+        addressBar.value = tab.displayUrl || "";
     }
+}
+function decodeScramjetUrl(proxyUrl) {
+    try {
+        const url = new URL(proxyUrl);
+        const parts = url.pathname.split("/scramjet/");
+        if (parts.length > 1) {
+            return decodeURIComponent(parts[1]);
+        }
+        return proxyUrl;
+    } catch {
+        return proxyUrl;
+    }
+}
+function startUrlWatcher(tab) {
+    if (!tab.frame) return;
+    let lastUrl = "";
+    setInterval(() => {
+        if (!tab.frame || !tab.frame.contentWindow) return;
+        try {
+            const currentProxyUrl = tab.frame.contentWindow.location.href;
+            if (currentProxyUrl !== lastUrl) {
+                lastUrl = currentProxyUrl;
+                const realUrl = decodeScramjetUrl(currentProxyUrl);
+                tab.displayUrl = realUrl;
+                if (tab.id === activeTabId) {
+                    addressBar.value = realUrl;
+                }
+            }
+        } catch {}
+    }, 300);
 }
 function closeTab(id) {
     const index = tabs.findIndex(t => t.id === id);
@@ -236,6 +266,7 @@ async function loadIntoActiveTab(input) {
         content.appendChild(tab.frame);
         attachFrameLoadEvents(tab);
         document.getElementById("ntp").style.display = "none";
+        startUrlWatcher(tab);
     }
     try {
         await registerSW();
@@ -255,6 +286,8 @@ async function loadIntoActiveTab(input) {
             { websocket: wispUrl },
         ]);
     }
+    tab.displayUrl = input;
+    addressBar.value = input;
     const url = search(input, searchEngine.value);
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
     showPxyLoader();
