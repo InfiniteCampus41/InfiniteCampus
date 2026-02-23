@@ -33,8 +33,8 @@ async function checkPermissions() {
         return false;
     }
     const userData = snapshot.val();
-    const { isOwner, isTester, isCoOwner, isDev } = userData;
-    if (isOwner || isTester || isCoOwner || isDev ) {
+    const { isOwner, isTester, isCoOwner, isHAdmin, isDev } = userData;
+    if (isOwner || isTester || isCoOwner || isHAdmin || isDev ) {
         return true;
     } else {
         showError("You Do Not Have The Necessary Permissions To Access This Page.");

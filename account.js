@@ -767,6 +767,7 @@ if (mode) {
                     }
                     if (profile.isHAdmin) {
                         addBadge("Head Admin", "#00cc99", "fa-solid fa-shield-halved");
+                        adminBtn.style.display = 'block';
                         hasAnyRole = true;
                     }
                     if (profile.isAdmin) {

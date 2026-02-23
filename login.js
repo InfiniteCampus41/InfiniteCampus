@@ -18,6 +18,7 @@ onAuthStateChanged(auth, async (user) => {
             profile.isOwner === true ||
             profile.isTester === true ||
             profile.isCoOwner === true ||
+            profile.isHAdmin === true ||
             profile.isDev === true;
         if (isAllowed) {
             if (window.location.pathname == '/InfiniteLogins.html') {

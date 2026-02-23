@@ -91,7 +91,7 @@ async function checkUserAuthentication() {
             const uid = user.uid;
             const userProfileRef = ref(db, `/users/${uid}/profile`);
             const profileSnapshot = await get(userProfileRef);
-            if (!profileSnapshot.exists() || !(profileSnapshot.val().isOwner || profileSnapshot.val().isTester || profileSnapshot.val().isCoOwner || profileSnapshot.val().isDev)) {
+            if (!profileSnapshot.exists() || !(profileSnapshot.val().isOwner || profileSnapshot.val().isTester || profileSnapshot.val().isCoOwner || profileSnapshot.val().isHAdmin || profileSnapshot.val().isDev)) {
                 showError('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
                 resolve(false);
                 return;
