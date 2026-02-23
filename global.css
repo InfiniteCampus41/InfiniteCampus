@@ -197,6 +197,8 @@ body {
     font-size: 14px;
     color:white;
     border-radius:50%;
+    padding: 0px 3px;
+    transition:0.3s all;
 }
 .chrome-tab.active .close-tab:hover {
     background:#777;
