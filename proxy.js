@@ -103,6 +103,19 @@ function createTab(isNTP = false) {
         frame.className = "tab-frame";
         frame.style.display = "none";
         content.appendChild(frame);
+        attachFrameLoadEvents(tabData);
+    }
+    function attachFrameLoadEvents(tab) {
+        if (!tab.frame) return;
+        tab.frame.addEventListener("loadstart", () => {
+            showPxyLoader();
+        });
+        tab.frame.addEventListener("beforeunload", () => {
+            showPxyLoader();
+        });
+        tab.frame.addEventListener("load", () => {
+            hidePxyLoader();
+        });
     }
     const tabData = {
         id,
@@ -221,6 +234,7 @@ async function loadIntoActiveTab(input) {
         tab.frame.className = "tab-frame";
         tab.frame.style.display = "block";
         content.appendChild(tab.frame);
+        attachFrameLoadEvents(tab);
         document.getElementById("ntp").style.display = "none";
     }
     try {
@@ -269,7 +283,6 @@ async function loadIntoActiveTab(input) {
             titleElement.textContent = fallbackTitle;
             tab.tabBtn.setAttribute("data-fulltitle", fallbackTitle);
         }
-        hidePxyLoader();
         createFullscreenButton();
     };
     tab.frameObj.go(url);
@@ -315,19 +328,22 @@ function getActiveTab() {
 }
 backBtn.addEventListener("click", () => {
     const tab = getActiveTab();
-    if (tab && tab.frame && tab.frame.contentWindow.history.length > 0) {
+    if (tab && tab.frame) {
+        showPxyLoader();
         tab.frame.contentWindow.history.back();
     }
 });
 forwardBtn.addEventListener("click", () => {
     const tab = getActiveTab();
     if (tab && tab.frame) {
+        showPxyLoader();
         tab.frame.contentWindow.history.forward();
     }
 });
 reloadBtn.addEventListener("click", () => {
     const tab = getActiveTab();
     if (tab && tab.frame) {
+        showPxyLoader();
         tab.frame.contentWindow.location.reload();
     }
 });

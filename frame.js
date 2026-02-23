@@ -465,7 +465,7 @@ function showLoader() {
     if (!document.getElementById("planet-loader")) {
         document.body.prepend(loader);
     }
-    loader.style.top = 'auto';
+    loader.style.top = '60px';
     loader.style.display = "flex";
     loader.style.opacity = "1";
 }
@@ -479,14 +479,14 @@ function showPxyLoader() {
 }
 function hidePxyLoader() {
     loader.style.opacity = "0";
-    loader.style.top = 'auto';
+    loader.style.top = '60px';
     setTimeout(() => {
         loader.style.display = "none";
     }, 600);
 }
 function hideLoader() {
     loader.style.opacity = "0";
-    loader.style.top = 'auto';
+    loader.style.top = '60px';
     setTimeout(() => {
         loader.style.display = "none";
     }, 600);
