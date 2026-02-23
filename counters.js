@@ -17,10 +17,18 @@ const today = new Date();
 const clockMode = document.getElementById("clockMode");
 const analogClock = document.getElementById("analogClock");
 today.setHours(0, 0, 0, 0);
-picker.value = today.toISOString().slice(0, 16);
+function formatLocalDate(date) {
+  	const pad = n => n.toString().padStart(2, "0");
+  	return date.getFullYear() + "-" +
+    	pad(date.getMonth() + 1) + "-" +
+   	 	pad(date.getDate()) + "T" +
+    	pad(date.getHours()) + ":" +
+    	pad(date.getMinutes());
+}
+picker.value = formatLocalDate(today);
 startBtn.onclick = () => {
-  	targetDate = new Date(picker.value);
-  	if (isNaN(targetDate)) return;
+	targetDate = new Date(picker.value);
+	if (isNaN(targetDate)) return;
   	localStorage.setItem("countdownTarget", targetDate.getTime());
   	setupUI.style.display = "none";
   	clockUI.style.display = "flex";
