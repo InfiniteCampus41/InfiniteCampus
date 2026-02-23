@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Bad Time Simulator", method: ["1", "2"], url: "https://jcw87.github.io/c2-sans-fight/"},
         { name: "OVO", method: ["1", "2"], url: "https://www.hoodamath.com/mobile/games/ovo/game.html?nocheckorient=1" },
         { name: "Pixel Gun 3D", method: ["1", "2"], url: "https://games.crazygames.com/en_US/pixel-gun-3d/index.html" },
-        { name: "Rooftop Snipers", method: ["1", "2"], url: "https://rooftop-snipers.github.io/file/" },
         { name: "Stickman Hook", method: ["1", "2"], url: "https://mountain658.github.io/g/stickmanhook/index.html" },
         { name: "Universal Paperclips", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/paperclips/index.html" },
         { name: "Plants Vs Zombies", method: ["1", "2"], url: "https://games.gombis.com/plants-vs-zombies-3?hl=en" },
