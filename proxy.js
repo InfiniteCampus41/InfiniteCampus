@@ -105,18 +105,6 @@ function createTab(isNTP = false) {
         content.appendChild(frame);
         attachFrameLoadEvents(tabData);
     }
-    function attachFrameLoadEvents(tab) {
-        if (!tab.frame) return;
-        tab.frame.addEventListener("loadstart", () => {
-            showPxyLoader();
-        });
-        tab.frame.addEventListener("beforeunload", () => {
-            showPxyLoader();
-        });
-        tab.frame.addEventListener("load", () => {
-            hidePxyLoader();
-        });
-    }
     const tabData = {
         id,
         tabBtn,
@@ -135,6 +123,18 @@ function createTab(isNTP = false) {
     });
     switchTab(id);
     return tabData;
+}
+function attachFrameLoadEvents(tab) {
+    if (!tab.frame) return;
+    tab.frame.addEventListener("loadstart", () => {
+        showPxyLoader();
+    });
+    tab.frame.addEventListener("beforeunload", () => {
+        showPxyLoader();
+    });
+    tab.frame.addEventListener("load", () => {
+        hidePxyLoader();
+    });
 }
 function switchTab(id) {
     activeTabId = id;
@@ -266,7 +266,7 @@ async function loadIntoActiveTab(input) {
             const titleElement = tab.tabBtn.querySelector(".tab-title");
             titleElement.textContent = pageTitle;
             tab.tabBtn.setAttribute("data-fulltitle", pageTitle);
-            tab.title = pageTitle;
+            tab.title = `${pageTitle}`;
             let icon = doc.querySelector("link[rel~='icon']");
             const faviconImg = tab.tabBtn.querySelector(".tab-favicon");
             if (icon && icon.href) {
