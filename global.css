@@ -178,7 +178,7 @@ body {
     align-items: center;
     justify-content: space-between;
     max-width: 180px;
-    width:120px;
+    width:180px;
     padding: 6px 10px;
     margin-right: 4px;
     background: #333;
@@ -195,6 +195,14 @@ body {
 .chrome-tab .close-tab {
     margin-left: 8px;
     font-size: 14px;
+    color:white;
+    border-radius:50%;
+}
+.chrome-tab.active .close-tab:hover {
+    background:#777;
+}
+.chrome-tab:not(.active) .close-tab:hover {
+    background:#666;
 }
 .chrome-tab:not(.active) .tab-title::after {
     content: "";
@@ -737,12 +745,13 @@ input[type="range"]::-webkit-slider-thumb {
     margin-left:10px;
 }
 #nav-buttons button, #nav-buttons a {
-    background:#444;
+    background:inherit;
     border:none;
     color:white;
     padding:5px 8px;
-    border-radius:6px;
+    border-radius:50%;
     cursor:pointer;
+    transition:0.3s all;
 }
 #nav-buttons button:hover, #nav-buttons a:hover {
     background:#555;
@@ -1184,6 +1193,10 @@ select {
 	border-radius: 6px;
     box-shadow:none;
 }
+#sj-address:hover {
+    background:#555;
+    color:#999;
+}
 #sj-address::placeholder {
     color:#888;
 }
@@ -1305,7 +1318,8 @@ table {
     border: none;
 }
 .tab-title {
-    max-width: 80px;
+    max-width: 100%;
+    width:100%;
     white-space: nowrap;
     overflow: hidden;
     position: relative;
@@ -1321,6 +1335,7 @@ table {
     pointer-events: none;
 }
 #tabs {
+    overflow:hidden;
     display: flex;
     align-items: center;
     background: #222;
