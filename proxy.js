@@ -265,8 +265,7 @@ async function loadIntoActiveTab(input) {
             const pageTitle = doc.title || getBaseDomain(input);
             const titleElement = tab.tabBtn.querySelector(".tab-title");
             titleElement.textContent = pageTitle;
-            tab.tabBtn.setAttribute("data-fulltitle", pageTitle);
-            tab.title = `${pageTitle}`;
+            tab.tabBtn.title = `${pageTitle}`;
             let icon = doc.querySelector("link[rel~='icon']");
             const faviconImg = tab.tabBtn.querySelector(".tab-favicon");
             if (icon && icon.href) {
@@ -281,7 +280,7 @@ async function loadIntoActiveTab(input) {
             const fallbackTitle = getBaseDomain(input);
             const titleElement = tab.tabBtn.querySelector(".tab-title");
             titleElement.textContent = fallbackTitle;
-            tab.tabBtn.setAttribute("data-fulltitle", fallbackTitle);
+            tab.tabBtn.title = `${fallbackTitle}`
         }
         createFullscreenButton();
     };

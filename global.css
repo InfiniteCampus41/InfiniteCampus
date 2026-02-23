@@ -196,20 +196,6 @@ body {
     margin-left: 8px;
     font-size: 14px;
 }
-.chrome-tab:hover::after {
-    content: attr(data-fulltitle);
-    position: absolute;
-    bottom: -28px;
-    left: 0;
-    background: #222;
-    color: white;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-    z-index: 9999;
-    pointer-events: none;
-}
 .chrome-tab:not(.active) .tab-title::after {
     content: "";
     position: absolute;
