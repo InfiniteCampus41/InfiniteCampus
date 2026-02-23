@@ -327,23 +327,29 @@ function getActiveTab() {
 }
 backBtn.addEventListener("click", () => {
     const tab = getActiveTab();
-    if (tab && tab.frame) {
+    if (tab && tab.frameObj) {
         showPxyLoader();
-        tab.frame.contentWindow.history.back();
+        try {
+            tab.frameObj.back();
+        } catch {}
     }
 });
 forwardBtn.addEventListener("click", () => {
     const tab = getActiveTab();
-    if (tab && tab.frame) {
+    if (tab && tab.frameObj) {
         showPxyLoader();
-        tab.frame.contentWindow.history.forward();
+        try {
+            tab.frameObj.forward();
+        } catch {}
     }
 });
 reloadBtn.addEventListener("click", () => {
     const tab = getActiveTab();
-    if (tab && tab.frame) {
+    if (tab && tab.frameObj) {
         showPxyLoader();
-        tab.frame.contentWindow.location.reload();
+        try {
+            tab.frameObj.reload();
+        } catch {}
     }
 });
 setRandomPhrase();
