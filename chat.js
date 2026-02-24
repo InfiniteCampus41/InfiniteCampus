@@ -189,8 +189,16 @@ mentionNotif.addEventListener("click", () => {
 function messageMentionsYou(text) {
     if (!text || !currentName) return false;
     const lowerMsg = text.toLowerCase();
-    const plain = currentName.toLowerCase().replace(" 💎", "");
-    return lowerMsg.includes(`@${plain}`) || lowerMsg.includes(`@${plain} 💎`);
+    const plain = currentName.toLowerCase().replace(" 💎","");
+    const normalMention =
+        lowerMsg.includes(`@${plain}`) ||
+        lowerMsg.includes(`@${plain} 💎`);
+    const supportMention =
+        lowerMsg.includes("@support") &&
+        currentPath &&
+        currentPath.startsWith("messages/") &&
+        (isDev || isOwner || isTester);
+    return normalMention || supportMention;
 }
 async function processChannelMentions(htmlText) {
     const channelRegex = /#([A-Za-z0-9_\-]+)/g;
@@ -305,8 +313,21 @@ async function renderMessageInstant(id, msg) {
     safeText = safeText.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
     safeText = safeText.replace(mentionRegex, (match, name) => {
-        const isSelfMention = currentName && (currentName.toLowerCase() === name.toLowerCase() ||
-            currentName.toLowerCase() === name.toLowerCase().replace(" 💎", ""));
+        const lower = name.toLowerCase();
+        if (
+            lower === "support" &&
+            currentPath &&
+            currentPath.startsWith("messages/") &&
+            (isDev || isOwner || isTester)
+        ) {
+            return `<span class="mention-self">@support</span>`;
+        }
+        const isSelfMention =
+            currentName &&
+            (
+                currentName.toLowerCase() === lower ||
+                currentName.toLowerCase() === lower.replace(" 💎","")
+            );
         const cls = isSelfMention ? "mention-self" : "mention";
         return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
     });
@@ -783,13 +804,13 @@ async function renderMessageInstant(id, msg) {
     try {
         const mentionedYou = messageMentionsYou(msg.text);
         if (mentionedYou && msg.sender !== currentUser.uid && mentionToggle.checked) {
+            const alreadyViewing =
+                currentPath &&
+                currentPath === `messages/${currentPath?.split("/")[1]}`;
             const mentionRef = ref(db, `metadata/${currentUser.uid}/mentions/${id}`);
             get(mentionRef).then((snapshot) => {
                 const data = snapshot.val();
                 if (!data || data.seen === false) {
-                    if (currentPath && currentPath.startsWith("messages/")) {
-                        const channelName = currentPath.split("/")[1];
-                    }
                     mentionNotif.style.display = "inline";
                     mentionNotif.dataset.msgid = id;
                     if (!data) {
@@ -800,12 +821,20 @@ async function renderMessageInstant(id, msg) {
                     }
                     (async () => {
                         const nm = await getDisplayName(msg.sender);
-                        mentionNotif.textContent = `You Were Mentioned By ${nm}!`;
+                        mentionNotif.textContent =
+                            `You Were Mentioned By ${nm}!`;
                         mentionNotif.animate(
-                            [{ opacity: 0 }, { opacity: 1 }, { opacity: 0.5 }, { opacity: 1 }],
+                            [
+                                { opacity: 0 },
+                                { opacity: 1 },
+                                { opacity: 0.5 },
+                                { opacity: 1 }
+                            ],
                             { duration: 1000 }
                         );
-                        playNotificationSound()
+                        if (!alreadyViewing) {
+                            playNotificationSound();
+                        }
                     })();
                 }
             });
@@ -1458,6 +1487,37 @@ chatInput.addEventListener("input", () => {
 });
 function renderMentionMenu(names) {
     mentionMenu.innerHTML = "";
+    const supportItem = document.createElement("div");
+    supportItem.className = "mention-item";
+    supportItem.style.padding = "5px 8px";
+    supportItem.style.cursor = "pointer";
+    supportItem.style.borderBottom = "1px solid rgb(51,51,51)";
+    supportItem.style.display = "flex";
+    supportItem.style.justifyContent = "space-between";
+    supportItem.style.alignItems = "center";
+    const left = document.createElement("span");
+    left.textContent = "@support";
+    const right = document.createElement("span");
+    right.textContent = "Request Support From Staff";
+    right.style.fontSize = "0.75em";
+    right.style.color = "#888";
+    supportItem.appendChild(left);
+    supportItem.appendChild(right);
+    supportItem.onmouseenter = () => supportItem.style.background = "#333";
+    supportItem.onmouseleave = () => supportItem.style.background = "transparent";
+    supportItem.onclick = () => {
+        const start = triggerIndex;
+        const end = chatInput.selectionStart;
+        const before = chatInput.value.substring(0, start);
+        const after = chatInput.value.substring(end);
+        const insert = "@support ";
+        chatInput.value = before + insert + after;
+        const newPos = before.length + insert.length;
+        chatInput.selectionStart = chatInput.selectionEnd = newPos;
+        mentionMenu.style.display = "none";
+        mentionActive = false;
+    };
+    mentionMenu.appendChild(supportItem);
     names.forEach(name => {
         const item = document.createElement("div");
         item.textContent = name;
