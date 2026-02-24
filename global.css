@@ -177,7 +177,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    overflow:hidden;
     max-width: 180px;
+    opacity:1;
     width:180px;
     padding: 6px 10px;
     margin-right: 4px;
@@ -186,7 +188,9 @@ body {
     cursor: pointer;
     position:relative;
     font-size: 14px;
+    transform:scale(1);
     color:white;
+    transition: width 0.25s ease, opacity 0.2s ease, transform 0.2s ease, margin 0.25s ease;
 }
 .chrome-tab.active {
     background: #444;
@@ -199,6 +203,12 @@ body {
     border-radius:50%;
     padding: 0px 3px;
     transition:0.3s all;
+}
+.chrome-tab.closing {
+    width: 0px;
+    opacity: 0;
+    transform: scale(0.8);
+    margin-right: 0px;
 }
 .chrome-tab.active .close-tab:hover {
     background:#777;
@@ -228,6 +238,12 @@ body {
 }
 .chrome-tab:not(:hover) .tab-title {
     text-overflow: clip;
+}
+.chrome-tab.opening {
+    width: 0px;
+    opacity: 0;
+    transform: scale(0.9);
+    margin-right: 0px;
 }
 .clock {
     box-sizing:initial;
@@ -1339,9 +1355,14 @@ table {
     color:white;
 }
 .tab-frame {
+    opacity:0;
+    transition: opacity 0.25s ease;
     width: 100%;
     height: calc(100vh - 140px);
     border: none;
+}
+.tab-frame.active-frame {
+    opacity: 1;
 }
 .tab-title {
     max-width: 100%;

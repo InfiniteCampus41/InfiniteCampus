@@ -87,13 +87,17 @@ newTabBtn.addEventListener("click", () => {
 function createTab(isNTP = false) {
     const id = "tab-" + (++tabCounter);
     const tabBtn = document.createElement("div");
-    tabBtn.className = "chrome-tab active";
+    tabBtn.className = "chrome-tab opening";
     tabBtn.innerHTML = `
         <img class="tab-favicon" src="" style="width:16px;height:16px;margin-right:6px;display:none;">
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
         <i class="bi bi-x close-tab" title="Close Tab"></i>
     `;
     tabsContainer.insertBefore(tabBtn, newTabBtn);
+    requestAnimationFrame(() => {
+        tabBtn.classList.remove("opening");
+        tabBtn.classList.add("active");
+    });
     let frame = null;
     let frameObj = null;
     if (!isNTP) {
@@ -142,7 +146,10 @@ function switchTab(id) {
     activeTabId = id;
     tabs.forEach(t => {
         if (t.frame) {
-            t.frame.style.display = "none";
+            t.frame.classList.remove("active-frame");
+            setTimeout(() => {
+                t.frame.style.display = "none";
+            }, 200);
         }
         t.tabBtn.classList.remove("active");
     });
@@ -155,7 +162,12 @@ function switchTab(id) {
         addressBar.value = '';
     } else {
         if (ntp) ntp.style.display = "none";
-        if (tab.frame) tab.frame.style.display = "block";
+        if (tab.frame) {
+            tab.frame.style.display = "block";
+            requestAnimationFrame(() => {
+                tab.frame.classList.add("active-frame");
+            });
+        }    
     }
     if (!tab.isNTP) {
         addressBar.value = tab.displayUrl || "";
@@ -195,11 +207,20 @@ function closeTab(id) {
     const index = tabs.findIndex(t => t.id === id);
     if (index === -1) return;
     const tab = tabs[index];
-    tab.tabBtn.remove();
-    if (tab.frame) {
-        tab.frame.remove();
-    }
-    tabs.splice(index, 1);
+    tab.tabBtn.classList.add("closing");
+    setTimeout(() => {
+        tab.tabBtn.remove();
+        if (tab.frame) {
+            tab.frame.remove();
+        }
+        tabs.splice(index, 1);
+        if (tabs.length === 0) {
+            createTab(true);
+        } else {
+            switchTab(tabs[Math.max(0, index - 1)].id);
+        }
+
+    }, 250);
     if (tabs.length === 0) {
         createTab(true);
     } else {
