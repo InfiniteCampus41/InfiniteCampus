@@ -367,7 +367,7 @@ async function fetchMessages(token = currentChannelToken) {
         return;
     }
     try {
-        const res = await fetch(`${apiMessagesUrl}?channelId=${channelId}`, {
+        const res = await adminFetch(`${apiMessagesUrl}?channelId=${channelId}`, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         if (!res.ok) {
@@ -422,7 +422,7 @@ document.getElementById('sendForm').addEventListener('submit', e=>{
     if(!name || !message) return;
     const tempLi = renderTempMessage(`${name}: ${message}`);
     document.getElementById('msgInput').value='';
-    fetch(`${backendUrl}/send`, {
+    adminFetch(`${backendUrl}/send`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({message:`${name}: ${message}`, channelId:currentChannelId})
@@ -466,7 +466,7 @@ uploadForm.addEventListener('submit', e=>{
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
     formData.append('channelId', currentChannelId);
-    fetch(`${backendUrl}/upload`, {
+    adminFetch(`${backendUrl}/upload`, {
         method:'POST',
         body:formData
     }).then(res=>{
