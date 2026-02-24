@@ -4,6 +4,7 @@ import { ref, push } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-da
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
+const pollParams = urlParams.get("poll");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
@@ -43,6 +44,8 @@ onAuthStateChanged(auth, (user) => {
             window.location.href = "InfiniteAccounts.html?chat=true";
         } else if (donParams) {
             window.location.href = "InfiniteAccounts.html?donate=true";
+        } else if (pollParams) {
+            window.location.href = "InfiniteAccounts.html?poll=true";
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
@@ -53,6 +56,8 @@ signup.addEventListener("click", () => {
         window.location.href = "InfiniteSignups.html?chat=true";
     } else if (donParams) {
         window.location.href = "InfiniteSignups.html?donate=true";
+    } else if (pollParams) {
+        window.location.href = "InfiniteSignups.html?poll=true";
     } else {
         window.location.href = "InfiniteSignups.html";
     }
@@ -70,8 +75,9 @@ async function handleLogin() {
             window.location.href = "InfiniteAccounts.html?chat=true";
         } else if (donParams) {
             window.location.href = "InfiniteAccounts.html?donate=true";
-        } 
-        else {
+        } else if (pollParams) {
+            window.location.href = "InfiniteAccounts.html?poll=true";
+        } else {
             window.location.href = "InfiniteAccounts.html"
         }
     } catch (error) {

@@ -167,7 +167,7 @@ function showPollResults() {
 }
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.href = 'InfiniteLogins.html';
+        window.location.href = 'InfiniteLogins.html?poll=true';
         return;
     }
     uid = user.uid;

@@ -332,14 +332,19 @@ if (mode) {
     const params = new URLSearchParams(window.location.search);
     const chaturl = params.get("chat");
     const donUrl = params.get("donate");
+    const pollUrl = params.get("poll");
     const donBtn = document.getElementById('donBtn');
     const adminBtn = document.getElementById('adminBtn');
     const chatBtn = document.getElementById('chatBtn');
+    const pollBtn = document.getElementById('pollBtn');
     if (donUrl) {
         donBtn.style.display = 'block';
     }
     if (chaturl) {
         chatBtn.style.display = 'block';
+    }
+    if (pollUrl) {
+        pollBtn.style.display = 'block';
     }
     let currentDisplay = "";
     window.appSettings = {

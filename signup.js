@@ -4,6 +4,7 @@ import { ref, set, update, get } from "https://www.gstatic.com/firebasejs/12.3.0
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
+const pollParams = urlParams.get("poll");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const signupBtn = document.getElementById("signupBtn");
@@ -22,6 +23,8 @@ onAuthStateChanged(auth, (user) => {
             window.location.href = "InfiniteAccounts.html?chat=true";
         } else if (donParams) {
             window.location.href = "InfiniteAccounts.html?donate=true";
+        } else if (pollParams) {
+            window.location.href = "InfiniteAccounts.html?poll=true";
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
@@ -61,6 +64,8 @@ loginBtn.addEventListener("click", async () => {
         window.location.href = "InfiniteLogins.html?chat=true";
     } else if (donParams) {
         window.location.href = "InfiniteLogins.html?donate=true";
+    } else if (pollParams) {
+        window.location.href = "InfiniteLogins.html?poll=true";
     } else {
         window.location.href = "InfiniteLogins.html";
     }
@@ -77,7 +82,7 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         return;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(displayName)) {
-        showError("Invalid Display Name. Use Only Letters, Numbers, Underscores, Or Dashes. (No Spaces)");
+        showError("Invalid Display Name. Use Only Letters, Numbers, Underscores, Or Dashes.");
         return;
     }
     try {
@@ -111,7 +116,9 @@ saveDisplayNameBtn.addEventListener("click", async () => {
         if (chatparams) {
             window.location.href = "InfiniteAccounts.html?chat=true";
         } else if(donParams) {
-            window.location.href = "InfiniteAccounts.html?donate=true"
+            window.location.href = "InfiniteAccounts.html?donate=true";
+        } else if (pollParams) {
+            window.location.href = "InfiniteAccounts.html?poll=true";
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
