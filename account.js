@@ -11,6 +11,7 @@ const uid = urlParams.get("user");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
+let profileImages = [];
 async function loadProfileImages() {
     try {
         const res = await fetch("/pfps/index.json");
