@@ -127,6 +127,11 @@ a {
     font-size: 15px;
     color: white;
 }
+blockquote{
+    border-left:3px solid #777;
+    padding-left:6px;
+    color:#bbb;
+}
 body {
     background-image:url('/res/bg.png');
 }
@@ -276,6 +281,12 @@ body {
     background:none;
     color:white;
 }
+.codeblock{
+    background:#1e1f22;
+    padding:8px;
+    border-radius:6px;
+    overflow:auto;
+}
 #confirmBtns {
     background:gold;
     color:black;
@@ -404,6 +415,16 @@ body {
     border:1px solid #444;
     border-bottom-left-radius: 15px;
     border-top-left-radius: 15px;
+}
+.embed{
+    margin-top:6px;
+}
+.embed-link{
+    margin-top:6px;
+    padding:6px;
+    border-left:3px solid #5865F2;
+    background:#2b2d31;
+    border-radius:4px;
 }
 #embFrame {
     width:100vw;
@@ -1328,6 +1349,16 @@ select {
     background: transparent;
     border-radius: 50%;
     opacity: 0.8;
+}
+.spoiler{
+    background:#444;
+    color:#444;
+    padding:2px 4px;
+    border-radius:4px;
+    cursor:pointer;
+}
+.spoiler.reveal{
+    color:white;
 }
 #stats button {
     color:white;

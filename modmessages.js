@@ -9,6 +9,17 @@ let displayedMessageIds = new Set();
 let currentChannelId = getSelectedChannelId();
 let currentChannelToken = Symbol();
 let currentReactMessageId = null;
+const requestQueue = [];
+let isProcessingQueue = false;
+const RATE_LIMIT_DELAY = 3000;
+const messageCache = new Map();
+const MESSAGE_CACHE_TTL = 10_000;
+const nameInput = document.getElementById('nameInput');
+const urlParams = new URLSearchParams(window.location.search);
+const channelParams = urlParams.get('channel');
+if (channelParams) {
+    document.getElementById('channelSelector').value = channelParams; 
+}
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 async function checkPermissions() {
     if (!isAuthInitialized) {
@@ -90,12 +101,6 @@ async function adminFetch(url, options = {}) {
     });
     return fetch(url, options);
 }
-const requestQueue = [];
-let isProcessingQueue = false;
-const RATE_LIMIT_DELAY = 3000;
-const messageCache = new Map();
-const MESSAGE_CACHE_TTL = 10_000;
-const nameInput = document.getElementById('nameInput');
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
     try {
@@ -109,7 +114,7 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
     } catch (error) {
-        console.error("Error Fetching Display Name:", error);
+        showError("Error Fetching Display Name:", error);
     }
 });
 async function processQueue() {
@@ -128,7 +133,9 @@ async function fetchWidget() {
 }
 fetchWidget();
 setInterval(fetchWidget, 30000);
-function getSelectedChannelId(){ return document.getElementById('channelSelector').value; }
+function getSelectedChannelId(){ 
+    return document.getElementById('channelSelector').value; 
+}
 function getStatusImage(status){
     switch(status){
         case 'online': return '/res/online.png';
@@ -168,15 +175,118 @@ function getChannelCache(channelId) {
     }
     return messageCache.get(channelId);
 }
+function parseDiscordMarkdown(text){
+    if(!text) return "";
+    let html = text
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/```([\s\S]*?)```/g,
+        '<pre class="codeblock">$1</pre>'
+    )
+    .replace(/`([^`]+)`/g,
+        '<code>$1</code>'
+    )
+    .replace(/^### (.*$)/gim,'<h3>$1</h3>')
+    .replace(/^## (.*$)/gim,'<h2>$1</h2>')
+    .replace(/^# (.*$)/gim,'<h1>$1</h1>')
+    .replace(/^-# (.*$)/gim,
+        '<span style="font-size:12px;color:#aaa">$1</span>'
+    )
+    .replace(/^>>> ([\s\S]*)/gim,
+        '<blockquote>$1</blockquote>'
+    )
+    .replace(/^> (.*$)/gim,
+        '<blockquote>$1</blockquote>'
+    )
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/__(.*?)__/g,'<u>$1</u>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/~~(.*?)~~/g,'<s>$1</s>')
+    .replace(/\|\|(.*?)\|\|/g,
+        '<span class="spoiler" onclick="this.classList.toggle(\'reveal\')">$1</span>'
+    )
+    .replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank">$1</a>'
+    )
+    .replace(/\n/g,"<br>");
+    return html;
+}
+function generateEmbeds(text){
+    if(!text) return "";
+    let embedHTML = "";
+    const urls = text.match(/https?:\/\/[^\s]+/g);
+    if(!urls) return "";
+    urls.forEach(url=>{
+        const yt = url.match(
+            /(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+        );
+        if(yt){
+            embedHTML += `
+            <div class="embed">
+                <iframe
+                width="350"
+                height="200"
+                src="https://www.youtube.com/embed/${yt[2]}"
+                frameborder="0"
+                allowfullscreen>
+                </iframe>
+            </div>
+            `;
+            return;
+        }
+        if(/\.(png|jpg|jpeg|gif|webp)$/i.test(url)){
+            embedHTML += `
+            <div class="embed">
+                <img src="${url}" style="max-width:350px;border-radius:6px;">
+            </div>
+            `;
+            return;
+        }
+        embedHTML += `
+        <div class="embed-link">
+            <a href="${url}" target="_blank">
+            ${url}
+            </a>
+        </div>
+        `;
+    });
+    return embedHTML;
+}
+function formatDiscordTimestamp(ts) {
+    const date = new Date(ts);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const messageDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((today - messageDay) / (1000 * 60 * 60 * 24));
+    const timeString = date.toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+    if (diffDays === 0) {
+        return timeString;
+    }
+    if (diffDays === 1) {
+        return `Yesterday at ${timeString}`;
+    }
+    return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
 async function renderMessage(msg, list){
     if(displayedMessageIds.has(msg.id)) return updateReactions(msg);
     const li = document.createElement('li');
     list.prepend(li);
     const avatarImg = document.createElement('img');
     avatarImg.classList.add('avatar');
-    avatarImg.src = msg.author.avatar
-        ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-        : `/res/discord.png`;
+    avatarImg.src = msg.author.avatar ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png` : `/res/discord.png`;
     li.appendChild(avatarImg);
     const contentDiv = document.createElement('div');
     contentDiv.classList.add('content');
@@ -185,7 +295,7 @@ async function renderMessage(msg, list){
     const displayName = msg.author.global_name || msg.author.username;
     const statusColor = getStatusFromWidget(displayName);
     const statusTitle = getStatusTitle(statusColor);
-    const timestamp = new Date(msg.timestamp).toLocaleString();
+    const timestamp = formatDiscordTimestamp(msg.timestamp);
     let contentWithMentions = msg.content || '';
     if(msg.mentions?.length){
         msg.mentions.forEach(u=>{
@@ -208,7 +318,10 @@ async function renderMessage(msg, list){
         <span style="margin-left:5px;color:#888;${serverTag?'border:1px solid white;border-radius:5px;padding:0 4px;':''}">${serverTag}</span>
         <img src="${getStatusImage(statusColor)}" title="${statusTitle}" style="width:16px;height:16px;margin-left:5px;vertical-align:middle;">
         ${replyHTML}
-        <div>${contentWithMentions}</div>
+        <div>
+            ${parseDiscordMarkdown(contentWithMentions)}
+            ${generateEmbeds(contentWithMentions)}
+        </div>    
     `;
     if(msg.attachments?.length){
         msg.attachments.forEach(att=>{
@@ -245,7 +358,10 @@ function updateReactions(msg){
     else li.querySelector('.content').insertAdjacentHTML('beforeend', reactionsHTML);
 }
 async function fetchMessages(token = currentChannelToken) {
-    const channelId = currentChannelId;
+    let channelId = currentChannelId;
+    if (channelParams) {
+        channelId = channelParams;
+    }
     const messagesList = document.getElementById('messages');
     const cache = getChannelCache(channelId);
     if (Date.now() - cache.lastFetch < MESSAGE_CACHE_TTL) {
@@ -258,7 +374,7 @@ async function fetchMessages(token = currentChannelToken) {
         return;
     }
     try {
-        const res = await adminFetch(`${apiMessagesUrl}?channelId=${channelId}`, {
+        const res = await fetch(`${apiMessagesUrl}?channelId=${channelId}`, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         if (!res.ok) {
@@ -313,7 +429,7 @@ document.getElementById('sendForm').addEventListener('submit', e=>{
     if(!name || !message) return;
     const tempLi = renderTempMessage(`${name}: ${message}`);
     document.getElementById('msgInput').value='';
-    adminFetch(`${backendUrl}/send`, {
+    fetch(`${backendUrl}/send`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({message:`${name}: ${message}`, channelId:currentChannelId})
@@ -357,7 +473,7 @@ uploadForm.addEventListener('submit', e=>{
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
     formData.append('channelId', currentChannelId);
-    adminFetch(`${backendUrl}/upload`, {
+    fetch(`${backendUrl}/upload`, {
         method:'POST',
         body:formData
     }).then(res=>{
