@@ -359,19 +359,25 @@ function updateClock() {
 setInterval(updateClock, 1000); 
 updateClock(); 
 let isGB = 0;
-let btMsg = 'hello';
+let btMsg = 'Hello';
 if ("getBattery" in navigator) {
     navigator.getBattery().then(function(battery) {
         function updateBattery() {
-            const batteryPer = Math.round(battery.level *100);
+            const batteryPer = Math.round(battery.level * 100);
             btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}%? Knew It`;
-            if (batteryPer <= 20 && isGB === 0 && battery.charging === false) {
+            if (batteryPer <= 20 && !battery.charging) {
                 btMsg = `Charge Your Device, Its At ${batteryPer}%`;
                 isGB = 1;
             }
-            if (battery.charging === true && isGB === 1) {
+            if (battery.charging && isGB === 1) {
                 btMsg = `Good Boy. Charging, ${batteryPer}%`;
                 isGB = 0;
+            }
+            const phraseEl = document.getElementById("phrase");
+            if (phraseEl.textContent.includes("Charge Your Device") ||
+                phraseEl.textContent.includes("Battery Percentage") ||
+                phraseEl.textContent.includes("Charging")) {
+                phraseEl.textContent = btMsg;
             }
         }
         updateBattery();
