@@ -791,6 +791,24 @@ if (mode) {
             showError("Failed To Send Verification Email: " + err.message);
         }
     });
+    async function loadUserProfilePic(uid) {
+        try {
+            const snap = await get(ref(db, `users/${uid}/profile/pic`));
+            let picIndex = 0;
+            if (snap.exists()) {
+                picIndex = snap.val();
+            }
+            if (!profileImages || profileImages.length === 0) {
+                profileImages = await loadProfileImages();
+            }
+            const imgSrc = profileImages[picIndex] || profileImages[0] || "/pfps/1.jpeg";
+            panelPic.src = imgSrc;
+            setSetting("pic", imgSrc);
+        } catch (err) {
+            console.error("Failed To Load Profile Picture:", err);
+            panelPic.src = "/pfps/1.jpeg";
+        }
+    }
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
