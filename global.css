@@ -1374,7 +1374,6 @@ table {
     color:white;
 }
 .tab-frame {
-    opacity:0;
     transition: opacity 0.25s ease;
     width: 100%;
     height: calc(100vh - 140px);
