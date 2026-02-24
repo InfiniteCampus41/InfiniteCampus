@@ -342,12 +342,12 @@ let btMsg = 'hello';
 navigator.getBattery().then(function(battery) {
     function updateBattery() {
         const batteryPer = Math.round(battery.level *100);
-        let btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}? Knew It`;
+        btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}? Knew It`;
         if (batteryPer <= 20) {
             btMsg = `Charge Ur Device, Its At ${batteryPer}%`;
             isGB = 1;
         }
-        if ((battery.charging = true) && isGB == 1) {
+        if (battery.charging === true && isGB === 1) {
             btMsg = `Good Boy. Charging, ${batteryPer}%`;
             isGB = 0;
         }
@@ -355,32 +355,33 @@ navigator.getBattery().then(function(battery) {
     updateBattery();
     battery.addEventListener("levelchange", updateBattery);
     battery.addEventListener("chargingchange", updateBattery);
+    setRandomPhrase();
 });
 const hosturl = window.location.host;
-const phrases = [ 
-    "Made By Hacker41", 
-    "AAAAAAAAAAAAAAAAAAAA", 
-    "The Teacher's Bane", 
-    "Enemy Of The Principal", 
-    "Diddiling Other Proxies", 
-    "What The Sigma!?", 
-    "[Insert Joke Here]", 
-    "JESSE We Need To Cook NOW", 
-    "Please Speed I Need This", 
-    "Speed, I Am Formerly Requesting Aid Of The Finacial Form, As My Mother Has No Humble Abode", 
-    "Kachow - Lightning McQueen", 
-    "Dont Believe Everything You See On The Internet - Abraham Lincoln",
-    "When You Can't Even Say My Name",
-    "Has The Memory Gone? Are You Feeling Numb?",
-    "Go On And Call, My Name",
-    `Greetings, Person On ${hosturl}`,
-    "Loading Virus.exe",
-    "Nitrix67 Likes Men",
-    "Life Is A Highway",
-    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    `${btMsg}`
-]; 
 function setRandomPhrase() { 
+    const phrases = [ 
+        "Made By Hacker41", 
+        "AAAAAAAAAAAAAAAAAAAA", 
+        "The Teacher's Bane", 
+        "Enemy Of The Principal", 
+        "Diddiling Other Proxies", 
+        "What The Sigma!?", 
+        "[Insert Joke Here]", 
+        "JESSE We Need To Cook NOW", 
+        "Please Speed I Need This", 
+        "Speed, I Am Formerly Requesting Aid Of The Finacial Form, As My Mother Has No Humble Abode", 
+        "Kachow - Lightning McQueen", 
+        "Dont Believe Everything You See On The Internet - Abraham Lincoln",
+        "When You Can't Even Say My Name",
+        "Has The Memory Gone? Are You Feeling Numb?",
+        "Go On And Call, My Name",
+        `Greetings, Person On ${hosturl}`,
+        "Loading Virus.exe",
+        "Nitrix67 Likes Men",
+        "Life Is A Highway",
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        `${btMsg}`
+    ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 
 } 
@@ -414,6 +415,7 @@ reloadBtn.addEventListener("click", () => {
         } catch {}
     }
 });
+updateBattery();
 setRandomPhrase();
 document.querySelectorAll("#pxyApps div").forEach(app => {
     app.addEventListener("click", async () => {
