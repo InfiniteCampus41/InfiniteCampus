@@ -336,8 +336,8 @@ if (mode) {
     hoverOverlay.style.position = "absolute";
     hoverOverlay.style.top = "0";
     hoverOverlay.style.left = "0";
-    hoverOverlay.style.width = "100%";
-    hoverOverlay.style.height = "100%";
+    hoverOverlay.style.width = "100px";
+    hoverOverlay.style.height = "100px";
     hoverOverlay.style.borderRadius = "50%";
     hoverOverlay.style.background = "rgba(111,111,111,0.6)";
     hoverOverlay.style.display = "flex";
