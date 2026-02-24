@@ -61,7 +61,7 @@ async function verifyAdminPassword() {
             localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
-        const entered = prompt("Enter Admin Password:");
+        const entered = await customPrompt("Enter Admin Password:", true);
         if (!entered) continue;
         ADMIN_PASS = entered.trim();
         try {

@@ -49,7 +49,7 @@ async function verifyAdminPassword() {
             localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
-        const entered = prompt("Enter Admin Password:");
+        const entered = await customPrompt("Enter Admin Password:", true);
         if (!entered) continue;
         ADMIN_PASS = entered.trim();
         try {
@@ -164,27 +164,32 @@ async function updateSizesFromListApply() {
 async function deleteApply(filename) {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
-    if (!confirm("Delete " + filename + "?")) return;
-    const res = await adminFetch(BACKEND + "/api/delete_apply_x9a7b2", {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true"
-        },
-        body: JSON.stringify({ filename })
-    });
-    const data = await res.json();
-    if (data.ok) {
-        showSuccess("Deleted.");
-        loadApply();
-    } else {
-        showError("Failed: " + data.message);
-    }
+    showConfirm("Delete" + filename + "?", function(result) {
+        if (result) {
+            const res = adminFetch(BACKEND + "/api/delete_apply_x9a7b2", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ filename })
+            });
+            const data = res.json();
+            if (data.ok) {
+                showSuccess("Deleted.");
+                loadApply();
+            } else {
+                showError("Failed: " + data.message);
+            }
+        } else {
+            showSuccess("Canceled");
+        }
+    })
 }
 async function acceptFile(filename) {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
-    const newName = prompt("Enter Name:", filename.replace(".mp4", ""));
+    const newName = await customPrompt("Enter Name:", filename.replace(".mp4", ""));
     if (!newName) return;
     startProgressPolling(filename);
     const lg = document.getElementById("logs");

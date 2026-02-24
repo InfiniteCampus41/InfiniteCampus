@@ -62,7 +62,7 @@ async function verifyAdminPassword() {
             localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
-        const entered = prompt("Enter Admin Password:");
+        const entered = await customPrompt("Enter Admin Password:", true);
         if (!entered) continue;
         ADMIN_PASS = entered.trim();
         try {
@@ -114,13 +114,18 @@ async function fetchFiles() {
 }
 async function deleteFile(filename) {
     if (!await checkPermissions()) return;
-    if (!confirm(`Delete ${filename}?`)) return;
-    const res = await adminFetch(`${a}/admin/files/${encodeURIComponent(filename)}`, {
-        method: "DELETE",
-        headers: NGROK_HEADERS
-    });
-    if (res.ok) fetchFiles();
-    else showError("Failed To Delete File");
+    showConfirm(`Delete ${filename}?`, function(result) {
+        if (result) {
+            const res = adminFetch(`${a}/admin/files/${encodeURIComponent(filename)}`, {
+                method: "DELETE",
+                headers: NGROK_HEADERS
+            });
+            if (res.ok) fetchFiles();
+            else showError("Failed To Delete File");
+        } else {
+            showSuccess("Canceled");
+        }
+    })
 }
 async function downloadFile(filename) {
     if (!await checkPermissions()) return;

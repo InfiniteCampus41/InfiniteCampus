@@ -454,9 +454,13 @@ async function clearPlaylistAndDB() {
 }
 els.btnClear = document.getElementById('btnClear');
 els.btnClear.addEventListener('click', () => {
-    if (confirm("Are You Sure You Want To Clear The Playlist?")) {
-        clearPlaylistAndDB();
-    }
+    showConfirm("Are You Sure You Want To Clear The Playlist?", function(result) {
+        if (result) {
+            clearPlaylistAndDB();
+        } else {
+            showSuccess("Canceled");
+        }
+    })
 });
 (async function init() {
     await openDB();

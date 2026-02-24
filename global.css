@@ -254,6 +254,19 @@ body {
     background:none;
     color:white;
 }
+#confirmBtns {
+    background:gold;
+    color:black;
+    border:1px solid red;
+    border-radius:20px;
+    transition:0.3s all;
+}
+#confirmBtns:hover {
+    background:darkgoldenrod;
+    color:#444;
+    border:1px solid darkred;
+    border-radius:20px;
+}
 .contactme {
     border:1px solid black;
     border-radius:7px;

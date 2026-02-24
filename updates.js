@@ -59,7 +59,7 @@ function deleteUpdate(key) {
 }
 function editUpdate(key, currentText) {
   	if (!isOwner && !isTester && !isDev) return;
-  	const newText = prompt("Edit Update:", currentText);
+  	const newText = customPrompt("Edit Update:", false, currentText);
   	if (newText !== null && newText.trim() !== "") {
     	update(ref(db, "updates/" + key), {
       		content: newText.trim()

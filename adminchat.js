@@ -87,14 +87,19 @@ async function logMutedUsers() {
             unmuteBtn.title = `Unmute ${nameVal}`;
             unmuteBtn.textContent = "Unmute";
             unmuteBtn.onclick = async () => {
-                if (!confirm(`Unmute ${nameVal}?`)) return;
-                try {
-                    await remove(ref(db, `mutedUsers/${uid}`));
-                    showSuccess(`${nameVal} Was Unmuted`);
-                    userDiv.remove();
-                } catch (err) {
-                    showError("Failed To Unmute: " + err.message);
-                }
+                showConfirm(`Unmute ${nameVal}?`, function(result) {
+                    if (result) {
+                        try {
+                            remove(ref(db, `mutedUsers/${uid}`));
+                            showSuccess(`${nameVal} Was Unmuted`);
+                            userDiv.remove();
+                        } catch (err) {
+                            showError("Failed To Unmute: " + err.message);
+                        }
+                    } else {
+                        showSuccess("Canceled");
+                    }
+                })
             };
             userDiv.appendChild(header);
             userDiv.appendChild(desc);
@@ -392,16 +397,21 @@ function renderUnverifiedViewer() {
     verifyBtn.style.cursor = "pointer";
     verifyBtn.onclick = async () => {
         if (hasSettingsDisplayName || missingEmail) {
-            if (!confirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`)) return;
-        }
-        try {
-            await set(ref(db, `users/${uid}/profile/verified`), true);
-            showSuccess("User Verified.");
-            unverifiedUsers.splice(unverifiedIndex, 1);
-            if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
-            renderUnverifiedViewer();
-        } catch (err) {
-            showError("Failed To Verify User: " + err.message);
+            showConfirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`, function(result) {
+                if (result) {
+                    try {
+                        set(ref(db, `users/${uid}/profile/verified`), true);
+                        showSuccess("User Verified.");
+                        unverifiedUsers.splice(unverifiedIndex, 1);
+                        if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
+                        renderUnverifiedViewer();
+                    } catch (err) {
+                        showError("Failed To Verify User: " + err.message);
+                    }
+                } else {
+                    showSuccess("Canceled");
+                }
+            })
         }
     };
     btnArea.appendChild(verifyBtn);
@@ -409,15 +419,20 @@ function renderUnverifiedViewer() {
     deleteBtn.textContent = "Delete";
     deleteBtn.classList = "btn btn-secondary";
     deleteBtn.onclick = async () => {
-        if (!confirm(`Delete User "${uid}" And All Their Data?`)) return;
-        try {
-            await deleteEntireUser(uid);
-            unverifiedUsers.splice(unverifiedIndex, 1);
-            if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
-            renderUnverifiedViewer();
-        } catch (err) {
-            showError("Failed To Delete User: " + err.message);
-        }
+        showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+            if (result) {
+                try {
+                    deleteEntireUser(uid);
+                    unverifiedUsers.splice(unverifiedIndex, 1);
+                    if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
+                    renderUnverifiedViewer();
+                } catch (err) {
+                    showError("Delete Failed: " + err.message);
+                }  
+            } else {
+                showSuccess("Canceled");
+            }
+        })
     };
     btnArea.appendChild(deleteBtn);
     const nextBtn = document.createElement("button");
@@ -432,15 +447,22 @@ function renderUnverifiedViewer() {
         extraDelete.classList = "btn btn-secondary";
         extraDelete.style.cursor = "pointer";
         extraDelete.onclick = async () => {
-            if (!confirm(`Delete User "${uid}" And All Their Data?`)) return;
-            try {
-                await deleteEntireUser(uid);
-                unverifiedUsers.splice(unverifiedIndex, 1);
-                if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
-                renderUnverifiedViewer();
-            } catch (err) {
-                showError("Delete Failed: " + err.message);
-            }
+            if (
+                showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+                    if (result) {
+                        try {
+                            deleteEntireUser(uid);
+                            unverifiedUsers.splice(unverifiedIndex, 1);
+                            if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
+                            renderUnverifiedViewer();
+                        } catch (err) {
+                            showError("Delete Failed: " + err.message);
+                        }  
+                    } else {
+                        showSuccess("Canceled");
+                    }
+                })
+            ) return;
         };
         btnArea.appendChild(extraDelete);
     }
@@ -448,13 +470,18 @@ function renderUnverifiedViewer() {
 }
 if (deleteTypingBtn) {
     deleteTypingBtn.onclick = async () => {
-        if (!confirm("Delete Typing Users?")) return;
-        try {
-            await remove(ref(db, "typing"));
-            showSuccess("Done");
-        } catch (err) {
-            showError("Failed To Delete: " + err.message);
-        }
+        showConfirm("Delete Typing Data?", function(result) {
+            if (result) {
+                try {
+                    remove(ref(db, "typing"));
+                    showSuccess("Done");
+                } catch (err) {
+                    showError("Failed To Delete: " + err.message);
+                }            
+            } else {
+                showSuccess("Canceled");
+            }
+        });
     };
 }
 onAuthStateChanged(auth, async (user) => {
@@ -467,18 +494,21 @@ onAuthStateChanged(auth, async (user) => {
     const ownerRef = ref(db, `users/${uid}/profile/isOwner`);
     const testerRef = ref(db, `users/${uid}/profile/isTester`);
     const coOwnerRef = ref(db, `users/${uid}/profile/isCoOwner`);
+    const hAdminRef = ref(db, `users/${uid}/profile/isHAdmin`);
     const ownerSnap = await get(ownerRef);
     const testerSnap = await get(testerRef);
     const coOwnerSnap = await get(coOwnerRef);
+    const hAdminSnap = await get(hAdminRef);
     let isOwner = ownerSnap.exists() && ownerSnap.val() === true;
     let isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
     let isTester = testerSnap.exists() && testerSnap.val() === true;
-    if (!isOwner && !isCoOwner && !isTester) {
+    let isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
+    if (!isOwner && !isCoOwner && !isTester && !isHAdmin) {
         showError("Access Denied. You Are Not An Approved User.");
         window.location.href = "InfiniteChatters.html";
         return;
     }
-    if (isCoOwner && !isOwner && !isTester) {
+    if (isCoOwner || isHAdmin && !isOwner && !isTester) {
         userListDiv.style.display = "none";
         userEditDiv.style.display = "none";
         privateChatsDiv.style.display = "none";
@@ -645,21 +675,28 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
 }
 deleteChatBtn.onclick = async () => {
     if (!currentChatPath) return;
-    if (!confirm("Delete This Entire Private Chat And Metadata?")) return;
-    const parts = currentChatPath.split("/");
-    const uid = parts[1];
-    const secondUid = parts[2];
-    try {
-        await remove(ref(db, `private/${uid}/${secondUid}`));
-        await remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
-        await remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
-        showSuccess("Chat And Metadata Deleted.");
-        chatView.style.display = "none";
-        privateChatsDiv.style.display = "block";
-        loadPrivateChats();
-    } catch (err) {
-        showError("Error Deleting Chat: " + err.message);
-    }
+    if (
+        showConfirm("Delete This Entire Private Chat And Metadata?", function(result) {
+            if (result) {
+                const parts = currentChatPath.split("/");
+                const uid = parts[1];
+                const secondUid = parts[2];
+                try {
+                    remove(ref(db, `private/${uid}/${secondUid}`));
+                    remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
+                    remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
+                    showSuccess("Chat And Metadata Deleted.");
+                    chatView.style.display = "none";
+                    privateChatsDiv.style.display = "block";
+                    loadPrivateChats();
+                } catch (err) {
+                    showError("Error Deleting Chat: " + err.message);
+                }            
+            } else {
+                showSuccess("Canceled");
+            }
+        })
+    ) return;
 };
 backButton.onclick = () => {
     chatView.style.display = "none";
@@ -745,70 +782,73 @@ function editUser(uid, data) {
     userEditDiv.appendChild(delBtn);
 }
 async function deleteEntireUser(uid) {
-    if (!confirm(`Delete User "${uid}" And All Their Data?\nThis Cannot Be Undone.`)) {
-    	return;
-	}
-  	try {
-    	const privateRef = ref(db, "private");
-    	const privateSnap = await get(privateRef);
-    	if (privateSnap.exists()) {
-      		const allPrivate = privateSnap.val();
-      		for (const userA in allPrivate) {
-        		for (const userB in allPrivate[userA]) {
-          			if (userA === uid || userB === uid) {
-            			await remove(ref(db, `private/${userA}/${userB}`));
-          			}
-        		}
-      		}
-    	}
-    	await remove(ref(db, `metadata/${uid}/privateChats`));
-    	const metadataSnap = await get(ref(db, "metadata"));
-    	if (metadataSnap.exists()) {
-      		const allMeta = metadataSnap.val();
-      		for (const otherUID in allMeta) {
-        		if (allMeta[otherUID]?.privateChats?.[uid]) {
-          			await remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
-        		}
-      		}
-    	}
-    	const privateRef2 = ref(db, "private");
-    	const privateSnap2 = await get(privateRef2);
-    	if (privateSnap2.exists()) {
-      		const allPrivate2 = privateSnap2.val();
-      		for (const userA in allPrivate2) {
-        		for (const userB in allPrivate2[userA]) {
-          			const chatPath = `private/${userA}/${userB}`;
-          			const msgs = allPrivate2[userA][userB];
-          			for (const msgId in msgs) {
-            			if (msgs[msgId].sender === uid) {
-              				await remove(ref(db, `${chatPath}/${msgId}`));
-            			}
-          			}
-        		}
-      		}
-    	}
-    	const messagesRef = ref(db, "messages");
-    	const messagesSnap = await get(messagesRef);
-    	if (messagesSnap.exists()) {
-      		const allChannels = messagesSnap.val();
-      		for (const channelName in allChannels) {
-        		const channelMsgs = allChannels[channelName];
-       			for (const msgId in channelMsgs) {
-          			if (channelMsgs[msgId]?.sender === uid) {
-            			await remove(ref(db, `messages/${channelName}/${msgId}`));
-          			}
-        		}
-      		}
-    	}
-    	await remove(ref(db, `users/${uid}`));
-    	showSuccess(`User "${uid}" Deleted Successfully`);
-    	userEditDiv.style.display = "none";
-    	userListDiv.style.display = "block";
-    	loadUserList();
-    	loadPrivateChats();
-  	} catch (err) {
-    	showError("User Delete Failed: " + err.message);
-  	}
+    showConfirm(`Delete User "${uid}" And All Their Data?\n This Cannot Be Undone.`, function(result) {
+        if (result) {
+            try {
+    	        const privateRef = ref(db, "private");
+    	        const privateSnap = get(privateRef);
+    	        if (privateSnap.exists()) {
+      		        const allPrivate = privateSnap.val();
+      		        for (const userA in allPrivate) {
+        		        for (const userB in allPrivate[userA]) {
+          			        if (userA === uid || userB === uid) {
+            			        remove(ref(db, `private/${userA}/${userB}`));
+          			        }
+        		        }
+      		        }
+    	        }
+    	        remove(ref(db, `metadata/${uid}/privateChats`));
+    	        const metadataSnap = get(ref(db, "metadata"));
+    	        if (metadataSnap.exists()) {
+      		        const allMeta = metadataSnap.val();
+      		        for (const otherUID in allMeta) {
+        		        if (allMeta[otherUID]?.privateChats?.[uid]) {
+          			        remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
+        		        }
+      		        }
+    	        }
+    	        const privateRef2 = ref(db, "private");
+    	        const privateSnap2 = get(privateRef2);
+    	        if (privateSnap2.exists()) {
+      		        const allPrivate2 = privateSnap2.val();
+      		        for (const userA in allPrivate2) {
+        		        for (const userB in allPrivate2[userA]) {
+          			        const chatPath = `private/${userA}/${userB}`;
+          			        const msgs = allPrivate2[userA][userB];
+          			        for (const msgId in msgs) {
+            			        if (msgs[msgId].sender === uid) {
+              				        remove(ref(db, `${chatPath}/${msgId}`));
+            			        }
+          			        }
+        		        }
+      		        }
+    	        }
+    	        const messagesRef = ref(db, "messages");
+    	        const messagesSnap = get(messagesRef);
+    	        if (messagesSnap.exists()) {
+      		        const allChannels = messagesSnap.val();
+      		        for (const channelName in allChannels) {
+        		        const channelMsgs = allChannels[channelName];
+       			        for (const msgId in channelMsgs) {
+          			        if (channelMsgs[msgId]?.sender === uid) {
+            			        remove(ref(db, `messages/${channelName}/${msgId}`));
+          			        }
+        		        }
+      		        }
+    	        }
+    	        remove(ref(db, `users/${uid}`));
+    	        showSuccess(`User "${uid}" Deleted Successfully`);
+    	        userEditDiv.style.display = "none";
+    	        userListDiv.style.display = "block";
+    	        loadUserList();
+    	        loadPrivateChats();
+  	        } catch (err) {
+    	        showError("User Delete Failed: " + err.message);
+  	        }
+        } else {
+            showSuccess("Canceled");
+        }
+    })
 }
 saveUserBtn.onclick = async () => {
     if (!currentUserEditUID) return;

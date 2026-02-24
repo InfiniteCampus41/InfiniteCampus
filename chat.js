@@ -292,7 +292,7 @@ async function renderMessageInstant(id, msg) {
     const textDiv = document.createElement("div");
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.marginLeft = "40px";
-    textDiv.style.marginTop = "-15px";
+    textDiv.style.marginTop = "-7px";
     let safeText = (msg.text || "");
     safeText = safeText
         .replace(/&/g, "&amp;")
@@ -449,11 +449,10 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, badgeSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, guessSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, guessSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
-                get(ref(db, `users/${msg.sender}/settings/badgeText`)),
                 get(ref(db, `users/${msg.sender}/profile/isAdmin`)),
                 get(ref(db, `users/${msg.sender}/profile/isOwner`)),
                 get(ref(db, `users/${msg.sender}/profile/isCoOwner`)),
@@ -477,7 +476,6 @@ async function renderMessageInstant(id, msg) {
             const color = colorSnap.exists() ? colorSnap.val() : "#4fa3ff";
             let badgeText = null;
             const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
-            const senderIsDev = devSnap.exists() ? devSnap.val() : false;
             const senderIsSus = susSnap.exists() ? susSnap.val() : false;
             const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
             const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
@@ -489,7 +487,6 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsCoOwner) badgeText = "COWNR";
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
-            else if (senderIsDev) badgeText = "Developer";
             const picVal = picSnap.exists() ? picSnap.val() : 0;
             const picIndex = (picVal >= 0 && picVal <= 13) ? picVal : 0;
             profilePic.src = profilePics[picIndex];
@@ -544,7 +541,7 @@ async function renderMessageInstant(id, msg) {
                         muteMinutes.textContent = "Minutes";
                         muteMinutes.style.cursor = "pointer";
                         muteMinutes.onclick = async () => {
-                            let minutes = prompt("Mute For How Many Minutes?", "5");
+                            let minutes = await customPrompt("Mute For How Many Minutes?", false, "5");
                             minutes = parseInt(minutes);
                             if (!isNaN(minutes) && minutes > 0) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
@@ -560,7 +557,7 @@ async function renderMessageInstant(id, msg) {
                         muteHours.textContent = "Hours";
                         muteHours.style.cursor = "pointer";
                         muteHours.onclick = async () => {
-                            let hours = prompt("Mute For How Many Hours?", "1");
+                            let hours = await customPrompt("Mute For How Many Hours?", false, "1");
                             hours = parseInt(hours);
                             if (!isNaN(hours) && hours > 0) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
@@ -576,7 +573,7 @@ async function renderMessageInstant(id, msg) {
                         muteDays.textContent = "Days";
                         muteDays.style.cursor = "pointer";
                         muteDays.onclick = async () => {
-                            let days = prompt("Mute For How Many Days?", "1");
+                            let days = await customPrompt("Mute For How Many Days?", false, "1");
                             days = parseInt(days);
                             if (!isNaN(days) && days > 0) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
@@ -628,11 +625,15 @@ async function renderMessageInstant(id, msg) {
                 badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
                 badgeSpan.style.color = "dodgerblue";
                 badgeSpan.title = "Admin";
-            } else if (badgeText === "Developer" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="bi bi-code-square"></i>';
-                badgeSpan.style.color = "green";
-                badgeSpan.title = "This User Is A Developer For Infinitecampus.xyz";
             } else {
+            }
+            if (devSnap.exists() && devSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-code-square";
+                icon.style.color = "green";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is A Developer For Infinitecampus.xyz`;
+                badgeSpan.appendChild(icon);
             }
             if (pre3Snap.exists() && pre3Snap.val() === true) {
                 const icon = document.createElement("i");
@@ -814,6 +815,42 @@ async function renderMessageInstant(id, msg) {
     }
     return div;
 }
+async function showChannelMentionMenu() {
+    if (!mentionMenu) return;
+    const snap = await get(ref(db, "channels"));
+    const channels = snap.exists() ? Object.keys(snap.val()).sort() : [];
+    mentionMenu.innerHTML = "";
+    mentionMenu.style.display = "block";
+    channels.forEach(ch => {
+        if (isRestrictedChannel(ch) &&
+            !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre2 || isPre3)
+        ) return;
+        const item = document.createElement("div");
+        item.className = "mention-item";
+        item.style.padding = "5px 8px";
+        item.style.cursor = "pointer";
+        item.style.borderBottom = "1px solid rgb(51,51,51)";
+        item.textContent = "#" + ch;
+        item.onmouseenter = () => item.style.background = "#333";
+        item.onmouseleave = () => item.style.background = "transparent";
+        item.onclick = () => {
+            autocompleteMention(name);
+        };
+        item.onclick = () => {
+            const start = triggerIndex;
+            const end = chatInput.selectionStart;
+            const before = chatInput.value.substring(0, start);
+            const after = chatInput.value.substring(end);
+            const insert = "#" + ch + " ";
+            chatInput.value = before + insert + after;
+            const newPos = before.length + insert.length;
+            chatInput.selectionStart = chatInput.selectionEnd = newPos;
+            mentionMenu.style.display = "none";
+            mentionActive = false;
+        };
+        mentionMenu.appendChild(item);
+    });
+}
 async function cleanExpiredMutes() {
     const mutedRef = ref(db, 'mutedUsers');
     const snap = await get(mutedRef);
@@ -992,8 +1029,14 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
         closeBtn.textContent = "X";
         closeBtn.onclick = async (e) => {
             e.stopPropagation();
-            if (!confirm("Close This Private Chat? Messages Will Still Be Saved")) return;
-            await remove(ref(db, `metadata/${currentUser.uid}/privateChats/${otherUid}`));
+            showConfirm("Close This Private Chat? Messages Will Still Be Saved", function(result) {
+                if (result) {
+                    remove(ref(db, `metadata/${currentUser.uid}/privateChats/${otherUid}`));
+                    showSuccess("Chat Closed");
+                } else {
+                    showSuccess("Canceled");
+                }
+            })
         };
         li.appendChild(closeBtn);
         li.onclick = () => openPrivateChat(otherUid, name);
@@ -1037,7 +1080,7 @@ async function renderChannelsFromDB() {
             renameBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
             renameBtn.onclick = async (e) => {
                 e.stopPropagation();
-                const newName = prompt("Rename Channel:", ch);
+                const newName = await customPrompt("Rename Channel:", false, ch);
                 if (newName && newName.trim() && newName !== ch) {
                     try {
                         const channelSnap = await get(ref(db, `channels/${ch}`));
@@ -1060,10 +1103,15 @@ async function renderChannelsFromDB() {
             delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
             delBtn.onclick = async (e) => {
                 e.stopPropagation();
-                if (confirm(`Delete Channel ${ch}? This Will Remove All Messages.`)) {
-                    await remove(ref(db, `channels/${ch}`));
-                    await remove(ref(db, `messages/${ch}`));
-                }
+                showConfirm(`Delete Channel ${ch}? This Will Remove All Messages.`, function(result) {
+                    if (result) {
+                        remove(ref(db, `channels/${ch}`));
+                        remove(ref(db, `messages/${ch}`));
+                        showSuccess("Channel Deleted");
+                    } else {
+                        showSuccess("Canceled");
+                    }
+                })
             };
             btnWrap.appendChild(renameBtn);
             btnWrap.appendChild(delBtn);
@@ -1198,6 +1246,12 @@ chatInput.addEventListener("keydown", (e) => {
             e.preventDefault();
             sendBtn.click();
         }
+    } else if (e.key === "#") {
+        triggerIndex = chatInput.selectionStart;
+        mentionActive = true;
+        setTimeout(() => {
+            showChannelMentionMenu();
+        }, 0);
     } else if (e.key === "Tab") {
         if (currentPrivateUid && currentPrivateName) {
             e.preventDefault();

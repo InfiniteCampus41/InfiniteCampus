@@ -24,7 +24,7 @@ async function verifyAdminPassword() {
             localStorage.removeItem("a_pass");
             ADMIN_PASS = null;
         }
-        const entered = prompt("Enter Admin Password:");
+        const entered = await customPrompt("Enter Admin Password:", true);
         if (!entered) continue;
         ADMIN_PASS = entered.trim();
         try {
@@ -160,13 +160,18 @@ async function deleteUrl(url) {
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
-    if (!confirm("Delete This URL?")) return;
-    await adminFetch("/edit-urls/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
-        body: JSON.stringify({ url })
-    });
-    fetchUrls();
+    showConfirm("Delete This URL?", function(result) {
+        if (result) {
+            adminFetch("/edit-urls/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
+                body: JSON.stringify({ url })
+            });
+            fetchUrls();
+        } else {
+            showSuccess("Canceled");
+        }
+    })
 }
 async function fetchLogs() {
     const user = auth.currentUser;
