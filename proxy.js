@@ -415,7 +415,6 @@ reloadBtn.addEventListener("click", () => {
         } catch {}
     }
 });
-updateBattery();
 setRandomPhrase();
 document.querySelectorAll("#pxyApps div").forEach(app => {
     app.addEventListener("click", async () => {
