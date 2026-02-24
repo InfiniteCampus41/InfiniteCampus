@@ -57,9 +57,9 @@ function deleteUpdate(key) {
   	remove(ref(db, "updates/" + key));
   	if (lastSentKey === key) lastSentKey = null;
 }
-function editUpdate(key, currentText) {
+async function editUpdate(key, currentText) {
   	if (!isOwner && !isTester && !isDev) return;
-  	const newText = customPrompt("Edit Update:", false, currentText);
+  	const newText = await customPrompt("Edit Update:", false, currentText);
   	if (newText !== null && newText.trim() !== "") {
     	update(ref(db, "updates/" + key), {
       		content: newText.trim()

@@ -257,6 +257,9 @@ function customPrompt(message, hidden = false, value) {
         const text = document.createElement("div");
         text.textContent = message;
         text.style.marginBottom = "10px";
+        const div = document.createElement("div");
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
         const input = document.createElement("input");
         input.type = hidden ? "password" : "text";
         input.style.borderRadius = "10px";
@@ -269,9 +272,11 @@ function customPrompt(message, hidden = false, value) {
         input.style.marginBottom = "10px";
         const okBtn = document.createElement("button");
         okBtn.textContent = "Ok";
+        okBtn.id = "cuPromptBtns";
         okBtn.style.marginRight = "10px";
         const cancelBtn = document.createElement("button");
         cancelBtn.textContent = "Cancel";
+        cancelBtn.id = "cuPromptBtns";
         okBtn.onclick = () => {
             resolve(input.value);
             overlay.remove();
@@ -288,8 +293,9 @@ function customPrompt(message, hidden = false, value) {
         });
         box.appendChild(text);
         box.appendChild(input);
-        box.appendChild(cancelBtn);
-        box.appendChild(okBtn);
+        div.appendChild(cancelBtn);
+        div.appendChild(okBtn);
+        box.appendChild(div);
         overlay.appendChild(box);
         document.body.appendChild(overlay);
         input.focus();
