@@ -360,24 +360,26 @@ setInterval(updateClock, 1000);
 updateClock(); 
 let isGB = 0;
 let btMsg = 'hello';
-navigator.getBattery().then(function(battery) {
-    function updateBattery() {
-        const batteryPer = Math.round(battery.level *100);
-        btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}%? Knew It`;
-        if (batteryPer <= 20 && isGB === 0 && battery.charging === false) {
-            btMsg = `Charge Your Device, Its At ${batteryPer}%`;
-            isGB = 1;
+if ("getBattery" in navigator) {
+    navigator.getBattery().then(function(battery) {
+        function updateBattery() {
+            const batteryPer = Math.round(battery.level *100);
+            btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}%? Knew It`;
+            if (batteryPer <= 20 && isGB === 0 && battery.charging === false) {
+                btMsg = `Charge Your Device, Its At ${batteryPer}%`;
+                isGB = 1;
+            }
+            if (battery.charging === true && isGB === 1) {
+                btMsg = `Good Boy. Charging, ${batteryPer}%`;
+                isGB = 0;
+            }
         }
-        if (battery.charging === true && isGB === 1) {
-            btMsg = `Good Boy. Charging, ${batteryPer}%`;
-            isGB = 0;
-        }
-    }
-    updateBattery();
-    battery.addEventListener("levelchange", updateBattery);
-    battery.addEventListener("chargingchange", updateBattery);
-    setRandomPhrase();
-});
+        updateBattery();
+        battery.addEventListener("levelchange", updateBattery);
+        battery.addEventListener("chargingchange", updateBattery);
+        setRandomPhrase();
+    });
+}
 const hosturl = window.location.host;
 function setRandomPhrase() { 
     const phrases = [ 
