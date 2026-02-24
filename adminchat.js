@@ -24,22 +24,18 @@ let currentUserEditUID = null;
 let userProfiles = {};
 let userSettings = {};
 let activeChatListener = null;
-const profilePics = [
-    "/pfps/1.jpeg",
-    "/pfps/2.jpeg",
-    "/pfps/3.jpeg",
-    "/pfps/4.jpeg",
-    "/pfps/5.jpeg",
-    "/pfps/6.jpeg",
-    "/pfps/7.jpeg",
-    "/pfps/8.jpeg",
-    "/pfps/9.jpeg",
-    "/pfps/10.jpeg",
-    "/pfps/11.jpeg",
-    "/pfps/12.jpeg",
-    "/pfps/13.jpeg",
-    "/pfps/14.jpeg"
-];
+let profilePics = [];
+async function loadProfilePics() {
+    try {
+        const res = await fetch("/pfps/index.json");
+        const files = await res.json();
+        profilePics = files.map(f => `/pfps/${f}`);
+        console.log("Loaded profile pics:", profilePics);
+    } catch (err) {
+        console.error("Failed to load profile pics:", err);
+        profilePics = ["/pfps/1.jpeg"];
+    }
+}
 async function logMutedUsers() {
     try {
         const snapshot = await get(ref(db, "mutedUsers"));
@@ -495,6 +491,7 @@ if (deleteTypingBtn) {
     };
 }
 onAuthStateChanged(auth, async (user) => {
+    await loadProfilePics();
     if (!user) {
         showError("You Must Be Logged In To View This Page.");
         window.location.href = "InfiniteChatters.html";

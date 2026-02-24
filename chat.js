@@ -274,22 +274,18 @@ async function renderMessageInstant(id, msg) {
     profilePic.style.border = "2px solid white";
     profilePic.style.objectFit = "cover";
     profilePic.style.cursor = "pointer";
-    const profilePics = [
-        "/pfps/1.jpeg",
-        "/pfps/2.jpeg",
-        "/pfps/3.jpeg",
-        "/pfps/4.jpeg",
-        "/pfps/5.jpeg",
-        "/pfps/6.jpeg",
-        "/pfps/7.jpeg",
-        "/pfps/8.jpeg",
-        "/pfps/9.jpeg",
-        "/pfps/10.jpeg",
-        "/pfps/11.jpeg",
-        "/pfps/12.jpeg",
-        "/pfps/13.jpeg",
-        "/pfps/14.jpeg"
-    ];
+    let profilePics = [];
+    async function loadProfilePics() {
+        try {
+            const res = await fetch("/pfps/index.json");
+            const files = await res.json();
+            profilePics = files.map(file => `/pfps/${file}`);
+        } catch (e) {
+            console.error("Failed To Load Profile Pics:", e);
+            profilePics = ["/pfps/1.jpeg"];
+        }
+    }
+    await loadProfilePics();
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
     const timeSpan = document.createElement("span");
@@ -509,7 +505,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsHAdmin) badgeText = "HADMIN";
             else if (senderIsAdmin) badgeText = "ADMN";
             const picVal = picSnap.exists() ? picSnap.val() : 0;
-            const picIndex = (picVal >= 0 && picVal <= 13) ? picVal : 0;
+            const picIndex = (picVal >= 0 && picVal < profilePics.length) ? picVal : 0;
             profilePic.src = profilePics[picIndex];
             nameSpan.textContent = displayName;
             nameSpan.style.color = color;
@@ -1414,22 +1410,18 @@ onAuthStateChanged(auth, async user => {
     usernameSpan.style.color = DNC;
     const pfpSnap = await get(ref(db, `users/${user.uid}/profile/pic`));
     const pfpIndex = pfpSnap.exists() ? pfpSnap.val() : 0;
-    const profilePics = [
-        "/pfps/1.jpeg",
-        "/pfps/2.jpeg",
-        "/pfps/3.jpeg",
-        "/pfps/4.jpeg",
-        "/pfps/5.jpeg",
-        "/pfps/6.jpeg",
-        "/pfps/7.jpeg",
-        "/pfps/8.jpeg",
-        "/pfps/9.jpeg",
-        "/pfps/10.jpeg",
-        "/pfps/11.jpeg",
-        "/pfps/12.jpeg",
-        "/pfps/13.jpeg",
-        "/pfps/14.jpeg"
-    ];
+    let profilePics = [];
+    async function loadProfilePics() {
+        try {
+            const res = await fetch("/pfps/index.json");
+            const files = await res.json();
+            profilePics = files.map(file => `/pfps/${file}`);
+        } catch (e) {
+            console.error("Failed To Load Profile Pics:", e);
+            profilePics = ["/pfps/1.jpeg"];
+        }
+    }
+    await loadProfilePics();
     const sidebarPfp = document.getElementById("sidebarPfp");
     if (sidebarPfp) {
         sidebarPfp.src = profilePics[pfpIndex];

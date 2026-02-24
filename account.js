@@ -11,6 +11,16 @@ const uid = urlParams.get("user");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
+async function loadProfileImages() {
+    try {
+        const res = await fetch("/pfps/index.json");
+        const files = await res.json();
+        return files.map(f => "/pfps/" + f);
+    } catch (e) {
+        console.error("Failed To Load Profile Images:", e);
+        return ["/pfps/1.jpeg"];
+    }
+}
 if (mode) {
     authcontainer.style.display = 'block';
     settingsPage.style.display = 'none';
@@ -190,22 +200,7 @@ if (mode) {
         	const bio = foundUser.profile?.bio || "No Bio Set.";
         	const email = foundUser.settings?.userEmail || "(No Email Set)";
         	const picValue = foundUser.profile?.pic ?? 0;
-        	const profileImages = [
-          		"/pfps/1.jpeg",
-          		"/pfps/2.jpeg",
-          		"/pfps/3.jpeg",
-          		"/pfps/4.jpeg",
-          		"/pfps/5.jpeg",
-          		"/pfps/6.jpeg",
-          		"/pfps/7.jpeg",
-          		"/pfps/8.jpeg",
-          		"/pfps/9.jpeg",
-          		"/pfps/10.jpeg",
-          		"/pfps/11.jpeg",
-          		"/pfps/12.jpeg",
-          		"/pfps/13.jpeg", 
-         		"/pfps/14.jpeg"
-        	];
+        	const profileImages = await loadProfileImages();
         	const imgSrc = profileImages[picValue] || profileImages[0];
         	loadingEl.style.display = "none";
         	errorEl.style.display = "none";
@@ -328,6 +323,145 @@ if (mode) {
     panelPic.style.width = '100px';
     panelPic.style.border = '1px solid white';
     panelPic.style.borderRadius = '50%';
+    let selectedFile = null;
+    let removeRequested = false;
+    let currentServerPicUrl = null;
+    const pfpWrapper = document.createElement("div");
+    pfpWrapper.style.position = "relative";
+    pfpWrapper.style.display = "inline-block";
+    panelPic.parentNode.insertBefore(pfpWrapper, panelPic);
+    pfpWrapper.appendChild(panelPic);
+    const hoverOverlay = document.createElement("div");
+    hoverOverlay.style.position = "absolute";
+    hoverOverlay.style.top = "0";
+    hoverOverlay.style.left = "0";
+    hoverOverlay.style.width = "100%";
+    hoverOverlay.style.height = "100%";
+    hoverOverlay.style.borderRadius = "50%";
+    hoverOverlay.style.background = "rgba(111,111,111,0.6)";
+    hoverOverlay.style.display = "flex";
+    hoverOverlay.style.alignItems = "center";
+    hoverOverlay.style.justifyContent = "center";
+    hoverOverlay.style.opacity = "0";
+    hoverOverlay.style.cursor = "pointer";
+    hoverOverlay.style.transition = "0.2s";
+    hoverOverlay.innerHTML = `<i class="bi bi-pencil-fill" style="color:white;font-size:24px;"></i>`;
+    pfpWrapper.appendChild(hoverOverlay);
+    pfpWrapper.addEventListener("mouseenter", () => {
+        hoverOverlay.style.opacity = "1";
+    });
+    pfpWrapper.addEventListener("mouseleave", () => {
+        hoverOverlay.style.opacity = "0";
+    });
+    const pfpModalBg = document.createElement("div");
+    pfpModalBg.style.position = "fixed";
+    pfpModalBg.style.top = "0";
+    pfpModalBg.style.left = "0";
+    pfpModalBg.style.width = "100%";
+    pfpModalBg.style.height = "100%";
+    pfpModalBg.style.background = "rgba(0,0,0,0.8)";
+    pfpModalBg.style.display = "none";
+    pfpModalBg.style.alignItems = "center";
+    pfpModalBg.style.justifyContent = "center";
+    pfpModalBg.style.zIndex = "9999";
+    document.body.appendChild(pfpModalBg);
+    const pfpModal = document.createElement("div");
+    pfpModal.style.background = "#111";
+    pfpModal.style.padding = "30px";
+    pfpModal.style.borderRadius = "10px";
+    pfpModal.style.textAlign = "center";
+    pfpModal.style.width = "300px";
+    pfpModalBg.appendChild(pfpModal);
+    const previewImg = document.createElement("img");
+    previewImg.style.width = "120px";
+    previewImg.style.height = "120px";
+    previewImg.style.borderRadius = "50%";
+    previewImg.style.objectFit = "cover";
+    previewImg.style.marginBottom = "20px";
+    pfpModal.appendChild(previewImg);
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.style.display = "none";
+    pfpModal.appendChild(fileInput);
+    const uploadBtn = document.createElement("button");
+    uploadBtn.className = "btn btn-primary";
+    uploadBtn.textContent = "Upload";
+    uploadBtn.style.display = "block";
+    uploadBtn.style.margin = "10px auto";
+    pfpModal.appendChild(uploadBtn);
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "btn btn-danger";
+    removeBtn.textContent = "Remove";
+    removeBtn.style.display = "block";
+    removeBtn.style.margin = "10px auto";
+    pfpModal.appendChild(removeBtn);
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn btn-success";
+    saveBtn.textContent = "Save Changes";
+    saveBtn.style.display = "block";
+    saveBtn.style.margin = "20px auto 0";
+    pfpModal.appendChild(saveBtn);
+    hoverOverlay.addEventListener("click", () => {
+        previewImg.src = panelPic.src;
+        selectedFile = null;
+        removeRequested = false;
+        pfpModalBg.style.display = "flex";
+    });
+    pfpModalBg.addEventListener("click", (e) => {
+        if (e.target === pfpModalBg) {
+            pfpModalBg.style.display = "none";
+        }
+    });
+    uploadBtn.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        selectedFile = file;
+        removeRequested = false;
+        const reader = new FileReader();
+        reader.onload = () => {
+            previewImg.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    };
+    removeBtn.onclick = () => {
+        selectedFile = null;
+        removeRequested = true;
+        previewImg.src = "/pfps/1.jpeg";
+    };
+    saveBtn.onclick = async () => {
+        if (!currentUser) return;
+        try {
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append("file", selectedFile);
+                formData.append("uid", currentUser.uid);
+                const res = await fetch(`${a}/upload-pfp`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    showError("Upload Failed");
+                    return;
+                }
+                const newUrl = "/pfps/" + data.file;
+                panelPic.src = newUrl;
+                currentServerPicUrl = newUrl;
+                showSuccess("Profile Picture Updated!");
+            }
+            if (removeRequested) {
+                await set(ref(db, `users/${currentUser.uid}/profile/pic`), 0);
+                panelPic.src = "/pfps/1.jpeg";
+                showSuccess("Profile Picture Removed!");
+            }
+            pfpModalBg.style.display = "none";
+        } catch (err) {
+            console.error(err);
+            showError("Failed To Save Picture");
+        }
+    };
     const userpanel = document.getElementById('userpanel');
     const params = new URLSearchParams(window.location.search);
     const chaturl = params.get("chat");
@@ -630,54 +764,6 @@ if (mode) {
             disInput.value = disInput.value.slice(0, 50);
         }
     });
-    const profilePicBtn = document.createElement("button");
-    profilePicBtn.className = "btn btn-secondary";
-    profilePicBtn.textContent = "Loading Picture";
-    const profileImages = [
-        "/pfps/1.jpeg",
-        "/pfps/2.jpeg",
-        "/pfps/3.jpeg",
-        "/pfps/4.jpeg",
-        "/pfps/5.jpeg",
-        "/pfps/6.jpeg",
-        "/pfps/7.jpeg",
-        "/pfps/8.jpeg",
-        "/pfps/9.jpeg",
-        "/pfps/10.jpeg",
-        "/pfps/11.jpeg",
-        "/pfps/12.jpeg",
-        "/pfps/13.jpeg",
-        "/pfps/14.jpeg"
-    ];
-    const restrictedPics = [6, 7, 8, 9];
-    let currentPicIndex = 0;
-    function updateProfilePicButton() {
-        const img = profileImages[currentPicIndex];
-        profilePicBtn.innerHTML = `<img src="${img}" style="width:50px;height:50px;border-radius:50%;vertical-align:middle;margin-right:10px;border:1px solid white"> Change Picture`;
-    }
-    async function loadUserProfilePic(uid) {
-        const picRef = ref(db, `users/${uid}/profile/pic`);
-        const snap = await get(picRef);
-        if (snap.exists()) {
-            const picIndex = snap.val();
-            if (typeof picIndex === "number" && picIndex >= 0 && picIndex < profileImages.length) {
-                currentPicIndex = picIndex;
-                setSetting("pic", profileImages[currentPicIndex]);
-            }
-        }
-        updateProfilePicButton();
-    }
-    profilePicBtn.addEventListener("click", async () => {
-        if (!currentUser) return;
-        let nextIndex = currentPicIndex;
-        do {
-            nextIndex = (nextIndex + 1) % profileImages.length;
-        } while (restrictedPics.includes(nextIndex));
-        currentPicIndex = nextIndex;
-        updateProfilePicButton();
-        await set(ref(db, `users/${currentUser.uid}/profile/pic`), currentPicIndex);
-        setSetting("pic", profileImages[currentPicIndex]);
-    });
     resetPasswordBtn.addEventListener("click", async () => {
         const email = currentUser?.email;
         if (!email) return showError("No Email Found. Please Log In Again.");
@@ -730,9 +816,9 @@ if (mode) {
             await loadDisplayName(user.uid);
             await loadUserBio(user.uid);
             await loadUserDis(user.uid);
+            profileImages = await loadProfileImages();
             await loadUserProfilePic(user.uid);
             const profilePicContainer = document.getElementById("profileContainer");
-            profilePicContainer.appendChild(profilePicBtn);
             onValue(ref(db, `users/${user.uid}/profile`), snap => {
                 if (snap.exists()) {
                     const profile = snap.val();
