@@ -514,7 +514,7 @@ if (mode) {
     let currentBio = "";
     function autoResizeBio() {
         bioInput.style.height = "auto";
-        bioInput.style.height = bioInput.scrollHeight + "px";
+        bioInput.style.height = "52px";
     }
     async function loadUserBio(uid) {
         const bioRef = ref(db, `users/${uid}/profile/bio`);
@@ -524,6 +524,7 @@ if (mode) {
             setSetting("bio", currentBio);
             bioInput.value = currentBio;
             bioInput.style.color = "white";
+            autoResizeBio();
         } else {
             bioInput.value = "";
             bioInput.placeholder = "Enter Bio Here";

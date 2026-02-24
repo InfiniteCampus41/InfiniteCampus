@@ -1,6 +1,6 @@
 const params = new URLSearchParams(window.location.search);
 const choice = params.get("choice");
-const iframe = document.getElementById('frame');
+const iframe = document.getElementById('embFrame');
 const tptxt = document.getElementById('rpbgtxt');
 const hr = document.getElementById('rphr');
 const cEmbBtn = document.getElementById('cEmbBtn');
@@ -17,6 +17,7 @@ if (choice == 1) {
     iframe.src = 'https://docs.google.com/forms/d/e/1FAIpQLSfcgIrELDOk41dsNC_CmCBfT8dLCidiYC_ZBB9F1kfO_cuNKg/viewform?embedded=true';
     iframe.width = '640';
     iframe.height = '852';
+    iframe.style.height = "calc(100vh - ((var(--headerHeight) * 2) + var(--footerHeight)))";
     iframe.frameborder = '0';
     iframe.marginheight = '0';
     iframe.marginwidth = '0';

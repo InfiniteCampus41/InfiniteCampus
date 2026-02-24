@@ -61,70 +61,72 @@
         </style>
     </head>
     <body>
-        <center>
-            <h1 class="tptxt" style="margin:0;">
-                Movie Streaming Service
-            </h1>
-            <hr>
-            <h6 style="display:none" class="btxt" id="currentFile">
-            </h6>
-            <br>
-            <div class="section" id="before">
-                <h3 class="mdtxt">
-                    Submit A Movie
-                </h3>
-                <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t,.mkv,video/x-matroska">
-                <label for="applyFile" type="file" class="button">
-                    Upload A File
-                </label>
-                <div id="selectedFileName" style="margin-top:5px;color:#ff0;">
-                </div>
-                <button class="button" onclick="uploadApply()">
-                    Upload
-                </button>
-                <div id="progressContainer" style="display:none; text-align:left;">
-                    <div id="progressBar" style="height: 20px; width: 0%; background: #4caf50;">
+        <main>
+            <center>
+                <h1 class="tptxt" style="margin:0;">
+                    Movie Streaming Service
+                </h1>
+                <hr>
+                <h6 style="display:none" class="btxt" id="currentFile">
+                </h6>
+                <br>
+                <div class="section" id="before">
+                    <h3 class="mdtxt">
+                        Submit A Movie
+                    </h3>
+                    <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t,.mkv,video/x-matroska">
+                    <label for="applyFile" type="file" class="button">
+                        Upload A File
+                    </label>
+                    <div id="selectedFileName" style="margin-top:5px;color:#ff0;">
+                    </div>
+                    <button class="button" onclick="uploadApply()">
+                        Upload
+                    </button>
+                    <div id="progressContainer" style="display:none; text-align:left;">
+                        <div id="progressBar" style="height: 20px; width: 0%; background: #4caf50;">
+                        </div>
+                    </div>
+                    <div id="progressPercent" style="margin-top: 8px; font-weight: bold; text-align:center;">
+                    </div>
+                    <div id="uploadingText" style="text-align:center; margin-top:5px; opacity:0.8;">
+                    </div>
+                    <div id="upload-status">
                     </div>
                 </div>
-                <div id="progressPercent" style="margin-top: 8px; font-weight: bold; text-align:center;">
-                </div>
-                <div id="uploadingText" style="text-align:center; margin-top:5px; opacity:0.8;">
-                </div>
-                <div id="upload-status">
-                </div>
-            </div>
-            <div class="section" id="section">
-                <h2>
-                    Available Movies
-                </h2>
-                <input class="button" id="search" placeholder="Search Movies" autocomplete="off" oninput="filterMovies()">
-                <button class="button" onclick="loadMovies()">
-                    Reload List
-                </button>
-                <div id="movies">
-                </div>
-            </div>
-            <br>
-            <br>
-            <br>
-            <div id="watchPanel">
-                <button class="button" id="backBtn" class="button" onclick="closeWatchPanel()">
-                    Back
-                </button>
-                <video id="watchVideo" controls>
-                </video>
-                <div id="networkWarning">
-                    Slow Network Detected
+                <div class="section" id="section">
+                    <h2>
+                        Available Movies
+                    </h2>
+                    <input class="button" id="search" placeholder="Search Movies" autocomplete="off" oninput="filterMovies()">
+                    <button class="button" onclick="loadMovies()">
+                        Reload List
+                    </button>
+                    <div id="movies">
+                    </div>
                 </div>
                 <br>
                 <br>
                 <br>
-                <br>
-                <br>
-                <br>
-                <br>
-            </div>
-        </center>
+                <div id="watchPanel">
+                    <button class="button" id="backBtn" class="button" onclick="closeWatchPanel()">
+                        Back
+                    </button>
+                    <video id="watchVideo" controls>
+                    </video>
+                    <div id="networkWarning">
+                        Slow Network Detected
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                </div>
+            </center>
+        </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="movies.js">

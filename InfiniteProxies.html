@@ -45,77 +45,79 @@
         </script>
 	</head>
 	<body>
-        <div id="proxy">
-            <div id="topbar">
-                <div id="tabs">
-                </div>
-                <div id="pxySearch">
-                    <div id="nav-buttons">
-                        <button title="Back" type="button" id="nav-back">
-                            <i class="bi bi-arrow-left">
-                            </i>
-                        </button>
-                        <button title="Forward" type="button" id="nav-forward">
-                            <i class="bi bi-arrow-right">
-                            </i>
-                        </button>
-                        <button title="Reload" type="button" id="nav-reload">
-                            <i class="bi bi-arrow-clockwise">
-                            </i>
-                        </button>
+        <main>
+            <div id="proxy">
+                <div id="topbar">
+                    <div id="tabs">
                     </div>
-                    <form id="sj-form">
-                        <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
-                        <input id="sj-address" type="text" placeholder="Search Or Type Url Here">
-                    </form>
-                    <div id="nav-buttons">
-                        <a title="Use Old Proxy" href="InfiniteOldProxies.html">
-                            <i class="bi bi-archive">
-                            </i>
-                        </a>
+                    <div id="pxySearch">
+                        <div id="nav-buttons">
+                            <button title="Back" type="button" id="nav-back">
+                                <i class="bi bi-arrow-left">
+                                </i>
+                            </button>
+                            <button title="Forward" type="button" id="nav-forward">
+                                <i class="bi bi-arrow-right">
+                                </i>
+                            </button>
+                            <button title="Reload" type="button" id="nav-reload">
+                                <i class="bi bi-arrow-clockwise">
+                                </i>
+                            </button>
+                        </div>
+                        <form id="sj-form">
+                            <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
+                            <input id="sj-address" type="text" placeholder="Search Or Type Url Here">
+                        </form>
+                        <div id="nav-buttons">
+                            <a title="Use Old Proxy" href="InfiniteOldProxies.html">
+                                <i class="bi bi-archive">
+                                </i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div id="content">
-                <div id="ntp">
-					<h1 class="tptxt">
-						Infinite Campus Browser
-					</h1>
-					<hr style="margin:0;width:75%;">
-					<br>
-                    <div id="pxyClock">
-                        <span id="pxyTime">
-                        </span>
+                <div id="content">
+                    <div id="ntp">
+                        <h1 class="tptxt">
+                            Infinite Campus Browser
+                        </h1>
+                        <hr style="margin:0;width:75%;">
                         <br>
-                        <p id="pxyDate">
-                        </p>
-                    </div>
-                    <div id="phrase">
-                    </div>
-					<hr class="szo2" style="margin:0">
-                    <div id="pxyApps">
-                        <div data-url="https://chatgpt.com">
-                            <img src="/res/chatgpt.png" alt="ChatGPT">
-                            <p class="btxt">
-                                ChatGPT
+                        <div id="pxyClock">
+                            <span id="pxyTime">
+                            </span>
+                            <br>
+                            <p id="pxyDate">
                             </p>
                         </div>
-                        <div data-url="https://discord.com">
-                            <img src="/res/discord.png" alt="Discord">
-                            <p class="btxt">
-                                Discord
-                            </p>
+                        <div id="phrase">
                         </div>
-                        <div data-url="https://youtube.com">
-                            <img src="/res/youtube.png" alt="Youtube">
-                            <p class="btxt">
-                                Youtube
-                            </p>
+                        <hr class="szo2" style="margin:0">
+                        <div id="pxyApps">
+                            <div data-url="https://chatgpt.com">
+                                <img src="/res/chatgpt.png" alt="ChatGPT">
+                                <p class="btxt">
+                                    ChatGPT
+                                </p>
+                            </div>
+                            <div data-url="https://discord.com">
+                                <img src="/res/discord.png" alt="Discord">
+                                <p class="btxt">
+                                    Discord
+                                </p>
+                            </div>
+                            <div data-url="https://youtube.com">
+                                <img src="/res/youtube.png" alt="Youtube">
+                                <p class="btxt">
+                                    Youtube
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="frame.js">

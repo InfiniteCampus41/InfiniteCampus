@@ -39,45 +39,47 @@
         </script>
     </head>
     <body>
-        <center>
-            <h1 class="tptxt">
-                Server Management Console
-            </h1>
-            <hr>
-            <br>
-            <div id="logs" style="white-space: pre-wrap; margin-bottom: 10px; border:1px solid white; border-radius:7px; max-height:200px; padding:10px; max-height:200px; overflow-y:auto; color:#0f0;">
-            </div>
-            <button class="button" id="lockdownBtn">
-                Lockdown
-            </button>
-            <button class="button" id="lockdowndisc">
-                Lockdown Discord
-            </button>
-            <table id="fileTable">
-                <thead>
-                    <tr>
-                        <th>
-                            #
-                        </th>
-                        <th>
-                            Name
-                        </th>
-                        <th>
-                            Size
-                        </th>
-                        <th>
-                            Remaining
-                        </th>
-                        <th>
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <br>
-            <br>
-        </center>
+        <main>
+            <center>
+                <h1 class="tptxt">
+                    Server Management Console
+                </h1>
+                <hr>
+                <br>
+                <div id="logs" style="white-space: pre-wrap; margin-bottom: 10px; border:1px solid white; border-radius:7px; max-height:200px; padding:10px; max-height:200px; overflow-y:auto; color:#0f0;">
+                </div>
+                <button class="button" id="lockdownBtn">
+                    Lockdown
+                </button>
+                <button class="button" id="lockdowndisc">
+                    Lockdown Discord
+                </button>
+                <table id="fileTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                #
+                            </th>
+                            <th>
+                                Name
+                            </th>
+                            <th>
+                                Size
+                            </th>
+                            <th>
+                                Remaining
+                            </th>
+                            <th>
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <br>
+                <br>
+            </center>
+        </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script type="module" src="adminserver.js">

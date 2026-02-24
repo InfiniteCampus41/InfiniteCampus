@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const launchButton = document.getElementById("launchGames");
     const launch2 = document.getElementById("launchGames2");
     const OfficialSites = ['infinitecampus.xyz', 'www.infinitecampus.xyz', 'instructure.space'];
+    const main = document.body.querySelector("main");
     if (OfficialSites.includes(window.location.host)) {
         launch2.textContent = 'Games (Method 2)';
     } else {
@@ -150,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.flexWrap = "wrap";
             container.style.justifyContent = "center";
             container.style.gap = "10px";
-            document.body.appendChild(container);
+            main.appendChild(container);
         }
         if (method == "1") {
             games.forEach(function (game) {
@@ -178,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.padding = "10px";
                         backButton.style.fontSize = "16px";
                         backButton.style.cursor = "pointer";
-                        document.body.appendChild(backButton);
+                        main.appendChild(backButton);
                         const fullscreen = document.createElement("button");
                         fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
@@ -189,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         fullscreen.style.padding = "10px";
                         fullscreen.style.fontSize = "16px";
                         fullscreen.style.cursor = "pointer";
-                        document.body.appendChild(fullscreen);
+                        main.appendChild(fullscreen);
                         const addressInput = document.getElementById("sj-address");
                         if (addressInput) {
                             addressInput.value = game.url;
@@ -268,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.padding = "10px";
                         backButton.style.fontSize = "16px";
                         backButton.style.cursor = "pointer";
-                        document.body.appendChild(backButton);
+                        main.appendChild(backButton);
                         const fullscreen = document.createElement("button");
                         fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
@@ -279,13 +280,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         fullscreen.style.padding = "10px";
                         fullscreen.style.fontSize = "16px";
                         fullscreen.style.cursor = "pointer";
-                        document.body.appendChild(fullscreen);
+                        main.appendChild(fullscreen);
                         const iframe = document.createElement("iframe");
                         iframe.id = "gameFrame";
                         iframe.style.width = "100vw";
-                        iframe.style.height = "85vh";
+                        iframe.style.height = "calc(100vh - (var(--headerHeight) + var(--footerHeight)))";
                         iframe.src = game.url;
-                        document.body.appendChild(iframe);
+                        main.appendChild(iframe);
                         fullscreen.onclick = function () {
                             const iframe = document.getElementById("gameFrame");
                             if (!iframe) return;

@@ -51,84 +51,84 @@
         </style>
     </head>
     <body>
-        <center>
-            <h1 class="tptxt">
-                Live Discord Chat
-            </h1>
-            <hr>
-            <br>
-            <p class="btxt" id="presenceCount">
-                Loading Presence Count...
-            </p>
-            <br>
-            <select id="channelSelector" class="button">
-                <option value="1309160050904006696">
-                    General
-                </option>
-                <option value="1334376148087603294">
-                    Rules
-                </option>
-                <option value="1334376903179767860">
-                    Information
-                </option>
-                <option value="1334377094876237918">
-                    Announcements
-                </option>
-                <option value="1334377158789042226">
-                    Suggestions
-                </option>
-                <option value="1464689808717774970">
-                    Request Movie
-                </option>
-                <option value="1334377258609147967">
-                    Events
-                </option>
-                <option value="1389334335114580229">
-                    Website Support
-                </option>
-                <option value="1389703415810101308">
-                    Direct Website Updates
-                </option>
-                <option value="1309164699417448550">
-                    Memes
-                </option>
-                <option value="1007051892821594183">
-                    Advertisements
-                </option>
-                <option value="1086362556203028540">
-                    Gaming
-                </option>
-                <option value="1334945403912720586">
-                    Report A Bug
-                </option>
-                <option value="1390991482650886215">
-                    Bot Commands
-                </option>
-            </select>
-            <form id="sendForm">
-                <input class="button" type="text" id="nameInput" placeholder="Your Name" required />
+        <main>
+            <center>
+                <h1 class="tptxt">
+                    Live Discord Chat
+                </h1>
+                <hr>
                 <br>
-                <input class="button" type="text" id="msgInput" placeholder="Type Your Message" required />
+                <p class="btxt" id="presenceCount">
+                    Loading Presence Count...
+                </p>
                 <br>
-                <button class="button" type="submit">
-                    Send
-                </button>
-            </form>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <label class="button" for="fileInput" id="fileLabel">
-                    Select A File
-                </label>
-                <br>
-                <input type="file" id="fileInput" style="display:none;" name="file" accept="image/*,video/*,audio/*"/>
-                <br>
-                <button class="button" type="submit">
-                    Upload
-                </button>
-            </form>
-            <ul id="messages"></ul>
-            <br>
-            <br>
-        </center>
+                <select id="channelSelector" class="button">
+                    <option value="1309160050904006696">
+                        General
+                    </option>
+                    <option value="1334376148087603294">
+                        Rules
+                    </option>
+                    <option value="1334376903179767860">
+                        Information
+                    </option>
+                    <option value="1334377094876237918">
+                        Announcements
+                    </option>
+                    <option value="1334377158789042226">
+                        Suggestions
+                    </option>
+                    <option value="1464689808717774970">
+                        Request Movie
+                    </option>
+                    <option value="1334377258609147967">
+                        Events
+                    </option>
+                    <option value="1389334335114580229">
+                        Website Support
+                    </option>
+                    <option value="1389703415810101308">
+                        Direct Website Updates
+                    </option>
+                    <option value="1309164699417448550">
+                        Memes
+                    </option>
+                    <option value="1007051892821594183">
+                        Advertisements
+                    </option>
+                    <option value="1086362556203028540">
+                        Gaming
+                    </option>
+                    <option value="1334945403912720586">
+                        Report A Bug
+                    </option>
+                    <option value="1390991482650886215">
+                        Bot Commands
+                    </option>
+                </select>
+                <form id="sendForm">
+                    <input class="button" type="text" id="nameInput" placeholder="Your Name" required />
+                    <br>
+                    <input class="button" type="text" id="msgInput" placeholder="Type Your Message" required />
+                    <br>
+                    <button class="button" type="submit">
+                        Send
+                    </button>
+                </form>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <label class="button" for="fileInput" id="fileLabel">
+                        Select A File
+                    </label>
+                    <br>
+                    <input type="file" id="fileInput" style="display:none;" name="file" accept="image/*,video/*,audio/*"/>
+                    <br>
+                    <button class="button" type="submit">
+                        Upload
+                    </button>
+                </form>
+                <ul id="messages"></ul>
+            </center>
+        </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="popup.js">

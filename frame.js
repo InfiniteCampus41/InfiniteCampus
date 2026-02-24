@@ -192,9 +192,6 @@ const headerHTML = `
             ${rightFtMsg}
         </span>
     </footer>
-    <br>
-    <br>
-    <br>
 `;
 document.addEventListener("DOMContentLoaded", () => {
     const headerWrapper = document.createElement("div");
@@ -441,6 +438,23 @@ document.addEventListener("DOMContentLoaded", () => {
         mobilePanel.style.right = "-100%";
         overlay.style.display = 'none';
     });
+    function updateHeaderFooterHeights() {
+        const header = document.getElementById("site-header");
+        const footer = document.getElementById("site-footer");
+        if (!header || !footer) return;
+        const headerHeight = header.offsetHeight;
+        const footerHeight = footer.offsetHeight;
+        document.documentElement.style.setProperty(
+            "--headerHeight",
+            headerHeight + "px"
+        );
+        document.documentElement.style.setProperty(
+            "--footerHeight",
+            footerHeight + "px"
+        );
+    }
+    updateHeaderFooterHeights();
+    window.addEventListener("resize", updateHeaderFooterHeights);
 });
 const LOADER_CONFIG = {
     mode: "auto", 

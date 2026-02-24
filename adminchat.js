@@ -412,6 +412,16 @@ function renderUnverifiedViewer() {
                     showSuccess("Canceled");
                 }
             })
+        } else {
+            try {
+                await set(ref(db, `users/${uid}/profile/verified`), true);
+                showSuccess("User Verified");
+                unverifiedUsers.splice(unverifiedIndex, 1);
+                if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
+                renderUnverifiedViewer();
+            } catch (err) {
+                showError("Failed To Verify User: " + err.message);
+            }
         }
     };
     btnArea.appendChild(verifyBtn);

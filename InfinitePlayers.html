@@ -37,93 +37,95 @@
         </script>
     </head>
     <body>
-        <div class="wrap">
-            <center>
-                <h1 class="tptxt">
-                    MP3 Player
-                </h1>
-                <hr>
-                <br>
-                <label for="fileInput" class="button">
-                    Choose MP3 File(s)
-                </label>
-                <br>
-                <br>
-                <a class="button" href="https://spotidownloader.com/en">
-                    Convert Spotify Songs To Mp3
-                </a>
-                <br>
-                <br>
-                <a class="button" href="https://tagmp3.net/">
-                    Add Thumbnails To Your Files
-                </a>
-                <input id="fileInput" style="display:none;" type="file" accept="audio/*" multiple />
-                <section class="player">
-                    <div class="now">
-                        <div class="art">
-                            <img id="artImg" alt="Artwork" src="/res/icon.png"/>
-                        </div>
-                        <div class="nowtext">
-                            <h2>
-                                Now Playing:
-                            </h2>
-                            <h3 id="nowTitle">
-                                <i class="bi bi-dash">
-                                </i>
-                            </h3>
-                            <div class="controls">
-                                <div class="progress">
-                                    <input id="seek" type="range" min="0" max="1000" value="0" step="1" />
-                                    <div class="time">
-                                        <span id="curTime">0:00</span>/<span id="durTime">0:00</span>
-                                    </div>
-                                </div>
-                                <button class="button" id="btnPrev" title="Previous (or restart)">
-                                    <i class="bi bi-skip-start-fill">
-                                    </i>                                
-                                </button>
-                                <button class="button" id="btnPlay">
-                                    <i class="bi bi-play-fill">
+        <main>
+            <div class="wrap">
+                <center>
+                    <h1 class="tptxt">
+                        MP3 Player
+                    </h1>
+                    <hr>
+                    <br>
+                    <label for="fileInput" class="button">
+                        Choose MP3 File(s)
+                    </label>
+                    <br>
+                    <br>
+                    <a class="button" href="https://spotidownloader.com/en">
+                        Convert Spotify Songs To Mp3
+                    </a>
+                    <br>
+                    <br>
+                    <a class="button" href="https://tagmp3.net/">
+                        Add Thumbnails To Your Files
+                    </a>
+                    <input id="fileInput" style="display:none;" type="file" accept="audio/*" multiple />
+                    <section class="player">
+                        <div class="now">
+                            <div class="art">
+                                <img id="artImg" alt="Artwork" src="/res/icon.png"/>
+                            </div>
+                            <div class="nowtext">
+                                <h2>
+                                    Now Playing:
+                                </h2>
+                                <h3 id="nowTitle">
+                                    <i class="bi bi-dash">
                                     </i>
-                                </button>
-                                <button class="button" id="btnNext" title="Next">
-                                    <i class="bi bi-skip-end-fill">
-                                    </i>                               
-                                </button>
-                                <button class="button" id="btnLoop" title="Loop playlist">
-                                    <i class="bi bi-arrow-repeat">
-                                    </i>                          
-                                </button>
-                                <button class="button" id="btnClear" title="Clear Playlist">
-                                    Clear Playlist
-                                </button>
+                                </h3>
+                                <div class="controls">
+                                    <div class="progress">
+                                        <input id="seek" type="range" min="0" max="1000" value="0" step="1" />
+                                        <div class="time">
+                                            <span id="curTime">0:00</span>/<span id="durTime">0:00</span>
+                                        </div>
+                                    </div>
+                                    <button class="button" id="btnPrev" title="Previous (or restart)">
+                                        <i class="bi bi-skip-start-fill">
+                                        </i>                                
+                                    </button>
+                                    <button class="button" id="btnPlay">
+                                        <i class="bi bi-play-fill">
+                                        </i>
+                                    </button>
+                                    <button class="button" id="btnNext" title="Next">
+                                        <i class="bi bi-skip-end-fill">
+                                        </i>                               
+                                    </button>
+                                    <button class="button" id="btnLoop" title="Loop playlist">
+                                        <i class="bi bi-arrow-repeat">
+                                        </i>                          
+                                    </button>
+                                    <button class="button" id="btnClear" title="Clear Playlist">
+                                        Clear Playlist
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <div class="listwrap">
-                    <div class="headerline btxt">
-                        <div>
-                            <strong>
-                                Playlist
-                            </strong>
+                    </section>
+                    <div class="listwrap">
+                        <div class="headerline btxt">
+                            <div>
+                                <strong>
+                                    Playlist
+                                </strong>
+                            </div>
+                            <div id="countInfo">
+                                0 Tracks
+                            </div>
                         </div>
-                        <div id="countInfo">
-                            0 Tracks
-                        </div>
+                        <ul id="playlist" class="playlist btxt" aria-label="Playlist (draggable)"></ul>
                     </div>
-                    <ul id="playlist" class="playlist btxt" aria-label="Playlist (draggable)"></ul>
+                    <div id="saveStatus">
+                        Not Saved
+                    </div>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
                 </div>
-                <div id="saveStatus">
-                    Not Saved
-                </div>
-                </div>
-                <br>
-                <br>
-                <br>
-                <br>
-            </div>
-        </center>
+            </center>
+        </main>
         <audio id="audio" preload="metadata" crossorigin="anonymous">
         </audio>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">

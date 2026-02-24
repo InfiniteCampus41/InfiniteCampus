@@ -37,66 +37,68 @@
         </script>
     </head>
     <body>
-        <center>
-            <h1 class="tptxt">
-                Proxy URL Logs
-            </h1>
-            <hr>
-            <br>
-            <table id="url-table">
-                <tbody>
-                    <tr>
-                        <td colspan="4">
-                            Loading
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
-            <br>
-        </center>
-        <div id="panel-btn" class="button">
-            <i class="bi bi-arrow-left">
-            </i>
-        </div>
-        <div id="panel">
-            <div id="panel-header">
-                <span id="panel-back" class="button">
-                    <i class="bi bi-arrow-left">
-                    </i>
-                </span>
-                <span id="panel-title" class="tptxt">
-                    Current Blocked URLs
-                </span>
-                <span></span>
+        <main>
+            <center>
+                <h1 class="tptxt">
+                    Proxy URL Logs
+                </h1>
+                <hr>
+                <br>
+                <table id="url-table">
+                    <tbody>
+                        <tr>
+                            <td colspan="4">
+                                Loading
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <br>
+            </center>
+            <div id="panel-btn" class="button">
+                <i class="bi bi-arrow-left">
+                </i>
             </div>
-            <div id="panel-search">
-                <input class="button" id="search" placeholder="Search URLs...">
-            </div>
-            <div id="blocked-list">
-            </div>
-            <button id="add-url-btn" class="button">
-                Add URL
-            </button>
-        </div>
-        <div id="add-panel">
-            <div id="add-inner">
-                <div id="add-close">
-                    <i class="bi bi-x-lg">
-                    </i>
+            <div id="panel">
+                <div id="panel-header">
+                    <span id="panel-back" class="button">
+                        <i class="bi bi-arrow-left">
+                        </i>
+                    </span>
+                    <span id="panel-title" class="tptxt">
+                        Current Blocked URLs
+                    </span>
+                    <span></span>
                 </div>
-                <h2>
+                <div id="panel-search">
+                    <input class="button" id="search" placeholder="Search URLs...">
+                </div>
+                <div id="blocked-list">
+                </div>
+                <button id="add-url-btn" class="button">
                     Add URL
-                </h2>
-                <input id="add-url-input" placeholder="URL">
-                <input id="add-reason-input" placeholder="Reason">
-                <div id="add-error">
-                </div>
-                <button onclick="addUrl()">
-                    Submit
                 </button>
             </div>
-        </div>
+            <div id="add-panel">
+                <div id="add-inner">
+                    <div id="add-close">
+                        <i class="bi bi-x-lg">
+                        </i>
+                    </div>
+                    <h2>
+                        Add URL
+                    </h2>
+                    <input id="add-url-input" placeholder="URL">
+                    <input id="add-reason-input" placeholder="Reason">
+                    <div id="add-error">
+                    </div>
+                    <button onclick="addUrl()">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </main>
         <script type="module" src="adminurls.js">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">

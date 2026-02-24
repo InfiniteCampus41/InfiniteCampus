@@ -42,107 +42,109 @@
         </style>
     </head>
     <body>
-        <h1 class="tptxt text-center">
-            QR Code Generator
-        </h1>
-        <hr>
-        <br>
-        <div class="qr-layout">
-            <div class="qr-left">
-                <label class="btxt">
-                    Function
-                </label>
-                <select class="button" id="fnType">
-                    <option value="text">
-                        URL / Text
-                    </option>
-                    <option value="wifi">
-                        Wifi
-                    </option>
-                    <option value="email">
-                        Email
-                    </option>
-                    <option value="phone">
-                        Phone
-                    </option>
-                    <option value="sms">
-                        SMS
-                    </option>
-                    <option value="geo">
-                        Location
-                    </option>
-                </select>
-                <div id="fields">
+        <main>
+            <h1 class="tptxt text-center">
+                QR Code Generator
+            </h1>
+            <hr>
+            <br>
+            <div class="qr-layout">
+                <div class="qr-left">
+                    <label class="btxt">
+                        Function
+                    </label>
+                    <select class="button" id="fnType">
+                        <option value="text">
+                            URL / Text
+                        </option>
+                        <option value="wifi">
+                            Wifi
+                        </option>
+                        <option value="email">
+                            Email
+                        </option>
+                        <option value="phone">
+                            Phone
+                        </option>
+                        <option value="sms">
+                            SMS
+                        </option>
+                        <option value="geo">
+                            Location
+                        </option>
+                    </select>
+                    <div id="fields">
+                    </div>
+                    <label class="btxt">
+                        Size
+                    </label>
+                    <input class="button" id="qrSize" type="number" min="128" max="420" value="420">
+                    <label class="btxt">
+                        Error Correction
+                    </label>
+                    <select id="qrEC" class="button">
+                        <option value="L">
+                            Low (7%)
+                        </option>
+                        <option value="M" selected>
+                            Medium (15%)
+                        </option>
+                        <option value="Q">
+                            High (25%)
+                        </option>
+                        <option value="H">
+                            Super (30%)
+                        </option>
+                    </select>
+                    <label class="btxt">
+                        Pixel Color
+                    </label>
+                    <input class="button" id="moduleColor" type="color" value="#000000">
+                    <label class="btxt">
+                        Background Color
+                    </label>
+                    <input class="button" id="bgColor" type="color" value="#ffffff">
                 </div>
-                <label class="btxt">
-                    Size
-                </label>
-                <input class="button" id="qrSize" type="number" min="128" max="420" value="420">
-                <label class="btxt">
-                    Error Correction
-                </label>
-                <select id="qrEC" class="button">
-                    <option value="L">
-                        Low (7%)
-                    </option>
-                    <option value="M" selected>
-                        Medium (15%)
-                    </option>
-                    <option value="Q">
-                        High (25%)
-                    </option>
-                    <option value="H">
-                        Super (30%)
-                    </option>
-                </select>
-                <label class="btxt">
-                    Pixel Color
-                </label>
-                <input class="button" id="moduleColor" type="color" value="#000000">
-                <label class="btxt">
-                    Background Color
-                </label>
-                <input class="button" id="bgColor" type="color" value="#ffffff">
-            </div>
-            <div class="qr-middle">
-                <label class="btxt">
-                    Center Logo
-                </label>
-                <label for="logoInput" class="button">
-                    Upload Logo
-                </label>
-                <input id="logoInput" type="file" accept="image/*" hidden>
-                <label class="btxt">
-                    Logo Scale
-                </label>
-                <input class="button" id="logoScale" type="number" min="8" max="40" value="22">
-                <label class="btxt">
-                    Logo Corners Radius
-                </label>
-                <input class="button" id="logoRadius" type="number" min="0" max="80" value="16">
-                <label class="btxt">
-                    Logo Border Thickness
-                </label>
-                <input class="button" id="logoBorderSize" type="number" min="0" max="40" value="8">
-            </div>
-            <div class="qr-preview">
-                <div class="card qr-stage">
-                    <canvas id="qrPreview" width="420" height="420"></canvas>
+                <div class="qr-middle">
+                    <label class="btxt">
+                        Center Logo
+                    </label>
+                    <label for="logoInput" class="button">
+                        Upload Logo
+                    </label>
+                    <input id="logoInput" type="file" accept="image/*" hidden>
+                    <label class="btxt">
+                        Logo Scale
+                    </label>
+                    <input class="button" id="logoScale" type="number" min="8" max="40" value="22">
+                    <label class="btxt">
+                        Logo Corners Radius
+                    </label>
+                    <input class="button" id="logoRadius" type="number" min="0" max="80" value="16">
+                    <label class="btxt">
+                        Logo Border Thickness
+                    </label>
+                    <input class="button" id="logoBorderSize" type="number" min="0" max="40" value="8">
                 </div>
-                <div class="controls-group mt-3">
-                    <button class="button" id="downloadBtn">
-                        Download PNG
-                    </button>
-                    <button class="button secondary" id="clearLogo">
-                        Remove Logo
-                    </button>
-                    <span id="status" class="small">
-                    </span>
-                    <br>
-                    <br>
+                <div class="qr-preview">
+                    <div class="card qr-stage">
+                        <canvas id="qrPreview" width="420" height="420"></canvas>
+                    </div>
+                    <div class="controls-group mt-3">
+                        <button class="button" id="downloadBtn">
+                            Download PNG
+                        </button>
+                        <button class="button secondary" id="clearLogo">
+                            Remove Logo
+                        </button>
+                        <span id="status" class="small">
+                        </span>
+                        <br>
+                        <br>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
         <script src="qr.js">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">

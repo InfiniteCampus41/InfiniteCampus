@@ -162,6 +162,12 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+#cEmbBtn {
+    position:fixed;
+    top:calc(var(--headerHeight) + 20px);
+    right:20px;
+    display:none;
+}
 .chrome-newtab {
     padding: 1px 5px;
     cursor: pointer;
@@ -399,6 +405,10 @@ body {
     border-bottom-left-radius: 15px;
     border-top-left-radius: 15px;
 }
+#embFrame {
+    width:100vw;
+    height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
+}
 #expandMoviesOrder {
     z-index:1;
     right:-2px;
@@ -624,6 +634,11 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .m {
     color:magenta;
+}
+main {
+    height:100%;
+    padding-top:var(--headerHeight);
+    padding-bottom:var(--footerHeight);
 }
 .mark {
     position: absolute;
@@ -1022,7 +1037,7 @@ pre code {
     overflow: hidden;
 }
 #proxy {
-    margin-top:-11px;
+    height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
 }
 #pxyApps {
     display: grid;
@@ -1137,6 +1152,10 @@ pre code {
     text-align:left;
     max-width:50%;
 }
+:root {
+    --headerHeight: 60px;
+    --footerHeight: 32px;
+}
 #search {
     width: 100%;
     font-size: 16px;
@@ -1165,7 +1184,7 @@ select {
 }
 .settings-button {
     position: fixed;
-    bottom: 45px;
+    bottom: calc(var(--footerHeight) + 5px);
     right: 20px;
     width: 56px;
     height: 56px;
@@ -1194,7 +1213,7 @@ select {
     color:white;
     border-radius: 50%;
     position: fixed;
-    bottom: 40px;
+    bottom: calc(var(--footerHeight) + 5px);
     right:90px;
     font-size: 2.5em;
     background: rgba(111,111,111,.15);

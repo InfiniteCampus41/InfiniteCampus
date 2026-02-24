@@ -51,7 +51,5 @@ if (!allowedHosts.includes(window.location.host)) {
             </a>
         </p>
         To Contact The Owner, Email support@infinitecampus.xyz
-        <br>
-        <br>
     `;
 }

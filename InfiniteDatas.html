@@ -37,72 +37,71 @@
         </script>
     </head>
     <body>
-        <center>
-            <h1 class="tptxt">
-                Data URL Generator
-            </h1>
-            <hr>
-            <br>
-            <label class="btxt" for="typeSelect">
-                Data URL Type:
-            </label>
-            <br>
-            <select class="button" id="typeSelect">
-                <option value="image" selected>
-                    Data Image
-                </option>
-                <option value="text">
-                    Data Text
-                </option>
-            </select>
-            <br>
-            <label class="btxt" for="presetSelect">
-                Preset URLs (Optional)
-            </label>
-            <br>
-            <select class="button" id="presetSelect">
-                <option value="">
-                    None
-                </option>
-                <option id="thisSite" value="">
-                    This Site
-                </option>
-                <option value="https://nettleweb.com">
-                    Nettleweb
-                </option>
-            </select>
-            <br>
-            <label class="btxt" for="urlInput">
-                Enter Custom URL
-            </label>
-            <br>
-            <input class="button" type="text" id="urlInput" placeholder="Enter Custom URL Here" />
-            <br>
-            <button class="button" id="overrideBtn" type="button" class="override-off">
-                Override URL Checks: OFF
-            </button>
-            <br>
-            <button class="button" id="generateBtn">
-                Generate
-            </button>
-            <br>
-            <p class="r">
-                WARNING: Site Themes, Login, And Most Save Data Will Not Work While On The Data URL
-            </p>
-            <label class="btxt" for="output">
-                URL:
-            </label>
-            <br>
-            <textarea style="width:75%; height:200px;" class="button" id="output" readonly placeholder="Generated Data URL Will Appear Here"></textarea>
-            <br>
-            <br>
-            <button class="button" id="copyBtn">
-                Copy To Clipboard
-            </button>
-            <br>
-            <br>
-            <br>
-        </center>
+        <main>
+            <center>
+                <h1 class="tptxt">
+                    Data URL Generator
+                </h1>
+                <hr>
+                <br>
+                <label class="btxt" for="typeSelect">
+                    Data URL Type:
+                </label>
+                <br>
+                <select class="button" id="typeSelect">
+                    <option value="image" selected>
+                        Data Image
+                    </option>
+                    <option value="text">
+                        Data Text
+                    </option>
+                </select>
+                <br>
+                <label class="btxt" for="presetSelect">
+                    Preset URLs (Optional)
+                </label>
+                <br>
+                <select class="button" id="presetSelect">
+                    <option value="">
+                        None
+                    </option>
+                    <option id="thisSite" value="">
+                        This Site
+                    </option>
+                    <option value="https://nettleweb.com">
+                        Nettleweb
+                    </option>
+                </select>
+                <br>
+                <label class="btxt" for="urlInput">
+                    Enter Custom URL
+                </label>
+                <br>
+                <input class="button" type="text" id="urlInput" placeholder="Enter Custom URL Here" />
+                <br>
+                <button class="button" id="overrideBtn" type="button" class="override-off">
+                    Override URL Checks: OFF
+                </button>
+                <br>
+                <button class="button" id="generateBtn">
+                    Generate
+                </button>
+                <br>
+                <p class="r">
+                    WARNING: Site Themes, Login, And Most Save Data Will Not Work While On The Data URL
+                </p>
+                <label class="btxt" for="output">
+                    URL:
+                </label>
+                <br>
+                <textarea style="width:75%; height:200px;" class="button" id="output" readonly placeholder="Generated Data URL Will Appear Here"></textarea>
+                <br>
+                <br>
+                <button class="button" id="copyBtn">
+                    Copy To Clipboard
+                </button>
+            </center>
+        </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="popup.js">
