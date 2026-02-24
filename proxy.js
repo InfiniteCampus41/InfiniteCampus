@@ -342,9 +342,9 @@ let btMsg = 'hello';
 navigator.getBattery().then(function(battery) {
     function updateBattery() {
         const batteryPer = Math.round(battery.level *100);
-        btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}? Knew It`;
-        if (batteryPer <= 20) {
-            btMsg = `Charge Ur Device, Its At ${batteryPer}%`;
+        btMsg = `I'm Going To Guess Your Battery Percentage, Is It ${batteryPer}%? Knew It`;
+        if (batteryPer <= 20 && isGB === 0 && battery.charging === false) {
+            btMsg = `Charge Your Device, Its At ${batteryPer}%`;
             isGB = 1;
         }
         if (battery.charging === true && isGB === 1) {
@@ -360,6 +360,36 @@ navigator.getBattery().then(function(battery) {
 const hosturl = window.location.host;
 function setRandomPhrase() { 
     const phrases = [ 
+        "Walking By The Wall",
+        "The Shadows Will Not Fall",
+        "Is Silently Ignored",
+        "Discouraged By The Noise",
+        "Living Without Choice",
+        "Is A Life Without A Voice",
+        "When You Can't Even Say My Name",
+        "Has The Memory Gone? Are You Feeling Numb?",
+        "Go On, Call My Name",
+        "I Can't Play This Game, So I Ask Again",
+        "Will You Say My Name?",
+        "Has The Memory Gone? Are You Feeling Numb?",
+        "Or Have I Become Invisible?",
+        "The Dreamers Wish Away",
+        "Its Falling On My Face",
+        "The Shape Of My Disgrace",
+        "When You Don't Hear A Word I Say",
+        "As The Talking Goes, It's A One-Way Flow",
+        "No Fault, No Blame",
+        "Has The Memory Gone? Are You Feelin' Numb?",
+        "And Have I Become Invisible?",
+        "No One Hears A Word They Say",
+        "Has The Memory Gone? Are You Feelin' Numb?",
+        "Not A Word They Say",
+        "But A Voiceless Crowd Isn't Backin' Down",
+        "When The Air Turns Red",
+        "With A Loaded Hesitation",
+        "Can You Say My Name?",
+        "Has The Memory Gone? Are You Feelin' Numb?",
+        "Have We All Become Invisible?",
         "Made By Hacker41", 
         "AAAAAAAAAAAAAAAAAAAA", 
         "The Teacher's Bane", 
@@ -372,15 +402,13 @@ function setRandomPhrase() {
         "Speed, I Am Formerly Requesting Aid Of The Finacial Form, As My Mother Has No Humble Abode", 
         "Kachow - Lightning McQueen", 
         "Dont Believe Everything You See On The Internet - Abraham Lincoln",
-        "When You Can't Even Say My Name",
-        "Has The Memory Gone? Are You Feeling Numb?",
-        "Go On And Call, My Name",
         `Greetings, Person On ${hosturl}`,
         "Loading Virus.exe",
         "Nitrix67 Likes Men",
         "Life Is A Highway",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        `${btMsg}`
+        `${btMsg}`,
+        "https://discord.gg/4d9hJSVXca"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 
