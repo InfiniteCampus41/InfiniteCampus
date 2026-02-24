@@ -147,7 +147,7 @@ function showError(err) {
     errDiv.style.fontWeight = "bold";
     errDiv.style.maxWidth = "fit-content";
     errDiv.style.height = "35px";
-    errDiv.style.top = "70";
+    errDiv.style.top = "90px";
     errDiv.style.justifySelf = "center";
     errDiv.addEventListener("click", () => {
         errDiv.remove();
@@ -172,7 +172,7 @@ function showSuccess(success) {
     successDiv.style.fontWeight = "bold";
     successDiv.style.maxWidth = "fit-content";
     successDiv.style.height = "35px";
-    successDiv.style.top = "70";
+    successDiv.style.top = "90px";
     successDiv.style.justifySelf = "center";
     successDiv.addEventListener("click", () => {
         successDiv.remove();
@@ -185,9 +185,9 @@ function showConfirm(message, callback) {
     const confirmDiv = document.createElement("div");
     confirmDiv.id = "confirmDiv";
     confirmDiv.textContent = message;
-    confirmDiv.style.background = "darkorange";
-    confirmDiv.style.color = "red";
-    confirmDiv.style.border = "3px solid red";
+    confirmDiv.style.background = "#222";
+    confirmDiv.style.color = "white";
+    confirmDiv.style.border = "3px solid #666";
     confirmDiv.style.borderRadius = "5px";
     confirmDiv.style.padding = "10px";
     confirmDiv.style.position = "fixed";

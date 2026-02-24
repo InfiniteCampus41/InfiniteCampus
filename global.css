@@ -288,16 +288,15 @@ body {
     overflow:auto;
 }
 #confirmBtns {
-    background:gold;
-    color:black;
-    border:1px solid red;
+    background:#333;
+    color:white;
+    border:1px solid #555;
     border-radius:20px;
     transition:0.3s all;
 }
 #confirmBtns:hover {
-    background:darkgoldenrod;
-    color:#444;
-    border:1px solid darkred;
+    background:#555;
+    border:1px solid #888;
     border-radius:20px;
 }
 .contactme {

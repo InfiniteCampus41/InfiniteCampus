@@ -244,13 +244,6 @@ function generateEmbeds(text){
             `;
             return;
         }
-        embedHTML += `
-        <div class="embed-link">
-            <a href="${url}" target="_blank">
-            ${url}
-            </a>
-        </div>
-        `;
     });
     return embedHTML;
 }
