@@ -329,14 +329,25 @@ async function renderMessageInstant(id, msg) {
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.marginLeft = "40px";
     textDiv.style.marginTop = "-7px";
-    let safeText = (msg.text || "");
-    safeText = safeText
+    let safeText = (msg.text || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
     safeText = safeText.replace(
-        /&lt;i class="([^"]*(?:fa|bi)[^"]+)"&gt;&lt;\/i&gt;/g,
-        '<i class="$1"></i>'
+        /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+        (match, cls, style, title) => {
+            let attrs = `class="${cls}"`;
+            if (style) attrs += ` style="${style}"`;
+            if (title) attrs += ` title="${title}"`;
+            return `<i ${attrs}></i>`;
+        }
+    );
+    safeText = safeText.replace(
+        /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+        (match, color, content) => {
+            const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+            return `<p style="color:${safeColor}">${content}</p>`;
+        }
     );
     safeText = safeText.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
@@ -937,24 +948,22 @@ async function attachMessageListeners(msgRef) {
     const snapshot = await get(initialQuery);
     if (!snapshot.exists()) return;
     const msgs = snapshot.val();
-    const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const entries = Object.entries(msgs)
+        .sort((a, b) => a[1].timestamp - b[1].timestamp);
     oldestLoadedTimestamp = entries[0][1].timestamp;
-    for (const [id, msg] of entries) {
+    for (let i = entries.length - 1; i >= 0; i--) {
+        const [id, msg] = entries[i];
         const div = await renderMessageInstant(id, msg);
-        if (div) chatLog.appendChild(div);
+        if (div) chatLog.insertBefore(div, chatLog.firstChild);
+        scrollToBottom(true);
     }
-    scrollToBottom(true);
     currentListeners.added = onChildAdded(msgRef, async snap => {
         if (msgRef !== currentMsgRef) return;
         const key = snap.key;
         const val = snap.val();
         if (val.timestamp <= oldestLoadedTimestamp) return;
         if (!document.getElementById("msg-" + key)) {
-            const newDiv = await renderMessageInstant(id, msg);
-            if (div) chatLog.appendChild(div);
-            if (autoScrollEnabled) {
-                scrollToBottom();
-            }
+            const newDiv = await renderMessageInstant(key, val);
             if (!newDiv) return;
             const newTs = Number(val.timestamp || Date.now());
             const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
@@ -968,6 +977,9 @@ async function attachMessageListeners(msgRef) {
                 }
             }
             if (!inserted) chatLog.appendChild(newDiv);
+            if (autoScrollEnabled) {
+                scrollToBottom(true);
+            }
         }
     });
     currentListeners.removed = onChildRemoved(msgRef, snap => {
@@ -982,19 +994,32 @@ async function attachMessageListeners(msgRef) {
             const textDiv = el.querySelector("div:nth-child(3)");
             const editedSpan = el.querySelector(".edited-label");
             const updatedMsg = snap.val();
-            let safeText = (updatedMsg.text || "");
-            safeText = safeText
+            let safeText = (updatedMsg.text || "")
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;");
             safeText = safeText.replace(
-                /&lt;i class="([^"]*(?:fa|bi)[^"]+)"&gt;&lt;\/i&gt;/g,
-                '<i class="$1"></i>'
+                /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+                (match, cls, style, title) => {
+                    let attrs = `class="${cls}"`;
+                    if (style) attrs += ` style="${style}"`;
+                    if (title) attrs += ` title="${title}"`;
+                    return `<i ${attrs}></i>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+                (match, color, content) => {
+                    const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                    return `<p style="color:${safeColor}">${content}</p>`;
+                }
             );
             safeText = safeText.replace(/\n/g, "<br>");
             const mentionRegex = /@([^\s<]+)/g;
             safeText = safeText.replace(mentionRegex, (match, name) => {
-                const isSelfMention = currentName && (currentName.toLowerCase() === name.toLowerCase() ||
+                const isSelfMention =
+                    currentName &&
+                    (currentName.toLowerCase() === name.toLowerCase() ||
                     currentName.toLowerCase() === name.toLowerCase().replace(" 💎", ""));
                 const cls = isSelfMention ? "mention-self" : "mention";
                 return `<span class="${cls}">@${name}</span>`;
