@@ -955,8 +955,8 @@ async function attachMessageListeners(msgRef) {
         const [id, msg] = entries[i];
         const div = await renderMessageInstant(id, msg);
         if (div) chatLog.insertBefore(div, chatLog.firstChild);
-        scrollToBottom(true);
     }
+    scrollToBottom(true);
     currentListeners.added = onChildAdded(msgRef, async snap => {
         if (msgRef !== currentMsgRef) return;
         const key = snap.key;
