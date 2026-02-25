@@ -14,6 +14,7 @@ expandEdit.addEventListener("click", function () {
         isOpen = false;
     } else {
         editOrderContainer.style.right = '-2px';
+        editOrderContainer.style.display = 'block';
         expandEdit.style.right = '496px';
         expandEdit.innerHTML = '<i class="bi bi-chevron-right"></i>';
         isOpen = true;

@@ -404,6 +404,7 @@ body {
 }
 #editMoviesContainer {
     right:-500px;
+    display:none;
     position:absolute;
     width:500px;
     background:#222;
