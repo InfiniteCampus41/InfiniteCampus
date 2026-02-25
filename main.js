@@ -147,7 +147,7 @@ function showError(err) {
     errDiv.style.fontWeight = "bold";
     errDiv.style.maxWidth = "fit-content";
     errDiv.style.height = "35px";
-    errDiv.style.top = "90px";
+    errDiv.style.top = "70px";
     errDiv.style.justifySelf = "center";
     errDiv.addEventListener("click", () => {
         errDiv.remove();
@@ -172,7 +172,7 @@ function showSuccess(success) {
     successDiv.style.fontWeight = "bold";
     successDiv.style.maxWidth = "fit-content";
     successDiv.style.height = "35px";
-    successDiv.style.top = "90px";
+    successDiv.style.top = "70px";
     successDiv.style.justifySelf = "center";
     successDiv.addEventListener("click", () => {
         successDiv.remove();
