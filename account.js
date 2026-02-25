@@ -438,6 +438,8 @@ if (mode) {
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("uid", currentUser.uid);
+                pfpModalBg.style.display = "none";
+                showSuccess("Uploading...");
                 const res = await fetch(`${a}/upload-pfp`, {
                     method: "POST",
                     body: formData
