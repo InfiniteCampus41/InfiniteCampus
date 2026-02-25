@@ -86,8 +86,7 @@ let typingTimeout = null;
 let typingRef = null;
 document.head.appendChild(style);
 chatLog.addEventListener("scroll", () => {
-    const nearBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight < 50;
-    autoScrollEnabled = nearBottom;
+    autoScrollEnabled = true;
 });
 chatLog.addEventListener("scroll", async () => {
     if (chatLog.scrollTop > 50) return;
@@ -963,10 +962,7 @@ async function attachMessageListeners(msgRef) {
                 }
             }
             if (!inserted) chatLog.appendChild(newDiv);
-            const mentionsYou = messageMentionsYou(val.text);
-            if (!mentionsYou && autoScrollEnabled) {
-                scrollToBottom(true);
-            }
+            scrollToBottom(true);
         }
     });
     currentListeners.removed = onChildRemoved(msgRef, snap => {
