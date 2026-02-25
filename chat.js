@@ -86,7 +86,9 @@ let typingTimeout = null;
 let typingRef = null;
 document.head.appendChild(style);
 chatLog.addEventListener("scroll", () => {
-    autoScrollEnabled = true;
+    const distanceFromBottom =
+        chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
+    autoScrollEnabled = distanceFromBottom < 40;
 });
 chatLog.addEventListener("scroll", async () => {
     if (chatLog.scrollTop > 50) return;
@@ -948,7 +950,11 @@ async function attachMessageListeners(msgRef) {
         const val = snap.val();
         if (val.timestamp <= oldestLoadedTimestamp) return;
         if (!document.getElementById("msg-" + key)) {
-            const newDiv = await renderMessageInstant(key, val);
+            const newDiv = await renderMessageInstant(id, msg);
+            if (div) chatLog.appendChild(div);
+            if (autoScrollEnabled) {
+                scrollToBottom();
+            }
             if (!newDiv) return;
             const newTs = Number(val.timestamp || Date.now());
             const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
@@ -962,7 +968,6 @@ async function attachMessageListeners(msgRef) {
                 }
             }
             if (!inserted) chatLog.appendChild(newDiv);
-            scrollToBottom(true);
         }
     });
     currentListeners.removed = onChildRemoved(msgRef, snap => {
