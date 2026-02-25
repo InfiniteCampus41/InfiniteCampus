@@ -1,7 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, push, onChildAdded, onChildRemoved, onChildChanged, remove, update, set, get, runTransaction, onValue, off } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
-const channelList = document.getElementById("channels");
+import { ref, push, onChildAdded, onChildRemoved, onChildChanged, remove, update, set, get, runTransaction, onValue, off, query, orderByChild, limitToLast, endAt } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";const channelList = document.getElementById("channels");
 const chatLog = document.getElementById("chatLog");
 let lastMessageTimestamp = 0;
 const MESSAGE_COOLDOWN = 3000;
@@ -39,6 +38,10 @@ let currentPrivateUid = null;
 let currentPrivateName = null;
 let metadataListenerRef = null;
 let autoScrollEnabled = true;
+const PAGE_SIZE = 50;
+let oldestLoadedTimestamp = null;
+let loadingOlderMessages = false;
+let hasMoreMessages = true;
 const privateListeners = new Set();
 const channelMentionSet = new Set();
 const mentionMenu = document.getElementById("mentionMenu");
@@ -85,6 +88,34 @@ document.head.appendChild(style);
 chatLog.addEventListener("scroll", () => {
     const nearBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight < 50;
     autoScrollEnabled = nearBottom;
+});
+chatLog.addEventListener("scroll", async () => {
+    if (chatLog.scrollTop > 50) return;
+    if (!hasMoreMessages || loadingOlderMessages || !oldestLoadedTimestamp) return;
+    loadingOlderMessages = true;
+    const previousHeight = chatLog.scrollHeight;
+    const olderQuery = query(
+        currentMsgRef,
+        orderByChild("timestamp"),
+        endAt(oldestLoadedTimestamp - 1),
+        limitToLast(PAGE_SIZE)
+    );
+    const snapshot = await get(olderQuery);
+    if (!snapshot.exists()) {
+        hasMoreMessages = false;
+        loadingOlderMessages = false;
+        return;
+    }
+    const msgs = snapshot.val();
+    const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
+    oldestLoadedTimestamp = entries[0][1].timestamp;
+    for (const [id, msg] of entries.reverse()) {
+        const div = await renderMessageInstant(id, msg);
+        if (div) chatLog.insertBefore(div, chatLog.firstChild);
+    }
+    const newHeight = chatLog.scrollHeight;
+    chatLog.scrollTop = newHeight - previousHeight;
+    loadingOlderMessages = false;
 });
 function scrollToBottom(smooth = false) {
     requestAnimationFrame(() => {
@@ -895,17 +926,28 @@ async function attachMessageListeners(msgRef) {
     detachCurrentMessageListeners();
     currentMsgRef = msgRef;
     chatLog.innerHTML = "";
-    const snapshot = await get(msgRef);
-    const msgs = snapshot.exists() ? snapshot.val() : {};
+    oldestLoadedTimestamp = null;
+    hasMoreMessages = true;
+    const initialQuery = query(
+        msgRef,
+        orderByChild("timestamp"),
+        limitToLast(PAGE_SIZE)
+    );
+    const snapshot = await get(initialQuery);
+    if (!snapshot.exists()) return;
+    const msgs = snapshot.val();
     const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const renderPromises = entries.map(([id, msg]) => renderMessageInstant(id, msg));
-    const createdDivs = await Promise.all(renderPromises);
-    createdDivs.forEach(d => { if (d) chatLog.appendChild(d); });
+    oldestLoadedTimestamp = entries[0][1].timestamp;
+    for (const [id, msg] of entries) {
+        const div = await renderMessageInstant(id, msg);
+        if (div) chatLog.appendChild(div);
+    }
     scrollToBottom(true);
     currentListeners.added = onChildAdded(msgRef, async snap => {
         if (msgRef !== currentMsgRef) return;
         const key = snap.key;
         const val = snap.val();
+        if (val.timestamp <= oldestLoadedTimestamp) return;
         if (!document.getElementById("msg-" + key)) {
             const newDiv = await renderMessageInstant(key, val);
             if (!newDiv) return;
@@ -924,7 +966,6 @@ async function attachMessageListeners(msgRef) {
             const mentionsYou = messageMentionsYou(val.text);
             if (!mentionsYou && autoScrollEnabled) {
                 scrollToBottom(true);
-            } else {
             }
         }
     });
