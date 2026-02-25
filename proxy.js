@@ -436,6 +436,7 @@ function setRandomPhrase() {
         "Nitrix67 Likes Men",
         "Life Is A Highway",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "Japan Is Turning Footsteps Into Electricity",
         `${btMsg}`,
         "https://discord.gg/4d9hJSVXca"
     ]; 
