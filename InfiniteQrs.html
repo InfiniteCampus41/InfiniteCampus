@@ -75,35 +75,45 @@
                     </select>
                     <div id="fields">
                     </div>
-                    <label class="btxt">
-                        Size
-                    </label>
-                    <input class="button" id="qrSize" type="number" min="128" max="420" value="420">
-                    <label class="btxt">
-                        Error Correction
-                    </label>
-                    <select id="qrEC" class="button">
-                        <option value="L">
-                            Low (7%)
-                        </option>
-                        <option value="M" selected>
-                            Medium (15%)
-                        </option>
-                        <option value="Q">
-                            High (25%)
-                        </option>
-                        <option value="H">
-                            Super (30%)
-                        </option>
-                    </select>
-                    <label class="btxt">
-                        Pixel Color
-                    </label>
-                    <input class="button" id="moduleColor" type="color" value="#000000">
-                    <label class="btxt">
-                        Background Color
-                    </label>
-                    <input class="button" id="bgColor" type="color" value="#ffffff">
+                    <div>
+                        <div id="qrSize" class="qrDiv">
+                            <label class="btxt">
+                                Size
+                            </label>
+                            <input class="button" id="qrSize" type="number" min="128" max="420" value="420">
+                        </div>
+                        <div id="qrErrC" class="qrDiv">
+                            <label class="btxt">
+                                Error Correction
+                            </label>
+                            <select id="qrEC" class="button">
+                                <option value="L">
+                                    Low (7%)
+                                </option>
+                                <option value="M" selected>
+                                    Medium (15%)
+                                </option>
+                                <option value="Q">
+                                    High (25%)
+                                </option>
+                                <option value="H">
+                                    Super (30%)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="qrDiv">
+                            <label class="btxt">
+                                Pixel Color
+                            </label>
+                            <input class="button" id="moduleColor" type="color" value="#000000">
+                        </div>
+                        <div class="qrDiv">
+                            <label class="btxt">
+                                Background Color
+                            </label>
+                            <input class="button" id="bgColor" type="color" value="#ffffff">
+                        </div>
+                    </div>
                 </div>
                 <div class="qr-middle">
                     <label class="btxt">
@@ -131,10 +141,10 @@
                         <canvas id="qrPreview" width="420" height="420"></canvas>
                     </div>
                     <div class="controls-group mt-3">
-                        <button class="button" id="downloadBtn">
+                        <button class="button apbtn" id="downloadBtn">
                             Download PNG
                         </button>
-                        <button class="button secondary" id="clearLogo">
+                        <button class="button apbtn" id="clearLogo">
                             Remove Logo
                         </button>
                         <span id="status" class="small">

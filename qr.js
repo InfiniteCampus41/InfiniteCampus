@@ -19,11 +19,11 @@ let latestExportCanvas=null;
 function html(s,...v){return s.map((s,i)=>s+(v[i]??'')).join('');}
 const templates={
     text:()=>html`<label for="textValue" class="btxt">URL or Text</label><br><textarea class="button" id="textValue" placeholder="https://example.com"></textarea>`,
-    wifi:()=>html`<div class="row"><div><label for="wifiSsid">SSID</label><input id="wifiSsid" type="text" /></div><div><label for="wifiAuth">Security</label><select id="wifiAuth"><option value="WPA">WPA</option><option value="WEP">WEP</option><option value="nopass">None</option></select></div></div><div><label for="wifiPass">Password</label><input id="wifiPass" type="text" /></div>`,
-    email:()=>html`<label for="emailTo">To</label><input id="emailTo" type="email" /><label for="emailSubject">Subject</label><input id="emailSubject" type="text" /><label for="emailBody">Body</label><textarea id="emailBody"></textarea>`,
-    phone:()=>html`<label for="telNumber">Phone Number</label><input id="telNumber" type="text" />`,
-    sms:()=>html`<label for="smsNumber">Number</label><input id="smsNumber" type="text" /><label for="smsBody">Message</label><input id="smsBody" type="text" />`,
-    geo:()=>html`<label for="geoLat">Latitude</label><input id="geoLat" type="text" /><label for="geoLng">Longitude</label><input id="geoLng" type="text" />`
+    wifi:()=>html`<div class="row"><div><label for="wifiSsid">SSID:</label><br><input id="wifiSsid" type="text" placeholder="Enter SSID Here" class="button"/></div><div><label for="wifiAuth">Security:</label><br><select id="wifiAuth" class="button"><option value="WPA">WPA</option><option value="WEP">WEP</option><option value="nopass">None</option></select></div></div><div><label for="wifiPass">Password:</label><br><input placeholder="Enter Password Here" class="button" id="wifiPass" type="text" /></div>`,
+    email:()=>html`<label for="emailTo">To:</label><br><input id="emailTo" type="email" class="button" placeholder="Enter Email Address Here"/><br><label for="emailSubject">Subject: </label><br><input class="button" id="emailSubject" type="text" placeholder="Enter Subject Here" /><br><label for="emailBody">Body: </label><br><textarea id="emailBody" class="button" placeholder="Enter Email Body Here"></textarea>`,
+    phone:()=>html`<label for="telNumber">Phone Number: </label><br><input id="telNumber" class="button" placeholder="Enter Phone Number" type="text" />`,
+    sms:()=>html`<label for="smsNumber">Number: </label><br><input id="smsNumber" type="text" class="button" placeholder="Enter Phone Number" /><br><label for="smsBody">Message:</label><br><input class="button" placeholder="Enter Message Here" id="smsBody" type="text" />`,
+    geo:()=>html`<label for="geoLat">Latitude:</label><br><input id="geoLat" class="button" placeholder="Enter Lat Here" type="text" /><br><label for="geoLng">Longitude:</label><br><input class="button" placeholder="Enter Long Here" id="geoLng" type="text" />`
 };
 function renderFields(){
     fieldsEl.innerHTML=templates[fnTypeEl.value]();
@@ -80,7 +80,7 @@ function composeFinalCanvas(qrCanvas, options){
 async function generateAndPreview(){
     const payload=buildPayload();
     if(!payload){ previewCtx.clearRect(0,0,previewCanvas.width,previewCanvas.height); return; }
-    const size=Math.max(128,Math.min(2048,Number(qrSizeEl.value)||512));
+    const size=Math.max(128,Math.min(2048,Number(qrSizeEl.value)||420));
     const ec=qrECEl.value;
     const mColor=moduleColorEl.value||'#000';
     const bg=bgColorEl.value||'#fff';

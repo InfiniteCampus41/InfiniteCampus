@@ -696,7 +696,13 @@ main {
         width: 60% !important;
         margin: 10px auto !important;
     }
+    .controls-group {
+        width:100%;
+    }
     #desktopNav {
+        display:none;
+    }
+    #donateUI > br{
         display:none;
     }
     #header-left {
@@ -718,15 +724,36 @@ main {
         display:block !important;
         width:55% !important;
         margin:0px auto;
+        margin-bottom:4px;
     }
     .mobile-menu-btn {
         display:block;
     }
-    .qr-layout {
-        grid-template-columns: 1fr;
+    .qrDiv {
+        display:flex;
+        flex-direction:column;
+        margin-left:20px;
     }
-    .qr-preview {
-        margin-top: 16px;
+    .qr-layout {
+        display:flex !important;
+        flex-direction:column;
+    }
+    .qr-left {
+        height:fit-content;
+    }
+    .qr-left div:not(.qrDiv) {
+        height:fit-content;
+        display:flex;
+    }
+    .qr-left #fields {
+        width:100%;
+        flex-direction:column;
+    }
+    #qrPreview {
+        max-width:90vw;
+    }
+    #qrSize {
+        margin-right:10px;
     }
     .section#before {
         width:75%;
@@ -735,6 +762,9 @@ main {
     #section.section {
         width:75%;
         max-width:75%;
+    }
+    #signupSection > br {
+        display:none;
     }
     #site-footer span:first-child {
         display:none !important;

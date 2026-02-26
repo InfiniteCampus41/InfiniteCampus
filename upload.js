@@ -23,7 +23,7 @@ if (fileParam) {
                 <div id="progressBar" style="width:0%; height:20px; background:#4caf50; border-radius:4px;">
                 </div>
             </div>
-            <button class="button" id="downloadBtn">
+            <button class="button apbtn" id="downloadBtn">
                 Download
             </button>
         </center>
@@ -71,7 +71,7 @@ if (fileParam) {
             <p id="premiumInfo" style="color:blue;">
             </p>
             <input type="file" id="fileInput" style="display:none;">
-            <label for="fileInput" class="button">
+            <label for="fileInput" class="button apbtn">
                 Choose File
             </label>
             <p id="fileName" class="btxt">
@@ -240,28 +240,28 @@ if (fileParam) {
                 <p class="btxt">
                     Temporary Download Link:
                 </p>
-                <input type="text" class="button" id="fileLink" value="${link}" readonly style="width:80%">
-                <button class="button" onclick="copyLink()">
+                <input type="text" class="button mbInp2" id="fileLink" value="${link}" readonly style="width:80%">
+                <button class="button apbtn" onclick="copyLink()">
                     Copy
                 </button>
                 <br>
                 <br>
                 ${!hideSecondLink ? `
-                    <input type="text" class="button" id="fileLink2" value="${link2}" readonly style="width:80%">
-                    <button class="button" onclick="copyLink2()">
+                    <input type="text" class="button mbInp2" id="fileLink2" value="${link2}" readonly style="width:80%">
+                    <button class="button apbtn" onclick="copyLink2()">
                         Copy
                     </button>
                     <br>
                     <br>
                 ` : ``}
                 <a href="${link}" target="_blank">
-                    <button class="button">
+                    <button class="button apbtn">
                         Go To Download Page (This Site)
                     </button>
                 </a>
                 ${!hideSecondLink ? `
                     <a href="${link2}" target="_blank">
-                        <button class="button">
+                        <button class="button apbtn">
                             Go To Download Page (Official)
                         </button>
                     </a>
