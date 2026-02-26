@@ -14,12 +14,12 @@ const authcontainer = document.getElementById('authContainer');
 let profileImages = [];
 async function loadProfileImages() {
     try {
-        const res = await fetch("/pfps/index.json");
+        const res = await fetch(`/pfps/index.json?t=${Date.now()}`);        
         const files = await res.json();
         return files.map(f => "/pfps/" + f);
     } catch (e) {
         console.error("Failed To Load Profile Images:", e);
-        return ["/pfps/1.jpeg"];
+        return [`/pfps/1.jpeg?t=${Date.now()}`];
     }
 }
 if (mode) {
@@ -319,7 +319,7 @@ if (mode) {
     const cancelDisplayBtn = document.getElementById("cancelDisplayBtn");
     const displayCharCount = document.getElementById("displayCharCount");
     const panelPic = document.getElementById('pfp');
-    panelPic.src = '/pfps/1.jpeg';
+    panelPic.src = `/pfps/1.jpeg?t=${Date.now()}`;
     panelPic.style.height = '100px';
     panelPic.style.width = '100px';
     panelPic.style.border = '1px solid white';
@@ -429,7 +429,7 @@ if (mode) {
     removeBtn.onclick = () => {
         selectedFile = null;
         removeRequested = true;
-        previewImg.src = "/pfps/1.jpeg";
+        previewImg.src = `/pfps/1.jpeg?t=${Date.now()}`;
     };
     saveBtn.onclick = async () => {
         if (!currentUser) return;
@@ -450,13 +450,13 @@ if (mode) {
                     return;
                 }
                 const newUrl = "/pfps/" + data.file;
-                panelPic.src = newUrl;
+                panelPic.src = newUrl + "?t=" + Date.now();
                 currentServerPicUrl = newUrl;
                 showSuccess("Profile Picture Updated!");
             }
             if (removeRequested) {
                 await set(ref(db, `users/${currentUser.uid}/profile/pic`), 0);
-                panelPic.src = "/pfps/1.jpeg";
+                panelPic.src = `/pfps/1.jpeg?t=${Date.now()}`;
                 showSuccess("Profile Picture Removed!");
             }
             pfpModalBg.style.display = "none";
@@ -488,7 +488,7 @@ if (mode) {
         nameColor: "#ffffff",
         bio: "No Bio Set",
         displayName: "User",
-        pic: "/pfps/1.jpeg"
+        pic: `/pfps/1.jpeg?t=${Date.now()}`
     };
     function setSetting(key, value) {
         window.appSettings[key] = value;
@@ -803,12 +803,12 @@ if (mode) {
             if (!profileImages || profileImages.length === 0) {
                 profileImages = await loadProfileImages();
             }
-            const imgSrc = profileImages[picIndex] || profileImages[0] || "/pfps/1.jpeg";
-            panelPic.src = imgSrc;
+            const imgSrc = profileImages[picIndex] || profileImages[0] || `/pfps/1.jpeg?t=${Date.now()}`;
+            panelPic.src = imgSrc + "?t=" + Date.now();            
             setSetting("pic", imgSrc);
         } catch (err) {
             console.error("Failed To Load Profile Picture:", err);
-            panelPic.src = "/pfps/1.jpeg";
+            panelPic.src = `/pfps/1.jpeg?t=${Date.now()}`;
         }
     }
     onAuthStateChanged(auth, async (user) => {

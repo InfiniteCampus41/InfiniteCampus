@@ -308,13 +308,14 @@ async function renderMessageInstant(id, msg) {
     profilePic.style.cursor = "pointer";
     let profilePics = [];
     async function loadProfilePics() {
+        const pfpDate = Date.now();
         try {
-            const res = await fetch("/pfps/index.json");
+            const res = await fetch(`/pfps/index.json?t=${pfpDate}`);
             const files = await res.json();
             profilePics = files.map(file => `/pfps/${file}`);
         } catch (e) {
             console.error("Failed To Load Profile Pics:", e);
-            profilePics = ["/pfps/1.jpeg"];
+            profilePics = [`/pfps/1.jpeg?t=${pfpDate}`];
         }
     }
     await loadProfilePics();
@@ -549,7 +550,7 @@ async function renderMessageInstant(id, msg) {
             else if (senderIsAdmin) badgeText = "ADMN";
             const picVal = picSnap.exists() ? picSnap.val() : 0;
             const picIndex = (picVal >= 0 && picVal < profilePics.length) ? picVal : 0;
-            profilePic.src = profilePics[picIndex];
+            profilePic.src = profilePics[picIndex] + "?t=" + Date.now();
             nameSpan.textContent = displayName;
             nameSpan.style.color = color;
             const openProfile = () => {
@@ -1479,19 +1480,24 @@ onAuthStateChanged(auth, async user => {
     const pfpIndex = pfpSnap.exists() ? pfpSnap.val() : 0;
     let profilePics = [];
     async function loadProfilePics() {
+        const pfpDate = Date.now();
         try {
-            const res = await fetch("/pfps/index.json");
+            const res = await fetch(`/pfps/index.json?t=${pfpDate}`);
             const files = await res.json();
             profilePics = files.map(file => `/pfps/${file}`);
         } catch (e) {
             console.error("Failed To Load Profile Pics:", e);
-            profilePics = ["/pfps/1.jpeg"];
+            profilePics = [`/pfps/1.jpeg?t=${pfpDate}`];
         }
     }
     await loadProfilePics();
     const sidebarPfp = document.getElementById("sidebarPfp");
     if (sidebarPfp) {
-        sidebarPfp.src = profilePics[pfpIndex];
+        const safeIndex =
+            pfpIndex >= 0 && pfpIndex < profilePics.length
+                ? pfpIndex
+                : 0;
+        sidebarPfp.src = profilePics[safeIndex] + "?t=" + Date.now();    
     }
 });
 async function loadAllUsernames() {

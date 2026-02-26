@@ -27,13 +27,13 @@ let activeChatListener = null;
 let profilePics = [];
 async function loadProfilePics() {
     try {
-        const res = await fetch("/pfps/index.json");
+        const res = await fetch(`/pfps/index.json?${Date.now()}`);
         const files = await res.json();
-        profilePics = files.map(f => `/pfps/${f}`);
+        profilePics = files.map(f => `/pfps/${f}?t=${Date.now()}`);
         console.log("Loaded profile pics:", profilePics);
     } catch (err) {
         console.error("Failed to load profile pics:", err);
-        profilePics = ["/pfps/1.jpeg"];
+        profilePics = [`/pfps/1.jpeg?t=${Date.now()}`];
     }
 }
 async function logMutedUsers() {
@@ -63,7 +63,7 @@ async function logMutedUsers() {
             const emailVal = emailSnap.exists() ? emailSnap.val() : "No Email";
             const header = document.createElement('div');
             let picIndex = parseInt(picVal);
-            let picSrc = "/pfps/1.jpeg";
+            let picSrc = `/pfps/1.jpeg?t=${Date.now()}`;
             if (!isNaN(picIndex) && picIndex > 0 && picIndex <= profilePics.length) {
                 picSrc = profilePics[picIndex];
             }
