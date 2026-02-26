@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Ngon", method: ["1", "2"], url: "https://landgreen.github.io/n-gon/" },
         { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: "https://sd592g.github.io/zj684od4lfg/" },
         { name: "Eaglercraft ( 1.5.2 ) (2)", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/eaglercraft/index.html" },
-        { name: "Eaglercraft ( 1.8.8 )", method: ["1", "2"], url: "https://resent4-0.vercel.app/" },
+        { name: "Eaglercraft ( 1.8.8 )", method: ["2"], url: "https://resent4-0.vercel.app/" },
         { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: "https://mcraft.fun/" },
         { name: "Eaglercraft Servers", method: ["1", "2"], url: "https://servers.eaglercraft.com/" },
         { name: "Roblox ( Server 1 )", method: ["1", "2"], url: "https://www.easyfun.gg/games/roblox.html" },
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
-                        backButton.style.top = "70px";
+                        backButton.style.top = "calc(var(--headerHeight) + 5px)";
                         backButton.style.left = "10px";
                         backButton.style.zIndex = "1000";
                         backButton.style.padding = "10px";
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
-                        fullscreen.style.bottom = "10px";
+                        fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";
                         fullscreen.style.right = "10px";
                         fullscreen.style.zIndex = "1000";
                         fullscreen.style.padding = "10px";
@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
-                        backButton.style.top = "70px";
+                        backButton.style.top = "calc(var(--headerHeight) + 5px)";
                         backButton.style.left = "10px";
                         backButton.style.zIndex = "1000";
                         backButton.style.padding = "10px";
@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
-                        fullscreen.style.bottom = "60px";
+                        fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";
                         fullscreen.style.right = "10px";
                         fullscreen.style.zIndex = "1000";
                         fullscreen.style.padding = "10px";
@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         const iframe = document.createElement("iframe");
                         iframe.id = "gameFrame";
                         iframe.style.width = "100vw";
-                        iframe.style.height = "calc(100vh - (var(--headerHeight) + var(--footerHeight)))";
+                        iframe.style.height = "calc(100vh - calc(var(--headerHeight) + var(--footerHeight)))";
                         iframe.src = game.url;
                         main.appendChild(iframe);
                         fullscreen.onclick = function () {

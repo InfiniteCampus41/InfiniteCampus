@@ -135,13 +135,33 @@ function renderMovies(list) {
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
-            <b>${v.name}</b> — ${v.humanSize}<br><br>
-            <button class="button" onclick="openWatchPanel('${v.name}')">Watch</button>
+            <div style="display:inline-flex; width:100%;">
+                <span style="width:100%; text-align:center">
+                    <b>
+                        ${v.name}
+                    </b> 
+                    — 
+                    ${v.humanSize}
+                </span>
+                <span id="upByIcon" style="width:0; margin-left:-20px;">
+                    <i class="bi bi-question-circle" title="Uploaded By: @${uploaderName}">
+                    </i>
+                </span>
+            </div>
+            <br>
+            <br>
+            <button class="button" onclick="openWatchPanel('${v.name}')">
+                Watch
+            </button>
             <a href="${dlURL}">
-                <button class="button">Download</button>
+                <button class="button">
+                    Download
+                </button>
             </a>
-            <br><br>
-            <small>Uploaded By: ${uploaderName}</small>
+            <br>
+            <small id="upByTxt" style="display:none;">
+                Uploaded By: @${uploaderName}
+            </small>
         `;
         box.appendChild(div);
     });
@@ -228,5 +248,9 @@ async function checkNetworkSpeed() {
         networkWarning.style.display = "block";
     }
 }
+window.openWatchPanel = openWatchPanel;
+window.closeWatchPanel = closeWatchPanel;
+window.loadMovies = loadMovies;
+window.filterMovies = filterMovies;
 checkNetworkSpeed();
 setInterval(checkNetworkSpeed, 5000);
