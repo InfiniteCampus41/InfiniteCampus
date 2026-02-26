@@ -107,12 +107,14 @@ socket.on("jobProgress", data => handleJobProgress(data));
 socket.on("jobError", data => handleJobError(data));
 socket.on("jobStarted", data => handleJobStarted(data));
 socket.on("jobDone", data => handleJobDone(data));
+let currentStatus = "";
+let percent = null;
 async function loadApply() {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
     const box = document.getElementById("applyList");
     box.innerHTML = "Loading...";
-    const res = await adminFetch(BACKEND + "/api/list_apply_x9a7b2", {
+    const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
@@ -121,12 +123,23 @@ async function loadApply() {
         return;
     }
     box.innerHTML = "";
-    data.list.forEach(f => {
+    data.files.forEach(f => {
         if (isCopyFile(f.file)) return;
+        if (f.file.toLowerCase().endsWith(".json")) return;
+        if (f.status === "copying") {
+            currentStatus = "Copying File";
+            percent = `${f.percent}%`;
+        } else if (f.status === "scaling") {
+            currentStatus = "Scaling To 360p";
+            percent = `${f.percent}%`;
+        } else {
+            currentStatus = "";
+            percent = ``;
+        }
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
-            <b>${f.file}</b> — <span id="size-${f.file}">${f.humanSize}</span><br><br>
+            <b>${f.file}</b> — <span id="size-${f.file}">${f.humanSize}</span><br><span class="btxt">${currentStatus}<br>
             <button class="button" onclick="watchApply('${f.file}')">Watch</button>
             <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
             <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
@@ -138,7 +151,7 @@ async function loadApply() {
         `;
         box.appendChild(div);
     });
-    data.list.forEach(f => {
+    data.files.forEach(f => {
         if (is360File(f.file)) {
             startProgressPolling(f.file);
         }
@@ -147,12 +160,12 @@ async function loadApply() {
 setInterval(updateSizesFromListApply, 3000);
 async function updateSizesFromListApply() {
     try {
-        const res = await adminFetch(BACKEND + "/api/list_apply_x9a7b2", {
+        const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
             headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await res.json();
-        if (!data.ok || !data.list) return;
-        for (const f of data.list) {
+        if (!data.ok || !data.files) return;
+        for (const f of data.files) {
             const span = document.getElementById(`size-${f.file}`);
             if (!span) continue;
             if (f.humanSize) {
@@ -276,25 +289,23 @@ function startProgressPolling(filename) {
         : filename;
     const poll = async () => {
         try {
-            const res = await fetch(
-                BACKEND + "/accept_status/" + encodeURIComponent(pollFilename),
-                { headers: { "ngrok-skip-browser-warning": "true" } }
+            const res = await adminFetch(
+                BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`
             );
             const data = await res.json();
-            if (!data.exists || data.status === "idle") {
+            if (!data.ok || !data.list) return;
+            const fileObj = data.list.find(f => f.file === pollFilename);
+            if (!fileObj || fileObj.status === "idle") {
                 wrap.style.display = "none";
                 stopProgressPolling(filename);
                 return;
             }
             wrap.style.display = "block";
-            const percent = data.percent ?? 0;
+            const percent = parseInt(fileObj.percent || 0);
             bar.style.width = percent + "%";
             let label = `${percent}%`;
-            if (data.remainingSec != null) {
-                label += ` — ${formatTime(data.remainingSec)} Left`;
-            }
             bar.innerText = label;
-            if (data.status === "completed" || data.status === "error") {
+            if (fileObj.status === "completed" || fileObj.status === "error") {
                 stopProgressPolling(filename);
             }
         } catch (e) {

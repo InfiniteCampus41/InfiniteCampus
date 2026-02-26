@@ -127,20 +127,31 @@ async function loadMovies() {
             return;
         }
         MOVIE_CACHE = data.videos;
-        renderMovies(data.videos);
+        await renderMovies(data.videos);
     } catch (e) {
         showError("Failed To Load Movies, Check Server Status")
         box.innerHTML = "Could Not Reach Server.";
     }
 }
-function renderMovies(list) {
+async function renderMovies(list) {
     const box = document.getElementById("movies");
+    box.innerHTML = "Loading...";
     box.innerHTML = "";
-    list.forEach(v => {
+    for (const v of list) {
         const dlURL = `${BACKEND}/download/x9a7b2/${v.name}`;
-        const uploaderName = v.uploadedBy && v.uploadedBy !== ""
-            ? v.uploadedBy
-            : "User";
+        let uploaderName = "User";
+        if (v.uploadedBy && v.uploadedBy !== "") {
+            try {
+                const snap = await get(
+                    ref(db, "users/" + v.uploadedBy + "/profile/displayName")
+                );
+                if (snap.exists()) {
+                    uploaderName = snap.val();
+                }
+            } catch (err) {
+                console.error("Failed To Fetch Uploader Name:", err);
+            }
+        }
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
@@ -173,7 +184,7 @@ function renderMovies(list) {
             </small>
         `;
         box.appendChild(div);
-    });
+    }
 }
 function filterMovies() {
     const term = document.getElementById("search").value.toLowerCase();
