@@ -329,6 +329,7 @@ if (mode) {
     let currentServerPicUrl = null;
     const pfpWrapper = document.createElement("div");
     pfpWrapper.style.position = "relative";
+    pfpWrapper.style.height = "fit-content";
     pfpWrapper.style.display = "inline-block";
     panelPic.parentNode.insertBefore(pfpWrapper, panelPic);
     pfpWrapper.appendChild(panelPic);
