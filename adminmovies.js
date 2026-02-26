@@ -191,7 +191,7 @@ async function deleteApply(filename) {
 async function acceptFile(filename) {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
-    const newName = await customPrompt("Enter Name:", filename.replace(".mp4", ""));
+    const newName = await customPrompt("Enter Name:", false, filename.replace(".mp4", ""));
     if (!newName) return;
     startProgressPolling(filename);
     const lg = document.getElementById("logs");
