@@ -1,3 +1,5 @@
+import { auth } from "/firebase.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
@@ -34,14 +36,30 @@ async function uploadApply() {
         const start = i * chunkSize;
         const end = Math.min(start + chunkSize, file.size);
         const chunk = file.slice(start, end);
+        const currentUser = auth.currentUser;
+        let displayName = "User";
+        let uid = "unknown";
+        if (currentUser) {
+            uid = currentUser.uid;
+            try {
+                const snap = await get(ref(db,"users/" + uid + "/profile/displayName"));
+                if (snap.exists()) {
+                    displayName = snap.val();
+                }
+            } catch (err) {
+                console.error("Failed To Fetch DisplayName:", err);
+            }
+        }
         const res = await fetch(uploadURL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/octet-stream",
-                "fileId": fileId,
-                "chunkIndex": i,
-                "totalChunks": totalChunks,
-                "filename": file.name,
+                fileId: fileId,
+                chunkIndex: i,
+                totalChunks: totalChunks,
+                filename: file.name,
+                uploadedBy: displayName,
+                "x-user-id": uid,
                 "ngrok-skip-browser-warning": "true"
             },
             body: chunk
@@ -111,6 +129,9 @@ function renderMovies(list) {
     box.innerHTML = "";
     list.forEach(v => {
         const dlURL = `${BACKEND}/download/x9a7b2/${v.name}`;
+        const uploaderName = v.uploadedBy && v.uploadedBy !== ""
+            ? v.uploadedBy
+            : "User";
         const div = document.createElement("div");
         div.className = "file-item";
         div.innerHTML = `
@@ -119,6 +140,8 @@ function renderMovies(list) {
             <a href="${dlURL}">
                 <button class="button">Download</button>
             </a>
+            <br><br>
+            <small>Uploaded By: ${uploaderName}</small>
         `;
         box.appendChild(div);
     });

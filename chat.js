@@ -510,7 +510,7 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(editedSpan);
     (async () => {
         try {
-            const [nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, guessSnap] = await Promise.all([
+            const [nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap] = await Promise.all([
                 get(ref(db, `users/${msg.sender}/profile/displayName`)),
                 get(ref(db, `users/${msg.sender}/settings/color`)),
                 get(ref(db, `users/${msg.sender}/profile/pic`)),
@@ -528,6 +528,7 @@ async function renderMessageInstant(id, msg) {
                 get(ref(db, `users/${msg.sender}/profile/isPartner`)),
                 get(ref(db, `users/${msg.sender}/profile/dUsername`)),
                 get(ref(db, `users/${msg.sender}/profile/isDonater`)),
+                get(ref(db, `users/${msg.sender}/profile/isUploader`)),
                 get(ref(db, `users/${msg.sender}/profile/isGuesser`))
             ]);
             let displayName = nameSnap.exists() ? nameSnap.val() : "User";
@@ -734,6 +735,14 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "cornflowerblue";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Is A Partner Of Infinite Campus`;
+                badgeSpan.appendChild(icon);
+            }
+            if (uploadSnap.exists() && uploadSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-film";
+                icon.style.color = "grey";
+                icon.style.marginLeft = "6px";
+                icon.title = "This User Has Uploaded A Movie To Infinite Campus";
                 badgeSpan.appendChild(icon);
             }
             if (hSnap.exists() && hSnap.val() === true) {
