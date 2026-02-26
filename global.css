@@ -1232,15 +1232,16 @@ select {
 }
 .showpopup {
     color:white;
+    height:56px;
+    width:56px;
+    text-align:center;
     border-radius: 50%;
     position: fixed;
     bottom: calc(var(--footerHeight) + 5px);
     right:90px;
-    font-size: 2.5em;
+    font-size: 2em;
     background: rgba(111,111,111,.15);
     cursor: pointer;
-    padding-right: 14px;
-    padding-left: 14px;
     border:1px solid white;
     transition:0.3s all;
 }
