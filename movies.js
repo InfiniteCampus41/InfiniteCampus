@@ -15,6 +15,15 @@ document.getElementById("applyFile").addEventListener("change", () => {
         label.innerText = "";
     }
 });
+function sanitizeUsername(name) {
+    if (!name) return "User";
+    return name
+        .normalize("NFKD")
+        .replace(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu, "")
+        .replace(/\s+/g, "")
+        .replace(/[^\w-]/g, "")
+        .trim() || "User";
+}
 async function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
     if (!file) return showError("Choose A File");
@@ -44,7 +53,7 @@ async function uploadApply() {
             try {
                 const snap = await get(ref(db,"users/" + uid + "/profile/displayName"));
                 if (snap.exists()) {
-                    displayName = snap.val();
+                    displayName = sanitizeUsername(snap.val());
                 }
             } catch (err) {
                 console.error("Failed To Fetch DisplayName:", err);
