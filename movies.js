@@ -252,5 +252,6 @@ window.openWatchPanel = openWatchPanel;
 window.closeWatchPanel = closeWatchPanel;
 window.loadMovies = loadMovies;
 window.filterMovies = filterMovies;
+window.uploadApply = uploadApply;
 checkNetworkSpeed();
 setInterval(checkNetworkSpeed, 5000);
