@@ -679,65 +679,88 @@ main {
     color:darkcyan;
 }
 @media (max-width: 640px) {
+    .controls { 
+        grid-template-columns: 1fr 1fr 1fr 1fr; 
+    }
     .now { 
         flex-direction: column; 
         align-items:flex-start; 
-    }
-    .controls { 
-        grid-template-columns: 1fr 1fr 1fr 1fr; 
     }
     .time { 
         display:none; 
     }
 }
-@media (max-width: 768px) {
-    #appsDiv .apbtn {
+@media (max-width: 900px) {
+    .apbtn {
         display: block !important;
         width: 60% !important;
         margin: 10px auto !important;
     }
-    center #appsDiv > br {
-        display: none;
-    }
-}
-@media (max-width: 900px) {
     #desktopNav {
         display:none;
-    }
-    .mobile-menu-btn {
-        display:block;
     }
     #header-left {
         display:none;
     }
-    #upByTxt {
-        display:block !important;
+    #header-right {
+        width:auto;
+        justify-content:flex-end;
     }
-    #upByIcon {
+    #mbBtns > br {
         display:none;
     }
-}
-@media (max-width: 900px) {
-    #site-header {
-        flex-wrap: nowrap;
+    .mbInp {
+        display:block !important;
+        width:55% !important;
+        margin:40px auto !important;
     }
-    #header-right {
-        width: auto;
-        justify-content: flex-end;
+    .mbInp2 {
+        display:block !important;
+        width:55% !important;
+        margin:0px auto;
     }
-}
-@media (max-width: 900px) {
+    .mobile-menu-btn {
+        display:block;
+    }
     .qr-layout {
         grid-template-columns: 1fr;
     }
     .qr-preview {
         margin-top: 16px;
     }
+    .section#before {
+        width:75%;
+        max-width:75%;
+    }
+    #section.section {
+        width:75%;
+        max-width:75%;
+    }
+    #site-footer span:first-child {
+        display:none !important;
+    }
+    #site-header {
+        flex-wrap: nowrap;
+    }
+    #upByIcon {
+        display:none;
+    }
+    #upByTxt {
+        display:block !important;
+    }
 }
 @media (min-width: 901px){
-    #desktopNav{display:flex;}
-    .mobile-menu-btn{display:none;}
-    #header-left{display:flex;}
+    #desktopNav{
+        display:flex;
+    }
+    .mobile-menu-btn{
+        display:none;
+    }
+}
+@media (max-width: 1100px) {
+    #header-left {
+        display:none;
+    }
 }
 #messages {
     list-style: none;

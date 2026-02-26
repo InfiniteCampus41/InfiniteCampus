@@ -122,7 +122,7 @@ document.getElementById('openInfiniteCampus').addEventListener('click', () => {
 });
 const bypassBtn = document.createElement('button');
 bypassBtn.textContent = 'Bypass URL Checks OFF';
-bypassBtn.classList.add('button');
+bypassBtn.classList = 'button apbtn';
 bypassBtn.style.marginTop = '10px';
 bypassBtn.style.display = 'block';
 bypassBtn.addEventListener('click', () => {
