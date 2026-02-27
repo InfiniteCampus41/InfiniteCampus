@@ -12,8 +12,6 @@ async function handleRequest(event) {
     if (
         url.pathname.startsWith("/games/slope/Build/") ||
         url.pathname.startsWith("/games/slope/TemplateData/") ||
-        url.pathname.endsWith(".wasm") ||
-        url.pathname.endsWith(".data") ||
         url.pathname.includes("unityloader")
     ) {
         return fetch(event.request);
