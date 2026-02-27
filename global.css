@@ -31,6 +31,9 @@ a {
 #add-panel.open {
     top: 80px;
 }
+.add-partner-btn {
+    margin-bottom:40px;
+}
 #aiChat {
     position:fixed;
     top:120px;
@@ -729,6 +732,13 @@ main {
     .mobile-menu-btn {
         display:block;
     }
+    #partners {
+        flex-direction:column;
+        align-items:center;
+    }
+    #partners .partner-box {
+        margin-bottom:40px;
+    }
     .qrDiv {
         display:flex;
         flex-direction:column;
@@ -977,6 +987,83 @@ main {
 #panicKeyInput {
     width:90px;
 }
+.partner-box {
+    width: 180px;
+    height: 180px;
+    display: flex;
+    border:1px solid white;
+    flex-direction: column;
+    background: #1c1c1c;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.partner-box.active a {
+    position:absolute;
+    z-index:999;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #4da6ff;
+    text-decoration: none;
+    bottom:0;
+    width:100%;
+    text-align:center;
+}
+.partner-box.active img {
+    opacity: 0.3;
+}
+.partner-box.active .partner-content {
+    opacity: 1;
+    transform: translateY(0);
+}
+.partner-box.active .ptnName {
+    height: 100%;
+    padding-top: 15px;
+    background: rgba(100,100,100,0.7);
+}
+.partner-box.editing {
+    width:400px;
+    height:400px;
+}
+.partner-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
+}
+.partner-box:not(.active) a {
+    display: none;
+}
+.partner-box:not(.editing):hover {
+    transform: scale(1.05);
+}
+.partner-content {
+    z-index:998;
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    color:white;
+    height: calc(100% - 40px);
+    padding: 10px;
+    border-top:1px solid white;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(200px);
+    transition: all 0.4s ease;
+    font-size: 13px;
+    color:white;
+    overflow: auto;
+}
+#partners {
+    display:flex;
+    justify-content:space-evenly;
+}
 .perks {
     list-style-type: disc;
     padding-left: 25px;
@@ -1118,6 +1205,66 @@ pre code {
 }
 #proxy {
     height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
+}
+.ptnDelete-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(100,100,100,0.7);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.ptnEdit-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(100,100,100,0.7);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.ptnEdit-panel {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(100,100,100,0.7);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    z-index:999;
+}
+.ptnEdit-panel button {
+    font-size: 11px;
+    padding: 3px;
+    cursor: pointer;
+}
+.ptnEdit-panel input {
+    font-size: 11px;
+    padding: 3px;
+}
+.ptnName {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    padding-top: 10px;
+    color:white;
+    text-align: center;
+    background: rgba(100,100,100,0.7);
+    transition: all 0.4s ease;
+    z-index: 2;
+    font-weight: bold;
+}
+.ptnShow {
+    display:block;
 }
 #pxyApps {
     display: grid;

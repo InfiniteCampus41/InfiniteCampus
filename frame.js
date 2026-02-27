@@ -100,8 +100,8 @@ const headerHTML = `
                 <a href="InfiniteGamers.html">
                     Games
                 </a>
-                <a href="InfiniteCheaters.html">
-                    Cheats
+                <a href="InfinitePartners.html">
+                    Partners
                 </a>
                 <a href="InfiniteUpdaters.html">
                     Updates
@@ -162,8 +162,8 @@ const headerHTML = `
         <a href="InfiniteGamers.html" class="darkbuttons">
             Games
         </a>
-        <a href="InfiniteCheaters.html" class="darkbuttons">
-            Cheats
+        <a href="InfinitePartners.html" class="darkbuttons">
+            Partners
         </a>
         <a href="InfiniteUpdaters.html" class="darkbuttons">
             Updates
