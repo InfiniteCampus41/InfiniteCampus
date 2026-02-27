@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const games = [
         { name: "Slope", method: ["2"], url: "https://play.infinitecampus.xyz/games/slope/index.html"},
         { name: "Slope 2", method: ["2"], url: "https://mathadventure1.github.io/slope/slope/index.html"},
+        { name: "Slope", method: ["1"], url: "https://slopegame-online.com/play/slope/"},
         { name: "NettleWeb (1)", method: ["2"], url: "https://nettleweb.com"},
         { name: "NettleWeb (2)", method: ["2"], url: "https://sigmasigmatoiletedge.github.io" },
         { name: "Ngon", method: ["1", "2"], url: "https://landgreen.github.io/n-gon/" },
@@ -20,9 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Eaglercraft ( 1.8.8 )", method: ["2"], url: "https://resent4-0.vercel.app/" },
         { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: "https://mcraft.fun/" },
         { name: "Eaglercraft Servers", method: ["1", "2"], url: "https://servers.eaglercraft.com/" },
-        { name: "Roblox ( Server 1 )", method: ["1", "2"], url: "https://www.easyfun.gg/games/roblox.html" },
-        { name: "Roblox ( Server 2 )", method: ["1", "2"], url: "https://dashboard-cq4z.onrender.com/?ng_ifp_partner=skool" },
-        { name: "Roblox ( Server 3 )", method: ["1", "2"], url: "https://html.cafe/x8bcb5934" },
+        { name: "Roblox", method: ["1"], url: "https://roblox.com"},
         { name: "Run 3", method: ["1", "2"], url: "https://lekug.github.io/tn6pS9dCf37xAhkJv/" },
         { name: "Bad Time Simulator", method: ["1", "2"], url: "https://jcw87.github.io/c2-sans-fight/"},
         { name: "OVO", method: ["1", "2"], url: "https://www.hoodamath.com/mobile/games/ovo/game.html?nocheckorient=1" },
