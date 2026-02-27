@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 const partnerContainer = document.getElementById("partners");
 let currentUser = null;
 let profileData = null;
@@ -230,15 +230,16 @@ async function createAddPartnerButton() {
     cancelBtn.onclick = () => overlay.style.display = "none";
     saveBtn.onclick = async () => {
         const selectedUid = userSelect.value;
-        if (!selectedUid) return alert("Select a user");
+        if (!selectedUid) return showError("Select A User");
         const name = form.querySelector(".ptnNameInput").value.trim();
         const link = form.querySelector(".ptnLinkInput").value.trim();
         const photo = form.querySelector(".ptnPhotoInput").value.trim();
         const desc = form.querySelector(".ptnDescInput").value.trim();
-        if (!name) return alert("Partner Name cannot be empty");
+        if (!name) return showError("Partner Name Cannot Be Empty");
         await update(ref(db, `/partners/${selectedUid}/${name}`), { link, photo, desc });
         await update(ref(db, `users/${selectedUid}/profile`), {isPartner:"true"});
         overlay.style.display = "none";
+        showSuccess("Added Partner");
         loadPartners();
     };
 }
