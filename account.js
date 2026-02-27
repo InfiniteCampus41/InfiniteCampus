@@ -311,7 +311,7 @@ if (mode) {
     const localStorageList = document.getElementById('localStorageList');
     const nameColorInput = document.getElementById("nameColorInput");
     const saveNameColorBtn = document.getElementById("saveNameColorBtn");
-    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+    const resetPasswordBtnAcc = document.getElementById("resetPasswordBtnAcc");
     const logoutBtn = document.getElementById("logoutBtn");
     let currentUser = null;
     const displayNameInput = document.getElementById("displayNameInput");
@@ -769,7 +769,7 @@ if (mode) {
             disInput.value = disInput.value.slice(0, 50);
         }
     });
-    resetPasswordBtn.addEventListener("click", async () => {
+    resetPasswordBtnAcc.addEventListener("click", async () => {
         const email = currentUser?.email;
         if (!email) return showError("No Email Found. Please Log In Again.");
         try {
