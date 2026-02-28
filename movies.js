@@ -1,4 +1,4 @@
-import { auth, db, ref, get } from "/firebase.js";
+import { auth, db, ref, get } from "/imports.js";
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
