@@ -1,7 +1,4 @@
-import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { auth, db } from "./firebase.js";
+import { io, auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./imports.js";
 forceWebSockets();
 const expandEdit = document.getElementById('expandMoviesOrder');
 const editOrderContainer = document.getElementById('editMoviesContainer');

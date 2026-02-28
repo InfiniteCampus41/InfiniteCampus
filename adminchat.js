@@ -1,6 +1,4 @@
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { auth, db, onAuthStateChanged, ref, get, set, remove, onValue } from "./imports.js";
 const privateChatsDiv = document.getElementById("privateChats");
 const chatView = document.getElementById("chatView");
 const chatTitle = document.getElementById("chatTitle");

@@ -1,6 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { auth, db } from "./firebase.js";
+import { auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./imports.js";
 forceWebSockets();
 const BACKEND = `${a}`;
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;

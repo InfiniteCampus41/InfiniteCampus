@@ -1,5 +1,4 @@
-import { db } from "./firebase.js";
-import { ref, onValue } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { db, auth, ref, onValue, get, onAuthStateChanged } from "./imports.js";
 let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
 let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
 const frameToday = new Date();
@@ -494,8 +493,13 @@ function hideLoader() {
         loader.style.display = "none";
     }, 600);
 }
+let bypassLoader = false;
 function applyLoaderMode(mode, message = "") {
     LOADER_CONFIG.mode = mode || "auto";
+    if (bypassLoader && (mode === "maint" || mode === "infinite" || mode === "time")) {
+        hideLoader();
+        return;
+    }
     if (mode === "maint") {
         showLoader();
         maintContent.style.display = "flex";
@@ -529,6 +533,25 @@ window.addEventListener("load", () => {
 const loaderModeRef = ref(db, "/site/loader/mode");
 const loaderMessageRef = ref(db, "/site/loader/message");
 let currentMessage = "";
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        bypassLoader = false;
+        return;
+    }
+    try {
+        const profileSnap = await get(ref(db, `/users/${user.uid}/profile`));
+        const profile = profileSnap.val();
+        if (profile && (profile.isOwner || profile.isTester || profile.isDev)) {
+            bypassLoader = true;
+            hideLoader();
+        } else {
+            bypassLoader = false;
+        }
+    } catch (err) {
+        console.error("Role Check Failed:", err);
+        bypassLoader = false;
+    }
+});
 onValue(loaderMessageRef, (snap) => {
     currentMessage = snap.val() || "";
     if (LOADER_CONFIG.mode === "maint") {

@@ -1,6 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, get, forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { auth, db } from "./firebase.js";
+import { auth, db, onAuthStateChanged, ref, get, set, forceWebSockets } from "./imports.js";
 forceWebSockets();
 let currentUser = null;
 let isAuthInitialized = false;
@@ -168,6 +166,79 @@ document.getElementById("lockdowndisc").addEventListener("click", async () => {
         showError("Failed To Toggle Discord Lockdown");
     }
 });
+const loaderBtn = document.createElement("button");
+loaderBtn.className = "button";
+loaderBtn.id = "loaderConfigBtn";
+loaderBtn.textContent = "Loader Config";
+document.getElementById("lockdowndisc").after(loaderBtn);
+const loaderPanel = document.createElement("div");
+loaderPanel.id = "loaderPanel";
+loaderPanel.style.display = "none";
+loaderPanel.style.position = "fixed";
+loaderPanel.style.top = "50%";
+loaderPanel.style.left = "50%";
+loaderPanel.style.transform = "translate(-50%, -50%)";
+loaderPanel.style.background = "#111";
+loaderPanel.style.padding = "20px";
+loaderPanel.style.border = "1px solid #444";
+loaderPanel.style.zIndex = "9999";
+loaderPanel.style.width = "300px";
+loaderPanel.style.borderRadius = "20px";
+loaderPanel.innerHTML = `
+    <h3 class="btxt">Mode</h3>
+    <select class="button" id="loaderModeSelect" style="width:100%; margin-bottom:10px;">
+        <option value="infinite">Infinite</option>
+        <option value="time">Time</option>
+        <option value="auto">Auto</option>
+        <option value="maint">Maint</option>
+    </select>
+    <label class="btxt">Message</label>
+    <input class="button" id="loaderMessageInput" type="text" placeholder="Message" style="width:100%; margin-bottom:10px;" />
+    <button class="button" id="saveLoaderConfig">Save</button>
+    <button class="button" id="closeLoaderPanel" style="margin-top:10px;">Close</button>
+`;
+document.body.appendChild(loaderPanel);
+loaderBtn.addEventListener("click", async () => {
+    if (!await checkPermissions()) return;
+    await loadLoaderConfig();
+    loaderPanel.style.display = "block";
+});
+document.getElementById("closeLoaderPanel").addEventListener("click", () => {
+    loaderPanel.style.display = "none";
+});
+document.getElementById("saveLoaderConfig").addEventListener("click", async () => {
+    if (!await checkPermissions()) return;
+    const mode = document.getElementById("loaderModeSelect").value;
+    const message = document.getElementById("loaderMessageInput").value.trim();
+    try {
+        await set(ref(db, "site/loader"), {
+            mode: mode,
+            message: message
+        });
+        showSuccess("Loader Configuration Saved.");
+        loaderPanel.style.display = "none";
+    } catch (err) {
+        showError("Failed To Save Loader Configuration.");
+        console.error(err);
+    }
+});
+async function loadLoaderConfig() {
+    try {
+        const snapshot = await get(ref(db, "site/loader"));
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const modeSelect = document.getElementById("loaderModeSelect");
+            const messageInput = document.getElementById("loaderMessageInput");
+            modeSelect.value = data.mode || "auto";
+            messageInput.value = data.message || "";
+        } else {
+            document.getElementById("loaderModeSelect").value = "auto";
+            document.getElementById("loaderMessageInput").value = "";
+        }
+    } catch (err) {
+        console.error("Failed To Load Loader Config:", err);
+    }
+}
 async function fetchLogs() {
     if (!await checkPermissions()) return;
     const res = await adminFetch(`${a}/admin/logs`, { headers: NGROK_HEADERS });

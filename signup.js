@@ -1,6 +1,4 @@
-import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, set, update, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { auth, db, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, ref, set, update, get } from "./imports.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");

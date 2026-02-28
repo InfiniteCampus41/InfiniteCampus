@@ -1,5 +1,4 @@
-import { auth } from "./firebase.js";
-import { onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { auth, db, onAuthStateChanged, signOut, get, ref } from "./imports.js";
 const backend = `${a}`;
 const stripe = Stripe("pk_live_51T0BHXBYxOIeQqwPGMQ05ZHFdlAJyK4k1drz0H5PxY6zCii6aIjcsbPrFqsu1208HrYGBEpkcZGtFKDQqMgSdH6a00RvADSXaA");
 let currentUser = null;

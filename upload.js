@@ -1,6 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, get, child } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
-import { auth, db } from "./firebase.js";
+import { auth, db, onAuthStateChanged, ref, get, child } from "./imports.js";
 const DEFAULT_MAX_SIZE = 100 * 1024 * 1024;
 const PREMIUM_MAX_SIZE = 500 * 1024 * 1024;
 const appDiv = document.getElementById("app");

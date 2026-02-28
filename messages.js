@@ -1,6 +1,4 @@
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { auth, db, onAuthStateChanged, ref, get } from "./imports.js";
 const backendUrl = `${a}`;
 const apiMessagesUrl = `${backendUrl}/api/messages`;
 const widgetUrl = 'https://discord.com/api/guilds/1002698920809463808/widget.json';

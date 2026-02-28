@@ -1,6 +1,4 @@
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-import { auth, db } from "./firebase.js";
+import { auth, db, ref, get, onAuthStateChanged, signOut } from "./imports.js";
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = "InfiniteLogins.html";

@@ -1,5 +1,4 @@
-import { auth, db } from "/firebase.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { auth, db, ref, get } from "/firebase.js";
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
