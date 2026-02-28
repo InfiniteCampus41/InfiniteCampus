@@ -1765,7 +1765,7 @@ th, td {
     margin-top:-50px;
 }
 #watchVideo {
-    width: auto;
+    width: 75vw;
     height: auto;
     max-height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
     border-radius: 12px;
