@@ -541,7 +541,7 @@ onAuthStateChanged(auth, async (user) => {
     try {
         const profileSnap = await get(ref(db, `/users/${user.uid}/profile`));
         const profile = profileSnap.val();
-        if (profile && (profile.isOwner || profile.isTester || profile.isDev)) {
+        if (profile && (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isDev)) {
             bypassLoader = true;
             hideLoader();
         } else {
