@@ -493,6 +493,21 @@ function hideLoader() {
         loader.style.display = "none";
     }, 600);
 }
+function showPxyLoader() {
+    if (!document.getElementById("planet-loader")) {
+        document.bosy.prepend(loader);
+    }
+    loader.style.display = "flex";
+    loader.style.top = "134.8px";
+    loader.style.opacity = "1";
+}
+function hidePxyLoader() {
+    loader.style.opacity = "0";
+    loader.style.top = '60px';
+    setTimeout(() => {
+        loader.style.display = "none";
+    }, 600);
+}
 let bypassLoader = false;
 function applyLoaderMode(mode, message = "") {
     LOADER_CONFIG.mode = mode || "auto";
