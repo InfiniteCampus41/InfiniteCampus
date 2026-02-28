@@ -788,6 +788,9 @@ main {
     #upByTxt {
         display:block !important;
     }
+    #watchVideo {
+        width: 75%;
+    }
 }
 @media (min-width: 901px){
     #desktopNav{
