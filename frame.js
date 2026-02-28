@@ -580,5 +580,7 @@ onValue(loaderModeRef, (snap) => {
     const mode = snap.val() || "auto";
     applyLoaderMode(mode, currentMessage);
 });
+window.showLoader = showLoader;
+window.hideLoader = hideLoader;
 window.showPxyLoader = showPxyLoader;
 window.hidePxyLoader = hidePxyLoader;
