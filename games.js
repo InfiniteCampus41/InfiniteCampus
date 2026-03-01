@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Roblox", method: ["1"], url: "https://roblox.com"},
         { name: "Run 3", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/run3/index.html" },
         { name: "Run 3 (2)", method: ["1", "2"], url: "https://lekug.github.io/tn6pS9dCf37xAhkJv/" },
+        { name: "Retro Bowl", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/retrobowl/index.html" },
         { name: "Bad Time Simulator", method: ["1", "2"], url: "https://jcw87.github.io/c2-sans-fight/"},
         { name: "OVO", method: ["1", "2"], url: "https://www.hoodamath.com/mobile/games/ovo/game.html?nocheckorient=1" },
         { name: "Pixel Gun 3D", method: ["1", "2"], url: "https://games.crazygames.com/en_US/pixel-gun-3d/index.html" },
@@ -36,7 +37,9 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Iron Lung", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/ironlung/index.html" },
         { name: "Super Mario 64", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/mario64/index.html" },
         { name: "The Legend Of Zelda Ocarina Of Time", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/oot/index.html" },
+        { name: "The Legend Of Zelda Majora's Mask", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/tlozmjm/index.html" },
         { name: "Pokemon Emerald", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/pokeemr/index.html" },
+        { name: "Pokemon Red", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/pokered/index.html" },
         { name: "Plants Vs Zombies", method: ["1", "2"], url: "https://games.gombis.com/plants-vs-zombies-3?hl=en" },
         { name: "Polytrack", method: ["1", "2"], url: "https://www.kodub.com/apps/polytrack" },
         { name: "Polytrack (2)", method: ["1", "2"], url: "https://poly-track.io/" },
@@ -112,8 +115,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Chrome Dino", method: ["1", "2"], url: "https://htmlxm.github.io/h7/dinosaur-game/" },
         { name: "Crossy Road", method: ["1", "2"], url: "https://htmlxm.github.io/h/crossy-road/" },
         { name: "Flappy Bird", method: ["1", "2"], url: "https://htmlxm.github.io/h8/flappy-bird-origin/" },
+        { name: "Terraria", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/terraria/index.html" },
         { name: "Basketball Stars", method: ["1", "2"], url: "https://htmlxm.github.io/h/basketball-stars/" },
         { name: "Stumble Guys ( Server 1 )", method: ["1", "2"], url: "https://www.stumbleguys.com/play" },
+        { name: "Tunnel Rush", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/tunnelrush/index.html" },
         { name: "Cookie Clicker", method: ["1", "2"], url: "https://cookieclickerunblocked.github.io/games/cookie-clicker/index.html" },
         { name: "Capybara Clicker", method: ["1", "2"], url: "https://capybara-clicker.com/" },
         { name: "Snowball.io", method: ["1", "2"], url: "https://games.crazygames.com/en_US/snowball-io/index.html" },
@@ -148,7 +153,9 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "DELTARUNE", method: ["1", "2"], url: "https://g-mcb.github.io/deltarune/index.html" },
         { name: "ULTRAKILL", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/ultrakill/index.html" },
         { name: "Hollow Knight (2)", method: ["1", "2"], url: "https://orbit.foo.ng/games/hollowknight/index.html" },
-        { name: "Tomb Of The Mask", method: ["1", "2"], url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
+        { name: "Tomb Of The Mask", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/totm/index.html" },
+        { name: "Tomb Of The Mask (2)", method: ["1", "2"], url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
+
     ];
     function showGames(method) {
         before.style.display = 'none';
