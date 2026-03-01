@@ -471,7 +471,8 @@ async function saveMoviesOrder() {
         const formatted = {};
         moviesData.forEach((movie, index) => {
             formatted[movie.filename] = {
-                order: (index + 1) * 10
+                order: (index + 1) * 10,
+                uploadedBy: movie.uploadedby || "jiEcu7wSifMalQxVupmQXRchA9k1"
             };
         });
         const res = await adminFetch(BACKEND + "/api/movies-json", {
