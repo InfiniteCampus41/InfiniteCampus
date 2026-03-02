@@ -4,5 +4,5 @@ const byodSection = document.getElementById('byod');
 const mirrorSection = document.getElementById('mirror');
 if (byod) {
     mirrorSection.style.display = 'none';
-    byodSection.style.display = 'none';
+    byodSection.style.display = 'block';
 }
