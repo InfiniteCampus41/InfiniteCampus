@@ -93,8 +93,8 @@ const headerHTML = `
                         <button onclick="location.href='InfiniteEmbeds.html?choice=5'">
                             Report A Bug
                         </button>
-                        <button onclick="location.href='InfiniteErrors.html'">
-                            Check Error Codes
+                        <button onclick="location.href='InfiniteMirrors.html'">
+                            Mirror Links
                         </button>
                     </div>
                 </div>
@@ -157,8 +157,8 @@ const headerHTML = `
         <a href="InfiniteEmbeds.html?choice=5" class="darkbuttons">
             Report A Bug
         </a>
-        <a href="InfiniteErrors.html" class="darkbuttons">
-            Check Error Codes
+        <a href="InfiniteMirrors.html" class="darkbuttons">
+            Mirror Links
         </a>
         <a href="InfiniteGamers.html" class="darkbuttons">
             Games
