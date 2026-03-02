@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Tomb Of The Mask (2)", method: ["1", "2"], url: "https://mountain658.github.io/g/tombofthemask/index.html" } 
 
     ];
-    function showGames(method) {
+    function showGames(method, filterText = "") {
         before.style.display = 'none';
         let container = document.getElementById("gamesContainer");
         if (!container) {
@@ -171,10 +171,34 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.justifyContent = "center";
             container.style.gap = "10px";
             main.appendChild(container);
+            const searchDiv = document.createElement("div");
+            searchDiv.style.width = "100%";
+            searchDiv.style.display = "flex";
+            searchDiv.style.flexDirection = "column";
+            searchDiv.style.alignItems = "center";
+            const hr = document.createElement("hr");
+            hr.style.width = "100%";
+            const searchInput = document.createElement("input");
+            searchInput.type = "text";
+            searchInput.placeholder = "Search Games";
+            searchInput.style.padding = "10px";
+            searchInput.style.width = "300px";
+            searchInput.style.fontSize = "16px";
+            searchInput.classList = "button";
+            searchInput.style.borderRadius = "8px";
+            searchInput.style.border = "1px solid #ccc";
+            searchDiv.appendChild(searchInput);
+            searchDiv.appendChild(hr);
+            container.appendChild(searchDiv);
+            searchInput.addEventListener("input", function () {
+                container.querySelectorAll("button").forEach(btn => btn.remove());
+                showGames(method, searchInput.value);
+            });
         }
         if (method == "1") {
             games.forEach(function (game) {
                 if (game.method.includes("1")) {
+                    if (!game.name.toLowerCase().includes(filterText.toLowerCase())) return;
                     const button = document.createElement("button");
                     button.textContent = game.name;
                     button.className = "button";
@@ -270,6 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             games.forEach(function (game) {
                 if (game.method.includes("2")) {
+                    if (!game.name.toLowerCase().includes(filterText.toLowerCase())) return;
                     const button = document.createElement("button");
                     button.textContent = game.name;
                     button.className = "button";
