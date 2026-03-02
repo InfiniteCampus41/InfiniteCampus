@@ -235,7 +235,7 @@ async function createAddPartnerButton() {
         const desc = form.querySelector(".ptnDescInput").value.trim();
         if (!name) return showError("Partner Name Cannot Be Empty");
         await update(ref(db, `/partners/${selectedUid}/${name}`), { link, photo, desc });
-        await update(ref(db, `users/${selectedUid}/profile`), {isPartner:"true"});
+        await update(ref(db, `users/${selectedUid}/profile`), {isPartner:true});
         overlay.style.display = "none";
         showSuccess("Added Partner");
         loadPartners();
