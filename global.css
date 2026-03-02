@@ -796,6 +796,11 @@ main {
     #desktopNav{
         display:flex;
     }
+    .mbInp2 {
+        display:block !important;
+        width:45% !important;
+        margin:-5px auto;
+    }
     .mobile-menu-btn{
         display:none;
     }

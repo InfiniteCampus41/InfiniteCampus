@@ -177,6 +177,17 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.justifyContent = "center";
             container.style.gap = "10px";
             main.appendChild(container);
+            const requestDiv = document.createElement("div");
+            requestDiv.style.display = "flex";
+            requestDiv.style.justifyContent = "center";
+            requestDiv.style.width = "100%";
+            requestDiv.style.maxHeight = "fit-content";
+            const requestBtn = document.createElement("a");
+            requestBtn.className = "discord";
+            requestBtn.href = "InfiniteFeatures.html?game=true";
+            requestBtn.innerText = "Request A Game";
+            requestDiv.appendChild(requestBtn);
+            container.appendChild(requestDiv);
             const searchDiv = document.createElement("div");
             searchDiv.style.width = "100%";
             searchDiv.style.display = "flex";

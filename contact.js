@@ -1,5 +1,6 @@
 import { auth, db, onAuthStateChanged, ref, get } from "./imports.js";
 const nameInput = document.getElementById("name");
+const messageInput = document.getElementById("message");
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
     try {
@@ -16,8 +17,13 @@ onAuthStateChanged(auth, async (user) => {
         console.error("Error Fetching Display Name:", error);
     }
 });
+const params = new URLSearchParams(window.location.search);
+const gameSug = params.get("game");
+if (gameSug && window.location.pathname === '/InfiniteFeatures.html') {
+    messageInput.value = "Game Request: \nURL: ";
+}
 async function sendMessage() {
-    const channel = ( window.location.pathname == '/InfiniteContacts.html' ) ? '1389334335114580229' : '1334377158789042226';
+    const channel = (window.location.pathname == '/InfiniteContacts.html') ? '1389334335114580229' : '1334377158789042226';
     const message = document.getElementById("message").value.trim();
     const name = nameInput.value;
     const url = window.location.host;
