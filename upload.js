@@ -33,7 +33,7 @@ if (fileParam) {
         try {
             progressContainer.style.display = "block";
             progressBar.style.width = "0%";
-            const response = await fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
+            const response = await fetch(`${a}/files/${encodeURIComponent(fileParam)}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
             if (!response.ok) {
