@@ -82,7 +82,8 @@ onValue(ref(db, 'notes'), (snapshot) => {
     applyOwnerPermissions(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev);
 });
 notesContainer.addEventListener('click', (e) => {
-    const button = e.target;
+    const button = e.target.closest('button');
+    if (!button) return;
     const key = button.dataset.key;
     if (!key) return;
     if (!(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev)) return;
