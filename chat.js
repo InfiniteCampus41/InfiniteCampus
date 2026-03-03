@@ -657,35 +657,62 @@ async function renderMessageInstant(id, msg) {
                     document.addEventListener("click", closeMenu);
                 });
             }
-            const badgeSpan = document.createElement("span");
-            badgeSpan.style.marginLeft = "6px";
-            badgeSpan.style.fontWeight = "bold";
+            const badgeContainer = document.createElement("span");
+            badgeContainer.style.marginLeft = "3px";
+            badgeContainer.style.fontWeight = "bold";
+            badgeContainer.style.display = "inline-flex";
+            badgeContainer.style.alignItems = "center";
+            badgeContainer.style.gap = "3px";
+            const mutedBadge = document.createElement("span");
+            mutedBadge.style.color = "red";
+            mutedBadge.style.fontWeight = "bold";
+            mutedBadge.style.display = "none";
+            mutedBadge.title = "This User Is Muted";
+            mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
+            const mutedRef = ref(db, `mutedUsers/${msg.sender}`);
+            onValue(mutedRef, async (snap) => {
+                if (!snap.exists()) {
+                    mutedBadge.style.display = "none";
+                    return;
+                }
+                const data = snap.val();
+                if (data.expires === "Never") {
+                    mutedBadge.style.display = "inline";
+                    return;
+                }
+                if (data.expires && Date.now() > data.expires) {
+                    await remove(mutedRef);
+                    mutedBadge.style.display = "none";
+                    return;
+                }
+                mutedBadge.style.display = "inline";
+            });
             let dontShowOthers = false;
             if (badgeText === "Sus") {
                 dontShowOthers = true;
-                badgeSpan.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
-                badgeSpan.style.color = 'red';
-                badgeSpan.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
+                badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
+                badgeContainer.style.color = 'red';
+                badgeContainer.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
             } else if (badgeText === "OWNR" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="bi bi-shield-plus"></i>';
-                badgeSpan.style.color = "lime";
-                badgeSpan.title = "Owner";
+                badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
+                badgeContainer.style.color = "lime";
+                badgeContainer.title = "Owner";
             } else if (badgeText === "TSTR" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="fa-solid fa-cogs"></i>';
-                badgeSpan.style.color = "DarkGoldenRod";
-                badgeSpan.title = "Tester";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-cogs"></i>';
+                badgeContainer.style.color = "DarkGoldenRod";
+                badgeContainer.title = "Tester";
             } else if (badgeText === "COWNR" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="bi bi-shield-fill"></i>';
-                badgeSpan.style.color = "lightblue";
-                badgeSpan.title = "Co-Owner";
+                badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
+                badgeContainer.style.color = "lightblue";
+                badgeContainer.title = "Co-Owner";
             } else if (badgeText === "HADMIN" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
-                badgeSpan.style.color = "#00cc99";
-                badgeSpan.title = "Head Admin";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                badgeContainer.style.color = "#00cc99";
+                badgeContainer.title = "Head Admin";
             } else if (badgeText === "ADMN" && !dontShowOthers) {
-                badgeSpan.innerHTML = '<i class="bi bi-shield"></i>';
-                badgeSpan.style.color = "dodgerblue";
-                badgeSpan.title = "Admin";
+                badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
+                badgeContainer.style.color = "dodgerblue";
+                badgeContainer.title = "Admin";
             } else {
             }
             if (devSnap.exists() && devSnap.val() === true) {
@@ -694,7 +721,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "green";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Is A Developer For Infinitecampus.xyz`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (pre3Snap.exists() && pre3Snap.val() === true) {
                 const icon = document.createElement("i");
@@ -702,7 +729,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "red";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has Infinite Campus Premium T3`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (pre2Snap.exists() && pre2Snap.val() === true) {
                 const icon = document.createElement("i");
@@ -710,7 +737,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "orange";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has Infinite Campus Premium T2`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (pre1Snap.exists() && pre1Snap.val() === true) {
                 const icon = document.createElement("i");
@@ -718,7 +745,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "yellow";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has Infinite Campus Premium T1`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (donSnap.exists() && donSnap.val() === true) {
                 const icon = document.createElement("i");
@@ -726,7 +753,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "#00E5FF";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has Donated To Infinite Campus`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (partnerSnap.exists() && partnerSnap.val() === true) {
                 const icon = document.createElement("i");
@@ -734,7 +761,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "cornflowerblue";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Is A Partner Of Infinite Campus`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (uploadSnap.exists() && uploadSnap.val() === true) {
                 const icon = document.createElement("i");
@@ -742,7 +769,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "grey";
                 icon.style.marginLeft = "6px";
                 icon.title = "This User Has Uploaded A Movie To Infinite Campus";
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (hSnap.exists() && hSnap.val() === true) {
                 const icon = document.createElement("i");
@@ -750,7 +777,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "yellow";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Is The 100th Signed Up User`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (guessSnap.exists() && guessSnap.val() === true) {
                 const icon = document.createElement("i");
@@ -758,7 +785,7 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "#ff0000";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has A Lot Of Freetime`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
             if (discordSnap.exists() && discordSnap.val().trim() !== "") {
                 const dUsername = discordSnap.val();
@@ -767,9 +794,10 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "#5865F2";
                 icon.style.marginLeft = "6px";
                 icon.title = `Known As @${dUsername} On Discord`;
-                badgeSpan.appendChild(icon);
+                badgeContainer.appendChild(icon);
             }
-            leftWrapper.appendChild(badgeSpan);
+            badgeContainer.appendChild(mutedBadge);
+            leftWrapper.appendChild(badgeContainer);
             const isSelf = msg.sender === currentUser.uid;
             if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
                 let canDelete = false;
