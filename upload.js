@@ -30,32 +30,44 @@ if (fileParam) {
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
     btn.onclick = async () => {
-        progressContainer.style.display = "block";
-        progressBar.style.width = "0%";
-        const response = await fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
-            headers: { "ngrok-skip-browser-warning": "true" }
-        });
-        if (!response.ok) {
-            showError("Download Failed");
-            return;
-        }
-        const contentLength = +response.headers.get("Content-Length") || 0;
-        const reader = response.body.getReader();
-        const fileStream = streamSaver.createWriteStream(fileParam);
-        const writer = fileStream.getWriter();
-        let loaded = 0;
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            await writer.write(value);
-            loaded += value.length;
-            if (contentLength) {
-                const percent = Math.round((loaded / contentLength) * 100);
-                progressBar.style.width = percent + "%";
+        try {
+            progressContainer.style.display = "block";
+            progressBar.style.width = "0%";
+            const response = await fetch(`${a}/files/${encodeURIComponent(fileParam)}?download=1`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            if (!response.ok) {
+                showError("Download Failed");
+                return;
             }
+            const contentLength = +response.headers.get("Content-Length") || 0;
+            const reader = response.body.getReader();
+            const chunks = [];
+            let loaded = 0;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                if (contentLength) {
+                    const percent = Math.round((loaded / contentLength) * 100);
+                    progressBar.style.width = percent + "%";
+                }
+            }
+            const blob = new Blob(chunks);
+            const url = window.URL.createObjectURL(blob);
+            const tempLink = document.createElement("a");
+            tempLink.href = url;
+            tempLink.download = fileParam;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            window.URL.revokeObjectURL(url);
+            progressBar.style.width = "100%";
+        } catch (err) {
+            showError("Download Failed");
+            console.error(err);
         }
-        await writer.close();
-        progressBar.style.width = "100%";
     };
 } else {
     appDiv.innerHTML = `
