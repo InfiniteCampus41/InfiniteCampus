@@ -96,6 +96,34 @@ a {
 .art {
     margin-right:15px;
 }
+.article {
+    background: #222;
+    padding: 1.2rem;
+    border-radius: 8px;
+    border:1px solid #666;
+    margin-bottom: 1.3rem;
+    margin-right: 5em;
+    margin-left: 5em;
+    transition: 0.3s ease;
+}
+#article-author img {
+    border-radius:50%;
+    border:1px solid #777;
+}
+#article-content {
+    text-align:center;
+    margin: 50px 0px;
+    padding:0px 40px;
+}
+.article h2 {
+    color:white;
+}
+.article:hover {
+    background-color: #444;
+}
+.article p {
+    color:#777;
+}
 #artImg {
     height:150px;
     width:150px;
@@ -318,6 +346,9 @@ body {
     flex-direction: column;
     gap: 8px;
 }
+#create-article-btn {
+    display:none;
+}
 #CTCbtn {
     color:black;
     border:none !important;
@@ -383,15 +414,17 @@ body {
     padding: 6px;
     z-index: 1000;
 }
-.dropdown button {
+.dropdown a {
     background: none;
     border: none;
     color: inherit;
     text-align: left;
     padding: 8px;
     cursor: pointer;
+    transition:0.3s all;
+    border-radius:5px;
 }
-.dropdown button:hover {
+.dropdown a:hover {
     background: rgba(255,255,255,0.1);
 }
 .dropdown-toggle {
@@ -548,7 +581,7 @@ header, footer {
     flex-wrap: wrap;
     z-index:4;
 }
-#header-right #desktopNav a, .dropdown-toggle {
+#header-right #desktopNav a:not(.dropdown-wrap a), .dropdown-toggle {
     text-decoration:none;
     background: none;
     color: inherit;
@@ -826,6 +859,18 @@ main {
     color: white;
     border: 1px solid white;
 }
+.meta {
+    display: flex;
+    align-items:center;
+    flex-direction: row;
+    gap: 10px;
+    overflow: auto;
+    color:white;
+}
+.meta span:not(#person span) {
+    width:100%;
+    text-align:right;
+}
 #minute {
     width: 120px;
     height: 4px;
@@ -962,6 +1007,11 @@ main {
     color: white;
     text-align: center;
 }
+.nwsBackbtn {
+    top: calc(20px + var(--headerHeight));
+    left: 40px;
+    position:fixed;
+}
 #panel {
     overflow:scroll;
     position: fixed;
@@ -1081,6 +1131,17 @@ main {
 #perksContainer ul {
     text-align:left;
     max-width:50%;
+}
+#person {
+    display:flex;
+    flex-direction:row;
+    width:fit-content;
+    text-wrap:nowrap;
+    gap:10px;
+}
+#person img {
+    border-radius:50%;
+    border:1px solid #777;
 }
 #phrase {
     margin-top: 20px;

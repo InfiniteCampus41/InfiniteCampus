@@ -27,7 +27,7 @@
         <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
         <meta property="og:url" content="https://www.infinitecampus.xyz">
         <meta name="theme-color" content="#8cbe37">
-        <link rel="manifest" href="/manifest.json">
+        <link rel="manifest" href="/manifest.json">        
         <meta content="/res/icon.png" property="og:image">
         <script src="main.js">
         </script>
@@ -39,37 +39,27 @@
     <body>
         <main>
             <center>
-                <h1 class="tptxt"> 
-                    Infinite Campus Updates 
+                <h1 class="tptxt">
+                    News
                 </h1>
                 <hr>
                 <br>
-                <div id="newUpdateContainer">
-                    <input class="button" id="newUpdate" placeholder="Add A New Update" />
-                    <button class="button" onclick="addUpdate()">
-                        Add
-                    </button>
+                <br>
+                <button id="create-article-btn" class="button" style="margin-bottom:20px">
+                    Create Article
+                </button>
+                <div style="max-width:75%; text-align:left">
+                    <input class="button" id="search" placeholder="Filter Articles">
                 </div>
-                <div id="updates">
-                </div>
-                <script type="module" src="updates.js">
-                </script>
-                <br>
-                <p class="btxt">
-                    If You Would Like Any Other Features On This Website,
-                    <br>
-                    Do Not Hesitate To Let Me Know
-                    <br>
-                </p>
-                <br>
-                <br>
-                <br>
-                <br>
             </center>
+            <div id="articles-container">
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="popup.js">
+        </script>
+        <script type="module" src="news.js">
         </script>
         <script type="module" src="frame.js">
         </script>

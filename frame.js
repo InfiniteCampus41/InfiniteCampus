@@ -52,15 +52,15 @@ const headerHTML = `
                         About
                     </button>
                     <div class="dropdown test" id="abtDropdown">
-                        <button onclick="location.href='InfiniteAbouts.html'">
+                        <a href='InfiniteAbouts.html'>
                             About Us
-                        </button>
-                        <button onclick="location.href='InfinitePolicies.html'">
+                        </a>
+                        <a href='InfinitePolicies.html'>
                             Privacy Policy
-                        </button>
-                        <button onclick="location.href='InfiniteTerms.html'">
+                        </a>
+                        <a href='InfiniteTerms.html'>
                             Terms
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <a href="InfiniteApps.html">
@@ -71,15 +71,15 @@ const headerHTML = `
                         Chat
                     </button>
                     <div class="dropdown test" id="chatDropdown">
-                        <button onclick="location.href='InfiniteEmbeds.html?choice=1'">
+                        <a href='InfiniteEmbeds.html?choice=1'>
                             Padlet
-                        </button>
-                        <button onclick="location.href='InfiniteChatters.html'">
+                        </a>
+                        <a href='InfiniteChatters.html'>
                             Website Chat
-                        </button>
-                        <button onclick="location.href='InfiniteDiscords.html'">
+                        </a>
+                        <a href='InfiniteDiscords.html'>
                             Live Discord Chat
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="dropdown-wrap">
@@ -87,15 +87,15 @@ const headerHTML = `
                         Help / Support
                     </button>
                     <div class="dropdown test" id="helpDropdown">
-                        <button onclick="location.href='InfiniteQuestions.html'">
+                        <a href='InfiniteQuestions.html'>
                             FAQ
-                        </button>
-                        <button onclick="location.href='InfiniteEmbeds.html?choice=5'">
+                        </a>
+                        <a href='InfiniteEmbeds.html?choice=5'>
                             Report A Bug
-                        </button>
-                        <button onclick="location.href='InfiniteMirrors.html'">
+                        </a>
+                        <a href='InfiniteMirrors.html'>
                             Mirror Links
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <a href="InfiniteGamers.html">
@@ -104,20 +104,33 @@ const headerHTML = `
                 <a href="InfinitePartners.html">
                     Partners
                 </a>
-                <a href="InfiniteUpdaters.html">
-                    Updates
-                </a>
+                <div class="dropdown-wrap">
+                    <button id="updateToggle" class="dropdown-toggle">
+                        Updates
+                    </button>
+                    <div class="dropdown test" id="updateDropdown">
+                        <a href='InfiniteBlogs.html'>
+                            News
+                        </a>
+                        <a href="InfiniteUpdaters.html">
+                            Updates
+                        </a>
+                        <a href="InfiniteFutures.html">
+                            Future Updates
+                        </a>
+                    </div>
+                </div>
                 <div class="dropdown-wrap">
                     <button id="downloadToggle" class="dropdown-toggle">
                         Download Games
                     </button>
                     <div class="dropdown test" id="downloadDropdown">
-                        <button onclick="location.href='InfiniteOpeners.html'">
+                        <a href='InfiniteOpeners.html'>
                             Download This Website
-                        </button>
-                        <button onclick="location.href='InfiniteDownloaders.html'">
+                        </a>
+                        <a href='InfiniteDownloaders.html'>
                             Download Games
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <a class="contactme" href="InfiniteContacts.html">
@@ -166,8 +179,14 @@ const headerHTML = `
         <a href="InfinitePartners.html" class="darkbuttons">
             Partners
         </a>
+        <a href="InfiniteBlogs.html" class="darkbuttons">
+            News
+        </a>
         <a href="InfiniteUpdaters.html" class="darkbuttons">
             Updates
+        </a>
+        <a href="InfiniteFutures.html" class="darkbuttons">
+            Future Updates
         </a>
         <a href="InfiniteOpeners.html" class="darkbuttons">
             Download This Website
@@ -379,9 +398,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const helpDropdown = document.getElementById('helpDropdown');
     const abtToggle = document.getElementById('abtToggle');
     const abtDropdown = document.getElementById('abtDropdown');
+    const updateToggle = document.getElementById('updateToggle');
+    const updateDropdown = document.getElementById('updateDropdown');
     chatToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         chatDropdown.style.display = chatDropdown.style.display === 'flex' ? 'none' : 'flex';
+        updateDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
@@ -389,6 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadDropdown.style.display = downloadDropdown.style.display === 'flex' ? 'none' : 'flex';
+        updateDropdown.style.display = 'none';
         chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
@@ -396,6 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
     helpToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
+        updateDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
         chatDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
@@ -403,6 +427,15 @@ document.addEventListener("DOMContentLoaded", () => {
     abtToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
+        updateDropdown.style.display = 'none';
+        downloadDropdown.style.display = 'none';
+        chatDropdown.style.display = 'none';
+        helpDropdown.style.display = 'none';
+    });
+    updateToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateDropdown.style.display = updateDropdown.style.display === 'flex' ? 'none' : 'flex';
+        abtDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
         chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
@@ -419,6 +452,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (!abtDropdown.contains(e.target) && !abtToggle.contains(e.target)) {
             abtDropdown.style.display = 'none';
+        }
+        if (!updateDropdown.contains(e.target) && !updateToggle.contains(e.target)) {
+            updateDropdown.style.display = 'none';
         }
     });
     const mobileBtn = document.getElementById("mobileMenuBtn");

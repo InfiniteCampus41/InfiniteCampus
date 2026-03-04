@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getDatabase, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { getDatabase, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { getFirestore, doc, getDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import { applyActionCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
@@ -17,5 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
-export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile,sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io };
+export const firestore = getFirestore(app);
+export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io, increment, doc, getDoc, updateDoc, deleteDoc, setDoc };
 export default app;
