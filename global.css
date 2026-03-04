@@ -762,6 +762,9 @@ main {
         margin:0px auto;
         margin-bottom:4px;
     }
+    .meta {
+        flex-direction:column;
+    }
     .mobile-menu-btn {
         display:block;
     }
