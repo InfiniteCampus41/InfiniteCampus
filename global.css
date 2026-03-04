@@ -765,6 +765,9 @@ main {
     .meta {
         flex-direction:column;
     }
+    .meta span:not(#person span) {
+        text-align:center;
+    }
     .mobile-menu-btn {
         display:block;
     }
@@ -840,6 +843,9 @@ main {
     .meta {
         flex-direction:row;
     }
+    .meta span:not(#person span) {
+        text-align:right;
+    }
     .mobile-menu-btn{
         display:none;
     }
@@ -874,7 +880,6 @@ main {
 }
 .meta span:not(#person span) {
     width:100%;
-    text-align:right;
 }
 #minute {
     width: 120px;
