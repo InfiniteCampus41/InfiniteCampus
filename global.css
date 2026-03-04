@@ -837,6 +837,9 @@ main {
         width:45% !important;
         margin:-5px auto;
     }
+    .meta {
+        flex-direction:row;
+    }
     .mobile-menu-btn{
         display:none;
     }
@@ -865,7 +868,6 @@ main {
 .meta {
     display: flex;
     align-items:center;
-    flex-direction: row;
     gap: 10px;
     overflow: auto;
     color:white;
