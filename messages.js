@@ -236,8 +236,8 @@ async function renderMessage(msg, list){
     if(msg.attachments?.length){
         msg.attachments.forEach(att=>{
             const url = att.url, name = att.filename.toLowerCase();
-            if(/\.(png|jpg|jpeg|gif|webp)$/.test(name)) contentHTML += `<br><img src="${url}" style="max-width:300px;">`;
-            else contentHTML += `<br><video style="max-height:300px; height:fit-content;" src="${url}" controls>${att.filename}</video>`;
+            if(/\.(png|jpg|jpeg|gif|webp)$/.test(name)) contentHTML += `<br><img src="${url}" style="max-width:50vw;">`;
+            else contentHTML += `<br><video style="max-height:300px; height:fit-content; max-width:50vw;" src="${url}" controls>${att.filename}</video>`;
         });
     }
     if(msg.reactions?.length){
