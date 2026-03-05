@@ -109,7 +109,7 @@ const headerHTML = `
                         Updates
                     </button>
                     <div class="dropdown test" id="updateDropdown">
-                        <a href='InfiniteBlogs.html'>
+                        <a href='InfiniteArticles.html'>
                             News
                         </a>
                         <a href="InfiniteUpdaters.html">
@@ -179,7 +179,7 @@ const headerHTML = `
         <a href="InfinitePartners.html" class="darkbuttons">
             Partners
         </a>
-        <a href="InfiniteBlogs.html" class="darkbuttons">
+        <a href="InfiniteArticles.html" class="darkbuttons">
             News
         </a>
         <a href="InfiniteUpdaters.html" class="darkbuttons">
