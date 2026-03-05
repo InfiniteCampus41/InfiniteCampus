@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
             requestDiv.style.maxHeight = "fit-content";
             const requestBtn = document.createElement("a");
             requestBtn.className = "discord";
-            requestBtn.href = "InfiniteFeatures.html?game=true";
+            requestBtn.href = "InfiniteContacts.html?suggest=true&game=true";
             requestBtn.innerText = "Request A Game";
             requestDiv.appendChild(requestBtn);
             container.appendChild(requestDiv);

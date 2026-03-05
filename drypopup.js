@@ -85,7 +85,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     <a class="button" href="InfiniteBypassers.html">
                         Open In About:Blank
                     </a>
-                    <a class="button" href="InfiniteFeatures.html">
+                    <a class="button" href="InfiniteContacts.html?suggest=true">
                         Suggest A Feature
                     </a>
                     <br>

@@ -19,11 +19,39 @@ onAuthStateChanged(auth, async (user) => {
 });
 const params = new URLSearchParams(window.location.search);
 const gameSug = params.get("game");
-if (gameSug && window.location.pathname === '/InfiniteFeatures.html') {
-    messageInput.value = "Game Request: \nURL: ";
+const suggest = params.get("suggest");
+const movieSug = params.get("movie");
+let channel = '';
+const tptxt = document.getElementById('tptxt');
+const button = document.getElementById('contactButton');
+if (suggest) {
+    if (gameSug) {
+        button.href = 'InfiniteDiscords.html?channel=1086362556203028540';
+        button.innerText = 'View Responses To Game Suggestions';
+        tptxt.innerText = 'Suggest A Game';
+        channel = '1086362556203028540';
+        messageInput.value = "Game Request: \nURL:";
+    } else if (movieSug) {
+        button.href = 'InfiniteDiscords.html?channel=1464689808717774970';
+        button.innerText = 'View Responses To Movie Suggestions';
+        tptxt.innerText = 'Suggest A Movie';
+        channel = '1464689808717774970';
+        messageInput.value = "Movie Request:";
+    } else {
+        button.href = 'InfiniteDiscords.html?channel=1334377158789042226';
+        button.innerText = 'View Responses To Suggestions';
+        tptxt.innerText = "Suggest A Feature";
+        channel = '1334377158789042226';
+        messageInput.value = "";
+    }
+} else {
+    button.href = 'InfiniteDiscords.html?channel=1389334335114580229';
+    button.innerText = 'View Responses To Support';
+    tptxt.innerText = "Contact Me";
+    channel = '1389334335114580229';
+    messageInput.value = "";
 }
 async function sendMessage() {
-    const channel = (window.location.pathname == '/InfiniteContacts.html') ? '1389334335114580229' : '1334377158789042226';
     const message = document.getElementById("message").value.trim();
     const name = nameInput.value;
     const url = window.location.host;
