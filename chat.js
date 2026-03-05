@@ -793,7 +793,7 @@ async function renderMessageInstant(id, msg) {
                 icon.className = "bi bi-discord";
                 icon.style.color = "#5865F2";
                 icon.style.marginLeft = "6px";
-                icon.title = `Known As @${dUsername} On Discord`;
+                icon.title = `Known As @${dUsername} On The Infinite Campus Discord Server`;
                 badgeContainer.appendChild(icon);
             }
             badgeContainer.appendChild(mutedBadge);
