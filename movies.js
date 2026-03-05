@@ -138,14 +138,14 @@ async function renderMovies(list) {
     box.innerHTML = "";
     for (const v of list) {
         const dlURL = `${BACKEND}/download/x9a7b2/${v.name}`;
-        let uploaderName = "User";
+        let uploaderName = "An Anonymous User";
         if (v.uploadedBy && v.uploadedBy !== "") {
             try {
                 const snap = await get(
                     ref(db, "users/" + v.uploadedBy + "/profile/displayName")
                 );
                 if (snap.exists()) {
-                    uploaderName = snap.val();
+                    uploaderName = `@${snap.val()}`;
                 }
             } catch (err) {
                 console.error("Failed To Fetch Uploader Name:", err);
@@ -163,7 +163,7 @@ async function renderMovies(list) {
                     ${v.humanSize}
                 </span>
                 <span id="upByIcon" style="width:0; margin-left:-20px;">
-                    <i class="bi bi-question-circle" title="Uploaded By: @${uploaderName}">
+                    <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}">
                     </i>
                 </span>
             </div>
@@ -179,7 +179,7 @@ async function renderMovies(list) {
             </a>
             <br>
             <small id="upByTxt" style="display:none;">
-                Uploaded By: @${uploaderName}
+                Uploaded By: ${uploaderName}
             </small>
         `;
         box.appendChild(div);
