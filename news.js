@@ -1,4 +1,6 @@
 import { auth, onAuthStateChanged, db, ref, get, update, onValue, increment, remove, set, firestore, doc, getDoc, updateDoc, deleteDoc, setDoc} from "./imports.js";
+const articlePage = document.getElementById('articles-view');
+const viewPage = document.getElementById('view-page');
 let currentUser = null;
 let userRoles = {};
 let highestRole = null;
@@ -183,7 +185,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const div = document.createElement("div");
                         div.className = "article";
                         div.style.cursor = "pointer";
-                        div.onclick = () => { window.location.href = `InfiniteArticles.html?slug=${slug}`; };
+                        div.onclick = () => { 
+                            window.location.href = `InfiniteArticles.html?slug=${slug}`; 
+                        };
                         div.innerHTML = `
                             <h2>
                                 ${article.title}
@@ -262,6 +266,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     (async () => {
         const snap = await get(articleRef);
         currentArticleData = snap.val();
+        articlePage.style.display = 'none';
+        viewPage.style.display = 'block';
         if (!currentArticleData) return;
         if (!sessionStorage.getItem(sessionKey)) {
             await update(articleRef, { views: increment(1) });
@@ -440,7 +446,7 @@ function initArticles() {
                 if (!confirm("Delete This Article?")) return;
                 await remove(ref(db, "articles/" + currentSlug));
                 await deleteDoc(doc(firestore, "articles", currentSlug));
-                window.location.href = "InfiniteBlogs.html";
+                window.location.href = "InfiniteArticles.html";
             });
         }
         const resetArticleViews = document.getElementById("reset-btn");

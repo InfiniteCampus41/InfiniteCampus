@@ -38,34 +38,54 @@
     </head>
     <body>
         <main>
-            <a class="button nwsBackbtn" href="InfiniteBlogs.html">
-                Back
-            </a>
-            <center>
-                <h1 id="article-title" class="tptxt">
-                </h1>
-                <hr>
-                <br>
-                <div id="article-author">
+            <div id="articles-view">
+                <center>
+                    <h1 class="tptxt">
+                        News
+                    </h1>
+                    <hr>
+                    <br>
+                    <br>
+                    <button id="create-article-btn" class="button" style="margin-bottom:20px">
+                        Create Article
+                    </button>
+                    <div style="max-width:75%; text-align:left">
+                        <input class="button" id="search" placeholder="Filter Articles">
+                    </div>
+                </center>
+                <div id="articles-container">
                 </div>
-                <span id="article-views" class="btxt">
-                    View(s)
-                </span>
-                <div id="article-content" class="btxt">
-                </div>
-                <div id="article-editor" style="display:none; margin-top:20px;">
-                </div>
-                <div id="article-admin">
-                </div>
-            </center>
+            </div>
+            <div id="view-page" style="display:none">
+                <a class="button nwsBackbtn" href="InfiniteArticles.html">
+                    Back
+                </a>
+                <center>
+                    <h1 id="article-title" class="tptxt">
+                    </h1>
+                    <hr>
+                    <br>
+                    <div id="article-author">
+                    </div>
+                    <span id="article-views" class="btxt">
+                        View(s)
+                    </span>
+                    <div id="article-content" class="btxt">
+                    </div>
+                    <div id="article-editor" style="display:none; margin-top:20px;">
+                    </div>
+                    <div id="article-admin">
+                    </div>
+                </center>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="popup.js">
         </script>
-        <script type="module" src="frame.js">
-        </script>
         <script type="module" src="news.js">
+        </script>
+        <script type="module" src="frame.js">
         </script>
     </body>
 </html>
