@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { getDatabase, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { getFirestore, doc, getDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
@@ -19,5 +19,5 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const firestore = getFirestore(app);
-export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io, increment, doc, getDoc, updateDoc, deleteDoc, setDoc };
+export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io, increment, doc, getDoc, updateDoc, deleteDoc, setDoc, GoogleAuthProvider, signInWithPopup };
 export default app;

@@ -1,4 +1,4 @@
-import { auth, db, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, ref, set, update, get } from "./imports.js";
+import { auth, db, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, ref, set, update, get, GoogleAuthProvider, signInWithPopup } from "./imports.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
@@ -26,6 +26,31 @@ onAuthStateChanged(auth, (user) => {
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
+    }
+});
+const googleSignupBtn = document.getElementById("googleSignupBtn");
+googleSignupBtn.addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const userProfileRef = ref(db, `users/${user.uid}/profile`);
+        const userSettingsRef = ref(db, `users/${user.uid}/settings`);
+        const snap = await get(userProfileRef);
+        if (!snap.exists()) {
+            await set(userSettingsRef, {
+                color: "#ffffff",
+                showMentions: true,
+                userEmail: user.email
+            });
+            await set(userProfileRef, {
+                displayName: user.displayName || "",
+                pic: 0
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        showError("Google Sign-In Failed: " + error.message);
     }
 });
 signupBtn.addEventListener("click", async () => {

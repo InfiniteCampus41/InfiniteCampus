@@ -1,4 +1,4 @@
-import { auth, db, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, ref, push } from "./imports.js";
+import { auth, db, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, ref, push, GoogleAuthProvider, signInWithPopup } from "./imports.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
@@ -47,6 +47,25 @@ onAuthStateChanged(auth, (user) => {
         } else {
             window.location.href = "InfiniteAccounts.html";
         }
+    }
+});
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+googleLoginBtn.addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        await signInWithPopup(auth, provider);
+        if (chatparams) {
+            window.location.href = "InfiniteAccounts.html?chat=true";
+        } else if (donParams) {
+            window.location.href = "InfiniteAccounts.html?donate=true";
+        } else if (pollParams) {
+            window.location.href = "InfiniteAccounts.html?poll=true";
+        } else {
+            window.location.href = "InfiniteAccounts.html";
+        }
+    } catch (error) {
+        console.error(error);
+        showError("Google Login Failed: " + error.message);
     }
 });
 signup.addEventListener("click", () => {
