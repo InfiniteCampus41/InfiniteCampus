@@ -120,9 +120,20 @@ async function loadApply() {
         return;
     }
     box.innerHTML = "";
-    data.files.forEach(f => {
-        if (isCopyFile(f.file)) return;
-        if (f.file.toLowerCase().endsWith(".json")) return;
+    for (const f of data.files) {
+        if (isCopyFile(f.file)) continue;
+        if (f.file.toLowerCase().endsWith(".json")) continue;
+        let uploaderName = "Unknown";
+        if (f.uploadedBy) {
+            try {
+                const snap = await get(ref(db, `/users/${f.uploadedBy}/profile/displayName`));
+                if (snap.exists()) {
+                    uploaderName = snap.val();
+                }
+            } catch (e) {
+                console.error("Failed Loading Display Name", e);
+            }
+        }
         if (f.status === "copying") {
             currentStatus = "Copying File";
             percent = `${f.percent}%`;
@@ -135,19 +146,46 @@ async function loadApply() {
         }
         const div = document.createElement("div");
         div.className = "file-item";
+        div.style.position = "relative";
         div.innerHTML = `
-            <b>${f.file}</b> — <span id="size-${f.file}">${f.humanSize}</span><br><span class="btxt">${currentStatus}<br>
-            <button class="button" onclick="watchApply('${f.file}')">Watch</button>
-            <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
-            <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
-            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px; text-align:left;">
+            <div style="display:inline-flex; width:100%;">
+                <span style="width:100%; text-align:center">
+                    <b>
+                        ${f.file}
+                    </b> 
+                    — 
+                    ${f.humanSize}
+                </span>
+                <span id="upByIcon" style="width:0; margin-left:-20px;">
+                    <i class="bi bi-question-circle" title="Uploaded By: @${uploaderName}">
+                    </i>
+                </span>
+            </div>
+            <br>
+            <span class="btxt">
+                ${currentStatus}
+            </span>
+            <br>
+            <button class="button" onclick="watchApply('${f.file}')">
+                Watch
+            </button>
+            <button class="button" onclick="deleteApply('${f.file}')">
+                Delete
+            </button>
+            <button class="button" onclick="acceptFile('${f.file}')">
+                Accept
+            </button>
+            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px;text-align:left;">
                 <div class="file-progress-bar" id="progress-bar-${f.file}" style="width:0%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
                     0%
                 </div>
             </div>
+            <div id="upByTxt" style="display:none">
+                Uploaded By: ${uploaderName}
+            </div>
         `;
         box.appendChild(div);
-    });
+    }
     data.files.forEach(f => {
         if (is360File(f.file)) {
             startProgressPolling(f.file);

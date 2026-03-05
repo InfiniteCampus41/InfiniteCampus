@@ -438,6 +438,10 @@ body {
     position: relative;
     transition:0.3s all;
 }
+.edit-input {
+    width:95%;
+    text-align:center;
+}
 #editMoviesContainer {
     right:-500px;
     display:none;
@@ -758,6 +762,11 @@ main {
     }
     .mbInp2 {
         display:block !important;
+        width:55% !important;
+        margin:0px auto;
+        margin-bottom:4px;
+    }
+    .mbInp3 {
         width:55% !important;
         margin:0px auto;
         margin-bottom:4px;

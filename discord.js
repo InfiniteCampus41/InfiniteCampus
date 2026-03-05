@@ -7,6 +7,15 @@ let displayedMessageIds = new Set();
 let currentChannelId = getSelectedChannelId();
 let currentChannelToken = Symbol();
 let currentReactMessageId = null;
+let currentUser = null;
+let hasRoleAccess = false;
+let hasAdminPassword = false;
+let userRoles = {};
+let isOwner = false;
+let isTester = false;
+let isCoOwner = false;
+let isHeadAdmin = false;
+let isDev = false;
 const requestQueue = [];
 let isProcessingQueue = false;
 const RATE_LIMIT_DELAY = 3000;
@@ -18,80 +27,27 @@ const channelParams = urlParams.get('channel');
 if (channelParams) {
     document.getElementById('channelSelector').value = channelParams; 
 }
+const CHANNELS = [
+    { id: "1309160050904006696", name: "General", requiresAdmin: false },
+    { id: "1460410323369721868", name: "Site Logs", requiresAdmin: true },
+    { id: "1334585912088330311", name: "Mod Chat", requiresAdmin: true },
+    { id: "1395540104042250250", name: "Stuff", requiresAdmin: true },
+    { id: "1389738046739452015", name: "Github Chat", requiresAdmin: true },
+    { id: "1334376148087603294", name: "Rules", requiresAdmin: false },
+    { id: "1334376903179767860", name: "Information", requiresAdmin: false },
+    { id: "1334377094876237918", name: "Announcements", requiresAdmin: false },
+    { id: "1334377158789042226", name: "Suggestions", requiresAdmin: false },
+    { id: "1464689808717774970", name: "Request Movies", requiresAdmin: false },
+    { id: "1334377258609147967", name: "Events", requiresAdmin: false },
+    { id: "1389334335114580229", name: "Website Support", requiresAdmin: false },
+    { id: "1389703415810101308", name: "Site Updates", requiresAdmin: false },
+    { id: "1309164699417448550", name: "Memes", requiresAdmin: false },
+    { id: "1007051892821594183", name: "Advertisements", requiresAdmin: false },
+    { id: "1086362556203028540", name: "Gaming", requiresAdmin: false },
+    { id: "1334945403912720586", name: "Report A Bug", requiresAdmin: false },
+    { id: "1390991482650886215", name: "Bot Commands", requiresAdmin: false }
+];
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
-async function checkPermissions() {
-    if (!isAuthInitialized) {
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (isAuthInitialized) {
-                    clearInterval(interval);
-                    resolve(checkPermissions());
-                }
-            }, 100);
-        });
-    }
-    if (!currentUser) {
-        showError("You Must Be Logged In To Access This Page.");
-        return false;
-    }
-    const uid = currentUser.uid;
-    const userRef = ref(db, `users/${uid}/profile`);
-    const snapshot = await get(userRef);
-    if (!snapshot.exists()) {
-        showError("Profile Data Not Found.");
-        return false;
-    }
-    const userData = snapshot.val();
-    const { isOwner, isTester, isCoOwner, isHAdmin, isDev } = userData;
-    if (isOwner || isTester || isCoOwner || isHAdmin || isDev ) {
-        return true;
-    } else {
-        showError("You Do Not Have The Necessary Permissions To Access This Page.");
-        return false;
-    }
-}
-async function verifyAdminPassword() {
-    while (true) {
-        if (ADMIN_PASS) {
-            try {
-                const res = await fetch(BACKEND + "/check_pass", {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "ngrok-skip-browser-warning": "true"
-                    },
-                    body: JSON.stringify({ password: ADMIN_PASS })
-                });
-                const data = await res.json().catch(() => null);
-                if (data && data.res || data.ok) {
-                    return true;
-                }
-            } catch (e) {}
-            localStorage.removeItem("a_pass");
-            ADMIN_PASS = null;
-        }
-        const entered = await customPrompt("Enter Admin Password:", true);
-        if (!entered) continue;
-        ADMIN_PASS = entered.trim();
-        try {
-            const res = await fetch(BACKEND + "/check_pass", {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "ngrok-skip-browser-warning": "true"
-                },
-                body: JSON.stringify({ password: ADMIN_PASS })
-            });
-            const data = await res.json().catch(() => null);
-            if (data && data.res || data.ok) {
-                localStorage.setItem("a_pass", ADMIN_PASS);
-                return true;
-            }
-        } catch (e) {}
-        showError("Incorrect Password.");
-        ADMIN_PASS = null;
-    }
-}
 async function adminFetch(url, options = {}) {
     options.headers = Object.assign({}, options.headers, {
         "x-admin-password": ADMIN_PASS,
@@ -99,21 +55,139 @@ async function adminFetch(url, options = {}) {
     });
     return fetch(url, options);
 }
-onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+async function checkAdminPasswordSilently() {
+    hasAdminPassword = false;
+    if (!ADMIN_PASS) return;
     try {
-        const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
-        const snapshot = await get(displayNameRef);
-        if (snapshot.exists()) {
-            nameInput.value = snapshot.val();
-        } else {
-            if (user.displayName) {
-                nameInput.value = user.displayName;
-            }
+        const res = await fetch(backendUrl + "/check_pass", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true"
+            },
+            body: JSON.stringify({ password: ADMIN_PASS })
+        });
+        const data = await res.json().catch(() => null);
+        if (data && (data.res || data.ok)) {
+            hasAdminPassword = true;
         }
-    } catch (error) {
-        showError("Error Fetching Display Name:", error);
+    } catch (e) {
+        console.error(e);
     }
+}
+function populateChannelSelector() {
+    const selector = document.getElementById("channelSelector");
+    selector.innerHTML = "";
+    const isFullyAuthorized = currentUser && (hasRoleAccess || hasAdminPassword);
+    CHANNELS.forEach(channel => {
+        if (channel.requiresAdmin && !isFullyAuthorized) return;
+        const option = document.createElement("option");
+        option.value = channel.id;
+        option.textContent = `# ${channel.name}`;
+        selector.appendChild(option);
+    });
+    if (selector.options.length > 0) {
+        currentChannelId = selector.value;
+    }
+}
+function renderAdminPasswordForm() {
+    const existing = document.getElementById("adminPassContainer");
+    if (existing) existing.remove();
+    const canSeeForm = currentUser && (
+        isOwner || isTester || isCoOwner || isHeadAdmin || isDev
+    );
+    if (!canSeeForm) return;
+    const container = document.createElement("div");
+    container.id = "adminPassContainer";
+    container.style.marginBottom = "15px";
+    container.innerHTML = `
+        <form id="adminPassForm" style="gap:10px;align-items:center;">
+            <input type="password" id="adminPassInput" class="button" placeholder="Enter Admin Password">
+            <button type="submit" class="button">
+                Submit
+            </button>
+        </form>
+        <span id="adminPassStatus" style="font-size:12px;"></span>
+    `;
+    const chatContainer = document.getElementById("messages").parentElement;
+    chatContainer.prepend(container);
+    document.getElementById("adminPassForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const pass = document.getElementById("adminPassInput").value.trim();
+        if (!pass) return;
+        try {
+            const res = await fetch(backendUrl + "/check_pass", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ password: pass })
+            });
+            const data = await res.json().catch(() => null);
+            if (data && (data.res || data.ok)) {
+                ADMIN_PASS = pass;
+                localStorage.setItem("a_pass", pass);
+                hasAdminPassword = true;
+                document.getElementById("adminPassStatus").textContent = "Password Accepted";
+                document.getElementById("adminPassStatus").style.color = "lime";
+                populateChannelSelector();
+            } else {
+                document.getElementById("adminPassStatus").textContent = "Invalid Password";
+                document.getElementById("adminPassStatus").style.color = "red";
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+}
+onAuthStateChanged(auth, async (user) => {
+    currentUser = user || null;
+    const nameInput = document.getElementById("nameInput");
+    if (user) {
+        try {
+            const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
+            const snapshot = await get(displayNameRef);
+            let finalName = "";
+            if (snapshot.exists()) {
+                finalName = snapshot.val();
+            } else if (user.displayName) {
+                finalName = user.displayName;
+            } else {
+                finalName = user.email || "User";
+            }
+            nameInput.value = finalName;
+            nameInput.disabled = true;
+            nameInput.style.opacity = "0.7";
+            nameInput.style.cursor = "not-allowed";
+        } catch (error) {
+            console.error("Error Fetching Display Name:", error);
+        }
+        try {
+            const rolesRef = ref(db, `users/${user.uid}/profile`);
+            const roleSnap = await get(rolesRef);
+            if (roleSnap.exists()) {
+                const data = roleSnap.val();
+                userRoles = data || {};
+                isOwner = data.isOwner === true;
+                isTester = data.isTester === true;
+                isCoOwner = data.isCoOwner === true;
+                isHeadAdmin = data.isHeadAdmin === true;
+                isDev = data.isDev === true;
+                hasRoleAccess = isOwner || isTester || isCoOwner || isHeadAdmin || isDev;
+            }
+        } catch (err) {
+            console.error("Error Fetching Roles:", err);
+        }
+    } else {
+        nameInput.disabled = false;
+        nameInput.style.opacity = "1";
+        nameInput.style.cursor = "text";
+        nameInput.value = "";
+    }
+    await checkAdminPasswordSilently?.();
+    populateChannelSelector?.();
+    renderAdminPasswordForm();
 });
 async function processQueue() {
     if (isProcessingQueue || requestQueue.length === 0) return;

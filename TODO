@@ -1,1 +1,24 @@
 Fix Chat Scrolling
+- [x] Combine messages.js With modmessages.js
+    - [x] Delete modmessages.js
+    - [x] Rename messages.js to discord.js
+    - [x] Change Scripts Linking To messages.js To discord.js
+
+- [x] Combine InfiniteDiscordMods.html With InfiniteDiscords.html
+    - [x] Delete InfiniteDiscordMods.html
+
+Combine InfiniteArticles.html With InfiniteBlogs.html
+    Delete InfiniteBlogs.html
+
+Combine notes.js With updates.js
+    Delete notes.js
+    Change Script Linking To notes.js With updates.js
+
+Combine InfiniteNotes.js With InfiniteUpdaters.js
+    Delete InfiniteNotes.html
+
+Combine index.js With search.js
+    Delete search.js
+    Combine games.js With index.js
+    Combine oldproxy.js With index.js
+    Delete index.js
