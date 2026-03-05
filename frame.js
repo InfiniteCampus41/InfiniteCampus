@@ -122,13 +122,13 @@ const headerHTML = `
                 </div>
                 <div class="dropdown-wrap">
                     <button id="downloadToggle" class="dropdown-toggle">
-                        Download Games
+                        Downloads
                     </button>
                     <div class="dropdown test" id="downloadDropdown">
-                        <a href='InfiniteOpeners.html'>
+                        <a href='InfiniteDownloads.html?website=true'>
                             Download This Website
                         </a>
-                        <a href='InfiniteDownloaders.html'>
+                        <a href='InfiniteDownloads.html'>
                             Download Games
                         </a>
                     </div>

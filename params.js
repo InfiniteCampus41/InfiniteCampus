@@ -533,6 +533,14 @@ if (x3tfypage === '/InfiniteAbouts.html') {
         .then(() => showSuccess("Copied To Clipboard!"))
         .catch(() => showError("Error: Failed To Copy."));
     });
+} else if (x3tfypage === '/InfiniteDownloads.html') {
+    const games = document.getElementById('downloadGames');
+    const website = document.getElementById('downloadWebsite');
+    const webParams = x3tfyparams.get("website");
+    if (webParams) {
+        games.style.display = 'none';
+        website.style.display = 'block';
+    }
 } else if (x3tfypage === '/InfiniteEmbeds.html') {
     const choice = x3tfyparams.get("choice");
     const iframe = document.getElementById('embFrame');

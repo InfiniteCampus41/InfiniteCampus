@@ -10,12 +10,18 @@ Fix Chat Scrolling
 - [x] Combine InfiniteArticles.html With InfiniteBlogs.html
     - [x] Delete InfiniteBlogs.html
 
-Combine notes.js With updates.js
-    Delete notes.js
-    Change Script Linking To notes.js With updates.js
+- [x] Combine notes.js With updates.js
+    - [x] Delete notes.js
+    - [x] Change Script Linking To notes.js With updates.js
+- [x] Combine InfiniteDownloaders.html With InfiniteOpeners.html
+    - [x] Change Links In Header
 
-Combine InfiniteNotes.js With InfiniteUpdaters.js
-    Delete InfiniteNotes.html
+- [x] Combine news.js With updates.js
+    - [x] Delete news.js
+    - [x] Change Script Linking To news.js With updates.js
+
+Combine InfiniteFutures.html With InfiniteUpdaters.html
+    Delete InfiniteFutures.html
 
 Combine index.js With search.js
     Delete search.js
