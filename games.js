@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: "https://mcraft.fun/" },
         { name: "Eaglercraft Servers", method: ["1", "2"], url: "https://servers.eaglercraft.com/" },
         { name: "Roblox", method: ["1"], url: "https://roblox.com"},
+        { name: "BuildNow.gg", method: ["1","2"], url: "https://play.infinitecampus.xyz/games/buildnow/index.html"},
         { name: "Run 3", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/run3/index.html" },
         { name: "Run 3 (2)", method: ["1", "2"], url: "https://lekug.github.io/tn6pS9dCf37xAhkJv/" },
         { name: "Retro Bowl", method: ["1", "2"], url: "https://play.infinitecampus.xyz/games/retrobowl/index.html" },
