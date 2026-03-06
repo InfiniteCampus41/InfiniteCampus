@@ -1,9 +1,10 @@
-import { auth, db, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, ref, get, set, update, onValue, sendEmailVerification, applyActionCode, confirmPasswordReset } from './imports.js';
+import { messaging, getToken, auth, db, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, ref, get, set, update, onValue, sendEmailVerification, applyActionCode, confirmPasswordReset } from './imports.js';
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode');
 const oobCode = urlParams.get('oobCode');
 const continueUrl = urlParams.get('continueUrl') || "/InfiniteAccounts.html";
 const uid = urlParams.get("user");
+const notif = urlParams.get("notif");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
@@ -18,7 +19,22 @@ async function loadProfileImages() {
         return [`/pfps/1.jpeg?t=${Date.now()}`];
     }
 }
-if (mode) {
+if (notif) {
+    async function enableNotifications() {
+        const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            const token = await getToken(messaging, {
+                vapidKey: "BFzJJQnddg7dRJlByA9q76_jhw5XHgSydywvChgLXI6a6jSUimHA3vhMLRS0VtBRMWl_EfZx6BSvNVtTdVbXhOg",
+                serviceWorkerRegistration: registration
+            });
+            set(ref(db, "pushTokens/" + token), true);
+            console.log("Push Token:", token);
+            window.location.href = "InfiniteAccounts.html";
+        }
+    }
+    enableNotifications();
+} else if (mode) {
     authcontainer.style.display = 'block';
     settingsPage.style.display = 'none';
     const resetPasswordContainer = document.getElementById('resetPasswordContainer');
