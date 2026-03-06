@@ -74,6 +74,44 @@ style.textContent = `
         gap:6px; 
     }
 `;
+const imgViewer = document.createElement("div");
+imgViewer.style.position = "fixed";
+imgViewer.style.top = "0";
+imgViewer.style.left = "0";
+imgViewer.style.width = "100%";
+imgViewer.style.height = "100%";
+imgViewer.style.background = "rgba(0,0,0,0.9)";
+imgViewer.style.display = "none";
+imgViewer.style.alignItems = "center";
+imgViewer.style.justifyContent = "center";
+imgViewer.style.flexDirection = "column";
+imgViewer.style.zIndex = "10000";
+const viewerImg = document.createElement("img");
+viewerImg.style.maxWidth = "90%";
+viewerImg.style.maxHeight = "80%";
+viewerImg.style.cursor = "zoom-in";
+viewerImg.style.transition = "transform 0.2s";
+const downloadBtn = document.createElement("a");
+downloadBtn.textContent = "Download Image";
+downloadBtn.style.marginTop = "15px";
+downloadBtn.style.color = "white";
+downloadBtn.style.textDecoration = "underline";
+downloadBtn.style.cursor = "pointer";
+imgViewer.appendChild(viewerImg);
+imgViewer.appendChild(downloadBtn);
+document.body.appendChild(imgViewer);
+let zoomed = false;
+viewerImg.addEventListener("click", () => {
+    zoomed = !zoomed;
+    viewerImg.style.transform = zoomed ? "scale(2)" : "scale(1)";
+});
+imgViewer.addEventListener("click", (e) => {
+    if (e.target === imgViewer) {
+        imgViewer.style.display = "none";
+        viewerImg.style.transform = "scale(1)";
+        zoomed = false;
+    }
+});
 const typingIndicator = document.createElement("div");
 typingIndicator.id = "typingIndicator";
 typingIndicator.style.fontSize = "0.8em";
@@ -349,6 +387,29 @@ async function renderMessageInstant(id, msg) {
             return `<p style="color:${safeColor}">${content}</p>`;
         }
     );
+    safeText = safeText.replace(
+        /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+        (match, src, alt, style) => {
+            const safeSrc = src.replace(/"/g, "");
+            const safeAlt = alt ? alt.replace(/"/g, "") : "";
+            let width = null;
+            let height = null;
+            let radius = null;
+            if (style) {
+                const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                if (w) width = Math.min(parseInt(w[1]), 100);
+                if (h) height = Math.min(parseInt(h[1]), 100);
+                if (r) radius = parseInt(r[1]);
+            }
+            let finalStyle = "margin-top:6px;cursor:pointer;";
+            if (width) finalStyle += `width:${width}px;`;
+            if (height) finalStyle += `height:${height}px;`;
+            if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+            return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
+        }
+    );
     safeText = safeText.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
     safeText = safeText.replace(mentionRegex, (match, name) => {
@@ -370,20 +431,24 @@ async function renderMessageInstant(id, msg) {
         const cls = isSelfMention ? "mention-self" : "mention";
         return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
     });
-    const urlRegex = /\b((?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
-    safeText = safeText.replace(urlRegex, (match) => {
-        let display = match;
+    const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+    safeText = safeText.replace(urlRegex, (match, prefix, url) => {
+        let display = url;
         while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
-        let href = display.trim();
-        if (!/^https?:\/\//i.test(href)) {
-            return match;
-        }
-        const trailing = match.slice(display.length);
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer"
-            style="color:#4fa3ff; text-decoration:underline; position:relative;">${display}</a>${trailing}`;
+        const trailing = url.slice(display.length);
+        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"
+            style="color:#4fa3ff;text-decoration:underline;position:relative;">${display}</a>${trailing}`;
     });
     safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
+    textDiv.querySelectorAll(".chat-img").forEach(img => {
+        img.addEventListener("click", () => {
+            viewerImg.src = img.src;
+            downloadBtn.href = img.src;
+            downloadBtn.download = "image";
+            imgViewer.style.display = "flex";
+        });
+    });
     textDiv.querySelectorAll(".mention-user").forEach(span => {
         span.style.cursor = "pointer";
         span.addEventListener("click", async () => {
@@ -1049,6 +1114,29 @@ async function attachMessageListeners(msgRef) {
                 (match, color, content) => {
                     const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
                     return `<p style="color:${safeColor}">${content}</p>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
+                    }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
                 }
             );
             safeText = safeText.replace(/\n/g, "<br>");
