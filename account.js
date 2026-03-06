@@ -8,6 +8,10 @@ const notif = urlParams.get("notif");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
+const enableNotifBtn = document.getElementById('enableNotifBtn');
+if (Notification.permission === "granted") {
+    enableNotifBtn.style.display = "none";
+}
 let profileImages = [];
 async function loadProfileImages() {
     try {
