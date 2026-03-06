@@ -4,7 +4,7 @@ const chatView = document.getElementById("chatView");
 const chatTitle = document.getElementById("chatTitle");
 const chatMessages = document.getElementById("chatMessages");
 const deleteChatBtn = document.getElementById("deleteChat");
-deleteChatBtn.className = "btn btn-secondary";
+deleteChatBtn.className = "button";
 const backButton = document.getElementById("backButton");
 const userListDiv = document.getElementById("userList");
 const userEditDiv = document.getElementById("userEdit");
@@ -28,9 +28,9 @@ async function loadProfilePics() {
         const res = await fetch(`/pfps/index.json?${Date.now()}`);
         const files = await res.json();
         profilePics = files.map(f => `/pfps/${f}?t=${Date.now()}`);
-        console.log("Loaded profile pics:", profilePics);
+        console.log("Loaded Profile Pics:", profilePics);
     } catch (err) {
-        console.error("Failed to load profile pics:", err);
+        console.error("Failed To Load Profile Pics:", err);
         profilePics = [`/pfps/1.jpeg?t=${Date.now()}`];
     }
 }

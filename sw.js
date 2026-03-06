@@ -7,7 +7,6 @@ firebase.initializeApp({
   	messagingSenderId: "424229778181",
   	appId: "1:424229778181:web:fa531219ed165346fa7d6c"
 });
-import { auth, db, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, ref, set, update, get, GoogleAuthProvider, signInWithPopup } from "./imports.js";
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   	self.registration.showNotification(payload.notification.title, {
@@ -38,14 +37,9 @@ self.addEventListener("push", function(event) {
   	);
 });
 self.addEventListener("notificationclick", function(event) {
-  	event.notification.close();
-  	if (event.action === "verify") {
-    	const uid = event.notification.data.uid;
-  		db.ref(`users/${uid}/profile/verified`).set(true);
-    	return;
-  	}
-  	const url = event.notification.data.url;
-  	event.waitUntil(
+	const data = event.data.json();
+	const url = data.data.url;
+	event.waitUntil(
    	 	clients.openWindow(url)
   	);
 });

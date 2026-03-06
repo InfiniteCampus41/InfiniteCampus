@@ -35,8 +35,10 @@ if (notif) {
             const user = auth.currentUser;
             if (user) {
                 set(ref(db, "pushTokens/" + user.uid + "/" + token), true);
-            }            
-            console.log("Push Token:", token);
+                showSuccess("Notifications Have Been Enabled");
+            } else {
+                window.location.href = 'InfiniteLogins.html';
+            }
             window.location.href = 'InfiniteAccounts.html';
         }
     }
