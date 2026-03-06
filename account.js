@@ -10,7 +10,7 @@ const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
 const enableNotifBtn = document.getElementById('enableNotifBtn');
 if (Notification.permission === "granted") {
-    enableNotifBtn.style.display = "none";
+    enableNotifBtn.style.display = "none !important";
 }
 let profileImages = [];
 async function loadProfileImages() {
