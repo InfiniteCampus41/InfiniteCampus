@@ -34,23 +34,21 @@ googleSignupBtn.addEventListener("click", async () => {
     try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
-        const userProfileRef = ref(db, `users/${user.uid}/profile`);
-        const userSettingsRef = ref(db, `users/${user.uid}/settings`);
-        const snap = await get(userProfileRef);
-        if (!snap.exists()) {
-            await set(userSettingsRef, {
-                color: "#ffffff",
-                showMentions: true,
-                userEmail: user.email
-            });
-            await set(userProfileRef, {
+        const userRef = ref(db, `users/${user.uid}`);
+        await set(userRef, {
+            profile: {
                 displayName: user.displayName || "",
                 pic: 0
-            });
-        }
+            },
+            settings: {
+                color: "#ffffff",
+                showMentions: true,
+                userEmail: user.email || ""
+            }
+        });
+        console.log("User Created:", user.uid);
     } catch (error) {
-        console.error(error);
-        showError("Google Sign-In Failed: " + error.message);
+        console.error("Google Sign In Error:", error);
     }
 });
 signupBtn.addEventListener("click", async () => {

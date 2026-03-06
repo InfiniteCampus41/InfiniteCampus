@@ -32,8 +32,12 @@ if (notif) {
                 vapidKey: "BFzJJQnddg7dRJlByA9q76_jhw5XHgSydywvChgLXI6a6jSUimHA3vhMLRS0VtBRMWl_EfZx6BSvNVtTdVbXhOg",
                 serviceWorkerRegistration: registration
             });
-            set(ref(db, "pushTokens/" + token), true);
+            const user = auth.currentUser;
+            if (user) {
+                set(ref(db, "pushTokens/" + user.uid + "/" + token), true);
+            }            
             console.log("Push Token:", token);
+            // window.location.href = 'InfiniteAccounts.html';
         }
     }
     enableNotifications();
