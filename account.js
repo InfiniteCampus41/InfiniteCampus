@@ -34,7 +34,6 @@ if (notif) {
             });
             set(ref(db, "pushTokens/" + token), true);
             console.log("Push Token:", token);
-            window.location.href = "InfiniteAccounts.html";
         }
     }
     enableNotifications();
