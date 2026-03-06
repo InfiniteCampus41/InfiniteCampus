@@ -34,7 +34,7 @@ if (notif) {
             });
             const user = auth.currentUser;
             if (user) {
-                set(ref(db, "pushTokens/" + user.uid), token);
+                set(ref(db, "pushTokens/" + user.uid + "/" + token), true);
             }            
             console.log("Push Token:", token);
             window.location.href = 'InfiniteAccounts.html';
