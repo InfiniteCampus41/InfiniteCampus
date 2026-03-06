@@ -38,20 +38,16 @@ self.addEventListener("push", function(event) {
   	);
 });
 self.addEventListener("notificationclick", function(event) {
-
-  event.notification.close();
-
-  if (event.action === "verify") {
-
-    const uid = event.notification.data.uid;
-  	db.ref(`users/${uid}/profile/verified`).set(true);
-
-    return;
-  }
-  const url = event.notification.data.url;
-  event.waitUntil(
-    clients.openWindow(url)
-  );
+  	event.notification.close();
+  	if (event.action === "verify") {
+    	const uid = event.notification.data.uid;
+  		db.ref(`users/${uid}/profile/verified`).set(true);
+    	return;
+  	}
+  	const url = event.notification.data.url;
+  	event.waitUntil(
+   	 	clients.openWindow(url)
+  	);
 });
 importScripts("/scram/scramjet.all.js");
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
