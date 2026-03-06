@@ -14,6 +14,28 @@ messaging.onBackgroundMessage((payload) => {
     	icon: "/res/192icon.png"
   	});
 });
+self.addEventListener("push", function(event) {
+  	const data = event.data.json();
+  	const options = {
+		title: data.title,
+    	body: data.body,
+    	icon: data.icon,
+		image: data.image,
+    	data: {
+      		url: data.data.url
+    	}
+  	};
+  	event.waitUntil(
+    	self.registration.showNotification(data.title, options)
+  	);
+});
+self.addEventListener("notificationclick", function(event) {
+  	event.notification.close();
+  	const url = event.notification.data.url;
+  	event.waitUntil(
+   	 	clients.openWindow(url)
+  	);
+});
 importScripts("/scram/scramjet.all.js");
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
