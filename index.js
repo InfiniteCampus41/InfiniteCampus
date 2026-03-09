@@ -11,6 +11,8 @@ const error = document.getElementById("sj-error");
 /** @param {string} input */
 /** @param {string} template */
 /** @returns {string} */
+const stockSW = "./sw.js";
+const swAllowedHostnames = ["localhost", "127.0.0.1"];
 const errorCode = document.getElementById("sj-error-code");
 const { ScramjetController } = $scramjetLoadController();
 const scramjet = new ScramjetController({
@@ -120,13 +122,17 @@ form.addEventListener("submit", async (event) => {
         frame.go(url);
     }
 });
-"use strict";
-/**
-*
-* @param {string} input
-* @param {string} template
-* @returns {string}
-*/
+async function registerSW() {
+	if (!navigator.serviceWorker) {
+		if (
+			location.protocol !== "https:" &&
+			!swAllowedHostnames.includes(location.hostname)
+		)
+		throw new Error("Service Workers Cannot Be Registered Without https.");
+		throw new Error("Your Browser Doesn't Support Service Workers.");
+	}
+	await navigator.serviceWorker.register(stockSW);
+}
 function search(input, template) {
 	try {
 		return new URL(input).toString();

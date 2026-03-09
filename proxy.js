@@ -1,4 +1,7 @@
 "use strict";
+/** @param {string} input */
+/** @param {string} template */
+/** @returns {string} */
 const form = document.getElementById("sj-form");
 const addressBar = document.getElementById("sj-address");
 const searchEngine = document.getElementById("sj-search-engine");
@@ -9,6 +12,8 @@ const content = document.getElementById("content");
 const backBtn = document.getElementById("nav-back");
 const forwardBtn = document.getElementById("nav-forward");
 const reloadBtn = document.getElementById("nav-reload");
+const stockSW = "./sw.js";
+const swAllowedHostnames = ["localhost", "127.0.0.1"];
 let fullscreenBtn = null;
 let isFullscreen = false;
 const { ScramjetController } = $scramjetLoadController();
@@ -55,6 +60,17 @@ async function loadBlockedUrls() {
         blockedUrls = [];
     }
 }
+async function registerSW() {
+	if (!navigator.serviceWorker) {
+		if (
+			location.protocol !== "https:" &&
+			!swAllowedHostnames.includes(location.hostname)
+		)
+		throw new Error("Service Workers Cannot Be Registered Without https.");
+		throw new Error("Your Browser Doesn't Support Service Workers.");
+	}
+	await navigator.serviceWorker.register(stockSW);
+}
 function getBaseDomain(input) {
     try {
         const u = new URL(input.startsWith("http") ? input : "https://" + input);
@@ -62,6 +78,18 @@ function getBaseDomain(input) {
     } catch {
         return "";
     }
+}
+function search(input, template) {
+	try {
+		return new URL(input).toString();
+	} catch (err) {
+	}
+	try {
+		const url = new URL(`http://${input}`);
+		if (url.hostname.includes(".")) return url.toString();
+	} catch (err) {
+	}
+	return template.replace("%s", encodeURIComponent(input));
 }
 function checkBlocked(inputUrl) {
     const domain = getBaseDomain(inputUrl);
