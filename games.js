@@ -298,7 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         };
                         backButton.onclick = function () {
                             const proxyContainer = document.getElementById('proxy-container');
-                            proxyContainer.style.display = 'none';
+                            if (proxyContainer) {
+                                proxyContainer.style.display = 'none';
+                            }
                             hideLoader();
                             const iframes = document.querySelectorAll("iframe");
                             iframes.forEach(iframe => iframe.remove());
