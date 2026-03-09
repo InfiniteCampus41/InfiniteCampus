@@ -131,7 +131,6 @@ chatLog.addEventListener("scroll", async () => {
     if (chatLog.scrollTop > 50) return;
     if (!hasMoreMessages || loadingOlderMessages || !oldestLoadedTimestamp) return;
     loadingOlderMessages = true;
-    const previousHeight = chatLog.scrollHeight;
     const olderQuery = query(
         currentMsgRef,
         orderByChild("timestamp"),
@@ -147,12 +146,16 @@ chatLog.addEventListener("scroll", async () => {
     const msgs = snapshot.val();
     const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
     oldestLoadedTimestamp = entries[0][1].timestamp;
-    for (const [id, msg] of entries.reverse()) {
+    const bottomOffset = chatLog.scrollHeight - chatLog.scrollTop;
+    const fragment = document.createDocumentFragment();
+    for (const [id, msg] of entries) {
         const div = await renderMessageInstant(id, msg);
-        if (div) chatLog.insertBefore(div, chatLog.firstChild);
+        if (div) fragment.appendChild(div);
     }
-    const newHeight = chatLog.scrollHeight;
-    chatLog.scrollTop = newHeight - previousHeight;
+    chatLog.prepend(fragment);
+    requestAnimationFrame(() => {
+        chatLog.scrollTop = chatLog.scrollHeight - bottomOffset;
+    });
     loadingOlderMessages = false;
 });
 function scrollToBottom(smooth = false) {
@@ -1053,12 +1056,13 @@ async function attachMessageListeners(msgRef) {
     const entries = Object.entries(msgs)
         .sort((a, b) => a[1].timestamp - b[1].timestamp);
     oldestLoadedTimestamp = entries[0][1].timestamp;
-    for (let i = entries.length - 1; i >= 0; i--) {
-        const [id, msg] = entries[i];
+    const fragment = document.createDocumentFragment();
+    for (const [id, msg] of entries) {
         const div = await renderMessageInstant(id, msg);
-        if (div) chatLog.insertBefore(div, chatLog.firstChild);
+        if (div) fragment.appendChild(div);
     }
-    scrollToBottom(true);
+    chatLog.appendChild(fragment);
+    scrollToBottom(false);
     currentListeners.added = onChildAdded(msgRef, async snap => {
         if (msgRef !== currentMsgRef) return;
         const key = snap.key;
@@ -1067,7 +1071,7 @@ async function attachMessageListeners(msgRef) {
         if (!document.getElementById("msg-" + key)) {
             const newDiv = await renderMessageInstant(key, val);
             if (!newDiv) return;
-            const newTs = Number(val.timestamp || Date.now());
+            const newTs = Number(val.timestamp);
             const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
             let inserted = false;
             for (const el of msgsEls) {
