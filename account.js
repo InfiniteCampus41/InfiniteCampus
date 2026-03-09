@@ -774,12 +774,59 @@ if (notif) {
     async function saveUserDis() {
         if (!currentUser) return;
         const newDis = disInput.value.trim();
+        if (!newDis) return showError("Discord Username Cannot Be Empty.");
         if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
-        await set(ref(db, `users/${currentUser.uid}/profile/dUsername`), newDis);
-        currentDis = newDis;
-        disableDisEditing();
-        setSetting("dUsername", newDis);
-        showSuccess("Discord Username Saved!");
+        try {
+            const res = await fetch(`${a}/discordVerify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: newDis,
+                    uid: currentUser.uid
+                })
+            });
+            const data = await res.json();
+            if (!data.success) {
+                if (data.message === "Not In Server") {
+                    return showError("You Are Not In The Discord Server.");
+                }
+                return showError(data.error || "Verification Failed.");
+            }
+            showSuccess("A Verification Code Was Sent To Your Discord DMs.");
+            const code = prompt("Enter The 6 Digit Code Sent To Your Discord:");
+            if (!code) {
+                await fetch(`${a}/discordVerifyCancel`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ uid: currentUser.uid })
+                });
+                return showError("Verification Cancelled.");
+            }
+            const confirmRes = await fetch(`${a}/discordVerifyConfirm`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    uid: currentUser.uid,
+                    code: code.trim()
+                })
+            });
+            const confirmData = await confirmRes.json();
+            if (confirmData.success) {
+                currentDis = newDis;
+                disableDisEditing();
+                setSetting("dUsername", newDis);
+                showSuccess("Discord Account Verified!");
+            } else {
+                showError(confirmData.error || "Invalid Code.");
+            }
+        } catch (err) {
+            console.error(err);
+            showError("Failed To Verify Discord Username.");
+        }
     }
     editDisBtn.addEventListener("click", enableDisEditing);
     saveDisBtn.addEventListener("click", saveUserDis);
