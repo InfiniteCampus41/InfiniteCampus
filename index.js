@@ -8,6 +8,9 @@ const searchEngine = document.getElementById("sj-search-engine");
 /** @type {HTMLParagraphElement} */
 const error = document.getElementById("sj-error");
 /** @type {HTMLPreElement} */
+/** @param {string} input */
+/** @param {string} template */
+/** @returns {string} */
 const errorCode = document.getElementById("sj-error-code");
 const { ScramjetController } = $scramjetLoadController();
 const scramjet = new ScramjetController({
@@ -41,6 +44,18 @@ function getBaseDomain(input) {
     } catch (e) {
         return "";
     }
+}
+function search(input, template) {
+	try {
+		return new URL(input).toString();
+	} catch (err) {
+	}
+	try {
+		const url = new URL(`http://${input}`);
+		if (url.hostname.includes(".")) return url.toString();
+	} catch (err) {
+	}
+	return template.replace("%s", encodeURIComponent(input));
 }
 function checkBlocked(inputUrl) {
     const domain = getBaseDomain(inputUrl);
@@ -105,3 +120,22 @@ form.addEventListener("submit", async (event) => {
         frame.go(url);
     }
 });
+"use strict";
+/**
+*
+* @param {string} input
+* @param {string} template
+* @returns {string}
+*/
+function search(input, template) {
+	try {
+		return new URL(input).toString();
+	} catch (err) {
+	}
+	try {
+		const url = new URL(`http://${input}`);
+		if (url.hostname.includes(".")) return url.toString();
+	} catch (err) {
+	}
+	return template.replace("%s", encodeURIComponent(input));
+}
