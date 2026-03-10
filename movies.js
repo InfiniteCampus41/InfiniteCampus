@@ -3,6 +3,8 @@ let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
 let finishingTimeout = null;
+let FIREBASE_AVAILABLE = true;
+let MOVIE_LOAD_ID = 0;
 const currentfile = document.getElementById("currentFile");
 const section = document.getElementById("section");
 document.getElementById("applyFile").addEventListener("change", () => {
@@ -113,6 +115,7 @@ async function uploadApply() {
 async function loadMovies() {
     const url = BACKEND + "/api/list_videos_x9a7b2";
     const box = document.getElementById("movies");
+    const loadId = ++MOVIE_LOAD_ID;
     box.innerHTML = "Loading...";
     try {
         const res = await fetch(url, {
@@ -121,34 +124,40 @@ async function loadMovies() {
             }
         });
         const data = await res.json();
+        if (loadId !== MOVIE_LOAD_ID) return;
         if (!data.ok) {
             box.innerHTML = "Failed To Load Movies";
             return;
         }
         MOVIE_CACHE = data.videos;
-        await renderMovies(data.videos);
+        await renderMovies(data.videos, loadId);
     } catch (e) {
-        showError("Failed To Load Movies, Check Server Status")
+        if (loadId !== MOVIE_LOAD_ID) return;
+        showError("Failed To Load Movies, Check Server Status");
         box.innerHTML = "Could Not Reach Server.";
     }
 }
-async function renderMovies(list) {
+async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
     const box = document.getElementById("movies");
     box.innerHTML = "Loading...";
     box.innerHTML = "";
     for (const v of list) {
+        if (loadId !== MOVIE_LOAD_ID) return;
         const dlURL = `${BACKEND}/download/x9a7b2/${v.name}`;
-        let uploaderName = "An Anonymous User";
-        if (v.uploadedBy && v.uploadedBy !== "") {
+        let uploaderName = "";
+        let showUploader = false;
+        if (FIREBASE_AVAILABLE && v.uploadedBy && v.uploadedBy !== "") {
             try {
                 const snap = await get(
                     ref(db, "users/" + v.uploadedBy + "/profile/displayName")
                 );
                 if (snap.exists()) {
                     uploaderName = `@${snap.val()}`;
+                    showUploader = true;
                 }
             } catch (err) {
-                console.error("Failed To Fetch Uploader Name:", err);
+                console.error("Firebase Connection Failed:", err);
+                FIREBASE_AVAILABLE = false;
             }
         }
         const div = document.createElement("div");
@@ -162,10 +171,12 @@ async function renderMovies(list) {
                     — 
                     ${v.humanSize}
                 </span>
-                <span id="upByIcon" style="width:0; margin-left:-20px;">
-                    <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}">
-                    </i>
-                </span>
+                ${showUploader ? `
+                    <span id="upByIcon" style="width:0; margin-left:-20px;">
+                        <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}">
+                        </i>
+                    </span>` : ``
+                }
             </div>
             <br>
             <br>
@@ -178,9 +189,11 @@ async function renderMovies(list) {
                 </button>
             </a>
             <br>
-            <small id="upByTxt" style="display:none;">
-                Uploaded By: ${uploaderName}
-            </small>
+            ${showUploader ? `
+                <small id="upByTxt" style="display:none;">
+                    Uploaded By: ${uploaderName}
+                </small>` : ``
+            }
         `;
         box.appendChild(div);
     }
