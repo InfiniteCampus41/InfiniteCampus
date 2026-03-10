@@ -1174,6 +1174,37 @@ async function attachMessageListeners(msgRef) {
                     return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
                 }
             );
+            safeText = safeText.replace(
+                /&lt;video\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
+                    }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<video src="${safeSrc}" class="chat-vid" style="${finalStyle}" controls loop>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
+                }
+            );
             safeText = safeText.replace(/\n/g, "<br>");
             const mentionRegex = /@([^\s<]+)/g;
             safeText = safeText.replace(mentionRegex, (match, name) => {
