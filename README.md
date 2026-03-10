@@ -4,8 +4,7 @@ A Hopefully Unblocked Website That Allows You To Play Games, Browse The Web, And
 WARNING:
 If You Fork This Repo And Try To Run It, The Proxy Will Not Work
 This Is Because This Repo Is Only The Public Folder For The Infinite Campus Server And Since The Proxy Tries To Contact The Server, They Will Fail If The Files Are Not There.
-Unfortunately, I Cannot Put The Whole Server Setup On Here As It Would Expose My Discord Bot Token. And Even If I Removed It, It Still Wouldnt Be Able To Upload Here Because It Requires Lots More Special Tokens And Secrets.
-If You Are Trying To Download The Website And Trying To Use It Without The Proxy, Please Follow The Steps Below
+If You Would Like A Working Proxy, Please Check Out The InfiniteCampus-Core Repo
 
 Requirements: Node.js & npm
 

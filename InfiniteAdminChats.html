@@ -31,6 +31,21 @@
         <script src="main.js">
         </script>
         <style>
+            .chat-img{
+                width:100px;
+                height:100px;
+                object-fit:cover;
+                border-radius:15px;
+                cursor:pointer;
+                transition:transform 0.15s;
+            }
+            .chat-vid {
+                width:50%;
+                height:200px;
+            }
+            .chat-img:hover{
+                transform:scale(1.05);
+            }
             * {
                 scrollbar-width: thin;
                 scrollbar-color: #555 transparent;
@@ -95,7 +110,6 @@
                 padding: 12px;
                 margin-bottom: 12px;
             }
-
             .message img {
                 width: 42px;
                 height: 42px;
@@ -105,6 +119,10 @@
             .msg-header {
                 color: #aaa;
                 font-size: 0.85em;
+            }
+            .msg-header #msgTimestamp {
+                width:100%;
+                text-align:right;
             }
             textarea, select {
                 background: #1b1b1b !important;

@@ -123,8 +123,7 @@ let typingTimeout = null;
 let typingRef = null;
 document.head.appendChild(style);
 chatLog.addEventListener("scroll", () => {
-    const distanceFromBottom =
-        chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
+    const distanceFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
     autoScrollEnabled = distanceFromBottom < 40;
 });
 chatLog.addEventListener("scroll", async () => {

@@ -896,7 +896,7 @@ if (notif) {
             }
             if (user.emailVerified) {
                 userEmailDisplay.style.color = "limegreen";
-                verifyEmailBtn.style.display = "none";
+                verifyEmailBtn.style.setProperty("display", "none", "important");
             } else {
                 userEmailDisplay.style.color = "yellow";
                 verifyEmailBtn.style.display = "inline";

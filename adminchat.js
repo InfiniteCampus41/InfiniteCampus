@@ -23,6 +23,44 @@ let userProfiles = {};
 let userSettings = {};
 let activeChatListener = null;
 let profilePics = [];
+const imgViewer = document.createElement("div");
+imgViewer.style.position = "fixed";
+imgViewer.style.top = "0";
+imgViewer.style.left = "0";
+imgViewer.style.width = "100%";
+imgViewer.style.height = "100%";
+imgViewer.style.background = "rgba(0,0,0,0.9)";
+imgViewer.style.display = "none";
+imgViewer.style.alignItems = "center";
+imgViewer.style.justifyContent = "center";
+imgViewer.style.flexDirection = "column";
+imgViewer.style.zIndex = "10000";
+const viewerImg = document.createElement("img");
+viewerImg.style.maxWidth = "90%";
+viewerImg.style.maxHeight = "80%";
+viewerImg.style.cursor = "zoom-in";
+viewerImg.style.transition = "transform 0.2s";
+const downloadBtn = document.createElement("a");
+downloadBtn.textContent = "Download Image";
+downloadBtn.style.marginTop = "15px";
+downloadBtn.style.color = "white";
+downloadBtn.style.textDecoration = "underline";
+downloadBtn.style.cursor = "pointer";
+imgViewer.appendChild(viewerImg);
+imgViewer.appendChild(downloadBtn);
+document.body.appendChild(imgViewer);
+let zoomed = false;
+viewerImg.addEventListener("click", () => {
+    zoomed = !zoomed;
+    viewerImg.style.transform = zoomed ? "scale(2)" : "scale(1)";
+});
+imgViewer.addEventListener("click", (e) => {
+    if (e.target === imgViewer) {
+        imgViewer.style.display = "none";
+        viewerImg.style.transform = "scale(1)";
+        zoomed = false;
+    }
+});
 async function loadProfilePics() {
     try {
         const res = await fetch(`/pfps/index.json?${Date.now()}`);
@@ -65,16 +103,35 @@ async function logMutedUsers() {
             if (!isNaN(picIndex) && picIndex > 0 && picIndex <= profilePics.length) {
                 picSrc = profilePics[picIndex];
             }
-            header.innerHTML = `<img src="${picSrc}" alt="${nameVal}'s Pic" style="height:30px; width:30px; border:1px solid white; border-radius:50%;"><span style="margin-left:10px; font-size:0.9em; color:${colorVal};">${nameVal}</span>`;
+            header.innerHTML = `
+                <img src="${picSrc}" alt="${nameVal}'s Pic" style="height:30px; width:30px; border:1px solid white; border-radius:50%;">
+                <span style="margin-left:10px; font-size:0.9em; color:${colorVal};">
+                    ${nameVal}
+                </span>
+            `;
             const desc = document.createElement('div');
             const expires = mutedData[uid]?.expires;
             desc.style.marginLeft = "35px";
             desc.style.marginTop = "-10px";
             if (expires != "Never") {
                 const readable = new Date(expires).toLocaleString();
-                desc.innerHTML = `<span style="font-size:0.7em;color:grey;">Email: ${emailVal}</span><p style="font-size:0.7em;color:grey;margin-top:-5px;">Expires At ${readable}</p>`;
+                desc.innerHTML = `
+                    <span style="font-size:0.7em;color:grey;">
+                        Email: ${emailVal}
+                    </span>
+                    <p style="font-size:0.7em;color:grey;margin-top:-5px;">
+                        Expires At ${readable}
+                    </p>
+                `;
             } else {
-                desc.innerHTML = `<span style="font-size:0.7em;color:grey;">Email: ${emailVal}</span><p style="font-size:0.7em;color:grey;margin-top:-5px;">Never Expires</p>`;
+                desc.innerHTML = `
+                    <span style="font-size:0.7em;color:grey;">
+                        Email: ${emailVal}
+                    </span>
+                    <p style="font-size:0.7em;color:grey;margin-top:-5px;">
+                        Never Expires
+                    </p>
+                `;
             }
             const unmuteBtn = document.createElement('button');
             unmuteBtn.className = "btn btn-secondary";
@@ -235,7 +292,12 @@ async function updateTypingUI(typingSnapshot) {
             typic.style.width = "30px";
             p.style.padding = "4px 0";
             p.style.marginLeft = "10px";
-            p.innerHTML = `<span style="color:${l.color};">${l.displayName}</span> Is Typing In #${l.channelName}`;
+            p.innerHTML = `
+                <span style="color:${l.color};">
+                    ${l.displayName}
+                </span>
+                Is Typing In #${l.channelName}
+            `;
             typingListDiv.appendChild(mdiv);
             mdiv.appendChild(typic);
             mdiv.appendChild(p);
@@ -343,7 +405,7 @@ function renderUnverifiedViewer() {
     const emailEl = document.createElement("div");
     emailEl.textContent = `Email: ${email}`;
     fields.appendChild(emailEl);
-    const shownKeys = new Set(["displayName", "pic", "bio", "verified"]);
+    const shownKeys = new Set(["displayName", "pic", "bio", "verified", "votes"]);
     const shownSettings = new Set(["color", "userEmail", "displayName", "bio"]);
     const otherEl = document.createElement("div");
     otherEl.style.marginTop = "8px";
@@ -500,15 +562,18 @@ onAuthStateChanged(auth, async (user) => {
     const testerRef = ref(db, `users/${uid}/profile/isTester`);
     const coOwnerRef = ref(db, `users/${uid}/profile/isCoOwner`);
     const hAdminRef = ref(db, `users/${uid}/profile/isHAdmin`);
+    const devRef = ref(db, `users/${uid}/profile/isDev`);
     const ownerSnap = await get(ownerRef);
     const testerSnap = await get(testerRef);
     const coOwnerSnap = await get(coOwnerRef);
     const hAdminSnap = await get(hAdminRef);
+    const devSnap = await get(devRef);
     let isOwner = ownerSnap.exists() && ownerSnap.val() === true;
     let isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
     let isTester = testerSnap.exists() && testerSnap.val() === true;
     let isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
-    if (!isOwner && !isCoOwner && !isTester && !isHAdmin) {
+    let isDev = devSnap.exists() && devSnap.val() === true; 
+    if (!isOwner && !isCoOwner && !isTester && !isHAdmin && !isDev) {
         showError("Access Denied. You Are Not An Approved User.");
         window.location.href = "InfiniteChatters.html";
         return;
@@ -564,7 +629,11 @@ async function loadPrivateChats() {
     Object.entries(data).forEach(([uid, chatPartners]) => {
         const userDisplay = userProfiles[uid]?.displayName || uid;
         const userDiv = document.createElement("div");
-        userDiv.innerHTML = `<strong>${userDisplay}</strong>`;
+        userDiv.innerHTML = `
+            <strong>
+                ${userDisplay}
+            </strong>
+        `;
         privateChatsDiv.appendChild(userDiv);
         Object.keys(chatPartners).forEach(secondUid => {
             const partnerName = userProfiles[secondUid]?.displayName || secondUid;
@@ -616,6 +685,177 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
             const senderName = (senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1") ? "Hacker41" : (senderProfile.displayName || "Unknown");
             const color = await get(ref(db, `users/${senderUid}/settings/color`));
             const nameColor = color.exists() ? color.val() : "white";
+            const [ownerSnap, testerSnap, coOwnerSnap, hAdminSnap, adminSnap, devSnap, pre3Snap, pre2Snap, pre1Snap, donSnap, partnerSnap, susSnap, uploadSnap, guessSnap, hSnap, discordSnap] = await Promise.all([
+                get(ref(db, `users/${senderUid}/profile/isOwner`)),
+                get(ref(db, `users/${senderUid}/profile/isTester`)),
+                get(ref(db, `users/${senderUid}/profile/isCoOwner`)),
+                get(ref(db, `users/${senderUid}/profile/isHAdmin`)),
+                get(ref(db, `users/${senderUid}/profile/isAdmin`)),
+                get(ref(db, `users/${senderUid}/profile/isDev`)),
+                get(ref(db, `users/${senderUid}/profile/premuim3`)),
+                get(ref(db, `users/${senderUid}/profile/premium2`)),
+                get(ref(db, `users/${senderUid}/profile/premium1`)),
+                get(ref(db, `users/${senderUid}/profile/isDonater`)),
+                get(ref(db, `users/${senderUid}/profile/isPartner`)),
+                get(ref(db, `users/${senderUid}/profile/isSus`)),
+                get(ref(db, `users/${senderUid}/profile/isUploader`)),
+                get(ref(db, `users/${senderUid}/profile/isGuesser`)),
+                get(ref(db, `users/${senderUid}/profile/mileStone`)),
+                get(ref(db, `users/${senderUid}/profile/dUsername`))
+            ]);
+            let badgeText = null;
+            const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
+            const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
+            const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
+            const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
+            const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
+            const senderIsSus = susSnap.exists() ? susSnap.val() : false;
+            if(senderIsSus) badgeText = "Sus";
+            else if(senderIsOwner) badgeText = "OWNR";
+            else if(senderIsTester) badgeText = "TSTR";
+            else if(senderIsCoOwner) badgeText = "COWNR";
+            else if(senderIsHAdmin) badgeText = "HADMIN";
+            else if(senderIsAdmin) badgeText = "ADMN";
+            const badgeContainer = document.createElement("span");
+            badgeContainer.style.marginLeft = "3px";
+            badgeContainer.style.fontWeight = "bold";
+            badgeContainer.style.display = "inline-flex";
+            badgeContainer.style.alignItems = "center";
+            badgeContainer.style.gap = "3px";
+            const mutedBadge = document.createElement("span");
+            mutedBadge.style.color = "red";
+            mutedBadge.style.fontWeight = "bold";
+            mutedBadge.style.display = "none";
+            mutedBadge.title = "This User Is Muted";
+            mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
+            const mutedRef = ref(db, `mutedUsers/${senderUid}`);
+            onValue(mutedRef, async (snap) => {
+                if (!snap.exists()) {
+                    mutedBadge.style.display = "none";
+                    return;
+                }
+                const data = snap.val();
+                if (data.expires === "Never") {
+                    mutedBadge.style.display = "inline";
+                    return;
+                }
+                if (data.expires && Date.now() > data.expires) {
+                    await remove(mutedRef);
+                    mutedBadge.style.display = "none";
+                    return;
+                }
+                mutedBadge.style.display = "inline";
+            });
+            let dontShowOthers = false;
+            if (badgeText === "Sus") {
+                dontShowOthers = true;
+                badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
+                badgeContainer.style.color = 'red';
+                badgeContainer.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
+            } else if (badgeText === "OWNR" && !dontShowOthers) {
+                badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
+                badgeContainer.style.color = "lime";
+                badgeContainer.title = "Owner";
+            } else if (badgeText === "TSTR" && !dontShowOthers) {
+                badgeContainer.innerHTML = '<i class="fa-solid fa-cogs"></i>';
+                badgeContainer.style.color = "DarkGoldenRod";
+                badgeContainer.title = "Tester";
+            } else if (badgeText === "COWNR" && !dontShowOthers) {
+                badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
+                badgeContainer.style.color = "lightblue";
+                badgeContainer.title = "Co-Owner";
+            } else if (badgeText === "HADMIN" && !dontShowOthers) {
+                badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                badgeContainer.style.color = "#00cc99";
+                badgeContainer.title = "Head Admin";
+            } else if (badgeText === "ADMN" && !dontShowOthers) {
+                badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
+                badgeContainer.style.color = "dodgerblue";
+                badgeContainer.title = "Admin";
+            } else {
+            }
+            if (devSnap.exists() && devSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-code-square";
+                icon.style.color = "green";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is A Developer For Infinitecampus.xyz`;
+                badgeContainer.appendChild(icon);
+            }
+            if (pre3Snap.exists() && pre3Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-hearts";
+                icon.style.color = "red";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T3`;
+                badgeContainer.appendChild(icon);
+            }
+            if (pre2Snap.exists() && pre2Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-heart-fill";
+                icon.style.color = "orange";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T2`;
+                badgeContainer.appendChild(icon);
+            }
+            if (pre1Snap.exists() && pre1Snap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-heart-half";
+                icon.style.color = "yellow";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Infinite Campus Premium T1`;
+                badgeContainer.appendChild(icon);
+            }
+            if (donSnap.exists() && donSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-balloon-heart";
+                icon.style.color = "#00E5FF";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Donated To Infinite Campus`;
+                badgeContainer.appendChild(icon);
+            }
+            if (partnerSnap.exists() && partnerSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "fa fa-handshake";
+                icon.style.color = "cornflowerblue";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is A Partner Of Infinite Campus`;
+                badgeContainer.appendChild(icon);
+            }
+            if (uploadSnap.exists() && uploadSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-film";
+                icon.style.color = "grey";
+                icon.style.marginLeft = "6px";
+                icon.title = "This User Has Uploaded A Movie To Infinite Campus";
+                badgeContainer.appendChild(icon);
+            }
+            if (hSnap.exists() && hSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-award";
+                icon.style.color = "yellow";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Is The 100th Signed Up User`;
+                badgeContainer.appendChild(icon);
+            }
+            if (guessSnap.exists() && guessSnap.val() === true) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-stopwatch";
+                icon.style.color = "#ff0000";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has A Lot Of Freetime`;
+                badgeContainer.appendChild(icon);
+            }
+            if (discordSnap.exists() && discordSnap.val().trim() !== "") {
+                const dUsername = discordSnap.val();
+                const icon = document.createElement("i");
+                icon.className = "bi bi-discord";
+                icon.style.color = "#5865F2";
+                icon.style.marginLeft = "6px";
+                icon.title = `Known As @${dUsername} On The Infinite Campus Discord Server`;
+                badgeContainer.appendChild(icon);
+            }
+            badgeContainer.appendChild(mutedBadge);
             let timestamp = "";
             if (msgData.timestamp) {
                 const d = new Date(msgData.timestamp);
@@ -639,13 +879,110 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
             content.style.textAlign = "left";
             const header = document.createElement("div");
         	header.className = "msg-header";
-          	header.innerHTML = `<img style="height:40px;width:40px;border-radius:50%;border:1px solid white;" src="${senderPic}" alt="${senderName}'s Pic"><span style="font-size:1.5em; margin-left:10px; color:${nameColor};width:100%;">${senderName}</span><span style="width:100%; text-align:right;">${timestamp}</span>`;
+          	header.innerHTML = `
+                <img style="height:40px;width:40px;border-radius:50%;border:1px solid white;" src="${senderPic}" alt="${senderName}'s Pic">
+                <span style="font-size:1.5em; margin-left:10px; color:${nameColor}">
+                    ${senderName}
+                </span>
+            `;
+            const msgTimeSpan = document.createElement("div");
+            msgTimeSpan.style.width = "100%";
+            msgTimeSpan.style.display = "flex";
+            msgTimeSpan.style.paddingRight = "20px";
+            msgTimeSpan.innerHTML = `
+                <span id="msgTimestamp" style="width:100%; text-align:right;align-self:center;">
+                    ${timestamp}
+                </span>
+            `;
           	header.style.display = "flex";
           	const text = document.createElement("div");
           	text.className = "msg-text";
           	text.style.marginLeft = "50px";
           	text.style.marginTop = "-10px";
-          	text.textContent = msgData.text || "(No Text)";
+            let safeText = (msgData.text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            safeText = safeText.replace(
+                /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+                (match, cls, style, title) => {
+                    let attrs = `class="${cls}"`;
+                    if (style) attrs += ` style="${style}"`;
+                    if (title) attrs += ` title="${title}"`;
+                    return `<i ${attrs}></i>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+                (match, color, content) => {
+                    const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                    return `<p style="color:${safeColor}">${content}</p>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
+                    }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;video\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
+                    }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<video src="${safeSrc}" class="chat-vid" style="${finalStyle}" controls loop>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
+                }
+            );
+            safeText = safeText.replace(/\n/g, "<br>");
+            text.innerHTML = safeText;
+            text.querySelectorAll(".chat-img").forEach(img => {
+                img.addEventListener("click", () => {
+                    viewerImg.src = img.src;
+                    downloadBtn.href = img.src;
+                    downloadBtn.download = "image";
+                    imgViewer.style.display = "flex";
+                });
+            });
           	const deleteBtn = document.createElement("button");
           	deleteBtn.textContent = "Delete";
           	deleteBtn.className = "deleteBtn";
@@ -657,6 +994,8 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
               		showError("Delete Failed: " + err.message);
             	}
           	};
+            header.appendChild(badgeContainer);
+            header.appendChild(msgTimeSpan);
           	content.appendChild(header);
           	content.appendChild(text);
           	if (msgData.edited) {
@@ -688,6 +1027,7 @@ deleteChatBtn.onclick = async () => {
                 const secondUid = parts[2];
                 try {
                     remove(ref(db, `private/${uid}/${secondUid}`));
+                    remove(ref(db, `private/${secondUid}/${uid}`));
                     remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
                     remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
                     showSuccess("Chat And Metadata Deleted.");
@@ -761,7 +1101,10 @@ async function loadUserList() {
         const div = document.createElement("div");
         div.className = "user-item";
         div.style.color = `${x3FColor}`;
-        div.innerHTML = `<img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;"> ${name}`;
+        div.innerHTML = `
+            <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
+            ${name}
+        `;
         div.onclick = () => editUser(uid, info);
         userListDiv.appendChild(div);
     });
@@ -896,61 +1239,3 @@ sendAdminMessageBtn.onclick = async () => {
         showError("Send Failed: " + err.message);
     }
 };
-let currentErrorDiv = null;
-function showError(message) {
-    if (currentErrorDiv) currentErrorDiv.remove();
-    const errorDiv = document.createElement("div");
-    errorDiv.textContent = message;
-    Object.assign(errorDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "salmon",
-        color: "black",
-        border: "2px solid red",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    errorDiv.addEventListener("click", () => {
-        errorDiv.remove();
-        currentErrorDiv = null;
-    });
-    document.body.appendChild(errorDiv);
-    currentErrorDiv = errorDiv;
-}
-let currentSuccessDiv = null;
-function showSuccess(message) {
-    if (currentSuccessDiv) currentSuccessDiv.remove();
-    const successDiv = document.createElement("div");
-    successDiv.textContent = message;
-    Object.assign(successDiv.style, {
-        position: "fixed",
-        top: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        backgroundColor: "seagreen",
-        color: "black",
-        border: "2px solid green",
-        borderRadius: "8px",
-        padding: "10px 20px",
-        zIndex: 9999,
-        cursor: "pointer",
-        maxWidth: "90%",
-        textAlign: "center",
-        fontWeight: "bold",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-    });
-    successDiv.addEventListener("click", () => {
-        successDiv.remove();
-        currentSuccessDiv = null;
-    });
-    document.body.appendChild(successDiv);
-    currentSuccessDiv = successDiv;
-}
