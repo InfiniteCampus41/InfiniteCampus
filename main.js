@@ -10,7 +10,7 @@
         }
     }
     if (storageBlocked()) {
-        document.documentElement.innerHTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"><title>Infinite Campus</title><link rel="stylesheet" href="global.css"></head><body><center><br><h1 class="tptxt">You Are Likely Using This Page On A Data URL</h1><hr><br><h3 class="mdtxt">Why This Happened</h3><hr style="width:50%"><br><h4 class="btxt">LocalStorage Does Not Work On Data URLs So The Site Must Open In About:Blank</h4><br><h5 class="y">What Is LocalStorage?</h5><p class="btxt">LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And It Is Required For The Chat System.</p><br><button class="button" onclick="runEmbeddedDataMode()">Click Here To Continue</button><br><br></center><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script></body></html>`;
+        document.documentElement.innerHTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"><title>Infinite Campus</title><link rel="stylesheet" href="global.css"><style>body:not(#dataBody){display:none;}</style></head><body id="dataBody"><center><br><h1 class="tptxt">You Are Likely Using This Page On A Data URL</h1><hr><br><h3 class="mdtxt">Why This Happened</h3><hr style="width:50%"><br><h4 class="btxt">LocalStorage Does Not Work On Data URLs So The Site Must Open In About:Blank</h4><br><h5 class="y">What Is LocalStorage?</h5><p class="btxt">LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And It Is Required For The Chat System.</p><br><button class="button" onclick="runEmbeddedDataMode()">Click Here To Continue</button><br><br></center><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script></body></html>`;
         throw new Error("LocalStorage Blocked, Site Halted.");
     }
 })();
@@ -24,7 +24,7 @@ function safeGetItem(key) {
                 document.documentElement.innerHTML = ``;
             });
         })();
-        window.runEmbeddedDaaMode = function () {
+        window.runEmbeddedDataMode = function () {
             const win = window.open("about:blank", "_blank");
             if (!win) return;
             win.document.open();
