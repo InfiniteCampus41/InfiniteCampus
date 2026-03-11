@@ -59,7 +59,9 @@ console.log('%cC', `
     background: linear-gradient(to bottom, #8BC53F, #1bc34b);
 `);
 let isFahrenheit = true;
-localStorage.setItem("replit-pill-preference", "hidden");
+try {
+    localStorage.setItem("replit-pill-preference", "hidden");
+} catch {}
 function showError(err) {
     const existing = document.getElementById("errDiv");
     if (existing) existing.remove();

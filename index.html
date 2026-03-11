@@ -27,6 +27,66 @@
         <meta name="theme-color" content="#8cbe37">
         <link rel="manifest" href="/manifest.json">        
         <meta content="/res/icon.png" property="og:image">
+        <script>
+(function () {
+    function storageBlocked() {
+        try {
+            const t = "__test__";
+            localStorage.setItem(t, t);
+            localStorage.removeItem(t);
+            return false;
+        } catch (e) {
+            return true;
+        }
+    }
+    if (storageBlocked()) {
+        document.documentElement.innerHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+<title>Infinite Campus</title>
+<meta charset="UTF-8">
+</head>
+<body style="font-family:sans-serif;text-align:center">
+<br><br>
+<h1>You Are Likely Using A Data URL</h1>
+<hr>
+<h3>Why This Happened</h3>
+<p>
+LocalStorage Does Not Work On Data URLs.
+This site requires LocalStorage for themes, chat, and settings.
+</p>
+<br>
+<button onclick="runEmbeddedDataMode()">
+Continue In About:Blank
+</button>
+<br><br>
+<script>
+window.runEmbeddedDataMode = function () {
+const win = window.open("about:blank","_blank");
+if(!win) return;
+win.document.open();
+win.document.write(\`
+<!DOCTYPE html>
+<html>
+<head>
+<title>Infinite Campus</title>
+</head>
+<body style="margin:0">
+<iframe src="\${location.origin}" style="width:100vw;height:100vh;border:none"></iframe>
+</body>
+</html>
+\`);
+win.document.close();
+};
+<\/script>
+</body>
+</html>
+        `;
+        throw new Error("LocalStorage blocked, site halted.");
+    }
+})();
+</script>
         <script src="main.js">
         </script>
         <script src="drypopup.js">
