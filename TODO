@@ -28,6 +28,6 @@ Combine InfiniteFutures.html With InfiniteUpdaters.html
 
 - [x] Combine index.js With search.js
     - [x] Delete search.js
-    Combine games.js With index.js
-    Combine oldproxy.js With index.js
-    Delete index.js
+    - [x] Combine games.js With index.js
+    - [x] Combine oldproxy.js With index.js
+    - [x] Delete index.js

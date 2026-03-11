@@ -1,4 +1,3 @@
-import { db, auth, ref, onValue, get, onAuthStateChanged } from "./imports.js";
 let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
 let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
 const frameToday = new Date();
@@ -580,41 +579,6 @@ window.addEventListener("load", () => {
     if (LOADER_CONFIG.mode === "auto") {
         hideLoader();
     }
-});
-const loaderModeRef = ref(db, "/site/loader/mode");
-const loaderMessageRef = ref(db, "/site/loader/message");
-let currentMessage = "";
-onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        bypassLoader = false;
-        return;
-    }
-    try {
-        const profileSnap = await get(ref(db, `/users/${user.uid}/profile`));
-        const profile = profileSnap.val();
-        if (profile && (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isDev)) {
-            bypassLoader = true;
-            hideLoader();
-        } else {
-            bypassLoader = false;
-        }
-    } catch (err) {
-        console.error("Role Check Failed:", err);
-        bypassLoader = false;
-    }
-});
-onValue(loaderMessageRef, (snap) => {
-    currentMessage = snap.val() || "";
-    if (LOADER_CONFIG.mode === "maint") {
-        maintMessage.textContent = currentMessage;
-    }
-    if (LOADER_CONFIG.mode === "auto") {
-        maintMessage.textContent = currentMessage;
-    }
-});
-onValue(loaderModeRef, (snap) => {
-    const mode = snap.val() || "auto";
-    applyLoaderMode(mode, currentMessage);
 });
 window.showLoader = showLoader;
 window.hideLoader = hideLoader;
