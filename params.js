@@ -437,17 +437,13 @@ if (x3tfypage === '/InfiniteAbouts.html') {
             return '%' + code.toString(16).toUpperCase().padStart(2, '0');
         }).join('');
     }
-    function base64Decode(str) {
-        return decodeURIComponent(escape(window.atob(str)));
-    }
     function generateBase64(url) {
         if (!url) {
             showError("Please Enter A URL.");
             return '';
         }
         url = normalizeUrl(url);
-        let template = base64Decode(j);
-        template = template.replace('${url}', url);
+        let template = `<?xml version="1.0" encoding="utf-8"?><svg xmlns="http://www.w3.org/2000/svg" style="width:100vw !important; height:100vh !important;"><title>Infinite Campus</title><foreignObject x="0" y="0" style="width:100vw !important; height:100vh !important;"><embed xmlns="http://www.w3.org/1999/xhtml" src="${url}" type="text/plain" style="height:100vh !important; width:100vw !important;" /></foreignObject></svg>`;
         const base64 = btoa(unescape(encodeURIComponent(template)));
         return `data:image/svg+xml;base64,${base64}`;
     }
@@ -457,8 +453,7 @@ if (x3tfypage === '/InfiniteAbouts.html') {
             return '';
         }
         url = normalizeUrl(url);
-        let htmlCode = base64Decode(k);
-        htmlCode = htmlCode.replace("PUT_URL_HERE", url);
+        let htmlCode = `<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Infinite Campus</title><style>body {margin:0px;}svg, foreignobject, embed {height:100vh;width:100vw;}</style></head><body><svg style="height:100vh; width:100vw;"><foreignobject><embed src="${url}"></foreignobject></svg></body></html>`;
         const encoded = asciiEncode(htmlCode);
         return 'data:text/html;charset=utf-8,' + encoded;
     }

@@ -5,88 +5,14 @@ function safeGetItem(key) {
         console.warn(`LocalStorage Unavailable For Key: ${key}`, err);
         (function () {
             window.addEventListener("load", () => {
-                document.documentElement.innerHTML = `
-                    <!DOCTYPE html>
-                    <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1">
-                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
-                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-                            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-                            <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
-                            </script>
-                            <script>
-                                window.dataLayer = window.dataLayer || [];
-                                function gtag(){dataLayer.push(arguments);}
-                                gtag('js', new Date());
-                                gtag('config', 'G-7SV03ZXJ9R');
-                            </script>
-                            <title>
-                                Infinite Campus
-                            </title>
-                            <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
-                            <link rel="stylesheet" href="global.css">
-                            <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
-                            <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
-                            <meta property="og:title" content="Infinite Campus">
-                            <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
-                            <meta property="og:url" content="https://www.infinitecampus.xyz">
-                            <meta name="theme-color" content="#8cbe37">
-                            <meta content="/res/icon.png" property="og:image">
-                            <script src="main.js">
-                            </script>
-                        </head>
-                        <body>
-                            <center>
-                                <br>
-                                <h1 class="tptxt">
-                                    You Are Likely Using This Page On A Data Url
-                                </h1>
-                                <hr>
-                                <br>
-                                <h3 class="mdtxt">
-                                    Why This Happened
-                                </h3>
-                                <hr style="width:50%">
-                                <br>
-                                <h4 class="btxt">
-                                    LocalStorage Does Not Work On Data URLs So I Made It So It Is Like Nettleweb And It Opens In About Blank
-                                </h4>
-                                <br>
-                                <h5 class="y">
-                                    What Is Localstorage?
-                                </h5>
-                                <p class="btxt">
-                                    LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And You Need It For The Website Chat
-                                </p>
-                                <br>
-                                <button class="button" onclick="runEmbeddedDataMode()">
-                                    Click Here To Continue
-                                </button>
-                            </center>
-                        </body>
-                    </html>
-                `;
+                document.documentElement.innerHTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Infinite Campus</title><link rel="stylesheet" href="global.css"></head><body><center><br><h1 class="tptxt">You Are Likely Using This Page On A Data URL</h1><hr><br><h3 class="mdtxt">Why This Happened</h3><hr style="width:50%"><br><h4 class="btxt">LocalStorage Does Not Work On Data URLs So The Site Must Open In About:Blank</h4><br><h5 class="y">What Is LocalStorage?</h5><p class="btxt">LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And It Is Required For The Chat System.</p><br><button class="button" onclick="runEmbeddedDataMode()">Click Here To Continue</button><br><br></center></body></html>`;
             });
         })();
-        window.runEmbeddedDataMode = function () {
+        window.runEmbeddedDaaMode = function () {
             const win = window.open("about:blank", "_blank");
             if (!win) return;
             win.document.open();
-            win.document.write(`
-                <!DOCTYPE html>
-                <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>
-                            Infinite Campus
-                        </title>
-                    </head>
-                    <body style="margin:0; overflow:hidden;">
-                    </body>
-                </html>
-            `);
+            win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Infinite Campus</title></head><body style="margin:0;overflow:hidden;"></body></html>`);
             win.document.close();
             const iframe = win.document.createElement("iframe");
             iframe.src = window.location.origin;
@@ -109,23 +35,28 @@ const a = "https://api.infinitecampus.xyz";
 const b = "https://www.infinitecampus.xyz";
 const c = "Infinite Campus";
 const d = "https://included-touched-joey.ngrok-free.app";
-const e = ["infinitecampus.xyz", "www.infinitecampus.xyz", "instructure.space"];
+const e = [
+    "infinitecampus.xyz", 
+    "www.infinitecampus.xyz", 
+    "instructure.space"
+];
 const f = window.location.host;
-const j = `PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9IndpZHRoOjEwMHZ3ICFpbXBvcnRhbnQ7IGhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyI+PHRpdGxlPkluZmluaXRlIENhbXB1czwvdGl0bGU+PGZvcmVpZ25PYmplY3QgeD0iMCIgeT0iMCIgc3R5bGU9IndpZHRoOjEwMHZ3ICFpbXBvcnRhbnQ7IGhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyI+PGVtYmVkIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hodG1sIiBzcmM9IiR7dXJsfSIgdHlwZT0idGV4dC9wbGFpbiIgc3R5bGU9ImhlaWdodDoxMDB2aCAhaW1wb3J0YW50OyB3aWR0aDoxMDB2dyAhaW1wb3J0YW50OyIgLz48L2ZvcmVpZ25PYmplY3Q+PC9zdmc+Cg==`;
-const k = `PGh0bWwgbGFuZz0iZW4iPgo8aGVhZD4KPG1ldGEgY2hhcnNldD0iVVRGLTgiPgo8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+Cjx0aXRsZT5JbmZpbml0ZSBDYW1wdXM8L3RpdGxlPgo8c3R5bGU+CmJvZHk6Oi13ZWJraXQtc2Nyb2xsYmFyIHsgZGlzcGxheTogbm9uZTsgfQpib2R5IHsgbWFyZ2luOjBweDsgfQo8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CiAgPG1ldGEgY2hhcnNldD0iVVRGLTgiPgogIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lkdGgsIGluaXRpYWwtc2NhbGU9MS4wIj4KICA8dGl0bGU+SW5maW5pdGUgQ2FtcHVzPC90aXRsZT4KICA8c3R5bGU+CiAgICBib2R5Ojotd2Via2l0LXNjcm9sbGJhciB7CiAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAgIG1hcmdpbjowcHg7CiAgICB9CiAgICBzdmcsIGZvcmVpZ25vYmplY3QsIGVtYmVkIHsKICAgICAgaGVpZ2h0OjEwMHZoOwogICAgICB3aWR0aDoxMDB2dzsKICAgIH0KICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PgogIDxzdmcgc3R5bGU9ImhlaWdodDoxMDB2aDsgd2lkdGg6MTAwdnc7Ij4KICAgIDxmb3JlaWdub2JqZWN0PgogICAgICA8ZW1iZWQgc3JjPSJQVVRfVVJMX0hFUkUiPgogICAgPC9mb3JlaWdub2JqZWN0PgogIDwvc3ZnPgo8L2JvZHk+CjwvaHRtbD4=`;
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
-const o = ["Dad", "Default Bot", "Infinite Campus", "Log Bot", "Music Bot"];
+const o = [
+    "Dad", 
+    "Default Bot", 
+    "Infinite Campus", 
+    "Log Bot", 
+    "Music Bot"
+];
 const key = 5;
 console.log('%cWelcome To The Console, If You Do Not Know What You Are Doing, Close It, If You Do I Would Be Happy To Let You Develop The Website With Me At support@infinitecampus.xyz', 'color: purple; font-size: 24px; font-weight: bold;');
 console.log('%cC', `
-    font-size: 100px;
-    padding: 1px 35px 1px 35px;
-    background-size: cover;
-    border-radius:10px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight:bold;
-    color: #8BC53F;
-    background-color: #121212;
+    font-size:150px;
+    font-weight:1000;
+    padding:0px 45px;
+    border-radius:20px;
+    background: linear-gradient(to bottom, #8BC53F, #1bc34b);
 `);
 let isFahrenheit = true;
 localStorage.setItem("replit-pill-preference", "hidden");

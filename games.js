@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     const launchButton = document.getElementById("launchGames");
     const launch2 = document.getElementById("launchGames2");
-    const OfficialSites = ['infinitecampus.xyz', 'www.infinitecampus.xyz', 'instructure.space'];
+    const OfficialSites = e;
     const def = "https://play.infinitecampus.xyz/games/";
     const main = document.body.querySelector("main");
-    if (OfficialSites.includes(window.location.host)) {
+    if (OfficialSites.includes(f)) {
         launch2.textContent = 'Games (Method 2)';
     } else {
         launchButton.style.display = 'none';
