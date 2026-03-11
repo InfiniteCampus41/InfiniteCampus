@@ -1,3 +1,19 @@
+(function () {
+    function storageBlocked() {
+        try {
+            const t = "__test__";
+            localStorage.setItem(t, t);
+            localStorage.removeItem(t);
+            return false;
+        } catch (e) {
+            return true;
+        }
+    }
+    if (storageBlocked()) {
+        document.documentElement.innerHTML = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Infinite Campus</title><link rel="stylesheet" href="global.css"></head><body><center><br><h1 class="tptxt">You Are Likely Using This Page On A Data URL</h1><hr><br><h3 class="mdtxt">Why This Happened</h3><hr style="width:50%"><br><h4 class="btxt">LocalStorage Does Not Work On Data URLs So The Site Must Open In About:Blank</h4><br><h5 class="y">What Is LocalStorage?</h5><p class="btxt">LocalStorage Is What Allows This Site To Have Themes, Custom Titles, Custom Icons, Panic URLs, And It Is Required For The Chat System.</p><br><button class="button" onclick="runEmbeddedDataMode()">Click Here To Continue</button><br><br></center></body></html>`;
+        throw new Error("LocalStorage Blocked, Site Halted.");
+    }
+})();
 function safeGetItem(key) {
     try {
         return localStorage.getItem(key);
