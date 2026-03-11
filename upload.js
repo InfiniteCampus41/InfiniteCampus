@@ -237,13 +237,7 @@ if (fileParam) {
         const fileName = finalFileUrl.split("/").pop();
         const link = `${f}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
         const link2 = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
-        const hiddenlinkdomains = [
-            "www.infinitecampus.xyz",
-            "infinitecampus.xyz",
-            "instructure.space",
-            "backup.infinitecampus.xyz",
-            "backup.instructure.space"
-        ];
+        const hiddenlinkdomains = g;
         const hideSecondLink = hiddenlinkdomains.includes(window.location.host);
         output.innerHTML = `
             <center>

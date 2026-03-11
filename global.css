@@ -594,6 +594,10 @@ header, footer {
     white-space: nowrap;
     transition:0.3s all;
 }
+#hiddenBtns {
+    color:white;
+    text-decoration:none;
+}
 #hour {
     width: 80px;
     height: 6px;

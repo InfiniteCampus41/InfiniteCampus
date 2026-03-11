@@ -70,6 +70,13 @@ const e = [
     "instructure.space"
 ];
 const f = window.location.host;
+const g = [
+    "backup.infinitecampus.xyz",
+    "backup.instructure.space",
+    "www.infinitecampus.xyz",
+    "infinitecampus.xyz",
+    "instructure.space"
+];
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 const o = [
     "Dad", 
@@ -105,6 +112,7 @@ function showError(err) {
     errDiv.style.padding = "3px";
     errDiv.style.cursor = "pointer";
     errDiv.style.position = "fixed";
+    errDiv.style.zIndex = "9998";
     errDiv.style.textAlign = "center";
     errDiv.style.fontWeight = "bold";
     errDiv.style.maxWidth = "fit-content";
@@ -130,6 +138,7 @@ function showSuccess(success) {
     successDiv.style.padding = "3px";
     successDiv.style.cursor = "pointer";
     successDiv.style.position = "fixed";
+    successDiv.style.zIndex = "9999";
     successDiv.style.textAlign = "center";
     successDiv.style.fontWeight = "bold";
     successDiv.style.maxWidth = "fit-content";

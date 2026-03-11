@@ -17,13 +17,13 @@ document.getElementById("applyFile").addEventListener("change", () => {
     }
 });
 function sanitizeUsername(name) {
-    if (!name) return "User";
+    if (!name) return "An Anonymous User";
     return name
         .normalize("NFKD")
         .replace(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu, "")
         .replace(/\s+/g, "")
         .replace(/[^\w-]/g, "")
-        .trim() || "User";
+        .trim() || "An Anonymous User";
 }
 async function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
@@ -171,11 +171,21 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                     — 
                     ${v.humanSize}
                 </span>
-                ${showUploader ? `
-                    <span id="upByIcon" style="width:0; margin-left:-20px;">
-                        <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}">
-                        </i>
-                    </span>` : ``
+                ${showUploader ? 
+                    `
+                        <a id="hiddenBtns" href="/InfiniteAccounts.html?user=${v.uploadedBy}">
+                            <span id="upByIcon" style="width:0; margin-left:-20px;">
+                                <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}" onclick="window.location='/InfiniteAccounts.html?user=${v.uploadedBy}'">
+                                </i>
+                            </span>
+                        </a>
+                    ` : 
+                    `
+                        <span id="upByIcon" style="width:0; margin-left:-20px;">
+                            <i class="bi bi-question-circle" title="Uploaded By: An Anonymous User">
+                            </i>
+                        </span>
+                    `
                 }
             </div>
             <br>
@@ -189,10 +199,19 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                 </button>
             </a>
             <br>
-            ${showUploader ? `
-                <small id="upByTxt" style="display:none;">
-                    Uploaded By: ${uploaderName}
-                </small>` : ``
+            ${showUploader ? 
+                `
+                    <a id="hiddenBtns" href="/InfiniteAccounts.html?user=${v.uploadedBy}">
+                        <small id="upByTxt" style="display:none;">
+                            Uploaded By: ${uploaderName}
+                        </small>
+                    </a>
+                ` : 
+                `
+                    <small id="upByTxt" style="display:none;">
+                        Uploaded By: An Anoymous User
+                    </small>
+                `
             }
         `;
         box.appendChild(div);
