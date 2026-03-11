@@ -31,3 +31,17 @@ Combine InfiniteFutures.html With InfiniteUpdaters.html
     - [x] Combine games.js With index.js
     - [x] Combine oldproxy.js With index.js
     - [x] Delete index.js
+
+
+The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
+Here Are The Steps To Do So
+
+    Make Games List Come From Server Instead Of Locally
+    Allow Editing And Deleting From Games List From Site
+    Allow Editing And Deleting Movies From Site
+    Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
+    Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List(When Added)
+    Fix Chat Message Loading Issue
+    Make All Messages And Files From Website Chat Go Into Discord And Be Stored In Discord
+    Fix Notifications
+    Allow Saving Of Site Settings Through Firebase
