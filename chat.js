@@ -367,6 +367,7 @@ async function renderMessageInstant(id, msg) {
     topRow.appendChild(timeSpan);
     const textDiv = document.createElement("div");
     textDiv.style.whiteSpace = "pre-wrap";
+    textDiv.style.overflowWrap = "anywhere";
     textDiv.style.marginLeft = "40px";
     textDiv.style.marginTop = "-7px";
     let safeText = (msg.text || "")
