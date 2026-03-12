@@ -17,7 +17,11 @@ const bioSpan = document.getElementById("bio");
 const emailSpan = document.getElementById("email");
 const roleSpan = document.getElementById("role");
 let currentPath = null;
+let isReplyActive = false;
 let currentMsgRef = null;
+let replyMsgId = null;
+let replyMsgName = null;
+let replyMsgText = null;
 let currentListeners = {};
 let currentUser = null;
 let currentName = "User";
@@ -47,33 +51,7 @@ const mentionMenu = document.getElementById("mentionMenu");
 let allUsernames = [];
 let mentionActive = false;
 let triggerIndex = -1;
-const style = document.createElement("style");
-style.textContent = `
-    .mention {
-        color: #4fa3ff;
-        font-weight: bold;
-        background: rgba(79,163,255,0.1);
-        padding: 2px 4px;
-        border-radius: 4px;
-    }
-    .mention-self {
-        color: gold;
-        font-weight: bold;
-        background: rgba(255,215,0,0.15);
-        padding: 2px 4px;
-        border-radius: 4px;
-    }
-    .notifDot {
-        color: red;
-        font-weight: bold;
-        margin-right: 6px;
-    }
-    .left { 
-        display:flex; 
-        align-items:center; 
-        gap:6px; 
-    }
-`;
+const reply = document.getElementById("reply");
 const imgViewer = document.createElement("div");
 imgViewer.style.position = "fixed";
 imgViewer.style.top = "0";
@@ -118,10 +96,9 @@ typingIndicator.style.fontSize = "0.8em";
 typingIndicator.style.color = "#aaa";
 typingIndicator.style.marginTop = "4px";
 typingIndicator.style.display = "none";
-chatInput.insertAdjacentElement("beforebegin", typingIndicator);
+reply.insertAdjacentElement("beforebegin", typingIndicator);
 let typingTimeout = null;
 let typingRef = null;
-document.head.appendChild(style);
 chatLog.addEventListener("scroll", () => {
     const distanceFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
     autoScrollEnabled = distanceFromBottom < 40;
@@ -318,6 +295,31 @@ async function getUidByDisplayName(name) {
         }
     }
     return null;
+}
+function toggleReply(id = null, name = null, text = null) {
+    if (!id) {
+        reply.style.display = "none";
+        reply.innerHTML = "";
+        isReplyActive = false;
+        replyMsgId = null;
+        replyMsgName = null;
+        replyMsgText = null;
+        return;
+    }
+    replyMsgId = id;
+    replyMsgName = name;
+    replyMsgText = text;
+    reply.innerHTML = "";
+    reply.style.display = "flex";
+    const lReply = document.createElement("span");
+    lReply.textContent = `Replying To: ${name}`;
+    const rReply = document.createElement("button");
+    rReply.id = "exitReply";
+    rReply.innerHTML = `<i class="bi bi-x-circle"></i>`;
+    rReply.onclick = () => toggleReply();
+    reply.appendChild(lReply);
+    reply.appendChild(rReply);
+    isReplyActive = true;
 }
 async function renderMessageInstant(id, msg) {
     if (document.getElementById("msg-" + id)) return null;
@@ -604,6 +606,33 @@ async function renderMessageInstant(id, msg) {
     editedSpan.textContent = msg.edited ? "(Edited)" : "";
     div.appendChild(msgBtns);
     div.appendChild(topRow);
+    if (msg.reply) {
+        try {
+            const replySnap = await get(ref(db, currentPath + "/" + msg.reply));
+            if (replySnap.exists()) {
+                const rData = replySnap.val();
+                const rName = await getDisplayName(rData.sender);
+                const replyPreview = document.createElement("div");
+                replyPreview.style.fontSize = "0.8em";
+                replyPreview.style.color = "#aaa";
+                replyPreview.style.marginLeft = "40px";
+                replyPreview.style.borderLeft = "2px solid #555";
+                replyPreview.style.paddingLeft = "6px";
+                replyPreview.style.marginTop = "-9px";
+                replyPreview.style.marginBottom = "5px";
+                replyPreview.style.whiteSpace = "nowrap";
+                replyPreview.style.overflow = "hidden";
+                replyPreview.style.textOverflow = "ellipsis";
+                replyPreview.style.maxWidth = "100%";
+                const previewText = (rData.text || "").substring(0, 80);
+                replyPreview.textContent =
+                    `Replying To: ${rName}: ${previewText}`;
+                div.appendChild(replyPreview);
+            }
+        } catch (e) {
+            console.warn("Reply load failed:", e);
+        }
+    }
     div.appendChild(textDiv);
     div.appendChild(editedSpan);
     (async () => {
@@ -909,6 +938,17 @@ async function renderMessageInstant(id, msg) {
                 if (isSelf) canEdit = true;
                 else if (isOwner || isTester) canEdit = true;
                 else if (isCoOwner && !senderIsOwner && !senderIsTester && !senderIsCoOwner && !senderIsHAdmin) canEdit = true;
+                let canReply = true;
+                if (isSelf) canReply = false;
+                if (canReply) {
+                    const replyBtn = document.createElement("button");
+                    replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
+                    replyBtn.title = "Reply";
+                    replyBtn.onclick = () => {
+                        toggleReply(id, displayName, msg.text);
+                    }
+                    msgBtns.appendChild(replyBtn);
+                }
                 if (canEdit) {
                     const editBtn = document.createElement("button");
                     editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
@@ -1492,7 +1532,8 @@ sendBtn.onclick = async () => {
     const msg = {
         sender: currentUser.uid,
         text: outgoingText,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        reply: replyMsgId || null
     };
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
@@ -1505,10 +1546,11 @@ sendBtn.onclick = async () => {
         await push(ref(db, currentPath), msg);
     }
     chatInput.value = "";
+    toggleReply();
     if (typingRef && currentUser) {
-    const channelName = currentPath.split("/")[1];
-    remove(ref(db, `typing/${channelName}/${currentUser.uid}`));
-}
+        const channelName = currentPath.split("/")[1];
+        remove(ref(db, `typing/${channelName}/${currentUser.uid}`));
+    }
 };
 chatInput.addEventListener("input", () => {
     const mentions = chatInput.value.match(/@\w+/g);

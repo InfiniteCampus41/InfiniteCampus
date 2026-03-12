@@ -204,6 +204,21 @@ body {
     right:20px;
     display:none;
 }
+.chat-img{
+    width:100px;
+    height:100px;
+    object-fit:cover;
+    border-radius:15px;
+    cursor:pointer;
+    transition:transform 0.15s;
+}
+.chat-img:hover{
+    transform:scale(1.05);
+}
+.chat-vid {
+    width:50%;
+    height:200px;
+}
 .chrome-newtab {
     padding: 1px 5px;
     cursor: pointer;
@@ -441,6 +456,12 @@ body {
 .edit-input {
     width:95%;
     text-align:center;
+}
+.edited-label {
+    font-size: 0.7em;
+    color: #aaa;
+    margin-top: 2px;
+    margin-left: 35px;
 }
 #editMoviesContainer {
     right:-500px;
@@ -1788,6 +1809,12 @@ th, td {
     display: flex;
     flex-direction: column;
     border-bottom: 1px solid #ccc;
+}
+#topRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+    align-items:self-end;
 }
 .tptxt {
     color:lime;

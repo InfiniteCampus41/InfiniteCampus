@@ -33,27 +33,6 @@
         <script src="theme.js">
         </script>
         <style>
-            .chat-img{
-                width:100px;
-                height:100px;
-                object-fit:cover;
-                border-radius:15px;
-                cursor:pointer;
-                transition:transform 0.15s;
-            }
-            .chat-vid {
-                width:50%;
-                height:200px;
-            }
-            .chat-img:hover{
-                transform:scale(1.05);
-            }
-            .edited-label {
-                font-size: 0.7em;
-                color: #aaa;
-                margin-top: 2px;
-                margin-left: 35px;
-            }
             .msg button:not(#mobileMenuBtn):not(#closeMobilePanel):not(.dropdown-toggle):not(.dropdown.test button):not(#weatherContainer div button) {
                 padding: 2px 3px;
                 border-radius: 6px;
@@ -64,12 +43,6 @@
             .msg { 
                 margin: 6px 0; 
                 transition:0.3s all;
-            }
-            #topRow {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 2px;
-                align-items:self-end;
             }
             #msgName {
                 color: #aaa;
@@ -281,6 +254,7 @@
             }
             #msgBtns {
                 height:0px;
+                gap:2px;
                 justify-content:flex-end;
                 display:none;
                 transition:0.3s all;
@@ -292,6 +266,54 @@
             }
             .msg:hover #msgBtns {
                 display:flex;
+            }
+            #reply {
+                width:100%;
+                height:50px;
+                margin-bottom:-10px;
+                background:#444;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                display:flex;
+                justify-content:space-between;
+                padding:8px;
+                align-items: self-start;
+            }
+            .p-3 {
+                padding-top:0px !important;
+            }
+            #exitReply {
+                color:white !important;  
+                background:none !important;
+                border:none !important;
+                padding:0px !important;
+            }
+            #exitReply:hover {
+                color:#888 !important;
+            }
+            .mention {
+                color: #4fa3ff;
+                font-weight: bold;
+                background: rgba(79,163,255,0.1);
+                padding: 2px 4px;
+                border-radius: 4px;
+            }
+            .mention-self {
+                color: gold;
+                font-weight: bold;
+                background: rgba(255,215,0,0.15);
+                padding: 2px 4px;
+                border-radius: 4px;
+            }
+            .notifDot {
+                color: red;
+                font-weight: bold;
+                margin-right: 6px;
+            }
+            .left { 
+                display:flex; 
+                align-items:center; 
+                gap:6px; 
             }
         </style>
     </head>
@@ -353,6 +375,8 @@
                             Press Tab To Mention User
                         </div>
                         <div id="mentionMenu">
+                        </div>
+                        <div id="reply" style="display:none;">
                         </div>
                         <textarea id="chatInput" placeholder="Type A Message" rows="3"></textarea>
                         <button id="sendBtn">
