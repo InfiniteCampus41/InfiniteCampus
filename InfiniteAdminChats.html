@@ -31,21 +31,6 @@
         <script src="main.js">
         </script>
         <style>
-            .chat-img{
-                width:100px;
-                height:100px;
-                object-fit:cover;
-                border-radius:15px;
-                cursor:pointer;
-                transition:transform 0.15s;
-            }
-            .chat-vid {
-                width:50%;
-                height:200px;
-            }
-            .chat-img:hover{
-                transform:scale(1.05);
-            }
             * {
                 scrollbar-width: thin;
                 scrollbar-color: #555 transparent;
@@ -69,61 +54,6 @@
                 overflow: hidden;
                 display: flex;
             }
-            #typingContainer {
-                min-width:500px !important;
-            }
-            #left {
-                flex: 2;
-                background: #1a1a1a;
-                height: 100vh;
-                overflow-y: auto;
-                border-right: 1px solid #2a2a2a;
-                padding: 20px;
-            }
-            #right {
-                width: 350px;
-                background: #1f1f1f;
-                height: 100vh;
-                position: fixed;
-                right: 0;
-                top: 0;
-                padding: 20px;
-                overflow-y: auto;
-                border-left: 1px solid #2a2a2a;
-                z-index: 900;
-                transition: none;
-            }
-            #right.open {
-                right: 0;
-            }
-            #rightToggleBtn {
-                display: none;
-            }
-            #rightToggleBtn:hover {
-                background: #3a3a3a;
-            }
-            .message {
-                display: flex;
-                gap: 10px;
-                background: #1f1f1f;
-                border-radius: 8px;
-                padding: 12px;
-                margin-bottom: 12px;
-            }
-            .message img {
-                width: 42px;
-                height: 42px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
-            .msg-header {
-                color: #aaa;
-                font-size: 0.85em;
-            }
-            .msg-header #msgTimestamp {
-                width:100%;
-                text-align:right;
-            }
             textarea, select {
                 background: #1b1b1b !important;
                 border: 1px solid #444 !important;
@@ -133,63 +63,9 @@
             ::placeholder {
                 color:grey !important;
             }
-            .user-item {
-                background: #222;
-                padding: 12px;
-                border-radius: 6px;
-                cursor: pointer;
-                margin-bottom: 12px;
-            }
-            .user-item:hover {
-                background: #333;
-            }
-            .deleteBtn {
-                color:white;
-                background: #333;
-                border:1px solid #444;
-                border-radius: 5px;
-                padding:3px;
-                font-size:0.7em;
-                transition:0.3s all;
-                margin-left:50px;
-            }
-            .deleteBtn:hover {
-                background: #222;
-                border-color: #333;
-                color:grey;
-            }
-            #deleteTypingBtn {
-                background: #7a1f1f;
-            }
             @media (max-width: 900px) {
                 body {
                     padding-right: 0;
-                }
-                #right {
-                    width: 100%;
-                    right: -100%;
-                    transition: right 0.35s ease;
-                }
-                #right.open {
-                    right: 0;
-                }
-                #rightToggleBtn {
-                    display: block;
-                    position: fixed;
-                    right: 0;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    background: #2a2a2a;
-                    border: none;
-                    border-radius: 6px 0 0 6px;
-                    padding: 10px 14px;
-                    color: #fff;
-                    cursor: pointer;
-                    z-index: 1000;
-                    transition: background 0.2s;
-                }
-                #rightToggleBtn:hover {
-                    background: #3a3a3a;
                 }
             }
         </style>
