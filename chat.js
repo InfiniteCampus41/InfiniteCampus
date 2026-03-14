@@ -321,7 +321,7 @@ async function processChannelMentions(htmlText) {
     const allChannels = channelSnap.exists() ? Object.keys(channelSnap.val()) : [];
     return htmlText.replace(channelRegex, (match, chName) => {
         if (allChannels.includes(chName)) {
-            return `<span class="channel-mention" data-channel="${chName}">#${chName}</span>`;
+            return `<span class="channel-mention" data-channel="${chName}" title="Go To The ${chName} Channel">#${chName}</span>`;
         } else {
             return `#${chName}`;
         }
@@ -379,7 +379,7 @@ function toggleReply(id = null, name = null, text = null) {
     reply.innerHTML = "";
     reply.style.display = "flex";
     const lReply = document.createElement("span");
-    lReply.textContent = `Replying To: ${name}`;
+    lReply.textContent = `Replying To: @${name}`;
     const rReply = document.createElement("button");
     rReply.id = "exitReply";
     rReply.innerHTML = `<i class="bi bi-x-circle"></i>`;
@@ -438,7 +438,7 @@ async function renderMessageInstant(id, msg) {
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.overflowWrap = "anywhere";
     textDiv.style.marginLeft = "40px";
-    textDiv.style.marginTop = "-7px";
+    textDiv.style.marginTop = "-11px";
     let safeText = (msg.text || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -456,7 +456,7 @@ async function renderMessageInstant(id, msg) {
         /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
         (match, color, content) => {
             const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
-            return `<p style="color:${safeColor}">${content}</p>`;
+            return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
         }
     );
     safeText = safeText.replace(
@@ -672,7 +672,6 @@ async function renderMessageInstant(id, msg) {
     editedSpan.className = "edited-label";
     editedSpan.textContent = msg.edited ? "(Edited)" : "";
     div.appendChild(msgBtns);
-    div.appendChild(topRow);
     if (msg.reply) {
         try {
             const replySnap = await get(ref(db, currentPath + "/" + msg.reply));
@@ -680,26 +679,36 @@ async function renderMessageInstant(id, msg) {
                 const rData = replySnap.val();
                 const rName = await getDisplayName(rData.sender);
                 const replyPreview = document.createElement("div");
-                replyPreview.style.fontSize = "0.8em";
-                replyPreview.style.color = "#aaa";
-                replyPreview.style.marginLeft = "40px";
-                replyPreview.style.borderLeft = "2px solid #555";
-                replyPreview.style.paddingLeft = "6px";
-                replyPreview.style.marginTop = "-9px";
-                replyPreview.style.marginBottom = "5px";
-                replyPreview.style.whiteSpace = "nowrap";
-                replyPreview.style.overflow = "hidden";
-                replyPreview.style.textOverflow = "ellipsis";
-                replyPreview.style.maxWidth = "100%";
+                replyPreview.style.display = "flex";
+                const arrow = document.createElement("span");
+                arrow.style.width = "30px";
+                arrow.style.marginLeft = "15px";
+                arrow.style.height = "10px";
+                arrow.style.marginTop = "-2px";
+                arrow.style.borderTop = "1px solid #aaa";
+                arrow.style.borderLeft = "1px solid #aaa";
+                arrow.style.borderTopLeftRadius = "10px";
+                const reply = document.createElement("span");
+                reply.style.fontSize = "0.8em";
+                reply.style.color = "#aaa";
+                reply.style.paddingLeft = "6px";
+                reply.style.marginTop = "-11px";
+                reply.style.whiteSpace = "nowrap";
+                reply.style.overflow = "hidden";
+                reply.style.textOverflow = "ellipsis";
+                reply.style.maxWidth = "100%";
                 const previewText = (rData.text || "").substring(0, 80);
-                replyPreview.textContent =
-                    `Replying To: ${rName}: ${previewText}`;
+                reply.textContent =
+                    `Replying To: @${rName}: ${previewText}`;
+                replyPreview.appendChild(arrow);
+                replyPreview.appendChild(reply);
                 div.appendChild(replyPreview);
             }
         } catch (e) {
             console.warn("Reply load failed:", e);
         }
     }
+    div.appendChild(topRow);
     div.appendChild(textDiv);
     div.appendChild(editedSpan);
     (async () => {
@@ -821,7 +830,7 @@ async function renderMessageInstant(id, msg) {
             badgeContainer.style.marginLeft = "3px";
             badgeContainer.style.fontWeight = "bold";
             badgeContainer.style.display = "inline-flex";
-            badgeContainer.style.alignItems = "center";
+            badgeContainer.style.alignItems = "flex-start";
             badgeContainer.style.gap = "3px";
             const mutedBadge = document.createElement("span");
             mutedBadge.style.color = "red";
@@ -1219,7 +1228,7 @@ async function attachMessageListeners(msgRef) {
                 /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
                 (match, color, content) => {
                     const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
-                    return `<p style="color:${safeColor}">${content}</p>`;
+                    return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
                 }
             );
             safeText = safeText.replace(

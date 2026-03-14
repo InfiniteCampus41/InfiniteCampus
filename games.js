@@ -14,15 +14,18 @@ const error = document.getElementById("sj-error");
 const stockSW = "./sw.js";
 const swAllowedHostnames = ["localhost", "127.0.0.1"];
 const errorCode = document.getElementById("sj-error-code");
-const { ScramjetController } = $scramjetLoadController();
-const scramjet = new ScramjetController({
-    files: {
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
-    },
-});
-scramjet.init();
+let scramjet = null;
+if (typeof $scramjetLoadController !== "undefined") {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+        files: {
+            wasm: "/scram/scramjet.wasm.wasm",
+            all: "/scram/scramjet.all.js",
+            sync: "/scram/scramjet.sync.js",
+        },
+    });
+    scramjet.init();
+}
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
 async function loadBlockedUrls() {
@@ -137,6 +140,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const launchButton = document.getElementById("launchGames");
     const launch2 = document.getElementById("launchGames2");
     const OfficialSites = e;
+    if (!scramjet) {
+        launchButton.style.display = "none";
+    }
     const def = "https://play.infinitecampus.xyz/games/";
     const main = document.body.querySelector("main");
     if (OfficialSites.includes(f)) {
@@ -208,6 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "World's Hardest Game", method: ["1", "2"], url: `https://mountain658.github.io/zworldsHardestGame.html` },
         { name: "Drive Mad", method: ["1", "2"], url: `https://ubg365.github.io/drive-mad/play.html` },
         { name: "Madalin Stunt Cars 2", method: ["1", "2"], url: `${def}msc2/index.html` },
+        { name: "Rocket League", method: ["1","2"], url: `${def}carsoccer/index.html`},
         { name: "HexGL", method: ["1", "2"], url: `https://hexgl.bkcore.com/play/` },
         { name: "BitLife", method: ["1", "2"], url: `${def}bitlife/index.html` },
         { name: "BitLife (2)", method: ["1", "2"], url: `https://ubg365.github.io/bitlife-life-simulator/play.html` },
