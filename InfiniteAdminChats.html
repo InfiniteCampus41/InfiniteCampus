@@ -145,6 +145,7 @@
             toggleBtn.onclick = () => {
                 if (window.innerWidth <= 900) {
                     rightPanel.classList.toggle("open");
+                    toggleBtn.classList.toggle("open");
                     toggleBtn.innerHTML = rightPanel.classList.contains("open") ? "<i class='bi bi-chevron-right'></i>" : "<i class='bi bi-chevron-left'></i>";
                 }
             };

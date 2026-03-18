@@ -964,14 +964,14 @@ main {
     }
     #right {
         width: 100%;
-        right: -100%;
-        transition: right 0.35s ease;
+        right: -100% !important;
+        transition: right 0.35s ease !important;
     }
     #right.open {
-        right: 0;
+        right: 0 !important;
     }
     #rightToggleBtn {
-        display: block;
+        display: block !important;
         position: fixed;
         right: 0;
         top: 50%;
@@ -982,11 +982,14 @@ main {
         padding: 10px 14px;
         color: #fff;
         cursor: pointer;
+        transition: right 0.35s cubic-bezier(0.65, 0.05, 0.36, 1) !important;
         z-index: 1000;
-        transition: background 0.2s;
     }
     #rightToggleBtn:hover {
         background: #3a3a3a;
+    }
+    #rightToggleBtn.open {
+        right:350px !important;
     }
     .section#before {
         width:75%;
