@@ -212,6 +212,29 @@ body {
 .channel-mention:hover {
     text-decoration:underline;
 }
+.channelModal {
+    position:relative;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 300px;
+    display:block;
+}
+.channelOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
 #channels .active, #privateList .active {
     background: #2a2a2a;
 }

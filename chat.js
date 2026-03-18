@@ -14,7 +14,6 @@ const mentionNotif = document.getElementById("mentionNotif");
 const mentionToggle = document.getElementById("mentionToggle");
 const mentionToggleLabel = document.getElementById("mentionToggleLabel");
 const MESSAGE_COOLDOWN = 3000;
-const newChannelName = document.getElementById("newChannelName");
 const PAGE_SIZE = 25;
 const privateList = document.getElementById("privateList");
 const privateListeners = new Set();
@@ -148,6 +147,7 @@ function scrollToBottom(smooth = false) {
 }
 async function unmuteUser(uid) {
     await remove(ref(db, `mutedUsers/${uid}`));
+    delete userMetaCache[uid];
     showSuccess("User Unmuted.");
 }
 async function getUserMeta(uid) {
@@ -733,8 +733,8 @@ async function renderMessageInstant(id, msg) {
             if (((isOwner || isTester) && !meta.owner) || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin) || (isAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin && !meta.admin)) {
                 nameSpan.addEventListener("contextmenu", async (e) => {
                     e.preventDefault();
-                    const alreadyMuted = meta.muted;
-                    const menu = document.createElement("div");
+                    const freshMeta = await getUserMeta(msg.sender);
+                    const alreadyMuted = freshMeta.muted;                    const menu = document.createElement("div");
                     menu.style.position = "absolute";
                     menu.style.left = e.pageX + "px";
                     menu.style.top = e.pageY + "px";
@@ -764,6 +764,7 @@ async function renderMessageInstant(id, msg) {
                             const muteRef = ref(db, `mutedUsers/${msg.sender}`);
                             const expireTime = "Never";
                             await set(muteRef, { expires: expireTime });
+                            delete userMetaCache[msg.sender];
                             showSuccess(`User Muted`);
                             closeMenu();
                         };
@@ -777,6 +778,7 @@ async function renderMessageInstant(id, msg) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
                                 const expireTime = Date.now() + minutes * 60 * 1000;
                                 await set(muteRef, { expires: expireTime });
+                                delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${minutes} Minute(s).`);
                             } else {
                                 showError("Invalid Duration Entered.");
@@ -793,6 +795,7 @@ async function renderMessageInstant(id, msg) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
                                 const expireTime = Date.now() + hours * 60 * 60 * 1000;
                                 await set(muteRef, { expires: expireTime });
+                                delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${hours} Hour(s).`);
                             } else {
                                 showError("Invalid Duration Entered.");
@@ -809,6 +812,7 @@ async function renderMessageInstant(id, msg) {
                                 const muteRef = ref(db, `mutedUsers/${msg.sender}`);
                                 const expireTime = Date.now() + days * 24 * 60 * 60 * 1000;
                                 await set(muteRef, { expires: expireTime });
+                                delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${days} Day(s).`);
                             } else {
                                 showError("Invalid Duration Entered.");
@@ -1420,6 +1424,122 @@ function startChannelListeners() {
     });
     onChildChanged(channelsRef, snap => { renderChannelsFromDB(); });
 }
+function openChannelSettings(channel, data) {
+    const overlay = document.createElement("div");
+    overlay.className = "channelOverlay";
+    overlay.innerHTML = `
+        <div class="channelModal">
+            <center>
+                <h2>
+                    Edit ${channel}
+                </h2>
+            </center>
+            <br>
+            <input id="channelNameInput" class="form-control" value="${channel}" placeholder="Channel Name" style="width:100%; padding:6px;margin-bottom:10px;">
+            <br>
+            <center>
+                <h3>
+                    Read
+                </h3>
+            </center>
+            <hr>
+            <br>
+            ${renderRoleCheckboxes("read")}
+            <center>
+                <h3>
+                    Write
+                </h3>
+            </center>
+            <hr>
+            <br>
+            ${renderRoleCheckboxes("write")}
+            <div style="display:flex; flex-direction:column; width:100%;">
+                <button id="saveSettings">
+                    Save
+                </button>
+                <br>
+                <button id="deleteChannel" style="background:#a00; color:white;">
+                    Delete Channel
+                </button>
+                <br>
+                <button id="cancelSettings">
+                    Cancel
+                </button>
+                <br>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    for (let key in data.read || {}) {
+        const el = overlay.querySelector(`input[data-read="${key}"]`);
+        if (el) el.checked = true;
+    }
+    for (let key in data.write || {}) {
+        const el = overlay.querySelector(`input[data-write="${key}"]`);
+        if (el) el.checked = true;
+    }
+    document.getElementById("cancelSettings").onclick = () => overlay.remove();
+    document.getElementById("deleteChannel").onclick = async () => {
+        showConfirm(`Delete "${channel}"? This cannot be undone.`, async (result) => {
+            if (!result) return;
+            try {
+                await remove(ref(db, `channels/${channel}`));
+                await remove(ref(db, `messages/${channel}`));
+                if (currentPath === `messages/${channel}`) {
+                    switchChannel("General");
+                }
+                overlay.remove();
+                showSuccess("Channel Deleted");
+            } catch (err) {
+                showError("Failed To Delete Channel:", err);
+            }
+        });
+    };
+    document.getElementById("saveSettings").onclick = async () => {
+        const newName = document.getElementById("channelNameInput").value.trim();
+        const read = getSelectedRoles("read");
+        const write = getSelectedRoles("write");
+        if (Object.keys(read).length === 0) read.verified = true;
+        if (Object.keys(write).length === 0) write.verified = true;
+        try {
+            if (newName && newName !== channel) {
+                const oldRef = ref(db, `channels/${channel}`);
+                const newRef = ref(db, `channels/${newName}`);
+                const snap = await get(oldRef);
+                const data = snap.val() || {};
+                await set(newRef, {
+                    ...data,
+                    read,
+                    write
+                });
+                await remove(oldRef);
+                const oldMsgs = ref(db, `messages/${channel}`);
+                const newMsgs = ref(db, `messages/${newName}`);
+                const msgSnap = await get(oldMsgs);
+                if (msgSnap.exists()) {
+                    await set(newMsgs, msgSnap.val());
+                    await remove(oldMsgs);
+                }
+                switchChannel(newName);
+            } else {
+                await update(ref(db, `channels/${channel}`), { read, write });
+            }
+            overlay.remove();
+        } catch (err) {
+            showError("Failed To Save Channel Settings:", err);
+        }
+    };
+}
+function hasPermission(channelData, type) {
+    if (!channelData) return true;
+    if (isOwner || isTester || isCoOwner) return true;
+    const perms = channelData[type] || {};
+    if (perms.verified && currentUser) return true;
+    if (perms.isAdmin && isAdmin) return true;
+    if (perms.isHAdmin && isHAdmin) return true;
+    if (perms.isDev && isDev) return true;
+    return false;
+}
 async function renderChannelsFromDB() {
     channelList.innerHTML = "";
     const snap = await get(ref(db, "channels"));
@@ -1430,8 +1550,8 @@ async function renderChannelsFromDB() {
     }
     const keys = Object.keys(chans).sort();
     keys.forEach(ch => {
-        if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isPre2 || isPre3)) return;
-        const li = document.createElement("li");
+        const chData = chans[ch];
+        if (!hasPermission(chData, "read")) return;        const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
         li.onclick = () => { currentPrivateUid = null; switchChannel(ch); };
@@ -1439,54 +1559,23 @@ async function renderChannelsFromDB() {
         if ((isOwner || isCoOwner || isTester) && ch !== "General") {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
-            const renameBtn = document.createElement("button");
-            renameBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
-            renameBtn.onclick = async (e) => {
+            const settingsBtn = document.createElement("button");
+            settingsBtn.innerHTML = "<i class='bi bi-gear'></i>";
+            settingsBtn.onclick = async (e) => {
                 e.stopPropagation();
-                const newName = await customPrompt("Rename Channel:", false, ch);
-                if (newName && newName.trim() && newName !== ch) {
-                    try {
-                        const channelSnap = await get(ref(db, `channels/${ch}`));
-                        if (channelSnap.exists()) {
-                            await set(ref(db, `channels/${newName}`), channelSnap.val());
-                        }
-                        const msgSnap = await get(ref(db, `messages/${ch}`));
-                        if (msgSnap.exists()) {
-                            await set(ref(db, `messages/${newName}`), msgSnap.val());
-                        }
-                        await remove(ref(db, `channels/${ch}`));
-                        await remove(ref(db, `messages/${ch}`));
-                        showSuccess(`Channel Renamed From ${ch} To ${newName}`);
-                    } catch (err) {
-                        showError("Error Renaming Channel:", err);
-                    }
-                }
+                const snap = await get(ref(db, `channels/${ch}`));
+                const data = snap.val() || {};
+                openChannelSettings(ch, data);
             };
-            const delBtn = document.createElement("button");
-            delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
-            delBtn.onclick = async (e) => {
-                e.stopPropagation();
-                showConfirm(`Delete Channel ${ch}? This Will Remove All Messages.`, function(result) {
-                    if (result) {
-                        remove(ref(db, `channels/${ch}`));
-                        remove(ref(db, `messages/${ch}`));
-                        showSuccess("Channel Deleted");
-                    } else {
-                        showSuccess("Canceled");
-                    }
-                })
-            };
-            btnWrap.appendChild(renameBtn);
-            btnWrap.appendChild(delBtn);
+            btnWrap.appendChild(settingsBtn);
             li.appendChild(btnWrap);
         }
         channelList.appendChild(li);
     });
     if (isOwner || isCoOwner || isTester) {
-        newChannelName.style.display = "inline-block";
         addChannelBtn.style.display = "inline-block";
+        addChannelBtn.style.width= "100%";
     } else {
-        newChannelName.style.display = "none";
         addChannelBtn.style.display = "none";
     }
 }
@@ -1505,7 +1594,10 @@ function switchChannel(ch) {
         attachMessageListeners(ref(db, currentPath));
     }
     if (typingRef) {
-        try { off(typingRef, 'value'); } catch (e) { /* ignore */ }
+        try { 
+            off(typingRef, 'value'); 
+        } catch (e) { 
+        }
         typingRef = null;
     }
     typingRef = ref(db, `typing/${ch}`);
@@ -1578,9 +1670,11 @@ sendBtn.onclick = async () => {
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
-        if ((currentPath === "messages/Admin-Chat" || currentPath === "messages/Premium-Chat") && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
-            showError("You Cannot Send Messages To Restricted Channels");
-            chatInput.value = "";
+        const ch = currentPath.split("/")[1];
+        const snap = await get(ref(db, `channels/${ch}`));
+        const chData = snap.val();
+        if (!hasPermission(chData, "write")) {
+            showError("You Cannot Send Messages In This Channel.");
             return;
         }
         await push(ref(db, currentPath), msg);
@@ -1706,8 +1800,8 @@ onAuthStateChanged(auth, async user => {
     isSus = susSnap.exists() ? susSnap.val() : false;
     isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
-    newChannelName.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
+    addChannelBtn.style.width = (isCoOwner || isOwner || isTester) ? "100%" : "";
     await ensureDisplayName(user);
     await loadMentionSetting(user);
     await loadAllUsernames(); 
@@ -1784,12 +1878,119 @@ async function loadAllUsernames() {
     }
 }
 addChannelBtn.onclick = async () => {
-    if (!(isOwner || isCoOwner || isTester || currentUser.email === "infinitecodehs@gmail.com")) return;
-    const name = newChannelName.value.trim();
-    if (!name) return;
-    await set(ref(db, `channels/${name}`), true);
-    newChannelName.value = "";
+    if (!(isOwner || isCoOwner || isTester)) return;
+    const overlay = document.createElement("div");
+    overlay.className = "channelOverlay";
+    overlay.innerHTML = `
+        <div class="channelModal">
+            <center>
+                <h2>
+                    Create Channel
+                </h2>
+            </center>
+            <hr>
+            <br>
+            <input id="channelNameInput" class="form-control" placeholder="Channel Name" />
+            <br>
+            <center>
+                <h3>
+                    Read Permissions
+                </h3>
+            </center>
+            <hr>
+            <br>
+            ${renderRoleCheckboxes("read")}
+            <center>
+                <h3>
+                    Write Permissions
+                </h3>
+            </center>
+            <hr>
+            <br>
+            ${renderRoleCheckboxes("write")}
+            <div style="display:flex;flex-direction:column;width:100%">
+                <button id="createChannelConfirm">
+                    Create
+                </button>
+                <br>
+                <button id="cancelCreate">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById("cancelCreate").onclick = () => overlay.remove();
+    document.getElementById("createChannelConfirm").onclick = async () => {
+        const name = document.getElementById("channelNameInput").value.trim();
+        if (!name) return;
+        const read = getSelectedRoles("read");
+        const write = getSelectedRoles("write");
+        if (Object.keys(read).length === 0) read.verified = true;
+        if (Object.keys(write).length === 0) write.verified = true;
+        await set(ref(db, `channels/${name}`), {
+            read,
+            write
+        });
+        overlay.remove();
+    };
 };
+function renderRoleCheckboxes(type) {
+    const roles = [
+        "isOwner",
+        "isTester",
+        "isCoOwner",
+        "isHAdmin",
+        "isAdmin",
+        "isDev",
+        "isPartner",
+        "premium3",
+        "premium2",
+        "premium1",
+        "isDonater",
+        "isSus",
+        "mileStone",
+        "isGuesser",
+        "isUploader",
+        "verified"
+    ];
+    const roleNames = {
+        isOwner: "Owner",
+        isTester: "Tester",
+        isCoOwner: "Co-Owner",
+        isHAdmin: "Head Admin",
+        isAdmin: "Admin",
+        isDev: "Developer",
+        isPartner: "Partner",
+        premium3: "Premium T3",
+        premium2: "Premium T2",
+        premium1: "Premium T1",
+        isDonater: "Donator",
+        isSus: "Suspicious User",
+        mileStone: "Award Badge",
+        isGuesser: "Guesser",
+        isUploader: "Uploader",
+        verified: "Verified Users"
+    };
+    return roles.map(r => `
+        <div style="margin-bottom:20px;">
+            <label class="switch">
+                <input type="checkbox" data-${type}="${r}">
+                <span class="slider"></span>
+            </label>
+            ${roleNames[r] || r}
+        </div>
+    `).join("");
+}
+function getSelectedRoles(type) {
+    const selected = {};
+    document.querySelectorAll(`input[data-${type}]`).forEach(cb => {
+        if (cb.checked) {
+            selected[cb.dataset[type]] = true;
+        }
+    });
+    return selected;
+}
 chatInput.addEventListener("paste", (e) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
