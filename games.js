@@ -12,7 +12,7 @@ const address = document.getElementById("sj-address");
 const searchEngine = document.getElementById("sj-search-engine");
 const error = document.getElementById("sj-error");
 const stockSW = "./sw.js";
-const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz"];
+const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz", "instructure.space", "www.infinitecampus.xyz"];
 const errorCode = document.getElementById("sj-error-code");
 let scramjet = null;
 if (typeof $scramjetLoadController !== "undefined") {
