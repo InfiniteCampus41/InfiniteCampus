@@ -1,18 +1,18 @@
 "use strict";
 /** @type {HTMLFormElement} */
-const form = document.getElementById("sj-form");
 /** @type {HTMLInputElement} */
-const address = document.getElementById("sj-address");
 /** @type {HTMLInputElement} */
-const searchEngine = document.getElementById("sj-search-engine");
 /** @type {HTMLParagraphElement} */
-const error = document.getElementById("sj-error");
 /** @type {HTMLPreElement} */
 /** @param {string} input */
 /** @param {string} template */
 /** @returns {string} */
+const form = document.getElementById("sj-form");
+const address = document.getElementById("sj-address");
+const searchEngine = document.getElementById("sj-search-engine");
+const error = document.getElementById("sj-error");
 const stockSW = "./sw.js";
-const swAllowedHostnames = ["localhost", "127.0.0.1"];
+const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz"];
 const errorCode = document.getElementById("sj-error-code");
 let scramjet = null;
 if (typeof $scramjetLoadController !== "undefined") {
@@ -75,7 +75,6 @@ function checkBlocked(inputUrl) {
 loadBlockedUrls();
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await logProxyVisit(address.value);
     const reason = checkBlocked(address.value);
     if (reason) {
         error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Website Chat, Padlet, Live Discord Chat, Contact Me page, Or The Report A Bug Form";
@@ -524,23 +523,3 @@ document.addEventListener("DOMContentLoaded", function () {
         showGames("1");
     });
 })
-window.logProxyVisit = async function(input) {
-    let logUrl;
-    try {
-        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
-        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
-    } catch {
-        logUrl = input.toLowerCase();
-    }
-    const payload = {
-        url: logUrl,
-        timestamp: new Date().toISOString()
-    };
-    try {
-        await fetch("/logs", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(payload)
-        });
-    } catch {}
-};

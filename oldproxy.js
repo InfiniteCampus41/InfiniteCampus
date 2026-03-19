@@ -1,28 +1,33 @@
 "use strict"
 /** @type {HTMLFormElement}*/
-const form = document.getElementById("sj-form");
 /** @type {HTMLInputElement} */
-const address = document.getElementById("sj-address");
 /** @type {HTMLInputElement} */
-const searchEngine = document.getElementById("sj-search-engine");
 /** @type {HTMLParagraphElement} */
-const error = document.getElementById("sj-error");
 /** @type {HTMLPreElement} */
 /** @param {string} input */
 /** @param {string} template */
 /** @returns {string} */
+const form = document.getElementById("sj-form");
+const address = document.getElementById("sj-address");
+const searchEngine = document.getElementById("sj-search-engine");
+const error = document.getElementById("sj-error");
 const stockSW = "./sw.js";
-const swAllowedHostnames = ["localhost", "127.0.0.1"];
+const before = document.getElementById("before");
+const after = document.getElementById("after");
+const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz"];
 const errorCode = document.getElementById("sj-error-code");
-const { ScramjetController } = $scramjetLoadController();
-const scramjet = new ScramjetController({
-    files: {
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
-    },
-});
-scramjet.init();
+let scramjet = null;
+if (typeof $scramjetLoadController !== "undefined") {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+        files: {
+            wasm: "/scram/scramjet.wasm.wasm",
+            all: "/scram/scramjet.all.js",
+            sync: "/scram/scramjet.sync.js",
+        },
+    });
+    scramjet.init();
+}
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
 async function loadBlockedUrls() {
@@ -72,7 +77,6 @@ function checkBlocked(inputUrl) {
 loadBlockedUrls();
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await logProxyVisit(address.value);
     const reason = checkBlocked(address.value);
     if (reason) {
         error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Website Chat, Padlet, Live Discord Chat, Contact Me page, Or The Report A Bug Form";
@@ -133,28 +137,6 @@ async function registerSW() {
 	}
 	await navigator.serviceWorker.register(stockSW);
 }
-const before = document.getElementById("before");
-async function logProxyVisit(input) {
-    let logUrl;
-    before.style.display = 'none';
-    try {
-        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
-        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
-    } catch {
-        logUrl = input.toLowerCase();
-    }
-    const payload = {
-        url: logUrl,
-        timestamp: new Date().toISOString()
-    };
-    try {
-        await fetch("/logs", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(payload)
-        });
-    } catch {}
-};
 const observer = new MutationObserver(() => {
     const btn = document.getElementById('pxyFcrn');
     const frame = document.getElementById('sj-frame');
@@ -185,3 +167,9 @@ const observer = new MutationObserver(() => {
     observer.disconnect();
 });
 observer.observe(document.body, { childList:true, subtree:true });
+document.addEventListener("DOMContentLoaded", function () {
+    if (!scramjet) {
+        before.style.display = "none";
+        after.style.display = "block";
+    }
+});

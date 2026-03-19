@@ -13,40 +13,25 @@ const backBtn = document.getElementById("nav-back");
 const forwardBtn = document.getElementById("nav-forward");
 const reloadBtn = document.getElementById("nav-reload");
 const stockSW = "./sw.js";
-const swAllowedHostnames = ["localhost", "127.0.0.1"];
+const working = document.getElementById("workingPxy");
+const broken = document.getElementById("brokenPxy");
+const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz"];
 let fullscreenBtn = null;
 let isFullscreen = false;
-const { ScramjetController } = $scramjetLoadController();
-const scramjet = new ScramjetController({
-    files: {
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
-    },
-});
-scramjet.init();
+let scramjet = null;
+if (typeof $scramjetLoadController !== "undefined") {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+        files: {
+            wasm: "/scram/scramjet.wasm.wasm",
+            all: "/scram/scramjet.all.js",
+            sync: "/scram/scramjet.sync.js",
+        },
+    });
+    scramjet.init();
+}
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
-async function logProxyVisit(input) {
-    let logUrl;
-    try {
-        const parsedUrl = new URL(input.startsWith("http") ? input : `https://${input}`);
-        logUrl = `https://${parsedUrl.hostname.toLowerCase()}`;
-    } catch {
-        logUrl = input.toLowerCase();
-    }
-    const payload = {
-        url: logUrl,
-        timestamp: new Date().toISOString()
-    };
-    try {
-        await fetch("/logs", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(payload)
-        });
-    } catch {}
-};
 async function loadBlockedUrls() {
     try {
         const res = await fetch("/edit-urls");
@@ -370,7 +355,6 @@ async function loadIntoActiveTab(input) {
 }
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await logProxyVisit(addressBar.value);
     await loadIntoActiveTab(addressBar.value);
 });
 function updateClock() { 
@@ -513,3 +497,9 @@ document.querySelectorAll("#pxyApps div").forEach(app => {
     });
 });
 createTab(true);
+document.addEventListener("DOMContentLoaded", function () {
+    if (!scramjet) {
+        working.style.display = "none";
+        broken.style.display = "block";
+    }
+});
