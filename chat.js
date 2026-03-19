@@ -546,9 +546,11 @@ async function renderMessageInstant(id, msg) {
         while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
         const trailing = url.slice(display.length);
         if (display.includes("tenor.com")) {
+            const clean = display.split("?")[0];
+            const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
             return `${prefix}
             <img 
-                src="${display}" 
+                src="${finalUrl}" 
                 class="chat-img tenor-gif"
                 data-tenor="${display}"
                 style="max-width:250px;margin-top:6px;border-radius:8px;">
@@ -591,19 +593,6 @@ async function renderMessageInstant(id, msg) {
     });
     safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
-    textDiv.querySelectorAll(".tenor-gif").forEach(async (img) => {
-        const url = img.dataset.tenor;
-        try {
-            const res = await fetch(`https://api.tenor.com/v1/oembed?url=${encodeURIComponent(url)}`);
-            const data = await res.json();
-
-            if (data.thumbnail_url) {
-                img.src = data.thumbnail_url;
-            }
-        } catch (e) {
-            console.warn("Tenor conversion failed:", e);
-        }
-    });
     const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
     if (existingScript) {
         existingScript.remove();

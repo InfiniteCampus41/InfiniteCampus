@@ -2196,6 +2196,11 @@ table {
     height:30px;
     overflow-x: auto;
 }
+.tenor-gif {
+    margin-left: -40px;
+    height:300px;
+    width:300px;
+}
 textarea.szo2 {
     height:100px;
 }
