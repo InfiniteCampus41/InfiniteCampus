@@ -545,11 +545,73 @@ async function renderMessageInstant(id, msg) {
         let display = url;
         while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
         const trailing = url.slice(display.length);
+        if (display.includes("tenor.com")) {
+            return `${prefix}
+            <img 
+                src="${display}" 
+                class="chat-img tenor-gif"
+                data-tenor="${display}"
+                style="max-width:250px;margin-top:6px;border-radius:8px;">
+            ${trailing}`;
+        }
+        if (
+            display.includes("youtube.com/watch") ||
+            display.includes("youtu.be/") ||
+            display.includes("youtube.com/shorts/")
+        ) {
+            let videoId = "";
+            if (display.includes("youtube.com/watch")) {
+                const urlObj = new URL(display);
+                videoId = urlObj.searchParams.get("v");
+            }
+            else if (display.includes("youtu.be/")) {
+                videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+            }
+            else if (display.includes("youtube.com/shorts/")) {
+                videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+            }
+            const isShort = display.includes("/shorts/");
+            return `${prefix}
+            <div class="yt-embed ${isShort ? "short" : ""}">
+                <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+            </div>
+            ${trailing}`;
+        }
+        if (display.includes("tiktok.com")) {
+            return `${prefix}
+            <blockquote class="tiktok-embed" cite="${display}" data-video-id="">
+                <a href="${display}"></a>
+            </blockquote>
+            ${trailing}`;
+        }
         return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"
-            style="color:#4fa3ff;text-decoration:underline;position:relative;">${display}</a>${trailing}`;
+            style="color:#4fa3ff;text-decoration:underline;">
+            ${display}
+        </a>${trailing}`;
     });
     safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
+    textDiv.querySelectorAll(".tenor-gif").forEach(async (img) => {
+        const url = img.dataset.tenor;
+        try {
+            const res = await fetch(`https://api.tenor.com/v1/oembed?url=${encodeURIComponent(url)}`);
+            const data = await res.json();
+
+            if (data.thumbnail_url) {
+                img.src = data.thumbnail_url;
+            }
+        } catch (e) {
+            console.warn("Tenor conversion failed:", e);
+        }
+    });
+    const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
+    if (existingScript) {
+        existingScript.remove();
+    }
+    const script = document.createElement("script");
+    script.src = "https://www.tiktok.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
     textDiv.querySelectorAll(".chat-img").forEach(img => {
         img.addEventListener("click", () => {
             viewerImg.src = img.src;

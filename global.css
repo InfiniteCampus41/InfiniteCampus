@@ -2359,3 +2359,22 @@ th, td {
 .y {
     color:yellow;
 }
+.yt-embed {
+    position: relative;
+    height:200px;
+    margin-top:-90px;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 16 / 9;
+}
+.yt-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 10px;
+}
+.yt-embed.short {
+    aspect-ratio: 9 / 16;
+    max-width: 150px;
+    height:300px;
+}
