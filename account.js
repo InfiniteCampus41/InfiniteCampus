@@ -162,7 +162,8 @@ if (notif) {
             { key: "isDonater", icon: "bi bi-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"},
             { key: "isUploader", icon: "bi bi-film", title: "This User Has Uploaded A Movie To Infinite Campus", color: "grey"},
             { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
-            { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" }
+            { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
+            { key: "isLink", icon: "bi bi-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -997,6 +998,10 @@ if (notif) {
                     if (profile.dUsername) {
                         const discordUser = profile.dUsername;
                         addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
+                        hasAnyRole = true;
+                    }
+                    if (profile.isLink) {
+                        addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");
                         hasAnyRole = true;
                     }
                     if (profile.verified) {

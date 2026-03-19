@@ -39,6 +39,7 @@ let isAdmin = false;
 let isCoOwner = false;
 let isDev = false;
 let isHAdmin = false;
+let isLinker = false;
 let isOwner = false;
 let isPartner = false;
 let isPre1 = false;
@@ -166,7 +167,7 @@ async function getUserMeta(uid) {
         userMetaCache[uid].muted = muted;
         return userMetaCache[uid];
     }
-    const [ nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap, muteSnap ] = await Promise.all([
+    const [ nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap, linkSnap, muteSnap ] = await Promise.all([
         get(ref(db, `users/${uid}/profile/displayName`)),
         get(ref(db, `users/${uid}/settings/color`)),
         get(ref(db, `users/${uid}/profile/pic`)),
@@ -186,6 +187,7 @@ async function getUserMeta(uid) {
         get(ref(db, `users/${uid}/profile/isDonater`)),
         get(ref(db, `users/${uid}/profile/isUploader`)),
         get(ref(db, `users/${uid}/profile/isGuesser`)),
+        get(ref(db, `users/${uid}/profile/isLink`)),
         get(muteRef)
     ]);
     let muted = false;
@@ -217,6 +219,7 @@ async function getUserMeta(uid) {
         donor: donSnap.exists() && donSnap.val(),
         uploader: uploadSnap.exists() && uploadSnap.val(),
         guesser: guessSnap.exists() && guessSnap.val(),
+        linker: linkSnap.exists() && linkSnap.val(),
         muted
     };
     userMetaCache[uid] = data;
@@ -586,29 +589,34 @@ async function renderMessageInstant(id, msg) {
             </blockquote>
             ${trailing}`;
         }
-        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"
-            style="color:#4fa3ff;text-decoration:underline;">
-            ${display}
-        </a>${trailing}`;
+        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
     });
     safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
-    const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
-    if (existingScript) {
-        existingScript.remove();
+    try {
+        const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
+        if (existingScript) {
+            existingScript.remove();
+        }
+        const script = document.createElement("script");
+        script.src = "https://www.tiktok.com/embed.js";
+        script.async = true;
+        script.onload = () => {
+            if (window.tiktokEmbedLoad) {
+                try {
+                    window.tiktokEmbedLoad();
+                } catch (e) {
+                    console.warn("TikTok embed init failed:", e);
+                }
+            }
+        };
+        script.onerror = () => {
+            console.warn("TikTok embed script blocked or failed to load.");
+        };
+        document.body.appendChild(script);
+    } catch (err) {
+        console.warn("TikTok script handling failed:", err);
     }
-    const script = document.createElement("script");
-    script.src = "https://www.tiktok.com/embed.js";
-    script.async = true;
-    document.body.appendChild(script);
-    textDiv.querySelectorAll(".chat-img").forEach(img => {
-        img.addEventListener("click", () => {
-            viewerImg.src = img.src;
-            downloadBtn.href = img.src;
-            downloadBtn.download = "image";
-            imgViewer.style.display = "flex";
-        });
-    });
     textDiv.querySelectorAll(".mention-user").forEach(span => {
         span.style.cursor = "pointer";
         span.addEventListener("click", async () => {
@@ -791,7 +799,8 @@ async function renderMessageInstant(id, msg) {
                 nameSpan.addEventListener("contextmenu", async (e) => {
                     e.preventDefault();
                     const freshMeta = await getUserMeta(msg.sender);
-                    const alreadyMuted = freshMeta.muted;                    const menu = document.createElement("div");
+                    const alreadyMuted = freshMeta.muted;                    
+                    const menu = document.createElement("div");
                     menu.style.position = "absolute";
                     menu.style.left = e.pageX + "px";
                     menu.style.top = e.pageY + "px";
@@ -1023,6 +1032,14 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "#5865F2";
                 icon.style.marginLeft = "6px";
                 icon.title = `Known As @${meta.discord} On The Infinite Campus Discord Server`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.linker) {
+                const icon = document.createElement("i");
+                icon.className = "bi bi-link";
+                icon.style.color = "#4fa3ff";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Sent Lots Of Links In The Links Channel`;
                 badgeContainer.appendChild(icon);
             }
             badgeContainer.appendChild(mutedBadge);
@@ -1843,6 +1860,7 @@ onAuthStateChanged(auth, async user => {
     const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
     const susSnap = await get(ref(db, `users/${user.uid}/profile/isSus`));
     const partnerSnap = await get(ref(db, `users/${user.uid}/profile/isPartner`));
+    const linkSnap = await get(ref(db, `users/${user.uid}/profile/isLink`));
     currentUser = user;
     const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
     isOwner = ownerSnap.exists() && ownerSnap.val() === true;
@@ -1857,6 +1875,7 @@ onAuthStateChanged(auth, async user => {
     isPre3 = pre3snap.exists() ? pre3snap.val() : false;
     isSus = susSnap.exists() ? susSnap.val() : false;
     isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
+    isLinker = linkSnap.exists() ? linkSnap.val() : false;
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     addChannelBtn.style.width = (isCoOwner || isOwner || isTester) ? "100%" : "";
@@ -1892,8 +1911,8 @@ onAuthStateChanged(auth, async user => {
     isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
     isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
     isTester = testerSnap.exists() ? testerSnap.val() : false;
-    roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" : "User"))))))))));
-    roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isPartner ? "cornflowerblue" :(isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :"white"))))))))));
+    roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" :(isLinker ? "Link Sharer" : "User")))))))))));
+    roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isPartner ? "cornflowerblue" :(isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :(isLinker ? "#4fa3ff": "white")))))))))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
     bioSpan.style.fontSize = "60%";
