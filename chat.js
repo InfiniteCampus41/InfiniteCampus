@@ -1561,12 +1561,13 @@ async function renderChannelsFromDB() {
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
             settingsBtn.innerHTML = "<i class='bi bi-gear'></i>";
-            settingsBtn.onclick = async (e) => {
+            settingsBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 const snap = await get(ref(db, `channels/${ch}`));
                 const data = snap.val() || {};
                 openChannelSettings(ch, data);
-            };
+            });
             btnWrap.appendChild(settingsBtn);
             li.appendChild(btnWrap);
         }
