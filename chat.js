@@ -261,6 +261,12 @@ async function ensureDisplayName(user) {
         currentColor = "#ffffff";
     }
 }
+mentionToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
+mentionToggleLabel.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
 mentionToggle.addEventListener("change", async () => {
     if (!currentUser) return;
     const newValue = mentionToggle.checked;

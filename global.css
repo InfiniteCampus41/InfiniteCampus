@@ -1024,15 +1024,17 @@ main {
     }
     #sidebar {
         position:fixed;
-        left: -400px;
+        left: -100%;
+        width:100% !important;
         top: var(--headerHeight);
         bottom: var(--footerHeight);
-        height:100%;
+        height:calc(100vh - calc(var(--headerHeight) + var(--footerHeight)));
         z-index: 999;
         transition: 0.3s ease;
     }
     #sidebar.open {
         left:0;
+        width:100%;
     }
     #signupSection > br {
         display:none;
@@ -1130,6 +1132,32 @@ main {
     background: rgba(255,215,0,0.15);
     padding: 2px 4px;
     border-radius: 4px;
+}
+#mentionToggleLabel input:checked + .slider::before {
+    transform: translateX(17px);
+}
+#mentionToggleLabel .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height:20px;
+    width:40px;
+    transition: 0.3s;
+    border-radius: 34px;
+}
+#mentionToggleLabel .slider::before {
+    position: absolute;
+    content: "";
+    height: 15px;
+    width: 15px;
+    left: 3px;
+    bottom: 2.5px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
 }
 .message {
     display: flex;
