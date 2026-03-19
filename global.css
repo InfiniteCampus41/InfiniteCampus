@@ -2032,7 +2032,9 @@ select {
     width:100%;
     text-align: center;
 	color: #fff;
-	font-family: "Courier New", Courier, monospace;
+}
+#sj-error-code::before {
+    content: "Error Code:"
 }
 #sj-form {
     height:30px;
