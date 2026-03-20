@@ -450,7 +450,8 @@ function setRandomPhrase() {
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "Japan Is Turning Footsteps Into Electricity",
         `${btMsg}`,
-        "https://discord.gg/4d9hJSVXca"
+        "https://discord.gg/4d9hJSVXca",
+        "Kim Jong Un Is Master Of Goon"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 
