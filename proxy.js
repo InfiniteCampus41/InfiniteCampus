@@ -188,6 +188,10 @@ function switchTab(id) {
             requestAnimationFrame(() => {
                 tab.frame.classList.add("active-frame");
             });
+            if (fullscreenBtn) {
+            } else {
+                createFullscreenButton();
+            }
         }    
     }
     if (!tab.isNTP) {
