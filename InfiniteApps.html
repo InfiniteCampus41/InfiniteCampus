@@ -1300,13 +1300,29 @@
             </center>
             <center id="browsers" style="display:none">
                 <h1 class="tptxt">
-                    Browsers
+                    Virtual Machine
                 </h1>
                 <hr>
                 <br>
-                <a class="button apbtn" href="https://puter.com">
-                    Puter OS
-                </a>
+                <div>
+                    <input id="test" class="button" placeholder="Enter URL Here">
+                    <button id="go" class="button">
+                        Go!
+                    </button>
+                    <span id="current" class="btxt"></span>
+                </div>
+                <script type="module">
+                    import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
+                    const resp = await fetch(`${a}/hypervm`)
+                    const data = await resp.json()
+                    const hb = await Hyperbeam(virtualComputerDiv, data.embed_url)
+                    gotoYouTubeBtn.addEventListener("click", () => {
+                        hb.tabs.update({ url: "https://youtube.com" })
+                    })
+                    hb.tabs.onUpdated.addListener((tabId, changeInfo) => {
+                        if (changeInfo.title) currentSite.innerText = changeInfo.title
+                    })
+                </script>
             </center>
             <center id="cUrls" style="display:none"> 
                 <h1 class="tptxt">
