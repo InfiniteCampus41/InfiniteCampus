@@ -209,7 +209,7 @@ function switchTab(id) {
         if (tab.isNTP) {
             fullscreenBtn.style.display = "none";
         } else {
-            fullscreenBtn.style.display = "block";
+            createFullscreenButton();
         }
     }
 }
