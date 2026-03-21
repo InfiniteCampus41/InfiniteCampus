@@ -6,6 +6,7 @@ const form = document.getElementById("sj-form");
 const addressBar = document.getElementById("sj-address");
 const searchEngine = document.getElementById("sj-search-engine");
 const error = document.getElementById("sj-error");
+const pxyErr = document.getElementById("pxyErr");
 const errorCode = document.getElementById("sj-error-code");
 const tabsContainer = document.getElementById("tabs");
 const content = document.getElementById("content");
@@ -284,6 +285,7 @@ async function loadIntoActiveTab(input) {
     if (!activeTabId) return;
     const reason = checkBlocked(input);
     if (reason) {
+        pxyErr.style.display = "block";
         error.textContent = "Error";
         errorCode.textContent = `Error Code: ${reason}`;
         return;
@@ -305,6 +307,7 @@ async function loadIntoActiveTab(input) {
     try {
         await registerSW();
     } catch (err) {
+        pxyErr.style.display = "block";
         error.textContent = "Service Worker failed.";
         errorCode.textContent = err.toString();
         hidePxyLoader();

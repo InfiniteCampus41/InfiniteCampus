@@ -2169,6 +2169,7 @@ table {
 }
 .tab-frame.active-frame {
     opacity: 1;
+    display:block !important;
 }
 .tab-title {
     max-width: 100%;
