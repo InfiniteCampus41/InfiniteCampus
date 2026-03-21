@@ -20,6 +20,7 @@ const muteSection = document.getElementById("mutedUsers");
 let currentChatPath = null;
 let currentUserEditUID = null;
 let userProfiles = {};
+const userData = "/users/${uid}";
 let userSettings = {};
 let activeChatListener = null;
 let profilePics = [];
@@ -76,93 +77,55 @@ async function loadProfilePics() {
         profilePics = [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
     }
 }
+async function preloadUsers() {
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return;
+    const data = snap.val();
+    for (const uid in data) {
+        userProfiles[uid] = {
+            displayName: data[uid]?.profile?.displayName || uid,
+            pic: data[uid]?.profile?.pic || "",
+            color: data[uid]?.settings?.color || "white"
+        };
+    }
+}
 async function logMutedUsers() {
     try {
-        const snapshot = await get(ref(db, "mutedUsers"));
-        if (!snapshot.exists()) {
+        const [mutedSnap, usersSnap] = await Promise.all([
+            get(ref(db, "mutedUsers")),
+            get(ref(db, "users"))
+        ]);
+        if (!mutedSnap.exists()) {
             if (muteSection) muteSection.textContent = "";
             return;
         }
-        const mutedData = snapshot.val();
-        if (muteSection) muteSection.innerHTML = "";
+        const mutedData = mutedSnap.val();
+        const usersData = usersSnap.exists() ? usersSnap.val() : {};
+        muteSection.innerHTML = "";
         muteSection.textContent = "Muted Users";
-        muteSection.style.maxWidth = "fit-content";
         for (const uid of Object.keys(mutedData)) {
+            const userData = usersData[uid] || {};
+            const picVal = userData.profile?.pic || "0";
+            const nameVal = userData.profile?.displayName || "User";
+            const colorVal = userData.settings?.color || "white";
+            const emailVal = userData.settings?.userEmail || "No Email";
             const userDiv = document.createElement('div');
-            userDiv.style.padding = "5px";
-            userDiv.style.marginBottom = "5px";
-            userDiv.style.background = "#222";
-            userDiv.style.borderRadius = "6px";
-            const picSnap = await get(ref(db, `users/${uid}/profile/pic`));
-            const picVal = picSnap.exists() ? picSnap.val() : "0";
-            const nameSnap = await get(ref(db, `users/${uid}/profile/displayName`));
-            const nameVal = nameSnap.exists() ? nameSnap.val() : "User";
-            const colorSnap = await get(ref(db, `users/${uid}/settings/color`));
-            const colorVal = colorSnap.exists() ? colorSnap.val() : "white";
-            const emailSnap = await get(ref(db, `users/${uid}/settings/userEmail`));
-            const emailVal = emailSnap.exists() ? emailSnap.val() : "No Email";
-            const header = document.createElement('div');
             let picIndex = parseInt(picVal);
-            let picSrc = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
-            if (!isNaN(picIndex) && picIndex > 0 && picIndex <= profilePics.length) {
-                picSrc = profilePics[picIndex];
-            }
-            header.innerHTML = `
-                <img src="${picSrc}" alt="${nameVal}'s Pic" style="height:30px; width:30px; border:1px solid white; border-radius:50%;">
-                <span style="margin-left:10px; font-size:0.9em; color:${colorVal};">
-                    ${nameVal}
-                </span>
+            let picSrc = profilePics[picIndex] || profilePics[0];
+            userDiv.innerHTML = `
+                <img src="${picSrc}" style="height:30px;width:30px;border-radius:50%;">
+                <span style="color:${colorVal};margin-left:10px;">${nameVal}</span>
+                <div style="font-size:12px;color:gray;">${emailVal}</div>
             `;
-            const desc = document.createElement('div');
-            const expires = mutedData[uid]?.expires;
-            desc.style.marginLeft = "35px";
-            desc.style.marginTop = "-10px";
-            if (expires != "Never") {
-                const readable = new Date(expires).toLocaleString();
-                desc.innerHTML = `
-                    <span style="font-size:0.7em;color:grey;">
-                        Email: ${emailVal}
-                    </span>
-                    <p style="font-size:0.7em;color:grey;margin-top:-5px;">
-                        Expires At ${readable}
-                    </p>
-                `;
-            } else {
-                desc.innerHTML = `
-                    <span style="font-size:0.7em;color:grey;">
-                        Email: ${emailVal}
-                    </span>
-                    <p style="font-size:0.7em;color:grey;margin-top:-5px;">
-                        Never Expires
-                    </p>
-                `;
-            }
-            const unmuteBtn = document.createElement('button');
-            unmuteBtn.className = "btn btn-secondary";
-            unmuteBtn.title = `Unmute ${nameVal}`;
+            const unmuteBtn = document.createElement("button");
             unmuteBtn.textContent = "Unmute";
-            unmuteBtn.onclick = async () => {
-                showConfirm(`Unmute ${nameVal}?`, function(result) {
-                    if (result) {
-                        try {
-                            remove(ref(db, `mutedUsers/${uid}`));
-                            showSuccess(`${nameVal} Was Unmuted`);
-                            userDiv.remove();
-                        } catch (err) {
-                            showError("Failed To Unmute: " + err.message);
-                        }
-                    } else {
-                        showSuccess("Canceled");
-                    }
-                })
-            };
-            userDiv.appendChild(header);
-            userDiv.appendChild(desc);
+            unmuteBtn.onclick = () => remove(ref(db, `mutedUsers/${uid}`));
             userDiv.appendChild(unmuteBtn);
-            if (muteSection) muteSection.appendChild(userDiv);
+            muteSection.appendChild(userDiv);
         }
+
     } catch (err) {
-        console.error("Error Fetching Muted Users:", err);
+        console.error(err);
     }
 }
 logMutedUsers();
@@ -224,88 +187,28 @@ let unverifiedUsers = [];
 let unverifiedIndex = 0;
 let typingListenerUnsub = null;
 let usersListenerUnsub = null;
-async function updateTypingUI(typingSnapshot) {
-    if (!typingListDiv || !deleteTypingBtn) return;
-    const typingVal = typingSnapshot && typingSnapshot.exists() ? typingSnapshot.val() : null;
-    if (typingVal) {
-        deleteTypingBtn.style.display = "inline-block";
-    } else {
-        deleteTypingBtn.style.display = "none";
-    }
+function updateTypingUI(snapshot) {
+    if (!typingListDiv) return;
+    const typingVal = snapshot.exists() ? snapshot.val() : null;
     typingListDiv.innerHTML = "";
     if (!typingVal) {
         typingListDiv.textContent = "No Typing Data";
         return;
     }
-    const lines = [];
-    for (const channelName of Object.keys(typingVal)) {
-        const entry = typingVal[channelName];
-        if (!entry) continue;
-        for (const uid of Object.keys(entry)) {
-            if (!uid) continue;
-            const cached = userProfiles[uid]?.displayName;
-            if (cached) {
-                const profile = userProfiles[uid];
-                let picNum = parseInt(profile.pic);
-                if (isNaN(picNum) || picNum <= 0) {
-                    picNum = 0;
-                }
-                if (picNum > profilePics.length) {
-                    picNum = 0;
-                }
-                const colorSnap = await get(ref(db, `users/${uid}/settings/color`));
-                const color = colorSnap.exists() ? colorSnap.val() : "white";
-                const picSrc = profilePics[picNum];
-                lines.push({ uid, displayName: cached, channelName, picSrc, color});
-            } else {
-                try {
-                    const pSnap = await get(ref(db, `users/${uid}/profile`));
-                    const colorSnap = await get(ref(db, `users/${uid}/settings/color`));
-                    const profile = pSnap.exists() ? pSnap.val() : {};
-                    const color = colorSnap.exists() ? colorSnap.val() : "white";
-                    const displayName = profile.displayName || uid;
-                    const picNum = parseInt(profile.pic);
-                    const picSrc = (!isNaN(picNum) && picNum > 0 && picNum <= profilePics.length) ? profilePics[picNum] : (profile.pic || profilePics[0]);
-                    userProfiles[uid] = userProfiles[uid] || {};
-                    userProfiles[uid].displayName = displayName;
-                    userProfiles[uid].pic = profile.pic || "";
-                    lines.push({ uid, displayName, channelName, picSrc, color});
-                } catch (err) {
-                    console.warn("Failed Fetch Profile For Typing Uid:", uid, err);
-                    lines.push({ uid, displayName, channelName, picSrc, color});
-                }
-            }
-        }
-    }
-    if (lines.length === 0) {
-        typingListDiv.textContent = "No Users Typing";
-    } else {
-        lines.forEach(l => {
-            const mdiv = document.createElement("div");
-            mdiv.style.padding = "8px";
-            mdiv.style.background = "#222";
-            mdiv.style.borderRadius = "10px";
-            mdiv.style.marginBottom = "4px";
-            mdiv.style.border = "1px solid #333";
-            const p = document.createElement("span");
-            const typic = document.createElement("img");
-            typic.src = `${l.picSrc}`;
-            typic.style.border = "1px solid white";
-            typic.style.borderRadius = "50%";
-            typic.style.height = "30px";
-            typic.style.width = "30px";
-            p.style.padding = "4px 0";
-            p.style.marginLeft = "10px";
-            p.innerHTML = `
-                <span style="color:${l.color};">
-                    ${l.displayName}
-                </span>
-                Is Typing In #${l.channelName}
+    for (const channel in typingVal) {
+        for (const uid in typingVal[channel]) {
+            const user = userProfiles[uid] || {};
+            const name = user.displayName || uid;
+            const color = user.color || "white";
+            const pic = profilePics[user.pic] || profilePics[0];
+            const div = document.createElement("div");
+            div.innerHTML = `
+                <img src="${pic}" style="height:30px;width:30px;border-radius:50%;">
+                <span style="color:${color}">${name}</span>
+                typing in #${channel}
             `;
-            typingListDiv.appendChild(mdiv);
-            mdiv.appendChild(typic);
-            mdiv.appendChild(p);
-        });
+            typingListDiv.appendChild(div);
+        }
     }
 }
 function listenForTyping() {
@@ -318,33 +221,18 @@ function listenForTyping() {
         console.error("Typing Listener Error:", err);
     });
 }
-async function refreshUnverifiedUsers() {
-    const usersRef = ref(db, "users");
-    try {
-        const snap = await get(usersRef);
-        if (!snap.exists()) {
-            unverifiedUsers = [];
-            unverifiedIndex = 0;
-            renderUnverifiedViewer();
-            return;
-        }
+function listenForUnverifiedUsers() {
+    onValue(ref(db, "users"), snap => {
+        if (!snap.exists()) return;
         const all = snap.val();
-        const list = [];
-        for (const [uid, uData] of Object.entries(all)) {
-            const verified = uData?.profile?.verified === true;
-            if (!verified) {
-                list.push({ uid, data: uData });
+        unverifiedUsers = [];
+        for (const [uid, data] of Object.entries(all)) {
+            if (!data?.profile?.verified) {
+                unverifiedUsers.push({ uid, data });
             }
         }
-        unverifiedUsers = list;
-        if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
         renderUnverifiedViewer();
-    } catch (err) {
-        console.error("Failed To Load Users For Unverified List:", err);
-        unverifiedUsers = [];
-        unverifiedIndex = 0;
-        renderUnverifiedViewer();
-    }
+    });
 }
 function showNextUnverified() {
     if (!unverifiedUsers || unverifiedUsers.length === 0) return;
@@ -594,16 +482,14 @@ onAuthStateChanged(auth, async (user) => {
         listenForTyping();
         return;
     }
+    await preloadUsers();
+    await preloadUserMeta();
+    listenForTyping();
+    listenForUnverifiedUsers();
     await loadUserList();
     await loadPrivateChats();
-    listenForTyping();
-    await refreshUnverifiedUsers();
     const usersRefRealtime = ref(db, "users");
-    onValue(usersRefRealtime, (snap) => {
-        refreshUnverifiedUsers();
-    }, (err) => {
-        console.warn("Realtime Watcher Failed:", err);
-    });
+    get(usersRefRealtime).then(() => listenForUnverifiedUsers());
 });
 function populateSendAsOptions() {
     if (!sendAsSelect) return;
@@ -620,34 +506,38 @@ function populateSendAsOptions() {
         sendAsSelect.appendChild(opt);
     }
 }
+let userMetaCache = {};
+async function preloadUserMeta() {
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return;
+    const data = snap.val();
+    for (const uid in data) {
+        userMetaCache[uid] = {
+            profile: data[uid].profile || {},
+            settings: data[uid].settings || {}
+        };
+    }
+}
 async function loadPrivateChats() {
-    privateChatsDiv.innerHTML = "Loading Messages";
-    const privateRef = ref(db, "private");
-    const snapshot = await get(privateRef);
-    if (!snapshot.exists()) {
-        privateChatsDiv.innerHTML = "No Messages Found.";
+    privateChatsDiv.innerHTML = "Loading...";
+    const snap = await get(ref(db, "private"));
+    if (!snap.exists()) {
+        privateChatsDiv.innerHTML = "No Messages";
         return;
     }
-    const data = snapshot.val();
+    const data = snap.val();
     privateChatsDiv.innerHTML = "";
-    Object.entries(data).forEach(([uid, chatPartners]) => {
-        const userDisplay = userProfiles[uid]?.displayName || uid;
-        const userDiv = document.createElement("div");
-        userDiv.innerHTML = `
-            <strong>
-                ${userDisplay}
-            </strong>
-        `;
-        privateChatsDiv.appendChild(userDiv);
-        Object.keys(chatPartners).forEach(secondUid => {
-            const partnerName = userProfiles[secondUid]?.displayName || secondUid;
+    for (const uid in data) {
+        const name = userProfiles[uid]?.displayName || uid;
+        for (const partner in data[uid]) {
+            const partnerName = userProfiles[partner]?.displayName || partner;
             const div = document.createElement("div");
             div.className = "user-item";
-            div.textContent = `Chat Between ${userDisplay} & ${partnerName}`;
-            div.onclick = () => viewPrivateChat(uid, secondUid, userDisplay, partnerName);
+            div.textContent = `Chat Between ${name} & ${partnerName}`;
+            div.onclick = () => viewPrivateChat(uid, partner);
             privateChatsDiv.appendChild(div);
-        });
-    });
+        }
+    }
 }
 async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
     currentChatPath = `private/${uid}/${secondUid}`;
@@ -657,7 +547,7 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
     chatMessages.innerHTML = "Loading...";
     populateSendAsOptions();
     const chatRef = ref(db, currentChatPath);
-    onValue(chatRef, async snapshot => {
+    onValue(chatRef, (snapshot) => {
         if (!snapshot.exists()) {
             chatMessages.innerHTML = "<p>No Messages Found.</p>";
             return;
@@ -665,61 +555,43 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
         const messages = snapshot.val();
         chatMessages.innerHTML = "";
         const entries = Object.entries(messages).sort((a, b) => {
-            const aTime = a[1]?.timestamp || 0;
-            const bTime = b[1]?.timestamp || 0;
-            return aTime - bTime;
+            return (a[1]?.timestamp || 0) - (b[1]?.timestamp || 0);
         });
         for (const [msgId, msgData] of entries) {
             const senderUid = msgData.sender || uid;
-            if (!userProfiles[senderUid] && senderUid !== "jiEcu7wSifMalQxVupmQXRchA9k1") {
-                const userSnap = await get(ref(db, `users/${senderUid}/profile`));
-                const profile = userSnap.exists() ? userSnap.val() : {};
+            const meta = userMetaCache[senderUid] || {};
+            const profile = meta.profile || {};
+            const settings = meta.settings || {};
+            if (!userProfiles[senderUid]) {
                 userProfiles[senderUid] = {
                     displayName: profile.displayName || "Unknown",
                     pic: profile.pic || ""
                 };
                 populateSendAsOptions();
             }
-            const senderProfile = userProfiles[senderUid] || { displayName: (senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1" ? "Hacker41" : senderUid), pic: "" };
+            const senderProfile = userProfiles[senderUid];
             let picNum = parseInt(senderProfile.pic);
             if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
                 picNum = 0;
             }
-            const senderPic = profilePics[Math.max(0, picNum - 0)];
-            const senderName = (senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1") ? "Hacker41" : (senderProfile.displayName || "Unknown");
-            const color = await get(ref(db, `users/${senderUid}/settings/color`));
-            const nameColor = color.exists() ? color.val() : "white";
-            const [ownerSnap, testerSnap, coOwnerSnap, hAdminSnap, adminSnap, devSnap, pre3Snap, pre2Snap, pre1Snap, donSnap, partnerSnap, susSnap, uploadSnap, guessSnap, hSnap, discordSnap] = await Promise.all([
-                get(ref(db, `users/${senderUid}/profile/isOwner`)),
-                get(ref(db, `users/${senderUid}/profile/isTester`)),
-                get(ref(db, `users/${senderUid}/profile/isCoOwner`)),
-                get(ref(db, `users/${senderUid}/profile/isHAdmin`)),
-                get(ref(db, `users/${senderUid}/profile/isAdmin`)),
-                get(ref(db, `users/${senderUid}/profile/isDev`)),
-                get(ref(db, `users/${senderUid}/profile/premuim3`)),
-                get(ref(db, `users/${senderUid}/profile/premium2`)),
-                get(ref(db, `users/${senderUid}/profile/premium1`)),
-                get(ref(db, `users/${senderUid}/profile/isDonater`)),
-                get(ref(db, `users/${senderUid}/profile/isPartner`)),
-                get(ref(db, `users/${senderUid}/profile/isSus`)),
-                get(ref(db, `users/${senderUid}/profile/isUploader`)),
-                get(ref(db, `users/${senderUid}/profile/isGuesser`)),
-                get(ref(db, `users/${senderUid}/profile/mileStone`)),
-                get(ref(db, `users/${senderUid}/profile/dUsername`))
-            ]);
+            const senderPic = profilePics[picNum];
+            const senderName = (senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1")
+                ? "Hacker41"
+                : (senderProfile.displayName || "Unknown");
+            const nameColor = settings.color || "white";
             let badgeText = null;
-            const senderIsOwner = ownerSnap.exists() ? ownerSnap.val() : false;
-            const senderIsTester = testerSnap.exists() ? testerSnap.val() : false;
-            const senderIsCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
-            const senderIsHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
-            const senderIsAdmin = adminSnap.exists() ? adminSnap.val() : false;
-            const senderIsSus = susSnap.exists() ? susSnap.val() : false;
-            if(senderIsSus) badgeText = "Sus";
-            else if(senderIsOwner) badgeText = "OWNR";
-            else if(senderIsTester) badgeText = "TSTR";
-            else if(senderIsCoOwner) badgeText = "COWNR";
-            else if(senderIsHAdmin) badgeText = "HADMIN";
-            else if(senderIsAdmin) badgeText = "ADMN";
+            const senderIsOwner = profile.isOwner === true;
+            const senderIsTester = profile.isTester === true;
+            const senderIsCoOwner = profile.isCoOwner === true;
+            const senderIsHAdmin = profile.isHAdmin === true;
+            const senderIsAdmin = profile.isAdmin === true;
+            const senderIsSus = profile.isSus === true;
+            if (senderIsSus) badgeText = "Sus";
+            else if (senderIsOwner) badgeText = "OWNR";
+            else if (senderIsTester) badgeText = "TSTR";
+            else if (senderIsCoOwner) badgeText = "COWNR";
+            else if (senderIsHAdmin) badgeText = "HADMIN";
+            else if (senderIsAdmin) badgeText = "ADMN";
             const badgeContainer = document.createElement("span");
             badgeContainer.style.marginLeft = "3px";
             badgeContainer.style.fontWeight = "bold";
@@ -755,270 +627,74 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
                 dontShowOthers = true;
                 badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
                 badgeContainer.style.color = 'red';
-                badgeContainer.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
-            } else if (badgeText === "OWNR" && !dontShowOthers) {
+                badgeContainer.title = 'This User Is Currently Under Investigation';
+            } else if (badgeText === "OWNR") {
                 badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
                 badgeContainer.style.color = "lime";
-                badgeContainer.title = "Owner";
-            } else if (badgeText === "TSTR" && !dontShowOthers) {
+            } else if (badgeText === "TSTR") {
                 badgeContainer.innerHTML = '<i class="fa-solid fa-cogs"></i>';
                 badgeContainer.style.color = "DarkGoldenRod";
-                badgeContainer.title = "Tester";
-            } else if (badgeText === "COWNR" && !dontShowOthers) {
+            } else if (badgeText === "COWNR") {
                 badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
                 badgeContainer.style.color = "lightblue";
-                badgeContainer.title = "Co-Owner";
-            } else if (badgeText === "HADMIN" && !dontShowOthers) {
+            } else if (badgeText === "HADMIN") {
                 badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
                 badgeContainer.style.color = "#00cc99";
-                badgeContainer.title = "Head Admin";
-            } else if (badgeText === "ADMN" && !dontShowOthers) {
+            } else if (badgeText === "ADMN") {
                 badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
                 badgeContainer.style.color = "dodgerblue";
-                badgeContainer.title = "Admin";
-            } else {
             }
-            if (devSnap.exists() && devSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-code-square";
-                icon.style.color = "green";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is A Developer For Infinitecampus.xyz`;
-                badgeContainer.appendChild(icon);
+            if (profile.isDev) {
+                const i = document.createElement("i");
+                i.className = "bi bi-code-square";
+                i.style.color = "green";
+                badgeContainer.appendChild(i);
             }
-            if (pre3Snap.exists() && pre3Snap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-hearts";
-                icon.style.color = "red";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T3`;
-                badgeContainer.appendChild(icon);
-            }
-            if (pre2Snap.exists() && pre2Snap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-heart-fill";
-                icon.style.color = "orange";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T2`;
-                badgeContainer.appendChild(icon);
-            }
-            if (pre1Snap.exists() && pre1Snap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-heart-half";
-                icon.style.color = "yellow";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T1`;
-                badgeContainer.appendChild(icon);
-            }
-            if (donSnap.exists() && donSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-balloon-heart";
-                icon.style.color = "#00E5FF";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Donated To Infinite Campus`;
-                badgeContainer.appendChild(icon);
-            }
-            if (partnerSnap.exists() && partnerSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "fa fa-handshake";
-                icon.style.color = "cornflowerblue";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is A Partner Of Infinite Campus`;
-                badgeContainer.appendChild(icon);
-            }
-            if (uploadSnap.exists() && uploadSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-film";
-                icon.style.color = "grey";
-                icon.style.marginLeft = "6px";
-                icon.title = "This User Has Uploaded A Movie To Infinite Campus";
-                badgeContainer.appendChild(icon);
-            }
-            if (hSnap.exists() && hSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-award";
-                icon.style.color = "yellow";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is The 100th Signed Up User`;
-                badgeContainer.appendChild(icon);
-            }
-            if (guessSnap.exists() && guessSnap.val() === true) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-stopwatch";
-                icon.style.color = "#ff0000";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has A Lot Of Freetime`;
-                badgeContainer.appendChild(icon);
-            }
-            if (discordSnap.exists() && discordSnap.val().trim() !== "") {
-                const dUsername = discordSnap.val();
-                const icon = document.createElement("i");
-                icon.className = "bi bi-discord";
-                icon.style.color = "#5865F2";
-                icon.style.marginLeft = "6px";
-                icon.title = `Known As @${dUsername} On The Infinite Campus Discord Server`;
-                badgeContainer.appendChild(icon);
+            if (profile.premuim3) badgeContainer.innerHTML += '<i class="bi bi-hearts" style="color:red"></i>';
+            if (profile.premium2) badgeContainer.innerHTML += '<i class="bi bi-heart-fill" style="color:orange"></i>';
+            if (profile.premium1) badgeContainer.innerHTML += '<i class="bi bi-heart-half" style="color:yellow"></i>';
+            if (profile.isDonater) badgeContainer.innerHTML += '<i class="bi bi-balloon-heart" style="color:#00E5FF"></i>';
+            if (profile.isPartner) badgeContainer.innerHTML += '<i class="fa fa-handshake" style="color:cornflowerblue"></i>';
+            if (profile.isUploader) badgeContainer.innerHTML += '<i class="bi bi-film" style="color:grey"></i>';
+            if (profile.mileStone) badgeContainer.innerHTML += '<i class="bi bi-award" style="color:yellow"></i>';
+            if (profile.isGuesser) badgeContainer.innerHTML += '<i class="bi bi-stopwatch" style="color:red"></i>';
+            if (profile.dUsername && profile.dUsername.trim() !== "") {
+                badgeContainer.innerHTML += '<i class="bi bi-discord" style="color:#5865F2"></i>';
             }
             badgeContainer.appendChild(mutedBadge);
             let timestamp = "";
             if (msgData.timestamp) {
-                const d = new Date(msgData.timestamp);
-                const month = (d.getMonth() + 1).toString().padStart(2, "0");
-                const day = d.getDate().toString().padStart(2, "0");
-                const year = d.getFullYear();
-                let hours = d.getHours();
-                const minutes = d.getMinutes().toString().padStart(2, "0");
-                const ampm = hours >= 12 ? "PM" : "AM";
-                hours = hours % 12 || 12;
-                timestamp = `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+                timestamp = new Date(msgData.timestamp).toLocaleString();
             }
-            const isPartner = senderUid === secondUid;
-            const isAdmin = senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1";
             const msgDiv = document.createElement("div");
             msgDiv.className = "msg";
-            msgDiv.style.flexDirection = "row";
-            msgDiv.style.background = isPartner ? "#1e1e1e" : "#2b2b2b";
             const content = document.createElement("div");
-            content.className = "msg-content";
-            content.style.textAlign = "left";
             const header = document.createElement("div");
-        	header.className = "msg-header";
-          	header.innerHTML = `
-                <img style="height:40px;width:40px;border-radius:50%;border:1px solid white;" src="${senderPic}" alt="${senderName}'s Pic">
-                <span style="font-size:1.5em; margin-left:10px; color:${nameColor}">
+            header.innerHTML = `
+                <img src="${senderPic}" style="height:40px;width:40px;border-radius:50%">
+                <span style="margin-left:10px;color:${nameColor};font-size:1.5em;">
                     ${senderName}
                 </span>
             `;
-            const msgTimeSpan = document.createElement("div");
-            msgTimeSpan.style.width = "100%";
-            msgTimeSpan.style.display = "flex";
-            msgTimeSpan.style.paddingRight = "20px";
-            msgTimeSpan.innerHTML = `
-                <span id="msgTimestamp" style="width:100%; text-align:right;align-self:center;">
-                    ${timestamp}
-                </span>
-            `;
-          	header.style.display = "flex";
-          	const text = document.createElement("div");
-          	text.className = "msg-text";
-          	text.style.marginLeft = "50px";
-          	text.style.marginTop = "-10px";
-            let safeText = (msgData.text || "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
-            safeText = safeText.replace(
-                /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
-                (match, cls, style, title) => {
-                    let attrs = `class="${cls}"`;
-                    if (style) attrs += ` style="${style}"`;
-                    if (title) attrs += ` title="${title}"`;
-                    return `<i ${attrs}></i>`;
-                }
-            );
-            safeText = safeText.replace(
-                /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-                (match, color, content) => {
-                    const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
-                    return `<p style="color:${safeColor}">${content}</p>`;
-                }
-            );
-            safeText = safeText.replace(
-                /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-                (match, src, alt, style) => {
-                    const safeSrc = src.replace(/"/g, "");
-                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
-                    let width = null;
-                    let height = null;
-                    let radius = null;
-                    if (style) {
-                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
-                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
-                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
-                        if (w) width = Math.min(parseInt(w[1]), 100);
-                        if (h) height = Math.min(parseInt(h[1]), 100);
-                        if (r) radius = parseInt(r[1]);
-                    }
-                    let finalStyle = "margin-top:6px;cursor:pointer;";
-                    if (width) finalStyle += `width:${width}px;`;
-                    if (height) finalStyle += `height:${height}px;`;
-                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
-                    return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
-                }
-            );
-            safeText = safeText.replace(
-                /&lt;video\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-                (match, src, alt, style) => {
-                    const safeSrc = src.replace(/"/g, "");
-                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
-                    let width = null;
-                    let height = null;
-                    let radius = null;
-                    if (style) {
-                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
-                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
-                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
-                        if (w) width = Math.min(parseInt(w[1]), 100);
-                        if (h) height = Math.min(parseInt(h[1]), 100);
-                        if (r) radius = parseInt(r[1]);
-                    }
-                    let finalStyle = "margin-top:6px;cursor:pointer;";
-                    if (width) finalStyle += `width:${width}px;`;
-                    if (height) finalStyle += `height:${height}px;`;
-                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
-                    return `<video src="${safeSrc}" class="chat-vid" style="${finalStyle}" controls loop>`;
-                }
-            );
-            safeText = safeText.replace(
-                /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-                (match, src, alt, style) => {
-                    const safeSrc = src.replace(/"/g, "");
-                    let finalStyle = "margin-top:6px;cursor:pointer;";
-                    return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
-                }
-            );
-            safeText = safeText.replace(/\n/g, "<br>");
-            text.innerHTML = safeText;
-            text.querySelectorAll(".chat-img").forEach(img => {
-                img.addEventListener("click", () => {
-                    viewerImg.src = img.src;
-                    downloadBtn.href = img.src;
-                    downloadBtn.download = "image";
-                    imgViewer.style.display = "flex";
-                });
-            });
-          	const deleteBtn = document.createElement("button");
-          	deleteBtn.textContent = "Delete";
-          	deleteBtn.className = "deleteBtn";
-          	deleteBtn.style.marginTop = "6px";
-          	deleteBtn.onclick = async () => {
-            	try {
-              		await remove(ref(db, `${currentChatPath}/${msgId}`));
-            	} catch (err) {
-              		showError("Delete Failed: " + err.message);
-            	}
-          	};
+            const timeSpan = document.createElement("span");
+            timeSpan.textContent = timestamp;
+            timeSpan.style.marginLeft = "auto";
             header.appendChild(badgeContainer);
-            header.appendChild(msgTimeSpan);
-          	content.appendChild(header);
-          	content.appendChild(text);
-          	if (msgData.edited) {
-            	const edited = document.createElement("div");
-            	edited.className = "edited-label";
-            	edited.style.marginLeft = "50px";
-            	edited.textContent = "(Edited)";
-            	edited.style.color = "gray";
-            	edited.style.fontSize = "0.7em";
-            	content.appendChild(edited);
-          	}
-          	content.appendChild(deleteBtn);
-          	msgDiv.appendChild(content);
-          	chatMessages.appendChild(msgDiv);
+            header.appendChild(timeSpan);
+            const text = document.createElement("div");
+            text.innerHTML = (msgData.text || "").replace(/\n/g, "<br>");
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = () => remove(ref(db, `${currentChatPath}/${msgId}`));
+            content.appendChild(header);
+            content.appendChild(text);
+            content.appendChild(deleteBtn);
+            msgDiv.appendChild(content);
+            chatMessages.appendChild(msgDiv);
         }
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }, (err) => {
-        console.error("Realtime Listener Error:", err);
-        chatMessages.innerHTML = "<p>Error Loading Messages.</p>";
+        console.error(err);
     });
 }
 deleteChatBtn.onclick = async () => {
@@ -1134,73 +810,40 @@ function editUser(uid, data) {
     userEditDiv.appendChild(delBtn);
 }
 async function deleteEntireUser(uid) {
-    showConfirm(`Delete User "${uid}" And All Their Data?\n This Cannot Be Undone.`, function(result) {
-        if (result) {
-            try {
-    	        const privateRef = ref(db, "private");
-    	        const privateSnap = get(privateRef);
-    	        if (privateSnap.exists()) {
-      		        const allPrivate = privateSnap.val();
-      		        for (const userA in allPrivate) {
-        		        for (const userB in allPrivate[userA]) {
-          			        if (userA === uid || userB === uid) {
-            			        remove(ref(db, `private/${userA}/${userB}`));
-          			        }
-        		        }
-      		        }
-    	        }
-    	        remove(ref(db, `metadata/${uid}/privateChats`));
-    	        const metadataSnap = get(ref(db, "metadata"));
-    	        if (metadataSnap.exists()) {
-      		        const allMeta = metadataSnap.val();
-      		        for (const otherUID in allMeta) {
-        		        if (allMeta[otherUID]?.privateChats?.[uid]) {
-          			        remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
-        		        }
-      		        }
-    	        }
-    	        const privateRef2 = ref(db, "private");
-    	        const privateSnap2 = get(privateRef2);
-    	        if (privateSnap2.exists()) {
-      		        const allPrivate2 = privateSnap2.val();
-      		        for (const userA in allPrivate2) {
-        		        for (const userB in allPrivate2[userA]) {
-          			        const chatPath = `private/${userA}/${userB}`;
-          			        const msgs = allPrivate2[userA][userB];
-          			        for (const msgId in msgs) {
-            			        if (msgs[msgId].sender === uid) {
-              				        remove(ref(db, `${chatPath}/${msgId}`));
-            			        }
-          			        }
-        		        }
-      		        }
-    	        }
-    	        const messagesRef = ref(db, "messages");
-    	        const messagesSnap = get(messagesRef);
-    	        if (messagesSnap.exists()) {
-      		        const allChannels = messagesSnap.val();
-      		        for (const channelName in allChannels) {
-        		        const channelMsgs = allChannels[channelName];
-       			        for (const msgId in channelMsgs) {
-          			        if (channelMsgs[msgId]?.sender === uid) {
-            			        remove(ref(db, `messages/${channelName}/${msgId}`));
-          			        }
-        		        }
-      		        }
-    	        }
-    	        remove(ref(db, `users/${uid}`));
-    	        showSuccess(`User "${uid}" Deleted Successfully`);
-    	        userEditDiv.style.display = "none";
-    	        userListDiv.style.display = "block";
-    	        loadUserList();
-    	        loadPrivateChats();
-  	        } catch (err) {
-    	        showError("User Delete Failed: " + err.message);
-  	        }
-        } else {
-            showSuccess("Canceled");
+    const [privateSnap, metadataSnap, messagesSnap] = await Promise.all([
+        get(ref(db, "private")),
+        get(ref(db, "metadata")),
+        get(ref(db, "messages"))
+    ]);
+    if (privateSnap.exists()) {
+        const allPrivate = privateSnap.val();
+        for (const userA in allPrivate) {
+            for (const userB in allPrivate[userA]) {
+                if (userA === uid || userB === uid) {
+                    await remove(ref(db, `private/${userA}/${userB}`));
+                }
+            }
         }
-    })
+    }
+    if (metadataSnap.exists()) {
+        const allMeta = metadataSnap.val();
+        for (const otherUID in allMeta) {
+            if (allMeta[otherUID]?.privateChats?.[uid]) {
+                await remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
+            }
+        }
+    }
+    if (messagesSnap.exists()) {
+        const allChannels = messagesSnap.val();
+        for (const channel in allChannels) {
+            for (const msgId in allChannels[channel]) {
+                if (allChannels[channel][msgId]?.sender === uid) {
+                    await remove(ref(db, `messages/${channel}/${msgId}`));
+                }
+            }
+        }
+    }
+    await remove(ref(db, `users/${uid}`));
 }
 saveUserBtn.onclick = async () => {
     if (!currentUserEditUID) return;
