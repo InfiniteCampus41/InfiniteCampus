@@ -300,6 +300,10 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 	let existingContent = "";
 	let currentSlug = null;
 	let renderArticle = null;
+	let pfpDomain = "/pfps";
+	if (!(e.includes(window.location.host))) {
+		pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
+	}
 	const ROLE_CONFIG = [
 		{key: "isOwner",innerHTML: `<i class="bi bi-shield-plus" style="color:lime" title="Owner"></i>`},
 		{key: "isTester",innerHTML: `<i class="fa-solid fa-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
@@ -342,12 +346,12 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 	async function loadProfilePics() {
 		const pfpDate = Date.now();
 		try {
-			const res = await fetch(`/pfps/index.json?t=${pfpDate}`);
+			const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
 			const files = await res.json();
-			profilePics = files.map(file => `/pfps/${file}?t=${pfpDate}`);
+			profilePics = files.map(file => `${pfpDomain}/${file}?t=${pfpDate}`);
 		} catch (e) {
 			console.error("Failed To Load Profile Pics:", e);
-			profilePics = [`/pfps/1.jpeg?t=${pfpDate}`];
+			profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
 		}
 	}
 	function slugify(text) {

@@ -53,6 +53,7 @@ let loadingOlderMessages = false;
 let mentionActive = false;
 let metadataListenerRef = null;
 let oldestLoadedTimestamp = null;
+let pfpDomain = "/pfps";
 let replyMsgId = null;
 let replyMsgName = null;
 let replyMsgText = null;
@@ -83,6 +84,9 @@ downloadBtn.style.cursor = "pointer";
 imgViewer.appendChild(viewerImg);
 imgViewer.appendChild(downloadBtn);
 document.body.appendChild(imgViewer);
+if (!(e.includes(window.location.host))) {
+    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
+}
 viewerImg.addEventListener("click", () => {
     zoomed = !zoomed;
     viewerImg.style.transform = zoomed ? "scale(2)" : "scale(1)";
@@ -427,12 +431,12 @@ async function renderMessageInstant(id, msg) {
     async function loadProfilePics() {
         const pfpDate = Date.now();
         try {
-            const res = await fetch(`/pfps/index.json?t=${pfpDate}`);
+            const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
             const files = await res.json();
-            profilePics = files.map(file => `/pfps/${file}`);
+            profilePics = files.map(file => `${pfpDomain}/${file}`);
         } catch (e) {
             console.error("Failed To Load Profile Pics:", e);
-            profilePics = [`/pfps/1.jpeg?t=${pfpDate}`];
+            profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
         }
     }
     await loadProfilePics();
@@ -1924,12 +1928,12 @@ onAuthStateChanged(auth, async user => {
     async function loadProfilePics() {
         const pfpDate = Date.now();
         try {
-            const res = await fetch(`/pfps/index.json?t=${pfpDate}`);
+            const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
             const files = await res.json();
-            profilePics = files.map(file => `/pfps/${file}`);
+            profilePics = files.map(file => `${pfpDomain}/${file}`);
         } catch (e) {
             console.error("Failed To Load Profile Pics:", e);
-            profilePics = [`/pfps/1.jpeg?t=${pfpDate}`];
+            profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
         }
     }
     await loadProfilePics();

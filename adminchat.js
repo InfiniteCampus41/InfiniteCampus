@@ -23,6 +23,10 @@ let userProfiles = {};
 let userSettings = {};
 let activeChatListener = null;
 let profilePics = [];
+let pfpDomain = "/pfps";
+if (!(e.includes(window.location.host))) {
+    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
+}
 const imgViewer = document.createElement("div");
 imgViewer.style.position = "fixed";
 imgViewer.style.top = "0";
@@ -63,13 +67,13 @@ imgViewer.addEventListener("click", (e) => {
 });
 async function loadProfilePics() {
     try {
-        const res = await fetch(`/pfps/index.json?${Date.now()}`);
+        const res = await fetch(`${pfpDomain}/index.json?${Date.now()}`);
         const files = await res.json();
-        profilePics = files.map(f => `/pfps/${f}?t=${Date.now()}`);
+        profilePics = files.map(f => `${pfpDomain}/${f}?t=${Date.now()}`);
         console.log("Loaded Profile Pics:", profilePics);
     } catch (err) {
         console.error("Failed To Load Profile Pics:", err);
-        profilePics = [`/pfps/1.jpeg?t=${Date.now()}`];
+        profilePics = [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
     }
 }
 async function logMutedUsers() {
@@ -99,7 +103,7 @@ async function logMutedUsers() {
             const emailVal = emailSnap.exists() ? emailSnap.val() : "No Email";
             const header = document.createElement('div');
             let picIndex = parseInt(picVal);
-            let picSrc = `/pfps/1.jpeg?t=${Date.now()}`;
+            let picSrc = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
             if (!isNaN(picIndex) && picIndex > 0 && picIndex <= profilePics.length) {
                 picSrc = profilePics[picIndex];
             }
