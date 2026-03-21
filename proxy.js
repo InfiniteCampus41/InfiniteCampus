@@ -18,6 +18,14 @@ const working = document.getElementById("workingPxy");
 const broken = document.getElementById("brokenPxy");
 const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz", "instructure.space", "www.infinitecampus.xyz"];
 let fullscreenBtn = null;
+fullscreenBtn = document.createElement("button");
+fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
+fullscreenBtn.style.position = "fixed";
+fullscreenBtn.style.bottom = "40px";
+fullscreenBtn.style.right = "20px";
+fullscreenBtn.style.zIndex = "9999";
+fullscreenBtn.classList = 'button';
+fullscreenBtn.addEventListener("click", toggleFullscreen);
 let isFullscreen = false;
 let scramjet = null;
 if (typeof $scramjetLoadController !== "undefined") {
