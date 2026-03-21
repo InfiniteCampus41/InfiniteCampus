@@ -114,6 +114,16 @@ function createTab(isNTP = false) {
     });
     let frame = null;
     let frameObj = null;
+    const tabData = {
+        id,
+        tabBtn,
+        frame,
+        frameObj,
+        isNTP,
+        displayUrl: "",
+        isLoading: false
+    };
+    tabs.push(tabData);
     if (!isNTP) {
         frameObj = scramjet.createFrame();
         frame = frameObj.frame;
@@ -124,15 +134,6 @@ function createTab(isNTP = false) {
         attachFrameLoadEvents(tabData);
         startUrlWatcher(tabData);
     }
-    const tabData = {
-        id,
-        tabBtn,
-        frame,
-        frameObj,
-        isNTP,
-        displayUrl: ""
-    };
-    tabs.push(tabData);
     tabBtn.addEventListener("click", (e) => {
         if (e.target.classList.contains("close-tab")) return;
         switchTab(id);
@@ -147,13 +148,16 @@ function createTab(isNTP = false) {
 function attachFrameLoadEvents(tab) {
     if (!tab.frame) return;
     tab.frame.addEventListener("loadstart", () => {
-        showPxyLoader();
+        tab.isLoading = true;
+        if (tab.id === activeTabId) showPxyLoader();
     });
     tab.frame.addEventListener("beforeunload", () => {
-        showPxyLoader();
+        tab.isLoading = true;
+        if (tab.id === activeTabId) showPxyLoader();
     });
     tab.frame.addEventListener("load", () => {
-        hidePxyLoader();
+        tab.isLoading = false;
+        if (tab.id === activeTabId) hidePxyLoader();
     });
 }
 function switchTab(id) {
@@ -185,6 +189,13 @@ function switchTab(id) {
     }
     if (!tab.isNTP) {
         addressBar.value = tab.displayUrl || "";
+        if (tab.isLoading) {
+            showPxyLoader();
+        } else {
+            hidePxyLoader();
+        }
+    } else {
+        hidePxyLoader();
     }
 }
 function decodeScramjetUrl(proxyUrl) {
@@ -327,6 +338,7 @@ async function loadIntoActiveTab(input) {
     addressBar.value = input;
     const url = search(input, searchEngine.value);
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
+    tab.isLoading = true;
     showPxyLoader();
     tab.frame.onload = null;
     tab.frame.onload = () => {
