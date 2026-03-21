@@ -313,6 +313,9 @@ async function loadIntoActiveTab(input) {
     if (!tab) return;
     if (tab.isNTP) {
         tab.isNTP = false;
+        if (fullscreenBtn) {
+            fullscreenBtn.style.display = "block";
+        }
         tab.frameObj = scramjet.createFrame();
         tab.frame = tab.frameObj.frame;
         tab.frame.id = tab.id;
@@ -372,7 +375,9 @@ async function loadIntoActiveTab(input) {
             titleElement.textContent = fallbackTitle;
             tab.tabBtn.title = `${fallbackTitle}`
         }
-        createFullscreenButton();
+        if (!tab.isNTP) {
+            createFullscreenButton();
+        }    
     };
     tab.frameObj.go(url);
 }
