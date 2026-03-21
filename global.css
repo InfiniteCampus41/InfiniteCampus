@@ -2164,7 +2164,7 @@ table {
 .tab-frame {
     transition: opacity 0.25s ease;
     width: 100%;
-    height: calc(100vh - 140px);
+    height: calc(100vh - calc(var(--footerHeight) + var(--headerHeight)) - 75px);
     border: none;
 }
 .tab-frame.active-frame {
