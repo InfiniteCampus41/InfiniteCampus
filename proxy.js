@@ -18,14 +18,6 @@ const working = document.getElementById("workingPxy");
 const broken = document.getElementById("brokenPxy");
 const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz", "instructure.space", "www.infinitecampus.xyz"];
 let fullscreenBtn = null;
-fullscreenBtn = document.createElement("button");
-fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
-fullscreenBtn.style.position = "fixed";
-fullscreenBtn.style.bottom = "40px";
-fullscreenBtn.style.right = "20px";
-fullscreenBtn.style.zIndex = "9999";
-fullscreenBtn.classList = 'button';
-fullscreenBtn.addEventListener("click", toggleFullscreen);
 let isFullscreen = false;
 let scramjet = null;
 if (typeof $scramjetLoadController !== "undefined") {
@@ -196,6 +188,7 @@ function switchTab(id) {
         }    
     }
     if (!tab.isNTP) {
+        createFullscreenButton();
         addressBar.value = tab.displayUrl || "";
         if (tab.isLoading) {
             showPxyLoader();
@@ -209,6 +202,10 @@ function switchTab(id) {
         if (tab.isNTP) {
             fullscreenBtn.style.display = "none";
         } else {
+            createFullscreenButton();
+        }
+    } else {
+        if (!tab.isNTP) {
             createFullscreenButton();
         }
     }
@@ -323,6 +320,8 @@ async function loadIntoActiveTab(input) {
         tab.isNTP = false;
         if (fullscreenBtn) {
             fullscreenBtn.style.display = "block";
+        } else {
+            createFullscreenButton();
         }
         tab.frameObj = scramjet.createFrame();
         tab.frame = tab.frameObj.frame;
