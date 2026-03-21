@@ -1289,7 +1289,7 @@ main {
 .msg:hover #msgBtns {
     display:flex;
 }
-.msg button:not(#mobileMenuBtn):not(#closeMobilePanel):not(.dropdown-toggle):not(.dropdown.test button):not(#weatherContainer div button) {
+.msg button:not(#mobileMenuBtn):not(#closeMobilePanel):not(.dropdown-toggle):not(.dropdown.themed button):not(#weatherContainer div button) {
     padding: 2px 3px;
     border-radius: 6px;
     background: #333;

@@ -23,7 +23,7 @@ if (month === 1 && day === 1) {
     leftFtMsg = `Made With Festive Mischief`;
 }
 const headerHTML = `
-    <header id="site-header" class="rgb-element">
+    <header id="site-header" class="themed">
         <div id="header-left">
             <div id="weatherContainer">
                 <div id="global-text">
@@ -50,7 +50,7 @@ const headerHTML = `
                     <button id="abtToggle" class="dropdown-toggle">
                         About
                     </button>
-                    <div class="dropdown test" id="abtDropdown">
+                    <div class="dropdown themed" id="abtDropdown">
                         <a href='InfiniteAbouts.html'>
                             About Us
                         </a>
@@ -69,7 +69,7 @@ const headerHTML = `
                     <button id="chatToggle" class="dropdown-toggle">
                         Chat
                     </button>
-                    <div class="dropdown test" id="chatDropdown">
+                    <div class="dropdown themed" id="chatDropdown">
                         <a href='InfiniteEmbeds.html?choice=1'>
                             Padlet
                         </a>
@@ -85,14 +85,14 @@ const headerHTML = `
                     <button id="helpToggle" class="dropdown-toggle">
                         Help / Support
                     </button>
-                    <div class="dropdown test" id="helpDropdown">
-                        <a href='InfiniteQuestions.html'>
+                    <div class="dropdown themed" id="helpDropdown">
+                        <a href='InfiniteApps.html?question=true'>
                             FAQ
                         </a>
                         <a href='InfiniteEmbeds.html?choice=5'>
                             Report A Bug
                         </a>
-                        <a href='InfiniteMirrors.html'>
+                        <a href='InfiniteApps.html?mirror=true'>
                             Mirror Links
                         </a>
                     </div>
@@ -107,14 +107,14 @@ const headerHTML = `
                     <button id="updateToggle" class="dropdown-toggle">
                         Updates
                     </button>
-                    <div class="dropdown test" id="updateDropdown">
+                    <div class="dropdown themed" id="updateDropdown">
                         <a href='InfiniteArticles.html'>
                             News
                         </a>
                         <a href="InfiniteUpdaters.html">
                             Updates
                         </a>
-                        <a href="InfiniteFutures.html">
+                        <a href="InfiniteUpdaters.html?future=true">
                             Future Updates
                         </a>
                     </div>
@@ -123,11 +123,11 @@ const headerHTML = `
                     <button id="downloadToggle" class="dropdown-toggle">
                         Downloads
                     </button>
-                    <div class="dropdown test" id="downloadDropdown">
-                        <a href='InfiniteDownloads.html?website=true'>
+                    <div class="dropdown themed" id="downloadDropdown">
+                        <a href='InfiniteApps.html?website=true'>
                             Download This Website
                         </a>
-                        <a href='InfiniteDownloads.html'>
+                        <a href='InfiniteApps.html?games=true'>
                             Download Games
                         </a>
                     </div>
@@ -140,7 +140,7 @@ const headerHTML = `
         <div id="snowContainer">
         </div>
     </header>
-    <div id="mobileSidePanel" class="test rgb-element">
+    <div id="mobileSidePanel" class="themed">
         <a id="lgbtn" href="index.html">
             <img src="/res/logo.svg" id="logo" style="width:fit-content; margin-bottom:-60px; display:block;">
         </a>
@@ -163,13 +163,13 @@ const headerHTML = `
         <a href="InfiniteDiscords.html" class="darkbuttons">
             Live Discord Chat
         </a>
-        <a href="InfiniteQuestions.html" class="darkbuttons">
+        <a href="InfiniteApps.html?question=true" class="darkbuttons">
             FAQ
         </a>
         <a href="InfiniteEmbeds.html?choice=5" class="darkbuttons">
             Report A Bug
         </a>
-        <a href="InfiniteMirrors.html" class="darkbuttons">
+        <a href="InfiniteApps.html?mirror=true" class="darkbuttons">
             Mirror Links
         </a>
         <a href="InfiniteGamers.html" class="darkbuttons">
@@ -184,13 +184,13 @@ const headerHTML = `
         <a href="InfiniteUpdaters.html" class="darkbuttons">
             Updates
         </a>
-        <a href="InfiniteFutures.html" class="darkbuttons">
+        <a href="InfiniteUpdaters.html?future=true" class="darkbuttons">
             Future Updates
         </a>
-        <a href="InfiniteOpeners.html" class="darkbuttons">
+        <a href="InfiniteApps.html?website=true" class="darkbuttons">
             Download This Website
         </a>
-        <a href="InfiniteDownloaders.html" class="darkbuttons">
+        <a href="InfiniteApps.html?games=true" class="darkbuttons">
             Download Games
         </a>
         <a href="InfiniteContacts.html" class="darkbuttons">
@@ -203,7 +203,7 @@ const headerHTML = `
             Terms
         </a>
     </div>
-    <footer id="site-footer" class="rgb-element">
+    <footer id="site-footer" class="themed">
         <span>
             ${leftFtMsg}
         </span>

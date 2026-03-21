@@ -914,7 +914,6 @@ if (notif) {
             await loadUserDis(user.uid);
             profileImages = await loadProfileImages();
             await loadUserProfilePic(user.uid);
-            const profilePicContainer = document.getElementById("profileContainer");
             onValue(ref(db, `users/${user.uid}/profile`), snap => {
                 if (snap.exists()) {
                     const profile = snap.val();
@@ -1017,6 +1016,14 @@ if (notif) {
                 }
             });
             statusEl.textContent = `Logged In As ${user.email}`;
+            const userSettingsRef = ref(db, `users/${user.uid}/settings`);
+            const userSettingsSnap = await get(userSettingsRef);
+            let settings = {};
+            if (userSettingsSnap.exists()) settings = userSettingsSnap.val();
+            let storedEmail = settings.userEmail;
+            if (!storedEmail) {
+                await set(ref(db, `users/${user.uid}/settings/userEmail`), user.email);
+            }
         } else {
             statusEl.textContent = "Not Logged In.";
             setTimeout(() => location.href = "InfiniteLogins.html", 1000);
@@ -1037,11 +1044,12 @@ if (notif) {
             const verifiedDisplay = document.getElementById("verifiedDisplay");
             if (currentUser.emailVerified) {
                 verifyEmailBtn.style.display = "none";
+                verifyEmailBtn.classList.remove('apbtn');
                 if (verifiedDisplay) {
                     userEmailDisplay.style.color = "limegreen";
+                    userEmailDisplay.classList.remove('text-info');
                 }
             } else {
-                userEmailDisplay.style.color = "yellow";
                 verifyEmailBtn.style.display = "inline";
                 verifyEmailBtn.style.border = "1px solid white";
                 verifyEmailBtn.style.borderRadius = "5px";

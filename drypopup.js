@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const popupHTML = `
         <div class="popup2" id="popup">
-            <div class="bar test rgb-element">
+            <div class="bar themed">
                 <div id="clocks">
                     --:--:-- --
                 </div>
@@ -74,7 +74,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 <hr>
                 <div class="section">
                     <br>
-                    <a class="test button darkbuttons rgb-element" href="InfiniteColors.html">
+                    <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
                         Change Site Theme
                     </a>
                     <a class="button" href="InfiniteDonaters.html">
@@ -82,7 +82,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     </a>
                     <br>
                     <br>
-                    <a class="button" href="InfiniteBypassers.html">
+                    <a class="button" href="InfiniteApps.html?blank=true">
                         Open In About:Blank
                     </a>
                     <a class="button" href="InfiniteContacts.html?suggest=true">
@@ -104,13 +104,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     </a>
                 </div>
             </div>
-            <div class="bar test rgb-element">
+            <div class="bar themed">
                 <a id="CTCbtn" class="darkbuttons" href="InfiniteContacts.html">
                     Contact Me
                 </a>
             </div>
         </div>
-        <div class="settings-button test rgb-element" id="trigger">
+        <div class="settings-button themed" id="trigger">
             <img class="settings" src="/res/settings.svg">
         </div>
     `;
