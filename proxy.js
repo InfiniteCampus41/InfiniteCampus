@@ -266,7 +266,6 @@ function closeTab(id) {
 }
 function createFullscreenButton() {
     if (fullscreenBtn) return;
-    if (!tab || tab.isNTP) return;
     fullscreenBtn = document.createElement("button");
     fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
     fullscreenBtn.style.position = "fixed";
