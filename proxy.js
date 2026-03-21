@@ -189,6 +189,7 @@ function switchTab(id) {
                 tab.frame.classList.add("active-frame");
             });
             if (fullscreenBtn) {
+                fullscreenBtn.style.display = "block";
             } else {
                 createFullscreenButton();
             }
@@ -196,10 +197,10 @@ function switchTab(id) {
     }
     if (!tab.isNTP) {
         if (fullscreenBtn) {
+            fullscreenBtn.style.display = "block";
         } else {
             createFullscreenButton();
         }
-        createFullscreenButton();
         addressBar.value = tab.displayUrl || "";
         if (tab.isLoading) {
             showPxyLoader();
