@@ -178,6 +178,9 @@ function switchTab(id) {
     if (tab.isNTP) {
         if (ntp) ntp.style.display = "flex";
         addressBar.value = '';
+        if (fullscreenBtn) {
+            fullscreenBtn.style.display = "none";
+        }
     } else {
         if (ntp) ntp.style.display = "none";
         if (tab.frame) {
@@ -188,6 +191,10 @@ function switchTab(id) {
         }    
     }
     if (!tab.isNTP) {
+        if (fullscreenBtn) {
+        } else {
+            createFullscreenButton();
+        }
         createFullscreenButton();
         addressBar.value = tab.displayUrl || "";
         if (tab.isLoading) {
@@ -197,17 +204,6 @@ function switchTab(id) {
         }
     } else {
         hidePxyLoader();
-    }
-    if (fullscreenBtn) {
-        if (tab.isNTP) {
-            fullscreenBtn.style.display = "none";
-        } else {
-            createFullscreenButton();
-        }
-    } else {
-        if (!tab.isNTP) {
-            createFullscreenButton();
-        }
     }
 }
 function decodeScramjetUrl(proxyUrl) {
@@ -331,6 +327,8 @@ async function loadIntoActiveTab(input) {
         attachFrameLoadEvents(tab);
         document.getElementById("ntp").style.display = "none";
         startUrlWatcher(tab);
+    } else {
+        createFullscreenButton();
     }
     try {
         await registerSW();
