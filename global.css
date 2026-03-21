@@ -166,6 +166,13 @@ blockquote{
 body {
     background-image:url('/res/bg.png');
 }
+#browsers {
+    height:calc(100vh - calc(var(--headerHeight) + var(--footerHeight)));
+    width:100%;
+}
+#browsers:hover {
+    cursor:none;
+}
 #btnLoop:not(.toggled)::after {
     content: "Off";
 }

@@ -144,7 +144,7 @@ if (x3tfypage === '/InfiniteAbouts.html') {
     const downloadGames = document.getElementById("downloadGames");
     const downloadWebsite = document.getElementById("downloadWebsite");
     const questions = document.getElementById("questions");
-    const browsers = document.getElementById("browsers");
+    const browsers = document.getElementById("browsersPage");
     const cUrls = document.getElementById("cUrls");
     const qrPage = document.getElementById("qrPage");
     const statsPage = document.getElementById("statsPage");

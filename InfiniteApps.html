@@ -66,7 +66,7 @@
                     <br>
                     <br>
                     <a class="button apbtn" href="InfiniteApps.html?browse=true">
-                        Browsers
+                        Hyperbeam VM
                     </a>
                     <a class="button apbtn" href="InfiniteApps.html?qr=true">
                         Qr Code Generator
@@ -779,11 +779,13 @@
                     This Button Leads To A Page Where It Tells You How To Unblock Youtube
                     <br>
                     <br>
-                    Browsers
+                    Hyperbeam VM
                     <br>
-                    This Button Leads To A Page Where You Can Open Sme Browsers In A New Tab
+                    This Button Leads To A Page Where You Can Use A Virtual Machine Powered By Hyperbeam
                     <br>
-                    These May Be Blocked, But There Is Nothing I Can Do About It
+                    These VMs Are Very Limited, So If More Than 10 People Are On Them At A Time, Or If
+                    <br>
+                    10,000 Minutes Has Been Used On The VM, It Will Stop Working For A While.
                     <br>
                     <br>
                     QR Code Genterator
@@ -1298,30 +1300,44 @@
                 </p>
                 <br>
             </center>
-            <center id="browsers" style="display:none">
+            <center id="browsersPage" style="display:none">
                 <h1 class="tptxt">
                     Virtual Machine
                 </h1>
                 <hr>
                 <br>
-                <div>
-                    <input id="test" class="button" placeholder="Enter URL Here">
-                    <button id="go" class="button">
-                        Go!
-                    </button>
-                    <span id="current" class="btxt"></span>
+                <div id="browsers">
                 </div>
                 <script type="module">
-                    import Hyperbeam from "https://unpkg.com/@hyperbeam/web@latest/dist/index.js"
-                    const resp = await fetch(`${a}/hypervm`)
-                    const data = await resp.json()
-                    const hb = await Hyperbeam(virtualComputerDiv, data.embed_url)
-                    gotoYouTubeBtn.addEventListener("click", () => {
-                        hb.tabs.update({ url: "https://youtube.com" })
-                    })
-                    hb.tabs.onUpdated.addListener((tabId, changeInfo) => {
-                        if (changeInfo.title) currentSite.innerText = changeInfo.title
-                    })
+                    import { auth, onAuthStateChanged, Hyperbeam } from "./imports.js";
+                    const virtualComputerDiv = document.getElementById("browsers");
+                    let hb;
+                    onAuthStateChanged(auth, async (user) => {
+                        if (!user) {
+                            window.location.href = "/InfiniteLogins.html";
+                            return;
+                        }
+                        const uid = user.uid;
+                        try {
+                            const adminPass = localStorage.getItem("a_pass");
+                            let url;
+                            let options = {};
+                            if (adminPass) {
+                                url = `${a}/hyperadminvm?uid=${uid}`;
+                                options.headers = {
+                                    "x-admin-password": adminPass
+                                };
+                            } else {
+                                url = `${a}/hypervm?uid=${uid}`;
+                            }
+                            const resp = await fetch(url, options);
+                            const data = await resp.json();
+                            hb = await Hyperbeam(virtualComputerDiv, data.embed_url);
+                        } catch (err) {
+                            console.error(err);
+                            virtualComputerDiv.innerText = "Failed to load VM";
+                        }
+                    });
                 </script>
             </center>
             <center id="cUrls" style="display:none"> 
