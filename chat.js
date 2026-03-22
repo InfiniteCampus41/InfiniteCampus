@@ -8,6 +8,7 @@ const chatInput = document.getElementById("chatInput");
 const chatLog = document.getElementById("chatLog");
 const downloadBtn = document.createElement("a");
 const imgViewer = document.createElement("div");
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const mentionHint = document.getElementById("mentionHint");
 const mentionMenu = document.getElementById("mentionMenu");
 const mentionNotif = document.getElementById("mentionNotif");
@@ -61,6 +62,45 @@ let triggerIndex = -1;
 let typingRef = null;
 let typingTimeout = null;
 let zoomed = false;
+if (isMobile) {
+    document.addEventListener('click', (e) => {
+        const el = e.target.closest('i[title], i[data-title]');
+        if (!el) return;
+        const text = el.getAttribute('title') || el.dataset.title;
+        if (!text) return;
+        if (el.hasAttribute('title')) {
+            el.dataset.title = text;
+            el.removeAttribute('title');
+        }
+        document.querySelectorAll('.tooltip').forEach(t => t.remove());
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = text;
+        document.body.appendChild(tooltip);
+        const rect = el.getBoundingClientRect();
+        tooltip.style.left = "0px";
+        tooltip.style.top = "0px";
+        tooltip.classList.add("show");
+        const tooltipRect = tooltip.getBoundingClientRect();
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+        if (left < 8) left = 8;
+        if (left + tooltipRect.width > window.innerWidth - 8) {
+            left = window.innerWidth - tooltipRect.width - 8;
+        }
+        let top;
+        if (rect.top < tooltipRect.height + 20) {
+            top = rect.bottom + 10;
+        } else {
+            top = rect.top - tooltipRect.height - 10;
+        }
+        tooltip.style.left = left + "px";
+        tooltip.style.top = top + "px";
+        setTimeout(() => {
+            tooltip.classList.remove("show");
+            setTimeout(() => tooltip.remove(), 200);
+        }, 2000);
+    });
+}
 imgViewer.style.position = "fixed";
 imgViewer.style.top = "0";
 imgViewer.style.left = "0";
@@ -448,6 +488,7 @@ async function renderMessageInstant(id, msg) {
     topRow.appendChild(leftWrapper);
     topRow.appendChild(timeSpan);
     const textDiv = document.createElement("div");
+    textDiv.className = "msg-text";
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.overflowWrap = "anywhere";
     textDiv.style.marginLeft = "40px";
@@ -752,8 +793,8 @@ async function renderMessageInstant(id, msg) {
                 const arrow = document.createElement("span");
                 arrow.style.width = "30px";
                 arrow.style.marginLeft = "15px";
-                arrow.style.height = "10px";
-                arrow.style.marginTop = "-2px";
+                arrow.style.height = "8px";
+                arrow.style.marginTop = "-3px";
                 arrow.style.borderTop = "1px solid #aaa";
                 arrow.style.borderLeft = "1px solid #aaa";
                 arrow.style.borderTopLeftRadius = "10px";
@@ -933,29 +974,17 @@ async function renderMessageInstant(id, msg) {
             let dontShowOthers = false;
             if (meta.sus) {
                 dontShowOthers = true;
-                badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
-                badgeContainer.style.color = 'red';
-                badgeContainer.title = 'This User Is Currently Under Investigation, Please Do Not Interact With This User';
+                badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation" style="color:red" title="This User Is Currently Under Investigation, Please Do Not Interact With This User"></i>';
             } else if (meta.owner && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
-                badgeContainer.style.color = "lime";
-                badgeContainer.title = "Owner";
+                badgeContainer.innerHTML = '<i class="bi bi-shield-plus" style="color:lime" title="Owner"></i>';
             } else if (meta.tester && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="fa-solid fa-cogs"></i>';
-                badgeContainer.style.color = "DarkGoldenRod";
-                badgeContainer.title = "Tester";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-cogs" style="color:darkGoldenRod" title="Tester"></i>';
             } else if (meta.coOwner && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
-                badgeContainer.style.color = "lightblue";
-                badgeContainer.title = "Co-Owner";
+                badgeContainer.innerHTML = '<i class="bi bi-shield-fill" style="color:lightblue" title="Co-Owner"></i>';
             } else if (meta.hAdmin && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
-                badgeContainer.style.color = "#00cc99";
-                badgeContainer.title = "Head Admin";
+                badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:#00cc99" title="Head Admin"></i>';
             } else if (meta.admin && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
-                badgeContainer.style.color = "dodgerblue";
-                badgeContainer.title = "Admin";
+                badgeContainer.innerHTML = '<i class="bi bi-shield" style="color:dodgerblue" title="Admin"></i>';
             } else {
             }
             if (meta.dev) {
@@ -1078,7 +1107,7 @@ async function renderMessageInstant(id, msg) {
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
-                        textarea.value = msg.text;
+                        textarea.value = textDiv.innerText.replace(/\n/g, "\n");
                         textarea.style.width = "100%";
                         textarea.style.boxSizing = "border-box";
                         textarea.style.resize = "vertical";
@@ -1290,7 +1319,7 @@ async function attachMessageListeners(msgRef) {
         if (msgRef !== currentMsgRef) return;
         const el = document.getElementById("msg-" + snap.key);
         if (el) {
-            const textDiv = el.querySelector("div:nth-child(3)");
+            const textDiv = el.querySelector(".msg-text");
             const editedSpan = el.querySelector(".edited-label");
             const updatedMsg = snap.val();
             let safeText = (updatedMsg.text || "")
