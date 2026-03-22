@@ -800,6 +800,7 @@ async function renderMessageInstant(id, msg) {
                 arrow.style.borderTopLeftRadius = "10px";
                 const reply = document.createElement("span");
                 reply.style.fontSize = "0.8em";
+                reply.style.marginRight = "44px";
                 reply.style.color = "#aaa";
                 reply.style.paddingLeft = "6px";
                 reply.style.marginTop = "-11px";
