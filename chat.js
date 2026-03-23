@@ -1102,6 +1102,17 @@ async function renderMessageInstant(id, msg) {
             badgeContainer.appendChild(mutedBadge);
             leftWrapper.appendChild(badgeContainer);
             const isSelf = msg.sender === currentUser.uid;
+            let canReply = true;
+            if (isSelf) canReply = false;
+            if (canReply) {
+                const replyBtn = document.createElement("button");
+                replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
+                replyBtn.title = "Reply";
+                replyBtn.onclick = () => {
+                    toggleReply(id, displayName, msg.text);
+                }
+                msgBtns.appendChild(replyBtn);
+            }
             if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
                 let canDelete = false;
                 if (isSelf) canDelete = true;
@@ -1113,17 +1124,6 @@ async function renderMessageInstant(id, msg) {
                 if (isSelf) canEdit = true;
                 else if (isOwner || isTester) canEdit = true;
                 else if (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin) canEdit = true;
-                let canReply = true;
-                if (isSelf) canReply = false;
-                if (canReply) {
-                    const replyBtn = document.createElement("button");
-                    replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
-                    replyBtn.title = "Reply";
-                    replyBtn.onclick = () => {
-                        toggleReply(id, displayName, msg.text);
-                    }
-                    msgBtns.appendChild(replyBtn);
-                }
                 if (canEdit) {
                     const editBtn = document.createElement("button");
                     editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
