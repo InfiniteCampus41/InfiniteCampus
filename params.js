@@ -131,7 +131,6 @@ if (x3tfypage === '/InfiniteAbouts.html') {
     const gameParams = x3tfyparams.get("games");
     const websiteParams = x3tfyparams.get("website");
     const questionParams = x3tfyparams.get("question");
-    const browseParams = x3tfyparams.get("browse");
     const chromeParams = x3tfyparams.get("chrome");
     const dataParams = x3tfyparams.get("data");
     const blankParams = x3tfyparams.get("blank");
@@ -144,7 +143,6 @@ if (x3tfypage === '/InfiniteAbouts.html') {
     const downloadGames = document.getElementById("downloadGames");
     const downloadWebsite = document.getElementById("downloadWebsite");
     const questions = document.getElementById("questions");
-    const browsers = document.getElementById("browsersPage");
     const cUrls = document.getElementById("cUrls");
     const qrPage = document.getElementById("qrPage");
     const statsPage = document.getElementById("statsPage");
@@ -996,9 +994,6 @@ if (x3tfypage === '/InfiniteAbouts.html') {
         appsPage.style.display = "none";
     } else if (questionParams) {
         questions.style.display = "block";
-        appsPage.style.display = "none";
-    } else if (browseParams) {
-        browsers.style.display = "block";
         appsPage.style.display = "none";
     } else if (chromeParams) {
         cUrls.style.display = "block";

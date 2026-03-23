@@ -2,6 +2,7 @@ import { io, auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./i
 forceWebSockets();
 const expandEdit = document.getElementById('expandMoviesOrder');
 const editOrderContainer = document.getElementById('editMoviesContainer');
+const progressCache = new Map();
 let isOpen = false;
 expandEdit.addEventListener("click", function () {
     if (isOpen) {
@@ -115,18 +116,47 @@ async function loadApply() {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
+    const applyData = data.apply || {};
+    const applyByMessageId = {};
+    for (const key in applyData) {
+        const info = applyData[key];
+        if (info.messageId) {
+            applyByMessageId[info.messageId] = info;
+        }
+    }
     if (!data.ok) {
         box.innerHTML = "Failed To Load Applicants";
         return;
     }
     box.innerHTML = "";
     for (const f of data.files) {
+        let applyInfo = applyData[f.file] || null;
+        if (!applyInfo) {
+            for (const key in applyData) {
+                const info = applyData[key];
+                if (
+                    f.file.includes(key.replace(/\.\w+$/, "")) ||
+                    (info.status && info.percent !== undefined)
+                ) {
+                    applyInfo = info;
+                    break;
+                }
+            }
+        }
+        if (applyInfo?.messageId) {
+            progressCache.set(applyInfo.messageId, {
+                percent: applyInfo.percent || 0,
+                status: applyInfo.status || "",
+                eta: applyInfo.eta
+            });
+        }       
         if (isCopyFile(f.file)) continue;
         if (f.file.toLowerCase().endsWith(".json")) continue;
         let uploaderName = "Unknown";
-        if (f.uploadedBy) {
+        const uploaderId = applyInfo?.uploader || f.uploadedBy;
+        if (uploaderId) {
             try {
-                const snap = await get(ref(db, `/users/${f.uploadedBy}/profile/displayName`));
+                const snap = await get(ref(db, `/users/${uploaderId}/profile/displayName`));
                 if (snap.exists()) {
                     uploaderName = snap.val();
                 }
@@ -134,15 +164,15 @@ async function loadApply() {
                 console.error("Failed Loading Display Name", e);
             }
         }
-        if (f.status === "copying") {
-            currentStatus = "Copying File";
-            percent = `${f.percent}%`;
-        } else if (f.status === "scaling") {
-            currentStatus = "Scaling To 360p";
-            percent = `${f.percent}%`;
-        } else {
-            currentStatus = "";
-            percent = ``;
+        let progress = 0;
+        let statusText = "";
+        if (applyInfo?.messageId && progressCache.has(applyInfo.messageId)) {
+            const cached = progressCache.get(applyInfo.messageId);
+            progress = cached.percent;
+            statusText = cached.status;
+            if (cached.eta !== undefined) {
+                statusText += ` — ${formatTime(cached.eta)} left`;
+            }
         }
         const div = document.createElement("div");
         div.className = "file-item";
@@ -163,7 +193,7 @@ async function loadApply() {
             </div>
             <br>
             <span class="btxt">
-                ${currentStatus}
+                ${statusText}
             </span>
             <br>
             <button class="button" onclick="watchApply('${f.file}')">
@@ -175,9 +205,10 @@ async function loadApply() {
             <button class="button" onclick="acceptFile('${f.file}')">
                 Accept
             </button>
-            <div class="file-progress" id="progress-wrap-${f.file}" style="display:none;margin-top:8px;text-align:left;">
-                <div class="file-progress-bar" id="progress-bar-${f.file}" style="width:0%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
-                    0%
+            <div class="file-progress" id="progress-wrap-${f.file}" style="display:${applyInfo ? 'block' : 'none'};margin-top:8px;text-align:left;">
+                <div class="file-progress-bar" data-msg="${applyInfo?.messageId || ''}" 
+                    style="width:${progress}%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
+                    ${progress}%
                 </div>
             </div>
             <div id="upByTxt" style="display:none">
@@ -186,11 +217,6 @@ async function loadApply() {
         `;
         box.appendChild(div);
     }
-    data.files.forEach(f => {
-        if (is360File(f.file)) {
-            startProgressPolling(f.file);
-        }
-    });
 }
 setInterval(updateSizesFromListApply, 3000);
 async function updateSizesFromListApply() {
@@ -241,7 +267,6 @@ async function acceptFile(filename) {
     if (!isAuthenticated) return;
     const newName = await customPrompt("Enter Name:", false, filename.replace(".mp4", ""));
     if (!newName) return;
-    startProgressPolling(filename);
     const lg = document.getElementById("logs");
     document.getElementById("before").style.display = "none";
     lg.innerText = "";
@@ -268,6 +293,17 @@ function handleJobProgress(data) {
         bar.innerText = label;
     }
     if (data.text) appendLog(data.text);
+    if (data.messageId && progressCache.has(data.messageId)) {
+        const cached = progressCache.get(data.messageId);
+        cached.percent = data.percent ?? cached.percent;
+        cached.eta = data.remainingSec ?? cached.eta;
+        cached.status = data.status ?? cached.status;
+        const bar = document.querySelector(`[data-msg="${data.messageId}"]`);
+        if (bar) {
+            bar.style.width = cached.percent + "%";
+            bar.innerText = `${Math.floor(cached.percent)}%`;
+        }
+    }
 }
 function handleJobError(data) {
     appendLog("ERROR: " + data.message);
@@ -313,50 +349,6 @@ function is360File(name) {
 }
 function getCopyNameFrom360(name) {
     return name.replace("_360", "_copy");
-}
-function startProgressPolling(filename) {
-    if (progressIntervals.has(filename)) return;
-    const wrap = document.getElementById(`progress-wrap-${filename}`);
-    const bar = document.getElementById(`progress-bar-${filename}`);
-    if (!wrap || !bar) return;
-    const pollFilename = is360File(filename)
-        ? getCopyNameFrom360(filename)
-        : filename;
-    const poll = async () => {
-        try {
-            const res = await adminFetch(
-                BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`
-            );
-            const data = await res.json();
-            if (!data.ok || !data.list) return;
-            const fileObj = data.list.find(f => f.file === pollFilename);
-            if (!fileObj || fileObj.status === "idle") {
-                wrap.style.display = "none";
-                stopProgressPolling(filename);
-                return;
-            }
-            wrap.style.display = "block";
-            const percent = parseInt(fileObj.percent || 0);
-            bar.style.width = percent + "%";
-            let label = `${percent}%`;
-            bar.innerText = label;
-            if (fileObj.status === "completed" || fileObj.status === "error") {
-                stopProgressPolling(filename);
-            }
-        } catch (e) {
-            console.error("Progress Poll Failed", e);
-        }
-    };
-    poll();
-    const id = setInterval(poll, 2000);
-    progressIntervals.set(filename, id);
-}
-function stopProgressPolling(filename) {
-    const id = progressIntervals.get(filename);
-    if (id) {
-        clearInterval(id);
-        progressIntervals.delete(filename);
-    }
 }
 function formatTime(seconds) {
     seconds = Math.max(0, Math.floor(seconds));
@@ -537,6 +529,7 @@ async function saveMoviesOrder() {
     await verifyAdminPassword();
     loadApply();
 })();
+setInterval(loadApply, 5000);
 window.acceptFile = acceptFile;
 window.loadApply = loadApply;
 window.deleteApply = deleteApply;

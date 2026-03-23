@@ -65,7 +65,7 @@
                     </a>
                     <br>
                     <br>
-                    <a class="button apbtn" href="InfiniteApps.html?browse=true">
+                    <a class="button apbtn" href="InfiniteBrowsers.html">
                         Hyperbeam VM
                     </a>
                     <a class="button apbtn" href="InfiniteApps.html?qr=true">
@@ -1299,46 +1299,6 @@
                     </span>
                 </p>
                 <br>
-            </center>
-            <center id="browsersPage" style="display:none">
-                <h1 class="tptxt">
-                    Virtual Machine
-                </h1>
-                <hr>
-                <br>
-                <div id="browsers">
-                </div>
-                <script type="module">
-                    import { auth, onAuthStateChanged, Hyperbeam } from "./imports.js";
-                    const virtualComputerDiv = document.getElementById("browsers");
-                    let hb;
-                    onAuthStateChanged(auth, async (user) => {
-                        if (!user) {
-                            window.location.href = "/InfiniteLogins.html";
-                            return;
-                        }
-                        const uid = user.uid;
-                        try {
-                            const adminPass = localStorage.getItem("a_pass");
-                            let url;
-                            let options = {};
-                            if (adminPass) {
-                                url = `${a}/hyperadminvm?uid=${uid}`;
-                                options.headers = {
-                                    "x-admin-password": adminPass
-                                };
-                            } else {
-                                url = `${a}/hypervm?uid=${uid}`;
-                            }
-                            const resp = await fetch(url, options);
-                            const data = await resp.json();
-                            hb = await Hyperbeam(virtualComputerDiv, data.embed_url);
-                        } catch (err) {
-                            console.error(err);
-                            virtualComputerDiv.innerText = "Failed to load VM";
-                        }
-                    });
-                </script>
             </center>
             <center id="cUrls" style="display:none"> 
                 <h1 class="tptxt">
