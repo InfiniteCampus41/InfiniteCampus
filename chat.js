@@ -62,7 +62,7 @@ let triggerIndex = -1;
 let typingRef = null;
 let typingTimeout = null;
 let zoomed = false;
-const TOOLTIP_SELECTOR = '#msgBadges i[title], #msgBadges i[data-title]';
+const TOOLTIP_SELECTOR = 'i[title], i[data-title]';
 function showTooltip(el) {
     const text = el.getAttribute('title') || el.dataset.title;
     if (!text) return;
@@ -110,10 +110,8 @@ if (isMobile) {
     document.addEventListener('mouseover', (e) => {
         const el = e.target.closest(TOOLTIP_SELECTOR);
         if (!el) return;
-
         const tooltip = showTooltip(el);
         if (!tooltip) return;
-
         el._tooltip = tooltip;
     });
     document.addEventListener('mouseout', (e) => {
@@ -1526,10 +1524,10 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
         li.appendChild(left);
         const closeBtn = document.createElement("button");
         closeBtn.className = "closeBtn";
-        closeBtn.textContent = "X";
+        closeBtn.innerHTML = `<i class="bi bi-x-circle" title="Close PM"></i>`;
         closeBtn.onclick = async (e) => {
             e.stopPropagation();
-            showConfirm("Close This Private Chat? Messages Will Still Be Saved", function(result) {
+            showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
                 if (result) {
                     remove(ref(db, `metadata/${currentUser.uid}/privateChats/${otherUid}`));
                     showSuccess("Chat Closed");
@@ -1694,7 +1692,10 @@ async function renderChannelsFromDB() {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
-            settingsBtn.innerHTML = "<i class='bi bi-gear'></i>";
+            settingsBtn.innerHTML = `<i class='bi bi-gear' title='Open Settings For #${ch}'></i>`;
+            settingsBtn.style.background = "none";
+            settingsBtn.style.border = "none";
+            settingsBtn.style.padding = "0px";
             settingsBtn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1709,7 +1710,6 @@ async function renderChannelsFromDB() {
     });
     if (isOwner || isCoOwner || isTester) {
         addChannelBtn.style.display = "inline-block";
-        addChannelBtn.style.width= "100%";
     } else {
         addChannelBtn.style.display = "none";
     }
@@ -1936,9 +1936,8 @@ onAuthStateChanged(auth, async user => {
     isSus = susSnap.exists() ? susSnap.val() : false;
     isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
     isLinker = linkSnap.exists() ? linkSnap.val() : false;
-    adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "block" : "none";
+    adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "flex" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
-    addChannelBtn.style.width = (isCoOwner || isOwner || isTester) ? "100%" : "";
     await ensureDisplayName(user);
     await loadMentionSetting(user);
     await loadAllUsernames(); 

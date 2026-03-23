@@ -82,6 +82,17 @@
             ::-webkit-scrollbar-button { 
                 display: none; 
             }
+            #channels li span {
+                display:none;
+            }
+            #channels li:hover span {
+                display:block;
+            }
+            .closeBtn {
+                border:none !important;
+                background:none !important;
+                padding: 0px !important;
+            }
         </style>
     </head>
     <body>
@@ -119,17 +130,18 @@
                             </div>
                         </div>
                     </div>
+                    <div id="adminControls" style="display:none;height:0px;justify-content:flex-end;">
+                        <button id="addChannelBtn" style="color:white;background:none;border:none;height:fit-content;">
+                            <i class="bi bi-plus-lg" title="Add Channel">
+                            </i>
+                        </button>
+                    </div>
                     <h4 class="text-center mt-3">
                         Channels
                     </h4>
                     <hr>
                     <ul id="channels" class="p-0">
                     </ul>
-                    <div id="adminControls" style="display:none;">
-                        <button id="addChannelBtn" class="btn btn-primary btn-sm mt-2">
-                            Add Channel
-                        </button>
-                    </div>
                     <h4 class="text-center mt-4">
                         Private
                     </h4>
