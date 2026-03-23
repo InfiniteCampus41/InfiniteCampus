@@ -9,6 +9,9 @@ if (month === 1 && day === 1) {
 } else if (month === 2 && day === 14) {
     rightFtMsg = `Spreading Love (And Mild Annoyance) Since 2024`;
     leftFtMsg = `Made With Slightly Extra Love Today`;
+} else if (month === 4 && day === 1) {
+    rightFtMsg = `April Fools!`;
+    leftFtMsg = `This Website Will Shut Down For Good In A Month`;
 } else if (month === 7 && day === 4) {
     rightFtMsg = `Independently Annoying Since 2024`;
     leftFtMsg = `Red, White, And Playing Games At School`;

@@ -152,10 +152,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const before = document.getElementById("before");
     const games = [
         { name: "Slope", method: ["1","2"], url: `${def}slope/index.html`},
-        { name: "Slope 2", method: ["2"], url: `https://mathadventure1.github.io/slope/slope/index.html`},
-        { name: "Nettleweb", method: ["2"], url: `https://net.infinitecampus.xyz`},
-        { name: "NettleWeb 2", method: ["2"], url: `https://nettleweb.com`},
-        { name: "NettleWeb 3", method: ["2"], url: `https://sigmasigmatoiletedge.github.io` },
+        { name: "Slope (2)", method: ["2"], url: `https://mathadventure1.github.io/slope/slope/index.html`},
+        { name: "NettleWeb ", method: ["2"], url: `https://nettleweb.com`},
+        { name: "NettleWeb (2)", method: ["2"], url: `https://sigmasigmatoiletedge.github.io` },
         { name: "Ngon", method: ["1", "2"], url: `https://landgreen.github.io/n-gon/` },
         { name: "Eaglercraft (1.12.2)", method: ["1","2"], url: `${def}eg1/index.html` },
         { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: `https://sd592g.github.io/zj684od4lfg/` },

@@ -1994,6 +1994,7 @@ onAuthStateChanged(auth, async user => {
     }
     await loadProfilePics();
     const sidebarPfp = document.getElementById("sidebarPfp");
+    sidebarPfp.style.border = `2px solid ${DNC}`;
     if (sidebarPfp) {
         const safeIndex =
             pfpIndex >= 0 && pfpIndex < profilePics.length
