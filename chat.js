@@ -1684,7 +1684,8 @@ async function renderChannelsFromDB() {
     const keys = Object.keys(chans).sort();
     keys.forEach(ch => {
         const chData = chans[ch];
-        if (!hasPermission(chData, "read")) return;        const li = document.createElement("li");
+        if (!hasPermission(chData, "read")) return;        
+        const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
         li.onclick = () => { currentPrivateUid = null; switchChannel(ch); };
@@ -2088,6 +2089,7 @@ function renderRoleCheckboxes(type) {
         "mileStone",
         "isGuesser",
         "isUploader",
+        "isLink",
         "verified"
     ];
     const roleNames = {
@@ -2106,6 +2108,7 @@ function renderRoleCheckboxes(type) {
         mileStone: "Award Badge",
         isGuesser: "Guesser",
         isUploader: "Uploader",
+        isLink: "Link Sharer",
         verified: "Verified Users"
     };
     return roles.map(r => `
