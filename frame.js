@@ -495,95 +495,100 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHeaderFooterHeights();
     window.addEventListener("resize", updateHeaderFooterHeights);
 });
-const LOADER_CONFIG = {
-    mode: "auto",
-};
-const loader = document.createElement("div");
-loader.id = "planet-loader";
-loader.innerHTML = `
-    <div class="planet-wrapper">
-        <div class="ring ring1"></div>
-        <div class="ring ring2"></div>
-        <div class="ring ring3"></div>
-        <div class="letter">C</div>
-    </div>
-    <div id="loader-maint-content" style="display:none; flex-direction:column; align-items:center; margin-top:20px;">
-        <div id="loader-maint-message" style="margin-bottom:15px; font-size:18px; text-align:center;"></div>
-        <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check Statuses</a>
-    </div>
-`;
-document.body.prepend(loader);
-const maintContent = loader.querySelector("#loader-maint-content");
-const maintMessage = loader.querySelector("#loader-maint-message");
-const maintBtn = loader.querySelector("#loader-maint-btn");
-let isLoaded = false;
-function showLoader() {
-    loader.style.display = "flex";
-    loader.style.flexDirection = "column";
-    loader.style.opacity = "1";
-    loader.style.color = "white";
-    loader.style.top = "60px";
-}
-function hideLoader() {
-    loader.style.opacity = "0";
-    loader.style.top = "60px";
-    setTimeout(() => {
-        loader.style.display = "none";
-    }, 600);
-}
-function showPxyLoader() {
-    if (!document.getElementById("planet-loader")) {
-        document.bosy.prepend(loader);
+const isChattersPage = window.location.pathname
+    .toLowerCase()
+    .includes("infinitechatters.html");
+if (!isChattersPage) {
+    const LOADER_CONFIG = {
+        mode: "auto",
+    };
+    const loader = document.createElement("div");
+    loader.id = "planet-loader";
+    loader.innerHTML = `
+        <div class="planet-wrapper">
+            <div class="ring ring1"></div>
+            <div class="ring ring2"></div>
+            <div class="ring ring3"></div>
+            <div class="letter">C</div>
+        </div>
+        <div id="loader-maint-content" style="display:none; flex-direction:column; align-items:center; margin-top:20px;">
+            <div id="loader-maint-message" style="margin-bottom:15px; font-size:18px; text-align:center;"></div>
+            <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check Statuses</a>
+        </div>
+    `;
+    document.body.prepend(loader);
+    const maintContent = loader.querySelector("#loader-maint-content");
+    const maintMessage = loader.querySelector("#loader-maint-message");
+    const maintBtn = loader.querySelector("#loader-maint-btn");
+    let isLoaded = false;
+    function showLoader() {
+        loader.style.display = "flex";
+        loader.style.flexDirection = "column";
+        loader.style.opacity = "1";
+        loader.style.color = "white";
+        loader.style.top = "60px";
     }
-    loader.style.display = "flex";
-    loader.style.top = "134.8px";
-    loader.style.opacity = "1";
-}
-function hidePxyLoader() {
-    loader.style.opacity = "0";
-    loader.style.top = '60px';
-    setTimeout(() => {
-        loader.style.display = "none";
-    }, 600);
-}
-let bypassLoader = false;
-function applyLoaderMode(mode, message = "") {
-    LOADER_CONFIG.mode = mode || "auto";
-    if (bypassLoader && (mode === "maint" || mode === "infinite" || mode === "time")) {
-        hideLoader();
-        return;
+    function hideLoader() {
+        loader.style.opacity = "0";
+        loader.style.top = "60px";
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 600);
     }
-    if (mode === "maint") {
-        showLoader();
-        maintContent.style.display = "flex";
-        maintMessage.textContent = message || "Maintenance Mode Enabled";
+    function showPxyLoader() {
+        if (!document.getElementById("planet-loader")) {
+            document.body.prepend(loader);
+        }
+        loader.style.display = "flex";
+        loader.style.top = "134.8px";
+        loader.style.opacity = "1";
     }
-    else if (mode === "infinite") {
-        maintContent.style.display = "none";
-        showLoader();
+    function hidePxyLoader() {
+        loader.style.opacity = "0";
+        loader.style.top = '60px';
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 600);
     }
-    else if (mode === "time") {
-        maintContent.style.display = "none";
-        showLoader();
-        setTimeout(hideLoader, 3000);
-    }
-    else if (mode === "auto") {
-        if (isLoaded) {
+    let bypassLoader = false;
+    function applyLoaderMode(mode, message = "") {
+        LOADER_CONFIG.mode = mode || "auto";
+        if (bypassLoader && (mode === "maint" || mode === "infinite" || mode === "time")) {
             hideLoader();
-        } else {
+            return;
+        }
+        if (mode === "maint") {
+            showLoader();
+            maintContent.style.display = "flex";
+            maintMessage.textContent = message || "Maintenance Mode Enabled";
+        }
+        else if (mode === "infinite") {
             maintContent.style.display = "none";
             showLoader();
         }
+        else if (mode === "time") {
+            maintContent.style.display = "none";
+            showLoader();
+            setTimeout(hideLoader, 3000);
+        }
+        else if (mode === "auto") {
+            if (isLoaded) {
+                hideLoader();
+            } else {
+                maintContent.style.display = "none";
+                showLoader();
+            }
+        }
     }
+    applyLoaderMode("auto");
+    window.addEventListener("load", () => {
+        isLoaded = true;
+        if (LOADER_CONFIG.mode === "auto") {
+            hideLoader();
+        }
+    });
+    window.showLoader = showLoader;
+    window.hideLoader = hideLoader;
+    window.showPxyLoader = showPxyLoader;
+    window.hidePxyLoader = hidePxyLoader;
 }
-applyLoaderMode("auto");
-window.addEventListener("load", () => {
-    isLoaded = true;
-    if (LOADER_CONFIG.mode === "auto") {
-        hideLoader();
-    }
-});
-window.showLoader = showLoader;
-window.hideLoader = hideLoader;
-window.showPxyLoader = showPxyLoader;
-window.hidePxyLoader = hidePxyLoader;
