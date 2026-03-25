@@ -107,6 +107,10 @@ socket.on("jobStarted", data => handleJobStarted(data));
 socket.on("jobDone", data => handleJobDone(data));
 let currentStatus = "";
 let percent = null;
+function find360Version(files) {
+    const matches = files.filter(f => is360File(f.file));
+    return matches.length === 1 ? matches[0] : null;
+}
 async function loadApply() {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
@@ -116,7 +120,23 @@ async function loadApply() {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
-    const applyData = data.apply || {};
+    const applyDataRaw = data.apply || {};
+    const applyData = Array.isArray(applyDataRaw)
+        ? applyDataRaw
+        : Object.entries(applyDataRaw).map(([file, val]) => ({
+            file,
+            ...val
+        }));
+    for (const key in applyData) {
+        const info = applyData[key];
+        if (info.id) {
+            progressCache.set(info.id, {
+                percent: info.percent || 0,
+                status: info.status || "",
+                eta: info.eta
+            });
+        }
+    }
     const applyByMessageId = {};
     for (const key in applyData) {
         const info = applyData[key];
@@ -130,27 +150,26 @@ async function loadApply() {
     }
     box.innerHTML = "";
     for (const f of data.files) {
-        let applyInfo = applyData[f.file] || null;
-        if (!applyInfo) {
-            for (const key in applyData) {
-                const info = applyData[key];
-                if (
-                    f.file.includes(key.replace(/\.\w+$/, "")) ||
-                    (info.status && info.percent !== undefined)
-                ) {
-                    applyInfo = info;
-                    break;
-                }
+        let displaySize = f.humanSize;
+        const file360 = find360Version(data.files);
+        const applyInfo = applyData.find(a => a.file === f.file);
+        if (applyInfo?.status && applyInfo.status.toLowerCase().includes("accept")) {
+            if (file360 && file360.humanSize) {
+                displaySize = file360.humanSize;
             }
         }
-        if (applyInfo?.messageId) {
-            progressCache.set(applyInfo.messageId, {
-                percent: applyInfo.percent || 0,
-                status: applyInfo.status || "",
-                eta: applyInfo.eta
-            });
-        }       
+        let progress = applyInfo?.percent || 0;
+        let statusText = applyInfo?.status || "";
+        if (applyInfo?.id && progressCache.has(applyInfo.id)) {
+            const cached = progressCache.get(applyInfo.id);
+            progress = cached.percent;
+            statusText = cached.status;
+            if (cached.eta !== undefined) {
+                statusText += ` — ${formatTime(cached.eta)} left`;
+            }
+        }
         if (isCopyFile(f.file)) continue;
+        if (is360File(f.file)) continue;
         if (f.file.toLowerCase().endsWith(".json")) continue;
         let uploaderName = "Unknown";
         const uploaderId = applyInfo?.uploader || f.uploadedBy;
@@ -164,10 +183,8 @@ async function loadApply() {
                 console.error("Failed Loading Display Name", e);
             }
         }
-        let progress = 0;
-        let statusText = "";
-        if (applyInfo?.messageId && progressCache.has(applyInfo.messageId)) {
-            const cached = progressCache.get(applyInfo.messageId);
+        if (applyInfo?.id && progressCache.has(applyInfo.id)) {
+            const cached = progressCache.get(applyInfo.id);
             progress = cached.percent;
             statusText = cached.status;
             if (cached.eta !== undefined) {
@@ -184,7 +201,9 @@ async function loadApply() {
                         ${f.file}
                     </b> 
                     — 
-                    ${f.humanSize}
+                    <span id="size-${f.file}">
+                        ${displaySize}
+                    </span>
                 </span>
                 <span id="upByIcon" style="width:0; margin-left:-20px;">
                     <i class="bi bi-question-circle" title="Uploaded By: @${uploaderName}">
@@ -206,7 +225,7 @@ async function loadApply() {
                 Accept
             </button>
             <div class="file-progress" id="progress-wrap-${f.file}" style="display:${applyInfo ? 'block' : 'none'};margin-top:8px;text-align:left;">
-                <div class="file-progress-bar" data-msg="${applyInfo?.messageId || ''}" 
+                <div class="file-progress-bar" data-filename="${f.file}"
                     style="width:${progress}%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
                     ${progress}%
                 </div>
@@ -227,11 +246,15 @@ async function updateSizesFromListApply() {
         const data = await res.json();
         if (!data.ok || !data.files) return;
         for (const f of data.files) {
+            if (is360File(f.file)) continue;
             const span = document.getElementById(`size-${f.file}`);
             if (!span) continue;
-            if (f.humanSize) {
-                span.innerText = f.humanSize;
+            let displaySize = f.humanSize;
+            const file360 = find360Version(data.files);
+            if (file360 && file360.humanSize) {
+                displaySize = file360.humanSize;
             }
+            span.innerText = displaySize;
         }
     } catch (err) {
         console.error("Size Update Error:", err);
@@ -284,6 +307,17 @@ function handleJobProgress(data) {
     if (data.percent !== undefined) {
         const bar = document.getElementById("acceptProgressBar");
         const wrap = document.getElementById("acceptProgress");
+        const parent = bar?.closest(".file-item");
+        if (parent) {
+            const statusEl = parent.querySelector(".btxt");
+            if (statusEl && cached.status) {
+                let txt = cached.status;
+                if (cached.eta !== undefined) {
+                    txt += ` — ${formatTime(cached.eta)} Left`;
+                }
+                statusEl.innerText = txt;
+            }
+        }
         wrap.style.display = "block";
         bar.style.width = data.percent + "%";
         let label = `${Math.floor(data.percent)}%`;
@@ -293,12 +327,15 @@ function handleJobProgress(data) {
         bar.innerText = label;
     }
     if (data.text) appendLog(data.text);
-    if (data.messageId && progressCache.has(data.messageId)) {
-        const cached = progressCache.get(data.messageId);
-        cached.percent = data.percent ?? cached.percent;
+    if (data.id) {
+        if (!progressCache.has(data.id)) {
+            progressCache.set(data.id, {});
+        }
+        const cached = progressCache.get(data.id);
+        cached.percent = data.percent ?? cached.percent ?? 0;
         cached.eta = data.remainingSec ?? cached.eta;
-        cached.status = data.status ?? cached.status;
-        const bar = document.querySelector(`[data-msg="${data.messageId}"]`);
+        cached.status = data.status ?? cached.status ?? "";
+        const bar = document.querySelector(`[data-filename="${data.filename}"]`);
         if (bar) {
             bar.style.width = cached.percent + "%";
             bar.innerText = `${Math.floor(cached.percent)}%`;
@@ -407,7 +444,8 @@ async function loadMoviesOrder() {
             moviesData = Object.entries(rawData)
                 .map(([filename, data]) => ({
                     filename,
-                    order: data.order
+                    order: data.order,
+                    uploadedBy: data.uploadedBy
                 }))
                 .sort((a, b) => a.order - b.order);
         } else {
@@ -502,7 +540,7 @@ async function saveMoviesOrder() {
         moviesData.forEach((movie, index) => {
             formatted[movie.filename] = {
                 order: (index + 1) * 10,
-                uploadedBy: movie.uploadedby || "jiEcu7wSifMalQxVupmQXRchA9k1"
+                uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1"
             };
         });
         const res = await adminFetch(BACKEND + "/api/movies-json", {
