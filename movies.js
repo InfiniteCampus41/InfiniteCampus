@@ -5,6 +5,8 @@ let MOVIE_CACHE = [];
 let finishingTimeout = null;
 let FIREBASE_AVAILABLE = true;
 let MOVIE_LOAD_ID = 0;
+let lastUploadTime = Date.now();
+let finishingWatcher = null;
 const currentfile = document.getElementById("currentFile");
 const section = document.getElementById("section");
 document.getElementById("applyFile").addEventListener("change", () => {
@@ -42,6 +44,14 @@ async function uploadApply() {
         dotCount = (dotCount + 1) % 4;
         uploadingText.innerText = "Uploading" + " .".repeat(dotCount);
     }, 500);
+    finishingWatcher = setInterval(() => {
+        const now = Date.now();
+        if (now - lastUploadTime > 1500) {
+            percentText.innerText = "Finishing Up, This May Take A While";
+            document.getElementById("uploadingText").style.display = "none";
+            clearInterval(finishingWatcher);
+        }
+    }, 300);
     for (let i = 0; i < totalChunks; i++) {
         const start = i * chunkSize;
         const end = Math.min(start + chunkSize, file.size);
@@ -75,6 +85,7 @@ async function uploadApply() {
             body: chunk
         });
         const data = await res.json();
+        lastUploadTime = Date.now();
         if (!data.ok) {
             clearInterval(dotInterval);
             if (finishingTimeout) clearTimeout(finishingTimeout);
@@ -85,19 +96,8 @@ async function uploadApply() {
         }
         let percent = Math.round(((i + 1) / totalChunks) * 100);
         if (percent < 1) percent = 0;
-        if (percent >= 99) {
-            bar.style.width = "99%";
-            percentText.innerText = "Finishing Up, This May Take A While";
-            const uploadText = document.getElementById("uploadingText");
-            uploadText.style.display = "none";
-            let finishingTimeout = setTimeout(() => {
-                percentText.innerText = "Uploaded!";
-                showSuccess('Uploaded File Successfully');
-            }, 120000);
-        } else {
-            bar.style.width = percent + "%";
-            percentText.innerText = percent + "%";
-        }
+        bar.style.width = percent + "%";
+        percentText.innerText = percent + "%";
     }
     clearInterval(dotInterval);
     uploadingText.innerText = "";
@@ -111,6 +111,7 @@ async function uploadApply() {
         percentText.innerText = "";
     }, 1000);
     loadMovies();
+    if (finishingWatcher) clearInterval(finishingWatcher);
 }
 async function loadMovies() {
     const url = BACKEND + "/api/list_videos_x9a7b2";
