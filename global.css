@@ -598,6 +598,14 @@ body {
     width:100vw;
     height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
 }
+#entries div {
+    max-width:75%;
+    background:#111;
+    color:white;
+    border:1px solid white;
+    border-radius: 10px;
+    margin-bottom:10px;
+}
 #exitReply {
     color:white !important;  
     background:none !important;
@@ -627,13 +635,10 @@ body {
     background:#444;
     cursor:pointer;
 }
-#entries div {
-    max-width:75%;
-    background:#111;
-    color:white;
-    border:1px solid white;
-    border-radius: 10px;
-    margin-bottom:10px;
+#extensionSection div {
+    display:flex;
+    justify-content: space-between;
+    padding:0px 10px;
 }
 #fields textarea {
     width:100%;
