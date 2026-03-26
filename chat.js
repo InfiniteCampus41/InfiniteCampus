@@ -2145,6 +2145,11 @@ function renderRoleCheckboxes(type) {
         "isGuesser",
         "isUploader",
         "isLink",
+        "secure",
+        "guardian",
+        "lanschool",
+        "linewize",
+        "blocksi",
         "verified"
     ];
     const roleNames = {
@@ -2164,6 +2169,11 @@ function renderRoleCheckboxes(type) {
         isGuesser: "Guesser",
         isUploader: "Uploader",
         isLink: "Link Sharer",
+        secure: "Securely",
+        guardian: "GoGuardian",
+        lanschool: "Lanschool",
+        linewize: "Linewize",
+        blocksi: "Blocksi",
         verified: "Verified Users"
     };
     return roles.map(r => `
