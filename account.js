@@ -468,6 +468,8 @@ if (notif) {
         if (!currentUser) return;
         try {
             if (selectedFile) {
+                const user = auth.currentUser;
+                const token = await user.getIdToken();
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("uid", currentUser.uid);
@@ -475,6 +477,9 @@ if (notif) {
                 showSuccess("Uploading...");
                 const res = await fetch(`${a}/upload-pfp`, {
                     method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
                     body: formData
                 });
                 const data = await res.json();
@@ -784,13 +789,16 @@ if (notif) {
     async function saveUserDis() {
         if (!currentUser) return;
         const newDis = disInput.value.trim();
+        const user = auth.currentUser;
         if (!newDis) return showError("Discord Username Cannot Be Empty.");
         if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
         try {
+            const token = await user.getIdToken();
             const res = await fetch(`${a}/discordVerify`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     username: newDis,

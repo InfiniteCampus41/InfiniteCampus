@@ -18,11 +18,16 @@ async function donate() {
     const amount = Number(document.getElementById("amount").value);
     if (!amount || amount <= 0) return showError("Invalid Amount");
     const uid = currentUser?.uid;
+    const user = auth.currentUser;
     if (!uid) return showError("You Must Be Logged In To Donate.");
     sessionStorage.setItem("donUID", uid);
+    const token = await user.getIdToken();
     const res = await fetch(`${backend}/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+         },
         body: JSON.stringify({ uid, amount })
     });
     const data = await res.json();
