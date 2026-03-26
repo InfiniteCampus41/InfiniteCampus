@@ -167,7 +167,12 @@ if (notif) {
             { key: "isUploader", icon: "bi bi-film", title: "This User Has Uploaded A Movie To Infinite Campus", color: "grey"},
             { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
             { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
-            { key: "isLink", icon: "bi bi-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"}
+            { key: "isLink", icon: "bi bi-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
+            { key: "secure", icon: "bi ic ic-securely", title: "This User Has Securely At School", color: "dodgerblue"},
+            { key: "guardian", icon: "bi ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
+            { key: "lanschool", icon: "bi ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
+            { key: "linewize", icon: "bi ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
+            { key: "blocksi", icon: "bi ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -842,6 +847,27 @@ if (notif) {
             disInput.value = disInput.value.slice(0, 50);
         }
     });
+    const extCheckboxes = document.querySelectorAll(".extCheck");
+    extCheckboxes.forEach(cb => {
+        cb.addEventListener("change", async () => {
+            if (!currentUser) return;
+            extCheckboxes.forEach(other => {
+                if (other !== cb) other.checked = false;
+            });
+            const updates = {
+                secure: false,
+                guardian: false,
+                lanschool: false,
+                linewize: false,
+                blocksi: false
+            };
+            if (cb.checked) {
+                updates[cb.dataset.key] = true;
+            }
+            await update(ref(db, `users/${currentUser.uid}/profile`), updates);
+            showSuccess("Extension Updated!");
+        });
+    });
     resetPasswordBtnAcc.addEventListener("click", async () => {
         const email = currentUser?.email;
         if (!email) return showError("No Email Found. Please Log In Again.");
@@ -886,6 +912,11 @@ if (notif) {
             panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
         }
     }
+    function loadExtensionCheckbox(profile) {
+        extCheckboxes.forEach(cb => {
+            cb.checked = profile?.[cb.dataset.key] === true;
+        });
+    }
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
@@ -917,6 +948,7 @@ if (notif) {
             onValue(ref(db, `users/${user.uid}/profile`), snap => {
                 if (snap.exists()) {
                     const profile = snap.val();
+                    loadExtensionCheckbox(profile);
                     const badges = document.getElementById('badges');
                     badges.innerHTML = "";
                     function addBadge(name, color, icon) {
@@ -1005,6 +1037,26 @@ if (notif) {
                     }
                     if (profile.isLink) {
                         addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");
+                        hasAnyRole = true;
+                    }
+                    if (profile.secure) {
+                        addBadge("This User Has Securely At School", "dodgerblue", "bi ic ic-securely");
+                        hasAnyRole = true;
+                    }
+                    if (profile.guardian) {
+                        addBadge("This User Has GoGuardian At School", "grey", "bi ic ic-goguardian");
+                        hasAnyRole = true;
+                    }
+                    if (profile.lanschool) {
+                        addBadge("This User Has Lanschool At School", "greenyellow", "bi ic ic-lanschool");
+                        hasAnyRole = true;
+                    }
+                    if (profile.linewize) {
+                        addBadge("This User Has Linewize At School", "lightskyblue", "bi ic ic-linewize");
+                        hasAnyRole = true;
+                    }
+                    if (profile.blocksi) {
+                        addBadge("This User Has Blocksi At School", "cadetblue", "bi ic ic-blocksi");
                         hasAnyRole = true;
                     }
                     if (profile.verified) {

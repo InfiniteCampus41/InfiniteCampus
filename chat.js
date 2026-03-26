@@ -37,9 +37,13 @@ let currentPrivateUid = null;
 let currentUser = null;
 let hasMoreMessages = true;
 let isAdmin = false;
+let isBlocksi = false;
 let isCoOwner = false;
 let isDev = false;
+let isGuardian = false;
 let isHAdmin = false;
+let isLanschool = false;
+let isLinewize = false;
 let isLinker = false;
 let isOwner = false;
 let isPartner = false;
@@ -47,6 +51,7 @@ let isPre1 = false;
 let isPre2 = false;
 let isPre3 = false;
 let isReplyActive = false;
+let isSecure = false;
 let isSus = false;
 let isTester = false;
 let lastMessageTimestamp = 0;
@@ -233,7 +238,7 @@ async function getUserMeta(uid) {
         userMetaCache[uid].muted = muted;
         return userMetaCache[uid];
     }
-    const [ nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap, linkSnap, muteSnap ] = await Promise.all([
+    const [ nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap, linkSnap, muteSnap, secureSnap, guardianSnap, lanSnap, linewizeSnap, blocksiSnap ] = await Promise.all([
         get(ref(db, `users/${uid}/profile/displayName`)),
         get(ref(db, `users/${uid}/settings/color`)),
         get(ref(db, `users/${uid}/profile/pic`)),
@@ -254,7 +259,12 @@ async function getUserMeta(uid) {
         get(ref(db, `users/${uid}/profile/isUploader`)),
         get(ref(db, `users/${uid}/profile/isGuesser`)),
         get(ref(db, `users/${uid}/profile/isLink`)),
-        get(muteRef)
+        get(muteRef),
+        get(ref(db, `users/${uid}/profile/secure`)),
+        get(ref(db, `users/${uid}/profile/guardian`)),
+        get(ref(db, `users/${uid}/profile/lanschool`)),
+        get(ref(db, `users/${uid}/profile/linewize`)),
+        get(ref(db, `users/${uid}/profile/blocksi`))
     ]);
     let muted = false;
     if (muteSnap.exists()) {
@@ -286,7 +296,12 @@ async function getUserMeta(uid) {
         uploader: uploadSnap.exists() && uploadSnap.val(),
         guesser: guessSnap.exists() && guessSnap.val(),
         linker: linkSnap.exists() && linkSnap.val(),
-        muted
+        muted,
+        secure: secureSnap.exists() && secureSnap.val(),
+        guardian: guardianSnap.exists() && guardianSnap.val(),
+        lanschool: lanSnap.exists() && lanSnap.val(),
+        linewize: linewizeSnap.exists() && linewizeSnap.val(),
+        blocksi: blocksiSnap.exists() && blocksiSnap.val()
     };
     userMetaCache[uid] = data;
     return data;
@@ -1097,6 +1112,46 @@ async function renderMessageInstant(id, msg) {
                 icon.style.color = "#4fa3ff";
                 icon.style.marginLeft = "6px";
                 icon.title = `This User Has Sent Lots Of Links In The Links Channel`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.secure) {
+                const icon = document.createElement("i");
+                icon.className = "bi ic ic-securely";
+                icon.style.color = "dodgerblue";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Securely At School`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.guardian) {
+                const icon = document.createElement("i");
+                icon.className = "bi ic ic-goguardian";
+                icon.style.color = "grey";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has GoGuardian At School`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.lanschool) {
+                const icon = document.createElement("i");
+                icon.className = "bi ic ic-lanschool";
+                icon.style.color = "greenyellow";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has lanschool At School`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.linewize) {
+                const icon = document.createElement("i");
+                icon.className = "bi ic ic-linewize";
+                icon.style.color = "lightskyblue";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Linewize At School`;
+                badgeContainer.appendChild(icon);
+            }
+            if (meta.blocksi) {
+                const icon = document.createElement("i");
+                icon.className = "bi ic ic-blocksi";
+                icon.style.color = "cadetblue";
+                icon.style.marginLeft = "6px";
+                icon.title = `This User Has Blocksi At School`;
                 badgeContainer.appendChild(icon);
             }
             badgeContainer.appendChild(mutedBadge);

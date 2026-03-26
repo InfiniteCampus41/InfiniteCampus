@@ -1,0 +1,33 @@
+.ic {
+    display: inline-block;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+.ic::before {
+    content: "\f3c3";
+}
+.ic-blocksi {
+    mask-image: url('/icons/blocksi.png');
+    -webkit-mask-image: url('/icons/blocksi.png');
+}
+.ic-goguardian {
+    mask-image: url('/icons/goguardian.png');
+    -webkit-mask-image: url('/icons/goguardian.png');
+}
+.ic-lanschool {
+    mask-image: url('/icons/lanschool.png');
+    -webkit-mask-image: url('/icons/lanschool.png');
+}
+.ic-linewize {
+    mask-image: url('/icons/linewize.png');
+    -webkit-mask-image: url('/icons/linewize.png');
+}
+.ic-securely {
+    mask-image: url('/icons/securely.png');
+    -webkit-mask-image: url('/icons/securely.png');
+}
