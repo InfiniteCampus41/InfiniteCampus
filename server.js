@@ -39,6 +39,9 @@ function fetchText(url) {
         }).on("error", reject);
     });
 }
+function isValidVersion(v) {
+    return /^\d+\.\d+(\.\d+)?$/.test(v);
+}
 async function runUpdate() {
     for (const url of ZIP_URLS) {
         try {
@@ -71,6 +74,10 @@ async function getRemoteVersion() {
     for (const url of VERSION_URLS) {
         try {
             const v = await fetchText(url);
+            if (!isValidVersion(v)) {
+                console.log(`✖ Invalid Version Format From ${url}: ${v}`);
+                continue;
+            }
             console.log(`✔ Version Fetched From ${url}`);
             return v;
         } catch (e) {
@@ -168,9 +175,9 @@ rl.question(
     const localVersion = getLocalVersion();
     const remoteVersion = await getRemoteVersion();
     if (!remoteVersion) {
-        console.log("⚠ Could Not Check For Updates (All Sources Failed)");
-        return;
-    }
+		console.log("❌ Failed To Check For Updates (Invalid Or Unreachable Sources)");
+		return;
+	}
     if (localVersion !== remoteVersion) {
         console.log("\n⚠ UPDATE AVAILABLE");
         console.log(`Local : ${localVersion}`);
