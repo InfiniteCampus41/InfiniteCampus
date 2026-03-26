@@ -1,15 +1,31 @@
 {
-  	"name": "icserver",
-  	"version": "1.1.0",
-  	"description": "Running Infinite Campus Locally",
-  	"main": "server.js",
-  	"scripts": {
-    	"test": "echo \"Error: no test specified\" && exit 1",
-    	"start": "node server.js"
-  	},
-  	"license": "ISC",
-  	"type": "module",
-  	"dependencies": {
-    	"express": "^5.2.1"
-  	}
+  "name": "icserver",
+  "version": "1.2.0",
+  "description": "Infinite Campus Local Server with Auto-Updater",
+  "main": "server.js",
+  "type": "module",
+  "author": "Hacker41",
+  "license": "ISC",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "update": "node server.js --update",
+    "clean": "rm -rf update.zip update_temp",
+    "reinstall": "rm -rf node_modules package-lock.json && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "adm-zip": "^0.5.10"
+  },
+  "optionalDependencies": {},
+  "keywords": [
+    "express",
+    "server",
+    "local-server",
+    "auto-updater",
+    "infinite-campus"
+  ]
 }
