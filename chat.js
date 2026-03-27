@@ -1292,10 +1292,11 @@ async function renderMessageInstant(id, msg) {
 async function showChannelMentionMenu() {
     if (!mentionMenu) return;
     const snap = await get(ref(db, "channels"));
-    const channels = snap.exists() ? Object.keys(snap.val()).sort() : [];
+    const channels = snap.exists() ? snap.val() : {};
     mentionMenu.innerHTML = "";
     mentionMenu.style.display = "block";
-    channels.forEach(ch => {
+    Object.entries(channels).forEach(([ch, chData]) => {
+        if (!hasPermission(chData, "read")) return;
         if (isRestrictedChannel(ch) &&
             !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre2 || isPre3)
         ) return;
@@ -1307,9 +1308,6 @@ async function showChannelMentionMenu() {
         item.textContent = "#" + ch;
         item.onmouseenter = () => item.style.background = "#333";
         item.onmouseleave = () => item.style.background = "transparent";
-        item.onclick = () => {
-            autocompleteMention(name);
-        };
         item.onclick = () => {
             const start = triggerIndex;
             const end = chatInput.selectionStart;
@@ -1721,9 +1719,11 @@ function hasPermission(channelData, type) {
     if (isOwner || isTester || isCoOwner) return true;
     const perms = channelData[type] || {};
     if (perms.verified && currentUser) return true;
-    if (perms.isAdmin && isAdmin) return true;
-    if (perms.isHAdmin && isHAdmin) return true;
-    if (perms.isDev && isDev) return true;
+    for (const key in perms) {
+        if (perms[key] === true && window[key] === true) {
+            return true;
+        }
+    }
     return false;
 }
 async function renderChannelsFromDB() {
