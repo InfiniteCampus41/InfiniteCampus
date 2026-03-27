@@ -60,6 +60,7 @@ let mentionActive = false;
 let metadataListenerRef = null;
 let oldestLoadedTimestamp = null;
 let pfpDomain = "/pfps";
+let renderingChannels = false;
 let replyMsgId = null;
 let replyMsgName = null;
 let replyMsgText = null;
@@ -222,6 +223,7 @@ async function unmuteUser(uid) {
     delete userMetaCache[uid];
     showSuccess("User Unmuted.");
 }
+window.getUserMeta = getUserMeta;
 async function getUserMeta(uid) {
     const muteRef = ref(db, `mutedUsers/${uid}`);
     if (userMetaCache[uid]) {
@@ -1295,8 +1297,8 @@ async function showChannelMentionMenu() {
     const channels = snap.exists() ? snap.val() : {};
     mentionMenu.innerHTML = "";
     mentionMenu.style.display = "block";
-    Object.entries(channels).forEach(([ch, chData]) => {
-        if (!hasPermission(chData, "read")) return;
+    Object.entries(channels).forEach(async ([ch, chData]) => {
+        if (!(await hasPermission(chData, "read"))) return;
         if (isRestrictedChannel(ch) &&
             !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre2 || isPre3)
         ) return;
@@ -1598,7 +1600,9 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
 }
 function startChannelListeners() {
     const channelsRef = ref(db, "channels");
-    onChildAdded(channelsRef, snap => { renderChannelsFromDB(); });
+    onValue(channelsRef, () => {
+        renderChannelsFromDB();
+    });
     onChildRemoved(channelsRef, snap => {
         if (currentPath && currentPath.startsWith("messages/") && currentPath.endsWith("/" + snap.key) ) {
             switchChannel("General");
@@ -1606,7 +1610,6 @@ function startChannelListeners() {
         }
         renderChannelsFromDB();
     });
-    onChildChanged(channelsRef, snap => { renderChannelsFromDB(); });
 }
 function openChannelSettings(channel, data) {
     const overlay = document.createElement("div");
@@ -1714,19 +1717,45 @@ function openChannelSettings(channel, data) {
         }
     };
 }
-function hasPermission(channelData, type) {
+async function hasPermission(channelData, type) {
     if (!channelData) return true;
-    if (isOwner || isTester || isCoOwner) return true;
+    if (!currentUser) return false;
     const perms = channelData[type] || {};
-    if (perms.verified && currentUser) return true;
-    for (const key in perms) {
-        if (perms[key] === true && window[key] === true) {
+    if (perms.verified) return true;
+    const meta = await getUserMeta(currentUser.uid);
+    const userRoles = {
+        owner: meta.owner,
+        tester: meta.tester,
+        coOwner: meta.coOwner,
+        hAdmin: meta.hAdmin,
+        admin: meta.admin,
+        dev: meta.dev,
+        partner: meta.partner,
+        premium1: meta.premium1,
+        premium2: meta.premium2,
+        premium3: meta.premium3,
+        donor: meta.donor,
+        sus: meta.sus,
+        milestone: meta.milestone,
+        guesser: meta.guesser,
+        uploader: meta.uploader,
+        linker: meta.linker,
+        secure: meta.secure,
+        guardian: meta.guardian,
+        lanschool: meta.lanschool,
+        linewize: meta.linewize,
+        blocksi: meta.blocksi
+    };
+    for (const role in perms) {
+        if (perms[role] === true && userRoles[role]) {
             return true;
         }
     }
     return false;
 }
 async function renderChannelsFromDB() {
+    if (renderingChannels) return;
+    renderingChannels = true;
     channelList.innerHTML = "";
     const snap = await get(ref(db, "channels"));
     const chans = snap.exists() ? snap.val() : {};
@@ -1735,9 +1764,9 @@ async function renderChannelsFromDB() {
         chans.General = true;
     }
     const keys = Object.keys(chans).sort();
-    keys.forEach(ch => {
+    for (const ch of keys) {
         const chData = chans[ch];
-        if (!hasPermission(chData, "read")) return;        
+        if (!(await hasPermission(chData, "read"))) continue;        
         const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
@@ -1762,12 +1791,13 @@ async function renderChannelsFromDB() {
             li.appendChild(btnWrap);
         }
         channelList.appendChild(li);
-    });
+    };
     if (isOwner || isCoOwner || isTester) {
         addChannelBtn.style.display = "inline-block";
     } else {
         addChannelBtn.style.display = "none";
     }
+    renderingChannels = false;
 }
 function switchChannel(ch) {
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
@@ -1825,7 +1855,7 @@ sendBtn.onclick = async () => {
     if (muted) {
         return;
     }
-    if (!isAdmin  && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
+    if (!isAdmin && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
         const now = Date.now();
         if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
             showError("You Can Only Send A Message Every 3 Seconds.");
@@ -1863,7 +1893,7 @@ sendBtn.onclick = async () => {
         const ch = currentPath.split("/")[1];
         const snap = await get(ref(db, `channels/${ch}`));
         const chData = snap.val();
-        if (!hasPermission(chData, "write")) {
+        if (!(await hasPermission(chData, "write"))) {
             showError("You Cannot Send Messages In This Channel.");
             return;
         }
