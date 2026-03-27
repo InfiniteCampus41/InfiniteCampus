@@ -1,6 +1,7 @@
 import { auth, db, onAuthStateChanged, signOut, get, ref } from "./imports.js";
 const backend = `${a}`;
-const stripe = Stripe("pk_live_51T0BHXBYxOIeQqwPGMQ05ZHFdlAJyK4k1drz0H5PxY6zCii6aIjcsbPrFqsu1208HrYGBEpkcZGtFKDQqMgSdH6a00RvADSXaA");
+const perksParams = new URLSearchParams(window.location.search);
+const showPerks = perksParams.get("perks");
 let currentUser = null;
 onAuthStateChanged(auth, user => {
     currentUser = user;
@@ -15,8 +16,6 @@ function logout() {
     sessionStorage.removeItem("donUID");
 }
 async function donate() {
-    const amount = Number(document.getElementById("amount").value);
-    if (!amount || amount <= 0) return showError("Invalid Amount");
     const uid = currentUser?.uid;
     const user = auth.currentUser;
     if (!uid) return showError("You Must Be Logged In To Donate.");
@@ -96,6 +95,10 @@ const perks1 = document.getElementById('perks1');
 const perks2 = document.getElementById('perks2');
 const donatecontainer = document.getElementById('pollContainer');
 const perksContainer = document.getElementById('perksContainer');
+if (showPerks) {
+    perksContainer.style.display = "block";
+    donatecontainer.style.display = "none";
+}
 perks1.addEventListener("click", () => {
     perksContainer.style.display = 'block';
     donatecontainer.style.display = 'none';
