@@ -6,6 +6,7 @@ let currentUser = null;
 let currentUserToken = null;
 let applePayInstance = null;
 let googlePayInstance = null;
+let lastAmount = null;
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
@@ -43,12 +44,16 @@ function createPaymentRequest() {
 let walletUpdateTimeout;
 amountInput.addEventListener("input", () => {
     getAmount();
+    refreshWallets();
     clearTimeout(walletUpdateTimeout);
     walletUpdateTimeout = setTimeout(() => {
         refreshWallets();
     }, 300);
 });
 async function refreshWallets() {
+    const amount = getAmount();
+    if(amount === lastAmount) return;
+    lastAmount = amount
     try {
         const paymentRequest = createPaymentRequest();
         if (applePayInstance) {
@@ -76,9 +81,11 @@ async function refreshWallets() {
             await googlePayInstance.destroy();
         }
         googlePayInstance = await payments.googlePay(paymentRequest);
-        if (googlePayInstance && typeof googlePayInstance.canMakePayment === "function" && await googlePayInstance.canMakePayment()) {
-            const googleBtn = await googlePayInstance.attach("#google-pay-container");
-            googleBtn.onclick = async () => {
+        if (googlePayInstance && typeof googlePayInstance.canMakePayment === "function") {
+            const canPay = true;
+            console.log("Google Pay available:", canPay);
+            await googlePayInstance.attach("#google-pay-container");
+            googlePayInstance.addEventListener("click", async () => {
                 const amount = getAmount();
                 const tokenResult = await googlePayInstance.tokenize();
                 if (tokenResult.status === "OK") {
@@ -86,7 +93,7 @@ async function refreshWallets() {
                 } else {
                     showError("Google Pay Failed");
                 }
-            };
+            });
         }
     } catch (e) {
         console.warn("Google Pay Not Available", e);
