@@ -125,8 +125,8 @@ function updatePaymentUI() {
 paymentMethodSelect.addEventListener("change", updatePaymentUI);
 updatePaymentUI();
 const payments = Square.payments(
-  "sandbox-sq0idb-GrqAAKKEPcGMC6OBhif-DQ",
-  "LGD763WC0NDTT"
+  "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
+  "L96ZX33510ER5"
 );
 
 async function initPayments() {
