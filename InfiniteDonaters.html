@@ -31,8 +31,6 @@
         </script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js">
         </script>
-        <script src="https://js.stripe.com/v3/">
-        </script>
         <script src="drypopup.js">
         </script>
         <script src="main.js">
@@ -40,17 +38,7 @@
     </head>
     <body>
         <main>
-            <center>
-                <h1 class="tptxt">
-                    Donate
-                </h1>
-                <hr>
-                <br>
-                <p class="btxt">
-                    Donation Services Are Not Currently Avaiable
-                </p>
-            </center>
-            <center style="display:none">
+            <center >
                 <div id="perksContainer" style="display:none">
                     <h1 class="tptxt">
                         Perks Of Donating
@@ -145,29 +133,35 @@
                     <br>
                     <p id="msg" style="color:white;">
                     </p>
-                    <div id="authUI">
-                        <p class="btxt">
-                            You Must Log In To Donate
-                        </p>
-                        <br>
-                        <a class="button apbtn" href="InfiniteLogins.html?donate=true">
-                            Login
-                        </a>
-                        <a class="button apbtn" href="InfiniteSignups.html?donate=true">
-                            Sign Up
-                        </a>
-                    </div>
-                    <div id="donateUI" style="display:none">
-                        <input class="button mbInp2" id="amount" type="number" min="1" max="10000" placeholder="Amount (USD)" style="width:50%;">
+                    <div id="donateUI">
+                        <input class="button mbInp2" id="amount-input" type="number" min="1" max="10000" placeholder="Amount (USD)" style="width:50%;">
                         <br>
                         <br>
-                        <button class="button apbtn" onclick="donate()">
+                        <label for="payment-methos" class="btxt">
+                            Payment Method
+                        </label>
+                        <select id="payment-method" class="button">
+                            <option value="card">
+                                Card
+                            </option>
+                            <option value="applePay">
+                                Apple Pay
+                            </option>
+                            <option value="googlePay">
+                                Google Pay
+                            </option>
+                        </select>
+                        <br>
+                        <br>
+                        <div id="card-container">
+                        </div>
+                        <div id="apple-pay-container">
+                        </div>
+                        <div id="google-pay-container">
+                        </div>
+                        <br>
+                        <button id="pay-btn" class="button">
                             Donate
-                        </button>
-                        <br>
-                        <br>
-                        <button class="button apbtn" onclick="logout()">
-                            Logout
                         </button>
                     </div>
                     <br>
@@ -222,6 +216,8 @@
                 </div>
             </center>
         </main>
+        <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js">
+        </script>
         <script type="module" src="donate.js">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
