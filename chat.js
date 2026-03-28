@@ -24,6 +24,8 @@ const sendBtn = document.getElementById("sendBtn");
 const typingIndicator = document.createElement("div");
 const userMetaCache = {};
 const usernameSpan = document.getElementById("username");
+const verifiedMessage = document.createElement("div");
+const verifiedOverlay = document.createElement("div");
 const viewerImg = document.createElement("img");
 let allUsernames = [];
 let autoScrollEnabled = true;
@@ -54,6 +56,7 @@ let isReplyActive = false;
 let isSecure = false;
 let isSus = false;
 let isTester = false;
+let isVerified = false;
 let lastMessageTimestamp = 0;
 let loadingOlderMessages = false;
 let mentionActive = false;
@@ -129,6 +132,21 @@ if (isMobile) {
         el._tooltip = null;
     });
 }
+verifiedOverlay.style.position = "fixed";
+verifiedOverlay.style.top = "0";
+verifiedOverlay.style.left = "0";
+verifiedOverlay.style.width = "100%";
+verifiedOverlay.style.height = "100%";
+verifiedOverlay.style.background = "rgba(0,0,0,0.95)";
+verifiedOverlay.style.display = "none";
+verifiedOverlay.style.alignItems = "center";
+verifiedOverlay.style.justifyContent = "center";
+verifiedMessage.style.borderRadius = "12px";
+verifiedMessage.style.padding = "20px";
+verifiedMessage.style.background = "#222";
+verifiedMessage.style.height = "400px";
+verifiedMessage.style.width = "300px";
+verifiedMessage.innerHTML = `<h2 style=color:white;text-align:center;">You Are Not Verified</h2><hr><p class="btxt" style="text-align:center;">Your Account Needs To Be Verified Before You Can Send Messages To The Chat.<br><br>To Verify, Just Wait And A Staff Member Will Verify Your Account.<br><br>To View More Information On Verifying, Click<a href="InfiniteArticles.html?slug=2">Here</a>`;
 imgViewer.style.position = "fixed";
 imgViewer.style.top = "0";
 imgViewer.style.left = "0";
@@ -2009,6 +2027,7 @@ onAuthStateChanged(auth, async user => {
     const susSnap = await get(ref(db, `users/${user.uid}/profile/isSus`));
     const partnerSnap = await get(ref(db, `users/${user.uid}/profile/isPartner`));
     const linkSnap = await get(ref(db, `users/${user.uid}/profile/isLink`));
+    const verifySnap = await get(ref(db, `users/${user.uid}/profile/verified`));
     currentUser = user;
     const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
     isOwner = ownerSnap.exists() && ownerSnap.val() === true;
@@ -2024,6 +2043,12 @@ onAuthStateChanged(auth, async user => {
     isSus = susSnap.exists() ? susSnap.val() : false;
     isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
     isLinker = linkSnap.exists() ? linkSnap.val() : false;
+    isVerified = verifySnap.exists() ? verifySnap.val() : false;
+    if (!isVerified) {
+        verifiedOverlay.style.display = "flex";
+        document.body.appendChild(verifiedOverlay);
+        verifiedOverlay.appendChild(verifiedMessage);
+    }
     adminControls.style.display = (isAdmin || isOwner || isCoOwner || isHAdmin || isTester) ? "flex" : "none";
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     await ensureDisplayName(user);
