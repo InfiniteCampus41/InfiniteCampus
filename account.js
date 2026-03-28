@@ -468,8 +468,6 @@ if (notif) {
         if (!currentUser) return;
         try {
             if (selectedFile) {
-                const user = auth.currentUser;
-                const token = await user.getIdToken();
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("uid", currentUser.uid);
@@ -477,9 +475,6 @@ if (notif) {
                 showSuccess("Uploading...");
                 const res = await fetch(`${a}/upload-pfp`, {
                     method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    },
                     body: formData
                 });
                 const data = await res.json();
@@ -789,16 +784,13 @@ if (notif) {
     async function saveUserDis() {
         if (!currentUser) return;
         const newDis = disInput.value.trim();
-        const user = auth.currentUser;
         if (!newDis) return showError("Discord Username Cannot Be Empty.");
         if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
         try {
-            const token = await user.getIdToken();
             const res = await fetch(`${a}/discordVerify`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     username: newDis,
@@ -862,16 +854,8 @@ if (notif) {
             extCheckboxes.forEach(other => {
                 if (other !== cb) other.checked = false;
             });
-            const updates = {
-                secure: false,
-                guardian: false,
-                lanschool: false,
-                linewize: false,
-                blocksi: false
-            };
-            if (cb.checked) {
-                updates[cb.dataset.key] = true;
-            }
+            const updates = {};
+            updates[cb.dataset.key] = cb.checked ? true : null;
             await update(ref(db, `users/${currentUser.uid}/profile`), updates);
             showSuccess("Extension Updated!");
         });

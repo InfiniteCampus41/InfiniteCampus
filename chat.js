@@ -1720,9 +1720,12 @@ function openChannelSettings(channel, data) {
 async function hasPermission(channelData, type) {
     if (!channelData) return true;
     if (!currentUser) return false;
+    const meta = await getUserMeta(currentUser.uid);
+    if (meta.owner || meta.tester || meta.coOwner) {
+        return true;
+    }
     const perms = channelData[type] || {};
     if (perms.verified) return true;
-    const meta = await getUserMeta(currentUser.uid);
     const userRoles = {
         isOwner: meta.owner,
         isTester: meta.tester,
