@@ -161,7 +161,6 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                 );
                 if (snap.exists()) {
                     uploaderName = `@${snap.val()}`;
-                    showUploader = true;
                 }
             } catch (err) {
                 console.error("Firebase Connection Failed:", err);
