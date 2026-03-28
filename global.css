@@ -707,7 +707,7 @@ header {
 }
 header, footer {
     width:100%;
-    z-index:2;
+    z-index:5;
 }
 #header-center {
     display: flex;
@@ -1266,6 +1266,21 @@ main {
     background:#8cbe37; 
     border:1px solid #374151; 
     color:white; 
+}
+#movies {
+    display:flex;
+    flex-direction:row;
+    gap:20px;
+    flex-wrap:wrap;
+    padding:30px;
+    justify-content:center;
+}
+.movie-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.movie-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.6);
 }
 .movie-item {
     padding: 10px;

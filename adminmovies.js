@@ -445,7 +445,9 @@ async function loadMoviesOrder() {
                 .map(([filename, data]) => ({
                     filename,
                     order: data.order,
-                    uploadedBy: data.uploadedBy
+                    uploadedBy: data.uploadedBy,
+                    db_id: data.db_id,
+                    cover: data.cover
                 }))
                 .sort((a, b) => a.order - b.order);
         } else {
@@ -540,7 +542,9 @@ async function saveMoviesOrder() {
         moviesData.forEach((movie, index) => {
             formatted[movie.filename] = {
                 order: (index + 1) * 10,
-                uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1"
+                uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1",
+                db_id: movie.db_id,
+                cover: movie.cover
             };
         });
         const res = await adminFetch(BACKEND + "/api/movies-json", {

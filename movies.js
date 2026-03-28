@@ -6,8 +6,10 @@ let finishingTimeout = null;
 let FIREBASE_AVAILABLE = true;
 let MOVIE_LOAD_ID = 0;
 let lastUploadTime = Date.now();
+let currentlyOpenActions = null;
 let finishingWatcher = null;
 const currentfile = document.getElementById("currentFile");
+const movies = document.getElementById("movies");
 const section = document.getElementById("section");
 document.getElementById("applyFile").addEventListener("change", () => {
     const file = document.getElementById("applyFile").files[0];
@@ -138,15 +140,20 @@ async function loadMovies() {
         box.innerHTML = "Could Not Reach Server.";
     }
 }
+function fitTextToWidth(element, maxFont = 16, minFont = 8) {
+    let fontSize = maxFont;
+    element.style.fontSize = fontSize + "px";
+    while (element.scrollWidth > element.clientWidth && fontSize > minFont) {
+        fontSize -= 0.5;
+        element.style.fontSize = fontSize + "px";
+    }
+}
 async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
     const box = document.getElementById("movies");
-    box.innerHTML = "Loading...";
     box.innerHTML = "";
     for (const v of list) {
         if (loadId !== MOVIE_LOAD_ID) return;
-        const dlURL = `${BACKEND}/download/x9a7b2/${v.name}`;
         let uploaderName = "";
-        let showUploader = false;
         if (FIREBASE_AVAILABLE && v.uploadedBy && v.uploadedBy !== "") {
             try {
                 const snap = await get(
@@ -161,61 +168,72 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                 FIREBASE_AVAILABLE = false;
             }
         }
-        const div = document.createElement("div");
-        div.className = "file-item";
-        div.innerHTML = `
-            <div style="display:inline-flex; width:100%;">
-                <span style="width:100%; text-align:center">
-                    <b>
+        const movieDiv = document.createElement("div");
+        movieDiv.className = "movie-card";
+        movieDiv.style.width = "200px";
+        movieDiv.style.height = "300px";
+        movieDiv.style.backgroundSize = "cover";
+        movieDiv.style.backgroundPosition = "center";
+        movieDiv.style.cursor = "pointer";
+        movieDiv.style.position = "relative";
+        movieDiv.style.marginBottom = "20px";
+        movieDiv.style.color = "white";
+        movieDiv.style.borderRadius = "12px";
+        movieDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
+        movieDiv.innerHTML = `
+            <img src="${v.cover || ""}" alt="${v.name} Cover" style="height:300px;width:200px;border-radius:12px;position:absolute;z-index:3;display:flex;" />
+            <div class="movie-actions" style="height:100%;width:100%;opacity:0;pointer-events:none;position:absolute;z-index:4;display:flex;flex-direction:column;transition:opacity 0.3s ease;">
+                <div style="top:0px;position:absolute;width:100%;justify-content:center;align-items:center;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;flex-direction:column;border-top-left-radius:12px;border-top-right-radius:12px;">
+                    <span class="movie-title" style="display:block;width:100%;white-space:nowrap;">
                         ${v.name}
-                    </b> 
-                    — 
-                    ${v.humanSize}
-                </span>
-                ${showUploader ? 
-                    `
-                        <a id="hiddenBtns" href="/InfiniteAccounts.html?user=${v.uploadedBy}">
-                            <span id="upByIcon" style="width:0; margin-left:-20px;">
-                                <i class="bi bi-question-circle" title="Uploaded By: ${uploaderName}" onclick="window.location='/InfiniteAccounts.html?user=${v.uploadedBy}'">
-                                </i>
-                            </span>
-                        </a>
-                    ` : 
-                    `
-                        <span id="upByIcon" style="width:0; margin-left:-20px;">
-                            <i class="bi bi-question-circle" title="Uploaded By: An Anonymous User">
-                            </i>
-                        </span>
-                    `
-                }
-            </div>
-            <br>
-            <br>
-            <button class="button" onclick="openWatchPanel('${v.name}')">
-                Watch
-            </button>
-            <a href="${dlURL}">
-                <button class="button">
-                    Download
-                </button>
-            </a>
-            <br>
-            ${showUploader ? 
-                `
-                    <a id="hiddenBtns" href="/InfiniteAccounts.html?user=${v.uploadedBy}">
-                        <small id="upByTxt" style="display:none;">
-                            Uploaded By: ${uploaderName}
-                        </small>
-                    </a>
-                ` : 
-                `
-                    <small id="upByTxt" style="display:none;">
-                        Uploaded By: An Anoymous User
+                    </span>
+                    <small style=font-size:0.7em;">
+                        ${v.humanSize}
                     </small>
-                `
-            }
+                </div>
+                <div style="bottom:0px;position:absolute;width:100%;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;align-items:center;flex-direction:column;height:60px;border-bottom-left-radius:12px;border-bottom-right-radius:12px;">
+                    <div style=padding:3px;display:flex;justify-content:space-between;width:100%;">
+                        <button class="button watch-btn">
+                            Watch
+                        </button>
+                        <a href="${BACKEND}/download/x9a7b2/${v.name}" target="_blank">
+                            <button class="button download-btn">
+                                Download
+                            </button>
+                        </a>
+                    </div>
+                    <small style="font-size:0.7em;color:#ccc;margin-top:-3px;">
+                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}" style="text-decoration:none;">
+                            Uploaded By: ${uploaderName}
+                        </a>
+                    </small>
+                </div>
+            </div>
         `;
-        box.appendChild(div);
+        movieDiv.addEventListener("click", (e) => {
+            const actions = movieDiv.querySelector(".movie-actions");
+            if (currentlyOpenActions && currentlyOpenActions !== actions) {
+                currentlyOpenActions.style.opacity = "0";
+                currentlyOpenActions.style.pointerEvents = "none";
+            }
+            const isOpen = actions.style.opacity === "1";
+            if (isOpen) {
+                actions.style.opacity = "0";
+                actions.style.pointerEvents = "none";
+                currentlyOpenActions = null;
+            } else {
+                actions.style.opacity = "1";
+                actions.style.pointerEvents = "auto";
+                currentlyOpenActions = actions;
+            }
+        });
+        movieDiv.querySelector(".watch-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openWatchPanel(v.name);
+        });
+        box.appendChild(movieDiv);
+        const titleEl = movieDiv.querySelector(".movie-title");
+        fitTextToWidth(titleEl);
     }
 }
 function filterMovies() {
@@ -231,6 +249,7 @@ function openWatchPanel(name) {
     const before = document.getElementById("before");
     const streamURL = BACKEND + "/movies/x9a7b2/" + name;
     section.style.display = "none";
+    movies.style.display = "none";
     before.style.display = "none";
     currentfile.textContent = `Currently Watching: ${name}`
     currentfile.style.display = "block";
@@ -249,6 +268,7 @@ function closeWatchPanel() {
     currentfile.style.display = "none";
     currentfile.textContent = "";
     section.style.display = "block";
+    movies.style.display = "flex";
 }
 document.addEventListener("keydown", (e) => {
     const video = document.getElementById("watchVideo");
