@@ -1,4 +1,92 @@
-import { auth, db, ref, onValue, push, remove, update, get, forceWebSockets, onAuthStateChanged, increment, set, firestore, doc, getDoc, updateDoc, deleteDoc, setDoc } from "./imports.js";
+import { auth, db, ref, onValue, remove, update, get, onAuthStateChanged, increment, set, firestore, doc, getDoc, updateDoc, deleteDoc, setDoc } from "./imports.js";
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
+async function dbSet(path, value) {
+    return await fetchAPI("write", {
+        path: pathToArray(path),
+        value
+    });
+}
+async function dbUpdate(path, updates) {
+    for (const key in updates) {
+        await dbSet(path + "/" + key, updates[key]);
+    }
+}
+async function dbPush(path, value) {
+    const key = Date.now().toString();
+    await dbSet(path + "/" + key, value);
+    return key;
+}
+function dbListen(path, callback) {
+    return getAuthToken().then(token => {
+        const pathArray = pathToArray(path);
+        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
+        const ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+            if (!event.data) return;
+            if (event.data instanceof Blob) {
+                event.data.text().then(text => {
+                    if (!text || text.trim() === "" || text === "undefined") return;
+                    try {
+                        callback(JSON.parse(text));
+                    } catch (e) {
+                        console.warn("Invalid JSON from Blob:", text, e);
+                    }
+                });
+                return;
+            }
+            const raw = String(event.data).trim();
+            if (!raw || raw === "undefined") return;
+            try {
+                callback(JSON.parse(raw));
+            } catch (e) {
+                console.warn("Invalid JSON:", raw, e);
+            }
+        };
+        ws.onerror = () => {
+            ws.close();
+        };
+        ws.onclose = () => {
+        };
+        return ws;
+    });
+}
 const x3tfypage = window.location.pathname;
 const x3tfyparams = new URLSearchParams(window.location.search);
 if (x3tfypage === '/InfiniteUpdaters.html') {
@@ -21,7 +109,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			if (!noteInput) return;
 			const text = noteInput.value.trim();
 			if (!text) return;
-			push(ref(db, 'notes'), { text });
+			dbPush('notes', { text });
 			noteInput.value = '';
 		}
 		if (saveBtn) saveBtn.addEventListener('click', saveNote);
@@ -38,18 +126,18 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 				applyOwnerPermissions(false);
 				return;
 			}
-			const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
-			const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
-			const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
-			const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
-			const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
-			const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));
-			isOwner = ownerSnap.exists() && ownerSnap.val() === true;
-			isTester = testerSnap.exists() && testerSnap.val() === true;
-			isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
-			isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
-			isAdmin = adminSnap.exists() && adminSnap.val() === true;
-			isDev = devSnap.exists() && devSnap.val() === true;
+			const ownerSnap = await dbGet(`users/${user.uid}/profile/isOwner`);
+			const testerSnap = await dbGet(`users/${user.uid}/profile/isTester`);
+			const coOwnerSnap = await dbGet(`users/${user.uid}/profile/isCoOwner`);
+			const hAdminSnap = await dbGet(`users/${user.uid}/profile/isHAdmin`);
+			const adminSnap = await dbGet(`users/${user.uid}/profile/isAdmin`);
+			const devSnap = await dbGet(`users/${user.uid}/profile/isDev`);
+			isOwner = ownerSnap === true;
+			isTester = testerSnap === true;
+			isCoOwner = coOwnerSnap === true;
+			isHAdmin = hAdminSnap === true;
+			isAdmin = adminSnap === true;
+			isDev = devSnap === true;
 			applyOwnerPermissions(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev);
 		});
 		function applyOwnerPermissions(owner) {
@@ -62,7 +150,15 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 				btn.style.display = owner ? "inline-block" : "none";
 			});
 		}
-		onValue(ref(db, 'notes'), (snapshot) => {
+		dbListen('notes', (data) => {
+			const snapshot = {
+				forEach: (cb) => {
+					if (!data) return;
+					Object.entries(data).forEach(([key, val]) => {
+						cb({ key, val: () => val });
+					});
+				}
+			};
 			if (!notesContainer) return;
 			notesContainer.innerHTML = '';
 			snapshot.forEach((child) => {
@@ -100,7 +196,9 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			if (!key) return;
 			if (!(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev)) return;
 			if (button.classList.contains('delete-btn')) {
-				remove(ref(db, 'notes/' + key));
+				fetchAPI("delete", {
+                    path: pathToArray(`notes/${key}`)
+                });      
 			}
 			if (button.classList.contains('edit-btn')) {
 				const txtDiv = document.querySelector(`.btxt[data-key="${key}"]`);
@@ -130,13 +228,11 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			if (!input) return;
 			const newText = input.value.trim();
 			if (!newText) return;
-			update(ref(db, 'notes/' + key), { text: newText });
+			dbUpdate('notes/' + key, { text: newText });
 			txtDiv.innerText = newText;
 			saveButton.style.display = "none";
 		}
 	}
-    forceWebSockets();
-    const updatesRef = ref(db, "updates");
     let lastSentKey = null;
     let hasLoaded = false;
     let isOwner = false;
@@ -169,7 +265,9 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
             toDelete.forEach(u => {
                 multi["updates/" + u.key] = null;
             });
-            await update(ref(db), multi);
+			for (const path in multi) {
+				await dbSet(path, multi[path]);
+			}
         } finally {
             cleanupRunning = false;
         }
@@ -179,7 +277,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
         const contentEl = document.getElementById("newUpdate");
         const content = contentEl.value.trim();
         if (content) {
-            push(updatesRef, {
+            dbPush('updates', {
                 content,
                 timestamp: Date.now()
             }).then(() => showSuccess("Update Added."));
@@ -188,14 +286,16 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
     }
     function deleteUpdate(key) {
         if (!isOwner && !isTester && !isDev) return;
-        remove(ref(db, "updates/" + key));
+		fetchAPI("delete", {
+            path: pathToArray(`updates/${key}`)
+        });    
         if (lastSentKey === key) lastSentKey = null;
     }
     async function editUpdate(key, currentText) {
         if (!isOwner && !isTester && !isDev) return;
         const newText = await customPrompt("Edit Update:", false, currentText);
         if (newText !== null && newText.trim() !== "") {
-            update(ref(db, "updates/" + key), {
+            dbUpdate("updates/" + key, {
                 content: newText.trim()
             });
         }
@@ -231,7 +331,15 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
             container.appendChild(div);
         });
     }
-    onValue(updatesRef, async (snapshot) => {
+	dbListen('updates', async (data) => {
+		const snapshot = {
+			forEach: (cb) => {
+				if (!data) return;
+				Object.entries(data).forEach(([key, val]) => {
+					cb({ key, val: () => val });
+				});
+			}
+		};
         const updates = [];
         snapshot.forEach(child => {
             updates.push({ key: child.key, ...child.val() });
@@ -254,19 +362,19 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
         isTester = false;
         isDev = false;
         if (user) {
-            const ownerRef = ref(db, `users/${user.uid}/profile/isOwner`);
-            const testerRef = ref(db, `users/${user.uid}/profile/isTester`);
-            const devRef = ref(db, `users/${user.uid}/profile/isDev`);
-            const ownerSnap = await get(ownerRef);
-            const testerSnap = await get(testerRef);
-            const devSnap = await get(devRef);
-            if (ownerSnap.exists() && ownerSnap.val() === true) {
+            const ownerRef = `users/${user.uid}/profile/isOwner`;
+            const testerRef = `users/${user.uid}/profile/isTester`;
+            const devRef = `users/${user.uid}/profile/isDev`;
+            const ownerSnap = await dbGet(ownerRef);
+            const testerSnap = await dbGet(testerRef);
+            const devSnap = await dbGet(devRef);
+            if (ownerSnap !== null && ownerSnap !== undefined && ownerSnap === true) {
                 isOwner = true;
                 if (inputBox) inputBox.style.display = "block";
-            } else if (testerSnap.exists() && testerSnap.val() === true) {
+            } else if (testerSnap !== null && testerSnap !== undefined && testerSnap === true) {
                 isTester = true;
                 if (inputBox) inputBox.style.display = "block";
-            } else if (devSnap.exists() && devSnap.val() === true) {
+            } else if (devSnap !== null && devSnap !== undefined && devSnap === true) {
                 isDev = true;
                 if (inputBox) inputBox.style.display = "block";
             }  else {
@@ -275,8 +383,15 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
         } else {
             if (inputBox) inputBox.style.display = "none";
         }
-        const snapshot = await get(updatesRef);
-        renderUpdates(snapshot);
+        const data = await dbGet("updates");
+		renderUpdates({
+			forEach: (cb) => {
+				if (!data) return;
+				Object.entries(data).forEach(([key, val]) => {
+					cb({ key, val: () => val });
+				});
+			}
+		});
     });
     document.addEventListener("DOMContentLoaded", () => {
         const input = document.getElementById("newUpdate");
@@ -292,7 +407,6 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 } else if (x3tfypage === '/InfiniteArticles.html') {
 	const articlePage = document.getElementById('articles-view');
 	const viewPage = document.getElementById('view-page');
-	let currentUser = null;
 	let userRoles = {};
 	let highestRole = null;
 	let isOwner = false;
@@ -320,8 +434,8 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 		{key: "isPartner",innerHTML: `<i class="fa fa-handshake" style="color:cornflowerblue" title="This User Is A Partner Of Infinite Campus"></i>`}
 	];
 	async function loadUserRoles(uid) {
-		const roleSnap = await get(ref(db, `users/${uid}/profile`));
-		const profile = roleSnap.val() || {};
+		const roleSnap = await dbGet(`users/${uid}/profile`);
+		const profile = roleSnap || {};
 		userRoles = profile;
 		isOwner = profile.isOwner === true;
 		isTester = profile.isTester === true;
@@ -344,7 +458,9 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			await loadUserRoles(user.uid);
 			if (isOwner || isTester || isDev) {
 				addCreateButton();
-				initArticles();
+				if (currentArticleData) {
+					initArticles();
+				}
 			}
 		}
 	});
@@ -428,14 +544,14 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 				showError("All Fields Required.");
 				return;
 			}
-			const articlesSnap = await get(ref(db, "articles"));
-			const articlesData = articlesSnap.val() || {};
+			const articlesSnap = await dbGet("articles");
+			const articlesData = articlesSnap || {};
 			const existingNumbers = Object.keys(articlesData)
 			.map(key => parseInt(key))
 			.filter(num => !isNaN(num));
 			const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
 			const slug = String(nextNumber);
-			await set(ref(db, "articles/" + slug), {
+			await dbSet("articles/" + slug, {
 				title,
 				desc,
 				author: currentUser.uid,
@@ -449,12 +565,13 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 		};
 	}
 	document.addEventListener("DOMContentLoaded", async () => {
+		await authReadyPromise;
 		await loadProfilePics();
 		const container = document.getElementById("articles-container");
 		const searchInput = document.getElementById("search");
 		if (container) {
-			const articlesRef = ref(db, "articles");
-			let allArticles = {};
+			const articlesRef = "articles";
+			let allArticles = await dbGet(articlesRef) || {};
 			let renderTimeout;
 			function renderArticles(filter = "") {
 				clearTimeout(renderTimeout);
@@ -472,11 +589,14 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 						.map(num => String(num));
 						for (const slug of sortedSlugs) {                        
 							const article = allArticles[slug];
+							if (!article || !article.title) {
+								continue;
+							}
 							if (!article.title.toLowerCase().includes(searchTerm)) {
 								continue;
 							}
-							const userSnap = await get(ref(db, "users/" + article.author));
-							const userData = userSnap.val();
+							const userSnap = await dbGet("users/" + article.author);
+							const userData = userSnap;
 							const div = document.createElement("div");
 							div.className = "article";
 							div.style.cursor = "pointer";
@@ -531,10 +651,10 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 								e.stopPropagation();
 								window.location.href = `InfiniteAccounts.html?user=${article.author}`;
 							});
-							onValue(ref(db, "articles/" + slug), snap => {
-								const views = snap.val()?.views || 0;
+							dbListen("articles/" + slug, (data) => {
+    							const views = data?.views || 0;
 								const span = document.getElementById(`views-${slug}`);
-								if (span) span.innerText = views;
+								if (span) span.innerText = `${views} View(s)`;
 							});
 						}
 						container.appendChild(fragment);
@@ -543,8 +663,8 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 					}, 200);
 				}, 200);
 			}
-			onValue(articlesRef, (snapshot) => {
-				allArticles = snapshot.val() || {};
+			dbListen(articlesRef, (data) => {
+				allArticles = data || {};
 				renderArticles(searchInput?.value || "");
 			});
 			if (searchInput) {
@@ -555,21 +675,22 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 		}
 		currentSlug = x3tfyparams.get("slug");
 		if (!currentSlug) return;
-		const articleRef = ref(db, "articles/" + currentSlug);
+		const articleRef = "articles/" + currentSlug;
 		const sessionKey = `viewed-${currentSlug}`;
 		(async () => {
-			const snap = await get(articleRef);
-			currentArticleData = snap.val();
+			currentArticleData = await dbGet("articles/" + currentSlug);
 			articlePage.style.display = 'none';
 			viewPage.style.display = 'block';
-			if (!currentArticleData) return;
+			if (!currentArticleData || !currentArticleData.title) return;
 			if (!sessionStorage.getItem(sessionKey)) {
-				await update(articleRef, { views: increment(1) });
+				const current = await dbGet("articles/" + currentSlug);
+				await dbUpdate("articles/" + currentSlug, {
+					views: (current?.views || 0) + 1
+				});
 				sessionStorage.setItem(sessionKey, "true");
 			}
 			document.getElementById("article-title").innerText = currentArticleData.title;
-			const userSnap = await get(ref(db, "users/" + currentArticleData.author));
-			const userData = userSnap.val();
+			const userData = await dbGet("users/" + currentArticleData.author);
 			document.getElementById("article-author").innerHTML = `
 				${(() => {
 					const profile = userData?.profile || {};
@@ -632,15 +753,16 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 				`;
 			}
 			renderArticle(existingContent);
-			if (currentUser && (isOwner || isTester || isDev)) {
-					initArticles();
+			if (currentUser && (isOwner || isTester || isDev) && currentArticleData) {
+				initArticles();
 			}        
-			onValue(articleRef, snapshot => {
-				document.getElementById("article-views").innerText = `${snapshot.val()?.views || 0} View(s)`;
+			dbListen("articles/" + currentSlug, (data) => {
+				document.getElementById("article-views").innerText = `${data?.views || 0} View(s)`;
 			});
 		})();
 	});
 	function initArticles() {
+		if (!currentArticleData) return;
 		if (currentUser && (isOwner || isTester || isDev)) {
 			let adminHTML = `
 				<hr>
@@ -715,7 +837,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 							showError("All Fields Are Required.");
 							return;
 						}
-						await update(ref(db, "articles/" + currentSlug), {
+						await dbUpdate("articles/" + currentSlug, {
 							title: newTitle,
 							desc: newDescription
 						});
@@ -738,7 +860,9 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			if (isOwner || isTester) {
 				document.getElementById("delete-btn")?.addEventListener("click", async () => {
 					if (!confirm("Delete This Article?")) return;
-					await remove(ref(db, "articles/" + currentSlug));
+					await fetchAPI("delete", {
+						path: pathToArray("articles/" + currentSlug)
+					});
 					await deleteDoc(doc(firestore, "articles", currentSlug));
 					window.location.href = "InfiniteArticles.html";
 				});
@@ -746,7 +870,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			const resetArticleViews = document.getElementById("reset-btn");
 			if (resetArticleViews) {
 				resetArticleViews.addEventListener("click", async () => {
-					await update(ref(db, "articles/" + currentSlug), { views: 0 });
+					await dbUpdate("articles/" + currentSlug, { views: 0 });
 					showSuccess("Views Reset!");
 				});
 			}

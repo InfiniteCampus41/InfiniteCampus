@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, get, ref } from "./imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 const backend = `${a}`;
 const perksParams = new URLSearchParams(window.location.search);
 const showPerks = perksParams.get("perks");

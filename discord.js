@@ -1,4 +1,4 @@
-import { auth, db, onAuthStateChanged, ref, get } from "./imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 const backendUrl = `${a}`;
 const apiMessagesUrl = `${backendUrl}/api/messages`;
 const widgetUrl = 'https://discord.com/api/guilds/1002698920809463808/widget.json';
@@ -16,6 +16,43 @@ let isTester = false;
 let isCoOwner = false;
 let isHeadAdmin = false;
 let isDev = false;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 const requestQueue = [];
 let isProcessingQueue = false;
 const RATE_LIMIT_DELAY = 3000;
@@ -146,11 +183,11 @@ onAuthStateChanged(auth, async (user) => {
     const nameInput = document.getElementById("nameInput");
     if (user) {
         try {
-            const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
-            const snapshot = await get(displayNameRef);
+            const displayNameRef = `users/${user.uid}/profile/displayName`;
+            const snapshot = await dbGet(displayNameRef);
             let finalName = "";
-            if (snapshot.exists()) {
-                finalName = snapshot.val();
+            if (snapshot !== null && snapshot) {
+                finalName = snapshot;
             } else if (user.displayName) {
                 finalName = user.displayName;
             } else {
@@ -164,10 +201,10 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Error Fetching Display Name:", error);
         }
         try {
-            const rolesRef = ref(db, `users/${user.uid}/profile`);
-            const roleSnap = await get(rolesRef);
-            if (roleSnap.exists()) {
-                const data = roleSnap.val();
+            const rolesRef = `users/${user.uid}/profile`;
+            const roleSnap = await dbGet(rolesRef);
+            if (roleSnap !== null && roleSnap !== undefined) {
+                const data = roleSnap;
                 userRoles = data || {};
                 isOwner = data.isOwner === true;
                 isTester = data.isTester === true;

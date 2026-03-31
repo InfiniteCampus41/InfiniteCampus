@@ -1,8 +1,96 @@
-import { auth, db, ref, get, push, set, update, remove, onValue, onAuthStateChanged } from "./imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 let uid = null;
 let displayName = "Anonymous";
 let currentVotes = 0;
 let isStaff = false;
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
+async function dbSet(path, value) {
+    return await fetchAPI("write", {
+        path: pathToArray(path),
+        value
+    });
+}
+async function dbPush(path, value) {
+    const key = Date.now().toString();
+    await dbSet(`${path}/${key}`, value);
+    return key;
+}
+async function dbUpdate(path, updates) {
+    for (const key in updates) {
+        await dbSet(path + "/" + key, updates[key]);
+    }
+}
+function dbListen(path, callback) {
+    return getAuthToken().then(token => {
+        const pathArray = pathToArray(path);
+        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
+        const ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+            if (!event.data) return;
+            if (event.data instanceof Blob) {
+                event.data.text().then(text => {
+                    if (!text || text.trim() === "" || text === "undefined") return;
+                    try {
+                        callback(JSON.parse(text));
+                    } catch (e) {
+                        console.warn("Invalid JSON from Blob:", text, e);
+                    }
+                });
+                return;
+            }
+            const raw = String(event.data).trim();
+            if (!raw || raw === "undefined") return;
+            try {
+                callback(JSON.parse(raw));
+            } catch (e) {
+                console.warn("Invalid JSON:", raw, e);
+            }
+        };
+        ws.onerror = () => {
+            ws.close();
+        };
+        ws.onclose = () => {
+        };
+        return ws;
+    });
+}
 function updateVoteUI() {
     const voteCountEl = document.getElementById('voteCount');
     const remainingEl = document.getElementById('votesRemaining');
@@ -17,7 +105,7 @@ async function incrementVoteCount() {
     if (currentVotes >= 5) return;
     currentVotes++;
     if (currentVotes > 5) currentVotes = 5;
-    await update(ref(db, `users/${uid}/profile`), {
+    await dbUpdate(`users/${uid}/profile`, {
         votes: currentVotes
     });
     updateVoteUI();
@@ -63,28 +151,23 @@ function openVoteForm(card, iconHTML) {
     card.appendChild(wrapper);
     wrapper.querySelector('.small-cancel').onclick = () => wrapper.remove();
     wrapper.querySelector('.small-submit').onclick = async () => {
-        const text = wrapper.querySelector('.vote-text').value.trim();
-        if (!text) {
-            showError('Please Enter What The Icon Should Represent.');
-            return;
-        }
-        const iconNum = card.dataset.iconNum;
-        const dbPath = `poll/${iconNum}`;
-        try {
-            const newRef = push(ref(db, dbPath));
-            await set(newRef, {
-                voteText: text,
-                timeVoted: Date.now(),
-                uid: uid,
-            });
-            await incrementVoteCount();
-            wrapper.innerHTML = `<div>Vote Submitted</div>`;
-            setTimeout(() => wrapper.remove(), 1000);
-        } catch (err) {
-            console.error(err);
-            showError("Error Submitting Vote.");
-        }
-    };
+    const text = wrapper.querySelector('.vote-text').value.trim();
+    if (!text) {
+        showError('Please Enter What The Icon Should Represent.');
+        return;
+    }
+    const iconNum = card.dataset.iconNum;
+    const dbPath = `poll/${iconNum}`;
+    try {
+        const key = await dbPush(dbPath);
+        await incrementVoteCount();
+        wrapper.innerHTML = `<div>Vote Submitted</div>`;
+        setTimeout(() => wrapper.remove(), 1000);
+    } catch (err) {
+        console.error(err);
+        showError("Error Submitting Vote.");
+    }
+};
 }
 function showPollResults() {
     if (iconsGrid) iconsGrid.style.display = 'none';
@@ -95,9 +178,7 @@ function showPollResults() {
     resultsDiv.style.display = 'block';
     before.style.display = 'none';
     document.body.appendChild(resultsDiv);
-    const pollRef = ref(db, 'poll');
-    onValue(pollRef, async (snapshot) => {
-        const data = snapshot.val();
+    dbListen("poll", async (data) => {
         if (!data) {
             resultsDiv.innerHTML = `<h1 class="tptxt">Poll Results</h1><hr><br><div class="mdtxt">No Votes Yet.</div>`;
             return;
@@ -138,10 +219,9 @@ function showPollResults() {
                 voteDiv.style.borderBottom = '1px solid #333';
                 let voteDisplayName = "Unknown User";
                 if (vote.uid) {
-                    const userSnap = await get(ref(db, `users/${vote.uid}/profile`));
-                    if (userSnap.exists()) {
-                        voteDisplayName =
-                            userSnap.val().displayName || voteDisplayName;
+                    const userProfile = await dbGet(`users/${vote.uid}/profile`);
+                    if (userProfile) {
+                        voteDisplayName = userProfile.displayName || voteDisplayName;
                     }
                 }
                 voteDiv.innerHTML = `
@@ -152,7 +232,9 @@ function showPollResults() {
                 delBtn.style.marginLeft = "10px";
                 delBtn.classList = "button";
                 delBtn.addEventListener('click', async () => {
-                    await remove(ref(db, `poll/${iconNum}/${voteId}`));
+                    await fetchAPI("delete", {
+                        path: pathToArray(`poll/${iconNum}/${voteId}`)
+                    });                    
                     location.reload();
                 });
                 voteDiv.appendChild(delBtn);
@@ -169,8 +251,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     uid = user.uid;
-    const profileSnap = await get(ref(db, `users/${uid}/profile`));
-    const profile = profileSnap.exists() ? profileSnap.val() : {};
+    const profile = await dbGet(`users/${uid}/profile`) || {};
     displayName = profile.displayName || "Anonymous";
     currentVotes = profile.votes || 0;
     const roles = [

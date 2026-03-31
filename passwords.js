@@ -1,4 +1,4 @@
-import { auth, db, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, ref, push, GoogleAuthProvider, signInWithPopup } from "./imports.js";
+import { auth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "./imports.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
@@ -11,6 +11,51 @@ const resetBtn = document.getElementById("resetBtn");
 const statusEl = document.getElementById("status");
 const stillBtn = document.createElement("button");
 stillBtn.textContent = "Still Didn't Get Email?";
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbSet(path, value) {
+    return await fetchAPI("write", {
+        path: pathToArray(path),
+        value
+    });
+}
+async function dbPush(path, value) {
+    const key = Date.now().toString();
+    await dbSet(path + "/" + key, value);
+    return key;
+}
 stillBtn.disabled = true;
 stillBtn.style.display = "none";
 document.body.appendChild(stillBtn);
@@ -144,8 +189,7 @@ submitResetDataBtn.addEventListener("click", async () => {
         return;
     }
     try {
-        const resetRef = ref(db, "reset");
-        await push(resetRef, {
+        await dbPush("reset", {
             service,
             socialUsername,
             emailUsed,

@@ -77,6 +77,7 @@ const g = [
     "infinitecampus.xyz",
     "instructure.space"
 ];
+const h = "ws://api.infinitecampus.xyz";
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 const o = [
     "Dad", 

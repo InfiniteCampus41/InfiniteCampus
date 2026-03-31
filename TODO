@@ -1,4 +1,3 @@
-Fix Chat Scrolling
 - [x] Combine messages.js With modmessages.js
     - [x] Delete modmessages.js
     - [x] Rename messages.js to discord.js
@@ -31,7 +30,6 @@ Fix Chat Scrolling
     - [x] Combine games.js With index.js
     - [x] Combine oldproxy.js With index.js
     - [x] Delete index.js
-
 
 The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
 Here Are The Steps To Do So

@@ -1,4 +1,4 @@
-import { messaging, getToken, auth, db, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, ref, get, set, update, onValue, sendEmailVerification, applyActionCode, confirmPasswordReset } from './imports.js';
+import { messaging, getToken, auth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, applyActionCode, confirmPasswordReset } from './imports.js';
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode');
 const oobCode = urlParams.get('oobCode');
@@ -27,6 +27,89 @@ async function loadProfileImages() {
         return [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
     }
 }
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
+async function dbSet(path, value) {
+    return await fetchAPI("write", {
+        path: pathToArray(path),
+        value
+    });
+}
+async function dbUpdate(path, updates) {
+    for (const key in updates) {
+        await dbSet(path + "/" + key, updates[key]);
+    }
+}
+function dbListen(path, callback) {
+    return getAuthToken().then(token => {
+        const pathArray = pathToArray(path);
+        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
+        const ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+            if (!event.data) return;
+            if (event.data instanceof Blob) {
+                event.data.text().then(text => {
+                    if (!text || text.trim() === "" || text === "undefined") return;
+                    try {
+                        callback(JSON.parse(text));
+                    } catch (e) {
+                        console.warn("Invalid JSON from Blob:", text, e);
+                    }
+                });
+                return;
+            }
+            const raw = String(event.data).trim();
+            if (!raw || raw === "undefined") return;
+            try {
+                callback(JSON.parse(raw));
+            } catch (e) {
+                console.warn("Invalid JSON:", raw, e);
+            }
+        };
+        ws.onerror = () => {
+            ws.close();
+        };
+        ws.onclose = () => {
+        };
+        return ws;
+    });
+}
 if (notif) {
     async function enableNotifications() {
         const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
@@ -38,7 +121,7 @@ if (notif) {
             });
             const user = auth.currentUser;
             if (user) {
-                set(ref(db, "pushTokens/" + user.uid + "/" + token), true);
+                dbSet("pushTokens/" + user.uid + "/" + token, true);
                 showSuccess("Notifications Have Been Enabled");
             } else {
                 window.location.href = 'InfiniteLogins.html';
@@ -135,6 +218,7 @@ if (notif) {
             font-weight:bold;
         }
     `;
+    let currentUser = null;
     document.head.appendChild(style);
     const displayNameEl = document.getElementById("displayName");
     const bioEl = document.getElementById("bio");
@@ -207,81 +291,82 @@ if (notif) {
       	loadUserProfile(uid);
     }
     async function loadUserProfile(uid) {
-      	try {
-        	const userSnap = await get(ref(db, "users/" + uid));
-        	if (!userSnap.exists()) {
-          		showError(`User With ID "${uid}" Not Found.`);
-          		return;
-        	}
-        	const foundUser = userSnap.val();
-        	const currentUser = auth.currentUser;
-        	let viewerIsOwner = false;
-        	if (currentUser) {
-          		const viewerSnap = await get(ref(db, "users/" + currentUser.uid + "/profile"));
-          		if (viewerSnap.exists()) {
-            		const p = viewerSnap.val();
-            		if (p?.isOwner === true || p?.isCoOwner === true || p?.isHAdmin === true || p?.isDev === true) {
-              			viewerIsOwner = true;
-            		}
-          		}
-        	}
-        	const color = foundUser.settings?.color || "#ffffff";
-        	let displayName = foundUser.profile?.displayName || "";
-        	if (displayName.trim() === "") {
-          		displayName = "Spam Account";
-        	}
-        	const bio = foundUser.profile?.bio || "No Bio Set.";
-        	const email = foundUser.settings?.userEmail || "(No Email Set)";
-        	const picValue = foundUser.profile?.pic ?? 0;
-        	const profileImages = await loadProfileImages();
-        	const imgSrc = profileImages[picValue] || profileImages[0];
-        	loadingEl.style.display = "none";
-        	errorEl.style.display = "none";
-        	profileContent.style.display = "block";
-        	displayNameEl.innerHTML = "";
-        	const container = document.createElement("div");
-        	container.style.display = "flex";
-        	container.style.alignItems = "center";
-        	container.style.gap = "10px";
-        	const img = document.createElement("img");
-        	img.src = imgSrc;
-        	img.alt = "Profile Icon";
-        	img.style.width = "60px";
-        	img.style.height = "60px";
-        	img.style.marginLeft = "20px";
-        	img.style.borderRadius = "50%";
-        	img.style.border = "2px solid white";
-        	img.style.objectFit = "cover";
-        	const nameSpan = document.createElement("span");
-        	nameSpan.textContent = `@${displayName}`;
-        	nameSpan.style.color = color;
-        	nameSpan.style.fontSize = "1.2em";
-        	nameSpan.style.fontWeight = "600";
-    		container.appendChild(img);
-    		container.appendChild(nameSpan);
-    		const isVerified = foundUser.profile?.verified === true;
+        await authReadyPromise;
+        try {
+            const userSnap = await fetchAPI("read", { path: ["users", uid] });
+            if (!userSnap?.data) {
+                showError(`User With ID "${uid}" Not Found.`);
+                return;
+            }
+            const foundUser = userSnap.data;
+            const user = currentUser;
+            let viewerIsOwner = false;
+            try {
+                if (currentUser) {
+                    const me = await fetchAPI("read", {
+                        path: ["users", currentUser.uid, "profile"]
+                    });
+                    const p = me?.data;
+                    if (p?.isOwner || p?.isCoOwner || p?.isHAdmin || p?.isDev) {
+                        viewerIsOwner = true;
+                    }
+                }
+            } catch {}
+            const color = foundUser.settings?.color || "#ffffff";
+            const displayNameRaw = foundUser.profile?.displayName;
+            const displayName = displayNameRaw?.trim() ? displayNameRaw : "Spam Account";
+            const bio = foundUser.profile?.bio || "No Bio Set.";
+            const email = foundUser.settings?.userEmail || "(Hidden)";
+            const picValue = foundUser.profile?.pic ?? 0;
+            const profileImages = await loadProfileImages();
+            const imgSrc = profileImages[picValue] || profileImages[0];
+            loadingEl.style.display = "none";
+            errorEl.style.display = "none";
+            profileContent.style.display = "block";
+            displayNameEl.innerHTML = "";
+            const container = document.createElement("div");
+            container.style.display = "flex";
+            container.style.alignItems = "center";
+            container.style.gap = "10px";
+            const img = document.createElement("img");
+            img.src = imgSrc;
+            img.alt = "Profile Icon";
+            img.style.width = "60px";
+            img.style.height = "60px";
+            img.style.marginLeft = "20px";
+            img.style.borderRadius = "50%";
+            img.style.border = "2px solid white";
+            img.style.objectFit = "cover";
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = `@${displayName}`;
+            nameSpan.style.color = color;
+            nameSpan.style.fontSize = "1.2em";
+            nameSpan.style.fontWeight = "600";
+            container.appendChild(img);
+            container.appendChild(nameSpan);
+            const isVerified = foundUser.profile?.verified === true;
             const dUsername = foundUser.profile?.dUsername || "";
             const badgeEl = createBadge(foundUser.profile, isVerified, dUsername);
-    		container.appendChild(badgeEl);
-        	displayNameEl.appendChild(container);
-        	bioEl.textContent = bio;
-        	uidEl.innerHTML = `User ID: ${uid}`;
-        	if (viewerIsOwner) {
-          		const emailEl = document.createElement("div");
-          		emailEl.style.marginTop = "5px";
-          		emailEl.textContent = `Email: ${email}`;
-          		uidEl.appendChild(emailEl);
-        	}
-        	if (messageBtn) {
-          		messageBtn.style.display = "inline-block";
-          		messageBtn.onclick = () => {
-            		localStorage.setItem("openPrivateChatUid", uid);
-            		window.location.href = "InfiniteChatters.html";
-          		};
-        	}
-      	} catch (err) {
-        	showError("Error Loading Profile: " + err.message);
-      	}
+            container.appendChild(badgeEl);
+            displayNameEl.appendChild(container);
+            bioEl.textContent = bio;
+            uidEl.innerHTML = `User ID: ${uid}`;
+            if (viewerIsOwner && foundUser.settings?.userEmail) {
+                const emailEl = document.createElement("div");
+                emailEl.style.marginTop = "5px";
+                emailEl.textContent = `Email: ${email}`;
+                uidEl.appendChild(emailEl);
+            }
+            if (messageBtn) {
+                messageBtn.style.display = "inline-block";
+                messageBtn.onclick = () => {
+                    localStorage.setItem("openPrivateChatUid", uid);
+                    window.location.href = "InfiniteChatters.html";
+                };
+            }
+        } catch (err) {
+            showError("Error Loading Profile: " + err.message);
+        }
     }
 } else {
     const style = document.createElement("style");
@@ -488,7 +573,7 @@ if (notif) {
                 showSuccess("Profile Picture Updated!");
             }
             if (removeRequested) {
-                await set(ref(db, `users/${currentUser.uid}/profile/pic`), 0);
+                await dbSet(`users/${currentUser.uid}/profile/pic`, 0);
                 panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
                 showSuccess("Profile Picture Removed!");
             }
@@ -535,10 +620,10 @@ if (notif) {
         displayNameInput.style.height = displayNameInput.scrollHeight + "px";
     }
     async function loadDisplayName(uid) {
-        const displayRef = ref(db, `users/${uid}/profile/displayName`);
-        const snap = await get(displayRef);
-        if (snap.exists()) {
-            currentDisplay = snap.val() || "";
+        const displayRef = `users/${uid}/profile/displayName`;
+        const snap = await dbGet(displayRef);
+        if (snap != null) {
+            currentDisplay = snap || "";
             displayNameInput.value = currentDisplay;
             setSetting("displayName", currentDisplay);
         } else {
@@ -569,18 +654,17 @@ if (notif) {
         if (!/^[a-zA-Z0-9 _-]*$/.test(newDisplay)) {
             return showError("Display Name Can Only Contain Letters, Numbers, Spaces, Underscores, And Dashes.");
         }
-        const usersSnap = await get(ref(db, 'users'));
-        if (usersSnap.exists()) {
-            let taken = false;
-            usersSnap.forEach(child => {
-                const p = child.val()?.profile;
+        const usersSnap = await dbGet('users');
+        if (usersSnap) {
+            for (const uid in usersSnap) {
+                const p = usersSnap[uid]?.profile;
                 if (p?.displayName === newDisplay) taken = true;
-            });
+            };
             if (taken) return showError("Display Name Already Taken.");
         }
         if (newDisplay.length === 0) return showError("Display Name Cannot Be Empty.");
         if (newDisplay.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
-        await set(ref(db, `users/${currentUser.uid}/profile/displayName`), newDisplay);
+        await dbSet(`users/${currentUser.uid}/profile/displayName`, newDisplay);
         setSetting("displayName", newDisplay);
         await updateProfile(currentUser, { displayName: newDisplay });
         currentDisplay = newDisplay;
@@ -605,22 +689,18 @@ if (notif) {
         }
     });
     async function loadSettings(uid) {
-        const userSettingsRef = ref(db, `users/${uid}/settings`);
-        const snap = await get(userSettingsRef);
-        let settings = {};
-        if (snap.exists()) settings = snap.val();
+        const userSettingsRef = `users/${uid}/settings`;
+        const settings = (await dbGet(userSettingsRef)) || {};
         let storedColor = settings.color || localStorage.getItem("color") || "#ffffff";
         const rgb = hexToRgb(storedColor);
         if (colorDistance(rgb, darkGray) < darkThreshold) {
             storedColor = lightGray;
-            await set(ref(db, `users/${uid}/settings/color`), storedColor);
+            await dbSet(`users/${uid}/settings/color`, storedColor);
         }
         nameColorInput.value = storedColor;
         localStorage.setItem("color", storedColor);
         setSetting("nameColor", storedColor);
-        onValue(ref(db, `users/${uid}/settings/color`), snap => {
-            if (!snap.exists()) return;
-            const color = snap.val();
+        dbListen(`users/${uid}/settings/color`, (color) => {
             if (!color) return;
             nameColorInput.value = color;
             localStorage.setItem("color", color);
@@ -630,7 +710,7 @@ if (notif) {
         statusEl.textContent = ``;
     }
     async function setDisplayNameEverywhere(user, name) {
-        await update(ref(db, `users/${user.uid}/profile`), { displayName: name });
+        await dbUpdate(`users/${user.uid}/profile`, { displayName: name });
         await updateProfile(user, { displayName: name });
     }
     async function updateDisplayName() {
@@ -639,13 +719,16 @@ if (notif) {
         if (!newName) return showError("Display Name Cannot Be Empty.");
         if (newName.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
         if (!/^[a-zA-Z0-9 _-]+$/.test(newName)) return showError("Invalid Display Name.");
-        const usersSnap = await get(ref(db, 'users'));
-        if (usersSnap.exists()) {
+        const usersSnap = await dbGet('users');
+        if (usersSnap) {
             let taken = false;
-            usersSnap.forEach(child => {
-                const p = child.val()?.profile;
-                if (p?.displayName === newName) taken = true;
-            });
+            for (const uid in usersSnap) {
+                const p = usersSnap[uid]?.profile;
+                if (p?.displayName === newName) {
+                    taken = true;
+                    break;
+                }
+            }
             if (taken) return showError("Display Name Already Taken.");
         }
         await setDisplayNameEverywhere(currentUser, newName);
@@ -676,7 +759,7 @@ if (notif) {
             nameColorInput.value = lightGray;
             showError("Color Too Dark! Changed To Light Grey.");
         }
-        await set(ref(db, `users/${currentUser.uid}/settings/color`), color);
+        await dbSet(`users/${currentUser.uid}/settings/color`, color);
         localStorage.setItem("color", color);
         setSetting("nameColor", color);
         showSuccess("Name Color Saved!");
@@ -692,10 +775,10 @@ if (notif) {
         bioInput.style.height = "52px";
     }
     async function loadUserBio(uid) {
-        const bioRef = ref(db, `users/${uid}/profile/bio`);
-        const snap = await get(bioRef);
-        if (snap.exists()) {
-            currentBio = snap.val() || "";
+        const bioRef = `users/${uid}/profile/bio`;
+        const snap = await dbGet(bioRef);
+        if (snap != null) {
+            currentBio = snap || "";
             setSetting("bio", currentBio);
             bioInput.value = currentBio;
             bioInput.style.color = "white";
@@ -726,7 +809,7 @@ if (notif) {
         if (!currentUser) return;
         const newBio = bioInput.value.trim();
         if (newBio.length > 50) return showError("Bio Cannot Exceed 50 Characters.");
-        await set(ref(db, `users/${currentUser.uid}/profile/bio`), newBio);
+        await dbSet(`users/${currentUser.uid}/profile/bio`, newBio);
         currentBio = newBio;
         disableBioEditing();
         setSetting("bio", newBio);
@@ -752,10 +835,10 @@ if (notif) {
         disInput.style.height = disInput.scrollHeight + "px";
     }
     async function loadUserDis(uid) {
-        const disRef = ref(db, `users/${uid}/profile/dUsername`);
-        const snap = await get(disRef);
-        if (snap.exists()) {
-            currentDis = snap.val() || "";
+        const disRef = `users/${uid}/profile/dUsername`;
+        const snap = await dbGet(disRef);
+        if (snap != null) {
+            currentDis = snap || "";
             setSetting("dUsername", currentDis);
             disInput.value = currentDis;
             disInput.style.color = "white";
@@ -856,7 +939,7 @@ if (notif) {
             });
             const updates = {};
             updates[cb.dataset.key] = cb.checked ? true : null;
-            await update(ref(db, `users/${currentUser.uid}/profile`), updates);
+            await dbUpdate(`users/${currentUser.uid}/profile`, updates);
             showSuccess("Extension Updated!");
         });
     });
@@ -888,10 +971,10 @@ if (notif) {
     });
     async function loadUserProfilePic(uid) {
         try {
-            const snap = await get(ref(db, `users/${uid}/profile/pic`));
+            const snap = await dbGet(`users/${uid}/profile/pic`);
             let picIndex = 0;
-            if (snap.exists()) {
-                picIndex = snap.val();
+            if (snap != null) {
+                picIndex = snap;
             }
             if (!profileImages || profileImages.length === 0) {
                 profileImages = await loadProfileImages();
@@ -937,136 +1020,133 @@ if (notif) {
             await loadUserDis(user.uid);
             profileImages = await loadProfileImages();
             await loadUserProfilePic(user.uid);
-            onValue(ref(db, `users/${user.uid}/profile`), snap => {
-                if (snap.exists()) {
-                    const profile = snap.val();
-                    loadExtensionCheckbox(profile);
-                    const badges = document.getElementById('badges');
-                    badges.innerHTML = "";
-                    function addBadge(name, color, icon) {
-                        const badge = document.createElement("span");
-                        const badgeContainer = document.getElementById('badgeContainer');
-                        badgeContainer.style.display = 'flex';
-                        badgeContainer.style.flexDirection = 'column';
-                        badge.style.color = color;
-                        badge.style.fontSize = '1.5em';
-                        badge.style.fontWeight = "600";
-                        badge.innerHTML = `
-                            <i class="${icon}" style="margin-right:6px;" title="${name}"></i>
-                        `;
-                        badges.appendChild(badge);
-                    }
-                    let hasAnyRole = false;
-                    if (profile.isSus) {
-                        addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "bi bi-shield-exclamation");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isOwner) {
-                        addBadge("Owner", "lime", "bi bi-shield-plus");
-                        adminBtn.style.display = 'block';
-                        hasAnyRole = true;
-                    }
-                    if (profile.isTester) {
-                        addBadge("Tester", "DarkGoldenRod", "fa-solid fa-cogs");
-                        adminBtn.style.display = 'block';
-                        hasAnyRole = true;
-                    }
-                    if (profile.isCoOwner) {
-                        addBadge("Co-Owner", "lightblue", "bi bi-shield-fill");
-                        adminBtn.style.display = 'block';
-                        hasAnyRole = true;
-                    }
-                    if (profile.isHAdmin) {
-                        addBadge("Head Admin", "#00cc99", "fa-solid fa-shield-halved");
-                        adminBtn.style.display = 'block';
-                        hasAnyRole = true;
-                    }
-                    if (profile.isAdmin) {
-                        addBadge("Admin", "dodgerblue", "bi bi-shield");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isPartner) {
-                        addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "fa fa-handshake");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isDev) {
-                        addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
-                        adminBtn.style.display = 'block';
-                        hasAnyRole = true;
-                    }
-                    if (profile.premium3) {
-                        addBadge("This User Has Infinite Campus Premium T3", "red", "bi bi-hearts");
-                        hasAnyRole = true;
-                    }
-                    if (profile.premium2) {
-                        addBadge("This User Has Infinite Campus Premium T2", "orange", "bi bi-heart-fill");
-                        hasAnyRole = true;
-                    }
-                    if (profile.premium1) {
-                        addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isDonater) {
-                        addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "bi bi-balloon-heart");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isUploader) {
-                        addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "bi bi-film");
-                        hasAnyRole = true
-                    }
-                    if (profile.mileStone) {
-                        addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isGuesser) {
-                        addBadge("This User Has A Lot Of Freetime", "#FF0000", "bi bi-stopwatch");
-                        hasAnyRole = true;
-                    }
-                    if (profile.dUsername) {
-                        const discordUser = profile.dUsername;
-                        addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
-                        hasAnyRole = true;
-                    }
-                    if (profile.isLink) {
-                        addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");
-                        hasAnyRole = true;
-                    }
-                    if (profile.secure) {
-                        addBadge("This User Has Securely At School", "dodgerblue", "bi ic ic-securely");
-                        hasAnyRole = true;
-                    }
-                    if (profile.guardian) {
-                        addBadge("This User Has GoGuardian At School", "grey", "bi ic ic-goguardian");
-                        hasAnyRole = true;
-                    }
-                    if (profile.lanschool) {
-                        addBadge("This User Has Lanschool At School", "greenyellow", "bi ic ic-lanschool");
-                        hasAnyRole = true;
-                    }
-                    if (profile.linewize) {
-                        addBadge("This User Has Linewize At School", "lightskyblue", "bi ic ic-linewize");
-                        hasAnyRole = true;
-                    }
-                    if (profile.blocksi) {
-                        addBadge("This User Has Blocksi At School", "cadetblue", "bi ic ic-blocksi");
-                        hasAnyRole = true;
-                    }
-                    if (profile.verified) {
-                        addBadge("Verified User", "white", "bi bi-shield-check");
-                        hasAnyRole = true;
-                    }
-                    if (!hasAnyRole) {
-                    }
+            dbListen(`users/${user.uid}/profile`, (profile) => {
+                if (!profile) return;
+                loadExtensionCheckbox(profile);
+                const badges = document.getElementById('badges');
+                badges.innerHTML = "";
+                function addBadge(name, color, icon) {
+                    const badge = document.createElement("span");
+                    const badgeContainer = document.getElementById('badgeContainer');
+                    badgeContainer.style.display = 'flex';
+                    badgeContainer.style.flexDirection = 'column';
+                    badge.style.color = color;
+                    badge.style.fontSize = '1.5em';
+                    badge.style.fontWeight = "600";
+                    badge.innerHTML = `
+                        <i class="${icon}" style="margin-right:6px;" title="${name}"></i>
+                    `;
+                    badges.appendChild(badge);
+                }
+                let hasAnyRole = false;
+                if (profile.isSus) {
+                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "bi bi-shield-exclamation");
+                    hasAnyRole = true;
+                }
+                if (profile.isOwner) {
+                    addBadge("Owner", "lime", "bi bi-shield-plus");
+                    adminBtn.style.display = 'block';
+                    hasAnyRole = true;
+                }
+                if (profile.isTester) {
+                    addBadge("Tester", "DarkGoldenRod", "fa-solid fa-cogs");
+                    adminBtn.style.display = 'block';
+                    hasAnyRole = true;
+                }
+                if (profile.isCoOwner) {
+                    addBadge("Co-Owner", "lightblue", "bi bi-shield-fill");
+                    adminBtn.style.display = 'block';
+                    hasAnyRole = true;
+                }
+                if (profile.isHAdmin) {
+                    addBadge("Head Admin", "#00cc99", "fa-solid fa-shield-halved");
+                    adminBtn.style.display = 'block';
+                    hasAnyRole = true;
+                }
+                if (profile.isAdmin) {
+                    addBadge("Admin", "dodgerblue", "bi bi-shield");
+                    hasAnyRole = true;
+                }
+                if (profile.isPartner) {
+                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "fa fa-handshake");
+                    hasAnyRole = true;
+                }
+                if (profile.isDev) {
+                    addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
+                    adminBtn.style.display = 'block';
+                    hasAnyRole = true;
+                }
+                if (profile.premium3) {
+                    addBadge("This User Has Infinite Campus Premium T3", "red", "bi bi-hearts");
+                    hasAnyRole = true;
+                }
+                if (profile.premium2) {
+                    addBadge("This User Has Infinite Campus Premium T2", "orange", "bi bi-heart-fill");
+                    hasAnyRole = true;
+                }
+                if (profile.premium1) {
+                    addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
+                    hasAnyRole = true;
+                }
+                if (profile.isDonater) {
+                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "bi bi-balloon-heart");
+                    hasAnyRole = true;
+                }
+                if (profile.isUploader) {
+                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "bi bi-film");
+                    hasAnyRole = true
+                }
+                if (profile.mileStone) {
+                    addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
+                    hasAnyRole = true;
+                }
+                if (profile.isGuesser) {
+                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "bi bi-stopwatch");
+                    hasAnyRole = true;
+                }
+                if (profile.dUsername) {
+                    const discordUser = profile.dUsername;
+                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
+                    hasAnyRole = true;
+                }
+                if (profile.isLink) {
+                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");
+                    hasAnyRole = true;
+                }
+                if (profile.secure) {
+                    addBadge("This User Has Securely At School", "dodgerblue", "bi ic ic-securely");
+                    hasAnyRole = true;
+                }
+                if (profile.guardian) {
+                     addBadge("This User Has GoGuardian At School", "grey", "bi ic ic-goguardian");
+                    hasAnyRole = true;
+                }
+                if (profile.lanschool) {
+                    addBadge("This User Has Lanschool At School", "greenyellow", "bi ic ic-lanschool");
+                    hasAnyRole = true;
+                }
+                if (profile.linewize) {
+                    addBadge("This User Has Linewize At School", "lightskyblue", "bi ic ic-linewize");
+                    hasAnyRole = true;
+                }
+                if (profile.blocksi) {
+                    addBadge("This User Has Blocksi At School", "cadetblue", "bi ic ic-blocksi");
+                    hasAnyRole = true;
+                }
+                if (profile.verified) {
+                    addBadge("Verified User", "white", "bi bi-shield-check");
+                    hasAnyRole = true;
+                }
+                if (!hasAnyRole) {
                 }
             });
             statusEl.textContent = `Logged In As ${user.email}`;
-            const userSettingsRef = ref(db, `users/${user.uid}/settings`);
-            const userSettingsSnap = await get(userSettingsRef);
-            let settings = {};
-            if (userSettingsSnap.exists()) settings = userSettingsSnap.val();
+            const userSettingsRef = `users/${user.uid}/settings`;
+            const userSettingsSnap = await dbGet(userSettingsRef);
+            let settings = userSettingsSnap || {};
             let storedEmail = settings.userEmail;
             if (!storedEmail) {
-                await set(ref(db, `users/${user.uid}/settings/userEmail`), user.email);
+                await dbSet(`users/${user.uid}/settings/userEmail`, user.email);
             }
         } else {
             statusEl.textContent = "Not Logged In.";
