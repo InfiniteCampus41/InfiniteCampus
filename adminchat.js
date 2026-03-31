@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged } from "./imports.js";
+import { auth, db, onAuthStateChanged, ref, get, set, remove, onValue } from "./imports.js";
 const privateChatsDiv = document.getElementById("privateChats");
 const chatView = document.getElementById("chatView");
 const chatTitle = document.getElementById("chatTitle");
@@ -17,84 +17,6 @@ const adminMsgInput = document.getElementById("adminMessageInput");
 const sendAdminMessageBtn = document.getElementById("sendAdminMessage");
 const typingSection = document.getElementById("typingSection");
 const muteSection = document.getElementById("mutedUsers");
-let currentUser = null;
-let authReady = false;
-const authReadyPromise = new Promise((resolve) => {
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        authReady = true;
-        resolve(user);
-    });
-});
-async function getAuthToken() {
-    await authReadyPromise;
-    if (currentUser) {
-        return await currentUser.getIdToken();
-    }
-    return null;
-}
-async function fetchAPI(endpoint, body) {
-    const token = await getAuthToken();
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(`${a}/${endpoint}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body)
-    });
-    const json = await res.json();
-    if (!res.ok) {
-        throw new Error(json?.error || "Request failed");
-    }
-    return json;
-}
-function pathToArray(path) {
-    return path.split("/").filter(Boolean);
-}
-async function dbGet(path) {
-    const res = await fetchAPI("read", { path: pathToArray(path) });
-    return res.data;
-}
-async function dbSet(path, value) {
-    return await fetchAPI("write", {
-        path: pathToArray(path),
-        value
-    });
-}
-function dbListen(path, callback) {
-    return getAuthToken().then(token => {
-        const pathArray = pathToArray(path);
-        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
-        const ws = new WebSocket(wsUrl);
-        ws.onmessage = (event) => {
-            if (!event.data) return;
-            if (event.data instanceof Blob) {
-                event.data.text().then(text => {
-                    if (!text || text.trim() === "" || text === "undefined") return;
-                    try {
-                        callback(JSON.parse(text));
-                    } catch (e) {
-                        console.warn("Invalid JSON from Blob:", text, e);
-                    }
-                });
-                return;
-            }
-            const raw = String(event.data).trim();
-            if (!raw || raw === "undefined") return;
-            try {
-                callback(JSON.parse(raw));
-            } catch (e) {
-                console.warn("Invalid JSON:", raw, e);
-            }
-        };
-        ws.onerror = () => {
-            ws.close();
-        };
-        ws.onclose = () => {
-        };
-        return ws;
-    });
-}
 let currentChatPath = null;
 let currentUserEditUID = null;
 let userProfiles = {};
@@ -156,9 +78,9 @@ async function loadProfilePics() {
     }
 }
 async function preloadUsers() {
-    const snap = await dbGet("users");
-    if (snap !== null && snap !== undefined) return;
-    const data = snap;
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return;
+    const data = snap.val();
     for (const uid in data) {
         userProfiles[uid] = {
             displayName: data[uid]?.profile?.displayName || uid,
@@ -170,15 +92,15 @@ async function preloadUsers() {
 async function logMutedUsers() {
     try {
         const [mutedSnap, usersSnap] = await Promise.all([
-            dbGet("mutedUsers"),
-            dbGet("users")
+            get(ref(db, "mutedUsers")),
+            get(ref(db, "users"))
         ]);
-        if (mutedSnap == null && mutedSnap == undefined) {
+        if (!mutedSnap.exists()) {
             if (muteSection) muteSection.textContent = "";
             return;
         }
-        const mutedData = mutedSnap;
-        const usersData = usersSnap !== null && usersSnap !== undefined ? usersSnap : {};
+        const mutedData = mutedSnap.val();
+        const usersData = usersSnap.exists() ? usersSnap.val() : {};
         muteSection.innerHTML = "";
         muteSection.textContent = "Muted Users";
         for (const uid of Object.keys(mutedData)) {
@@ -197,10 +119,11 @@ async function logMutedUsers() {
             `;
             const unmuteBtn = document.createElement("button");
             unmuteBtn.textContent = "Unmute";
-            unmuteBtn.onclick = () => fetchAPI("delete", { path: pathToArray(`mutedUsers/${uid}`) });
+            unmuteBtn.onclick = () => remove(ref(db, `mutedUsers/${uid}`));
             userDiv.appendChild(unmuteBtn);
             muteSection.appendChild(userDiv);
         }
+
     } catch (err) {
         console.error(err);
     }
@@ -266,7 +189,7 @@ let typingListenerUnsub = null;
 let usersListenerUnsub = null;
 function updateTypingUI(snapshot) {
     if (!typingListDiv) return;
-    const typingVal = snapshot !== null && snapshot !== undefined ? snapshot : null;
+    const typingVal = snapshot.exists() ? snapshot.val() : null;
     typingListDiv.innerHTML = "";
     if (!typingVal) {
         typingListDiv.textContent = "No Typing Data";
@@ -289,19 +212,19 @@ function updateTypingUI(snapshot) {
     }
 }
 function listenForTyping() {
+    const typingRef = ref(db, "typing");
     if (typingListenerUnsub) {
     }
-    dbListen("typing", (data) => {
-        updateTypingUI({
-            exists: () => data !== null,
-            val: () => data
-        });
+    onValue(typingRef, snapshot => {
+        updateTypingUI(snapshot);
+    }, (err) => {
+        console.error("Typing Listener Error:", err);
     });
 }
 function listenForUnverifiedUsers() {
-    dbListen("users", (data) => {
-        if (!data) return;
-        const all = data;
+    onValue(ref(db, "users"), snap => {
+        if (!snap.exists()) return;
+        const all = snap.val();
         unverifiedUsers = [];
         for (const [uid, data] of Object.entries(all)) {
             if (!data?.profile?.verified) {
@@ -425,7 +348,7 @@ function renderUnverifiedViewer() {
             showConfirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`, function(result) {
                 if (result) {
                     try {
-                        dbSet(`users/${uid}/profile/verified`, true);
+                        set(ref(db, `users/${uid}/profile/verified`), true);
                         showSuccess("User Verified.");
                         unverifiedUsers.splice(unverifiedIndex, 1);
                         if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
@@ -439,7 +362,7 @@ function renderUnverifiedViewer() {
             })
         } else {
             try {
-                await dbSet(`users/${uid}/profile/verified`, true);
+                await set(ref(db, `users/${uid}/profile/verified`), true);
                 showSuccess("User Verified");
                 unverifiedUsers.splice(unverifiedIndex, 1);
                 if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
@@ -508,7 +431,7 @@ if (deleteTypingBtn) {
         showConfirm("Delete Typing Data?", function(result) {
             if (result) {
                 try {
-                    fetchAPI("delete", { path: pathToArray("typing") });
+                    remove(ref(db, "typing"));
                     showSuccess("Done");
                 } catch (err) {
                     showError("Failed To Delete: " + err.message);
@@ -527,16 +450,21 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
     const uid = user.uid;
-    const ownerSnap = await dbGet(`users/${uid}/profile/isOwner`);
-    const testerSnap = await dbGet(`users/${uid}/profile/isTester`);
-    const coOwnerSnap = await dbGet(`users/${uid}/profile/isCoOwner`);
-    const hAdminSnap = await dbGet(`users/${uid}/profile/isHAdmin`);
-    const devSnap = await dbGet(`users/${uid}/profile/isDev`);
-    let isOwner = ownerSnap !== null && ownerSnap !== undefined && ownerSnap === true;
-    let isCoOwner = coOwnerSnap !== null && coOwnerSnap !== undefined && coOwnerSnap === true;
-    let isTester = testerSnap !== null && testerSnap !== undefined && testerSnap === true;
-    let isHAdmin = hAdminSnap !== null && hAdminSnap !== undefined && hAdminSnap === true;
-    let isDev = devSnap !== null && devSnap !== undefined && devSnap === true; 
+    const ownerRef = ref(db, `users/${uid}/profile/isOwner`);
+    const testerRef = ref(db, `users/${uid}/profile/isTester`);
+    const coOwnerRef = ref(db, `users/${uid}/profile/isCoOwner`);
+    const hAdminRef = ref(db, `users/${uid}/profile/isHAdmin`);
+    const devRef = ref(db, `users/${uid}/profile/isDev`);
+    const ownerSnap = await get(ownerRef);
+    const testerSnap = await get(testerRef);
+    const coOwnerSnap = await get(coOwnerRef);
+    const hAdminSnap = await get(hAdminRef);
+    const devSnap = await get(devRef);
+    let isOwner = ownerSnap.exists() && ownerSnap.val() === true;
+    let isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
+    let isTester = testerSnap.exists() && testerSnap.val() === true;
+    let isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
+    let isDev = devSnap.exists() && devSnap.val() === true; 
     if (!isOwner && !isCoOwner && !isTester && !isHAdmin && !isDev) {
         showError("Access Denied. You Are Not An Approved User.");
         window.location.href = "InfiniteChatters.html";
@@ -560,8 +488,8 @@ onAuthStateChanged(auth, async (user) => {
     listenForUnverifiedUsers();
     await loadUserList();
     await loadPrivateChats();
-    const usersRefRealtime = "users";
-    dbGet(usersRefRealtime).then(() => listenForUnverifiedUsers());
+    const usersRefRealtime = ref(db, "users");
+    get(usersRefRealtime).then(() => listenForUnverifiedUsers());
 });
 function populateSendAsOptions() {
     if (!sendAsSelect) return;
@@ -580,23 +508,24 @@ function populateSendAsOptions() {
 }
 let userMetaCache = {};
 async function preloadUserMeta() {
-    const data = await dbGet("users");
-    if (data) {
-        for (const uid in data) {
-            userMetaCache[uid] = {
-                profile: data[uid].profile || {},
-                settings: data[uid].settings || {}
-            };
-        }
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return;
+    const data = snap.val();
+    for (const uid in data) {
+        userMetaCache[uid] = {
+            profile: data[uid].profile || {},
+            settings: data[uid].settings || {}
+        };
     }
 }
 async function loadPrivateChats() {
     privateChatsDiv.innerHTML = "Loading...";
-    const data = await dbGet("private");
-    if (!data) {
+    const snap = await get(ref(db, "private"));
+    if (!snap.exists()) {
         privateChatsDiv.innerHTML = "No Messages";
         return;
     }
+    const data = snap.val();
     privateChatsDiv.innerHTML = "";
     for (const uid in data) {
         const name = userProfiles[uid]?.displayName || uid;
@@ -617,12 +546,13 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
     chatTitle.textContent = `Private Chat: ${userDisplay} & ${partnerDisplay}`;
     chatMessages.innerHTML = "Loading...";
     populateSendAsOptions();
-    dbListen(currentChatPath, (data) => {
-        if (!data) {
+    const chatRef = ref(db, currentChatPath);
+    onValue(chatRef, (snapshot) => {
+        if (!snapshot.exists()) {
             chatMessages.innerHTML = "<p>No Messages Found.</p>";
             return;
         }
-        const messages = data;
+        const messages = snapshot.val();
         chatMessages.innerHTML = "";
         const entries = Object.entries(messages).sort((a, b) => {
             return (a[1]?.timestamp || 0) - (b[1]?.timestamp || 0);
@@ -674,17 +604,19 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
             mutedBadge.style.display = "none";
             mutedBadge.title = "This User Is Muted";
             mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
-            dbListen(`mutedUsers/${senderUid}`, async (data) => {
-                if (!data) {
+            const mutedRef = ref(db, `mutedUsers/${senderUid}`);
+            onValue(mutedRef, async (snap) => {
+                if (!snap.exists()) {
                     mutedBadge.style.display = "none";
                     return;
                 }
+                const data = snap.val();
                 if (data.expires === "Never") {
                     mutedBadge.style.display = "inline";
                     return;
                 }
                 if (data.expires && Date.now() > data.expires) {
-                    await fetchAPI("delete", { path: pathToArray(`mutedUsers/${senderUid}`) });
+                    await remove(mutedRef);
                     mutedBadge.style.display = "none";
                     return;
                 }
@@ -753,7 +685,7 @@ async function viewPrivateChat(uid, secondUid, userDisplay, partnerDisplay) {
             text.innerHTML = (msgData.text || "").replace(/\n/g, "<br>");
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "Delete";
-            deleteBtn.onclick = () => fetchAPI("delete", { path: pathToArray(`${currentChatPath}/${msgId}`) });
+            deleteBtn.onclick = () => remove(ref(db, `${currentChatPath}/${msgId}`));
             content.appendChild(header);
             content.appendChild(text);
             content.appendChild(deleteBtn);
@@ -774,10 +706,10 @@ deleteChatBtn.onclick = async () => {
                 const uid = parts[1];
                 const secondUid = parts[2];
                 try {
-                    fetchAPI("delete", { path: pathToArray(`private/${uid}/${secondUid}`) });
-                    fetchAPI("delete", { path: pathToArray(`private/${secondUid}/${uid}`) });
-                    fetchAPI("delete", { path: pathToArray(`metadata/${uid}/privateChats/${secondUid}`) });
-                    fetchAPI("delete", { path: pathToArray(`metadata/${secondUid}/privateChats/${uid}`) });
+                    remove(ref(db, `private/${uid}/${secondUid}`));
+                    remove(ref(db, `private/${secondUid}/${uid}`));
+                    remove(ref(db, `metadata/${uid}/privateChats/${secondUid}`));
+                    remove(ref(db, `metadata/${secondUid}/privateChats/${uid}`));
                     showSuccess("Chat And Metadata Deleted.");
                     chatView.style.display = "none";
                     privateChatsDiv.style.display = "block";
@@ -796,14 +728,14 @@ backButton.onclick = () => {
     privateChatsDiv.style.display = "block";
 };
 async function loadUserList() {
-    const usersRef = "users";
-    const snapshot = await dbGet(usersRef);
-    const users = snapshot;
+    const usersRef = ref(db, "users");
+    const snapshot = await get(usersRef);
+    const users = snapshot.val();
     const keys = Object.keys(users);
     const userCount = keys.length;
     const userCountH = document.getElementById('userCount');
     userCountH.textContent = `Users: ${userCount}`;
-    if (snapshot == null && snapshot == undefined) {
+    if (!snapshot.exists()) {
         userListDiv.innerHTML = "No Users Found.";
         return;
     }
@@ -829,7 +761,7 @@ async function loadUserList() {
         	sendAsSelect.value = selected;
     	}
 	}
-	const data = snapshot;
+	const data = snapshot.val();
 	userProfiles = {};
 	const sorted = Object.entries(data).sort((a, b) => {
     	const nameA = a[1]?.profile?.displayName?.toLowerCase() || "";
@@ -879,45 +811,45 @@ function editUser(uid, data) {
 }
 async function deleteEntireUser(uid) {
     const [privateSnap, metadataSnap, messagesSnap] = await Promise.all([
-        dbGet("private"),
-        dbGet("metadata"),
-        dbGet("messages")
+        get(ref(db, "private")),
+        get(ref(db, "metadata")),
+        get(ref(db, "messages"))
     ]);
-    if (privateSnap !== null && privateSnap !== undefined) {
-        const allPrivate = privateSnap;
+    if (privateSnap.exists()) {
+        const allPrivate = privateSnap.val();
         for (const userA in allPrivate) {
             for (const userB in allPrivate[userA]) {
                 if (userA === uid || userB === uid) {
-                    await fetchAPI("delete", { path: pathToArray(`private/${userA}/${userB}`) });
+                    await remove(ref(db, `private/${userA}/${userB}`));
                 }
             }
         }
     }
-    if (metadataSnap) {
-        const allMeta = metadataSnap;
+    if (metadataSnap.exists()) {
+        const allMeta = metadataSnap.val();
         for (const otherUID in allMeta) {
             if (allMeta[otherUID]?.privateChats?.[uid]) {
-                await fetchAPI("delete", { path: pathToArray(`metadata/${otherUID}/privateChats/${uid}`) });
+                await remove(ref(db, `metadata/${otherUID}/privateChats/${uid}`));
             }
         }
     }
-    if (messagesSnap) {
-        const allChannels = messagesSnap;
+    if (messagesSnap.exists()) {
+        const allChannels = messagesSnap.val();
         for (const channel in allChannels) {
             for (const msgId in allChannels[channel]) {
                 if (allChannels[channel][msgId]?.sender === uid) {
-                    await fetchAPI("delete", { path: pathToArray(`messages/${channel}/${msgId}`) });
+                    await remove(ref(db, `messages/${channel}/${msgId}`));
                 }
             }
         }
     }
-    await fetchAPI("delete", { path: pathToArray(`users/${uid}`) });
+    await remove(ref(db, `users/${uid}`));
 }
 saveUserBtn.onclick = async () => {
     if (!currentUserEditUID) return;
     try {
         const newData = JSON.parse(userDataTextarea.value);
-        await dbSet(`users/${currentUserEditUID}`, newData);
+        await set(ref(db, `users/${currentUserEditUID}`), newData);
         showSuccess("User Data Saved!");
         userEditDiv.style.display = "none";
         userListDiv.style.display = "block";
@@ -948,7 +880,7 @@ sendAdminMessageBtn.onclick = async () => {
         edited: false
     };
     try {
-        await dbSet(`${currentChatPath}/${key}`, newMsg);
+        await set(ref(db, `${currentChatPath}/${key}`), newMsg);
         adminMsgInput.value = "";
     } catch (err) {
         showError("Send Failed: " + err.message);

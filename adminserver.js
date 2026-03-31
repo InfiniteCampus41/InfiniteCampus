@@ -1,44 +1,7 @@
-import { auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./imports.js";
+import { auth, db, onAuthStateChanged, ref, get, set, forceWebSockets } from "./imports.js";
 forceWebSockets();
 let currentUser = null;
 let isAuthInitialized = false;
-let authReady = false;
-const authReadyPromise = new Promise((resolve) => {
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        authReady = true;
-        resolve(user);
-    });
-});
-async function getAuthToken() {
-    await authReadyPromise;
-    if (currentUser) {
-        return await currentUser.getIdToken();
-    }
-    return null;
-}
-async function fetchAPI(endpoint, body) {
-    const token = await getAuthToken();
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(`${a}/${endpoint}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body)
-    });
-    const json = await res.json();
-    if (!res.ok) {
-        throw new Error(json?.error || "Request failed");
-    }
-    return json;
-}
-function pathToArray(path) {
-    return path.split("/").filter(Boolean);
-}
-async function dbGet(path) {
-    const res = await fetchAPI("read", { path: pathToArray(path) });
-    return res.data;
-}
 const BACKEND = `${a}`;
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
@@ -62,9 +25,9 @@ async function checkPermissions() {
         return false;
     }
     const uid = currentUser.uid;
-    const userRef = `users/${uid}/profile`;
-    const snapshot = await dbGet(userRef);
-    if (snapshot == null || snapshot == undefined) {
+    const userRef = ref(db, `users/${uid}/profile`);
+    const snapshot = await get(userRef);
+    if (!snapshot.exists()) {
         showError("Profile Data Not Found.");
         return false;
     }

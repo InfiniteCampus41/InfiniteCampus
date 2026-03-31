@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged } from "./imports.js";
+import { auth, db, onAuthStateChanged, ref, push, onChildAdded, onChildChanged, remove, update, onChildRemoved, set, get, runTransaction, onValue, off, query, orderByChild, limitToLast, endAt } from "./imports.js";
 const addChannelBtn = document.getElementById("addChannelBtn");
 const adminControls = document.getElementById("adminControls");
 const bioSpan = document.getElementById("bio");
@@ -27,9 +27,7 @@ const usernameSpan = document.getElementById("username");
 const verifiedMessage = document.createElement("div");
 const verifiedOverlay = document.createElement("div");
 const viewerImg = document.createElement("img");
-let activeListenersCount = 0;
 let allUsernames = [];
-let authReady = false;
 let autoScrollEnabled = true;
 let currentColor = "#ffffff";
 let currentListeners = {};
@@ -73,116 +71,6 @@ let triggerIndex = -1;
 let typingRef = null;
 let typingTimeout = null;
 let zoomed = false;
-const MAX_LISTENERS = 500;
-const activeListeners = {
-    typing: null,
-    messages: null,
-    privateChats: null,
-    others: new Set()
-}
-const authReadyPromise = new Promise((resolve) => {
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        authReady = true;
-        resolve(user);
-    });
-});
-async function getAuthToken() {
-    await authReadyPromise;
-    if (currentUser) {
-        return await currentUser.getIdToken();
-    }
-    return null;
-}
-async function fetchAPI(endpoint, body) {
-    const token = await getAuthToken();
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(`${a}/${endpoint}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body)
-    });
-    const json = await res.json();
-    if (!res.ok) {
-        throw new Error(json?.error || "Request failed");
-    }
-    return json;
-}
-function pathToArray(path) {
-    return path.split("/").filter(Boolean);
-}
-async function dbGet(path) {
-    const res = await fetchAPI("read", { path: pathToArray(path) });
-    return res.data;
-}
-async function dbSet(path, value) {
-    return await fetchAPI("write", {
-        path: pathToArray(path),
-        value
-    });
-}
-async function dbUpdate(path, updates) {
-    for (const key in updates) {
-        await dbSet(path + "/" + key, updates[key]);
-    }
-}
-async function dbPush(path, value) {
-    const key = Date.now().toString();
-    await dbSet(path + "/" + key, value);
-    return key;
-}
-async function dbDelete(path) {
-    return await fetchAPI("delete", { path: pathToArray(path) });
-}
-function dbListen(path, callback, type = "others") {
-    if (activeListenersCount >= MAX_LISTENERS) {
-        return Promise.reject("Listener limit reached");
-    }
-    if (type !== "others" && activeListeners[type]) {
-        activeListeners[type].close();
-        activeListenersCount--;
-    }
-    return getAuthToken().then(token => {
-        const pathArray = path.split("/");
-        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
-        const ws = new WebSocket(wsUrl);
-        ws.onmessage = (event) => {
-            if (!event.data) return;
-            if (event.data instanceof Blob) {
-                event.data.text().then(text => {
-                    if (!text || text.trim() === "" || text === "undefined") return;
-                    try {
-                        callback(JSON.parse(text));
-                    } catch (e) {
-                        console.warn("Invalid JSON from Blob:", text, e);
-                    }
-                });
-                return;
-            }
-            const raw = String(event.data).trim();
-            if (!raw || raw === "undefined") return;
-            try {
-                callback(JSON.parse(raw));
-            } catch (e) {
-                console.warn("Invalid JSON:", raw, e);
-            }
-        };
-        ws.onerror = () => {
-            ws.close();
-            activeListenersCount--;
-            if (type !== "others") activeListeners[type] = null;
-        };
-        ws.onclose = () => {
-            activeListenersCount--;
-            if (type !== "others") activeListeners[type] = null;
-        };
-        activeListenersCount++;
-        if (type !== "others") activeListeners[type] = ws;
-        else activeListeners.others.add(ws);
-        return ws;
-    });
-}
 const TOOLTIP_SELECTOR = 'i[title], i[data-title]';
 function showTooltip(el) {
     const text = el.getAttribute('title') || el.dataset.title;
@@ -310,21 +198,20 @@ chatLog.addEventListener("scroll", async () => {
     if (chatLog.scrollTop > 50) return;
     if (!hasMoreMessages || loadingOlderMessages || !oldestLoadedTimestamp) return;
     loadingOlderMessages = true;
-    const allMsgs = dbGet(currentPath);
-    if (!allMsgs) {
+    const olderQuery = query(
+        currentMsgRef,
+        orderByChild("timestamp"),
+        endAt(oldestLoadedTimestamp - 1),
+        limitToLast(PAGE_SIZE)
+    );
+    const snapshot = await get(olderQuery);
+    if (!snapshot.exists()) {
         hasMoreMessages = false;
         loadingOlderMessages = false;
         return;
     }
-    const entries = Object.entries(allMsgs)
-        .filter(([, msg]) => msg.timestamp < oldestLoadedTimestamp)
-        .sort((a, b) => a[1].timestamp - b[1].timestamp)
-        .slice(-PAGE_SIZE);
-    if (entries.length === 0) {
-        hasMoreMessages = false;
-        loadingOlderMessages = false;
-        return;
-    }
+    const msgs = snapshot.val();
+    const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
     oldestLoadedTimestamp = entries[0][1].timestamp;
     const bottomOffset = chatLog.scrollHeight - chatLog.scrollTop;
     const fragment = document.createDocumentFragment();
@@ -350,18 +237,20 @@ function scrollToBottom(smooth = false) {
     });
 }
 async function unmuteUser(uid) {
-    await fetchAPI("delete", { path: ["mutedUsers", uid] });
+    await remove(ref(db, `mutedUsers/${uid}`));
     delete userMetaCache[uid];
     showSuccess("User Unmuted.");
 }
 window.getUserMeta = getUserMeta;
 async function getUserMeta(uid) {
+    const muteRef = ref(db, `mutedUsers/${uid}`);
     if (userMetaCache[uid]) {
-        const muteData = dbGet(`mutedUsers/${uid}`);
+        const muteSnap = await get(muteRef);
         let muted = false;
-        if (muteData) {
+        if (muteSnap.exists()) {
+            const muteData = muteSnap.val();
             if (muteData.expires && Date.now() > muteData.expires) {
-                await dbDelete(`mutedUsers/${uid}`);
+                await remove(muteRef);
             } else {
                 muted = true;
             }
@@ -369,86 +258,108 @@ async function getUserMeta(uid) {
         userMetaCache[uid].muted = muted;
         return userMetaCache[uid];
     }
-    const [profile, settings, muteData] = await Promise.all([
-        dbGet(`users/${uid}/profile`),
-        dbGet(`users/${uid}/settings`),
-        dbGet(`mutedUsers/${uid}`)
+    const [ nameSnap, colorSnap, picSnap, adminSnap, ownerSnap, coOwnerSnap, hAdminSnap, devSnap, pre1Snap, pre2Snap, pre3Snap, testerSnap, hSnap, susSnap, partnerSnap, discordSnap, donSnap, uploadSnap, guessSnap, linkSnap, muteSnap, secureSnap, guardianSnap, lanSnap, linewizeSnap, blocksiSnap ] = await Promise.all([
+        get(ref(db, `users/${uid}/profile/displayName`)),
+        get(ref(db, `users/${uid}/settings/color`)),
+        get(ref(db, `users/${uid}/profile/pic`)),
+        get(ref(db, `users/${uid}/profile/isAdmin`)),
+        get(ref(db, `users/${uid}/profile/isOwner`)),
+        get(ref(db, `users/${uid}/profile/isCoOwner`)),
+        get(ref(db, `users/${uid}/profile/isHAdmin`)),
+        get(ref(db, `users/${uid}/profile/isDev`)),
+        get(ref(db, `users/${uid}/profile/premium1`)),
+        get(ref(db, `users/${uid}/profile/premium2`)),
+        get(ref(db, `users/${uid}/profile/premium3`)),
+        get(ref(db, `users/${uid}/profile/isTester`)),
+        get(ref(db, `users/${uid}/profile/mileStone`)),
+        get(ref(db, `users/${uid}/profile/isSus`)),
+        get(ref(db, `users/${uid}/profile/isPartner`)),
+        get(ref(db, `users/${uid}/profile/dUsername`)),
+        get(ref(db, `users/${uid}/profile/isDonater`)),
+        get(ref(db, `users/${uid}/profile/isUploader`)),
+        get(ref(db, `users/${uid}/profile/isGuesser`)),
+        get(ref(db, `users/${uid}/profile/isLink`)),
+        get(muteRef),
+        get(ref(db, `users/${uid}/profile/secure`)),
+        get(ref(db, `users/${uid}/profile/guardian`)),
+        get(ref(db, `users/${uid}/profile/lanschool`)),
+        get(ref(db, `users/${uid}/profile/linewize`)),
+        get(ref(db, `users/${uid}/profile/blocksi`))
     ]);
-    const p = profile || {};
-    const s = settings || {};
     let muted = false;
-    if (muteData) {
+    if (muteSnap.exists()) {
+        const muteData = muteSnap.val();
         if (muteData.expires && Date.now() > muteData.expires) {
-            await dbDelete(`mutedUsers/${uid}`);
+            await remove(muteRef);
         } else {
             muted = true;
         }
     }
     const data = {
-        displayName: p.displayName || "User",
-        color: s.color || "#4fa3ff",
-        pic: p.pic ?? 0,
-        owner: !!p.isOwner,
-        tester: !!p.isTester,
-        coOwner: !!p.isCoOwner,
-        hAdmin: !!p.isHAdmin,
-        admin: !!p.isAdmin,
-        dev: !!p.isDev,
-        premium1: !!p.premium1,
-        premium2: !!p.premium2,
-        premium3: !!p.premium3,
-        milestone: !!p.mileStone,
-        sus: !!p.isSus,
-        partner: !!p.isPartner,
-        discord: p.dUsername || "",
-        donor: !!p.isDonater,
-        uploader: !!p.isUploader,
-        guesser: !!p.isGuesser,
-        linker: !!p.isLink,
+        displayName: nameSnap.exists() ? nameSnap.val() : "User",
+        color: colorSnap.exists() ? colorSnap.val() : "#4fa3ff",
+        pic: picSnap.exists() ? picSnap.val() : 0,
+        owner: ownerSnap.exists() && ownerSnap.val(),
+        tester: testerSnap.exists() && testerSnap.val(),
+        coOwner: coOwnerSnap.exists() && coOwnerSnap.val(),
+        hAdmin: hAdminSnap.exists() && hAdminSnap.val(),
+        admin: adminSnap.exists() && adminSnap.val(),
+        dev: devSnap.exists() && devSnap.val(),
+        premium1: pre1Snap.exists() && pre1Snap.val(),
+        premium2: pre2Snap.exists() && pre2Snap.val(),
+        premium3: pre3Snap.exists() && pre3Snap.val(),
+        milestone: hSnap.exists() && hSnap.val(),
+        sus: susSnap.exists() && susSnap.val(),
+        partner: partnerSnap.exists() && partnerSnap.val(),
+        discord: discordSnap.exists() ? discordSnap.val() : "",
+        donor: donSnap.exists() && donSnap.val(),
+        uploader: uploadSnap.exists() && uploadSnap.val(),
+        guesser: guessSnap.exists() && guessSnap.val(),
+        linker: linkSnap.exists() && linkSnap.val(),
         muted,
-        secure: !!p.secure,
-        guardian: !!p.guardian,
-        lanschool: !!p.lanschool,
-        linewize: !!p.linewize,
-        blocksi: !!p.blocksi
+        secure: secureSnap.exists() && secureSnap.val(),
+        guardian: guardianSnap.exists() && guardianSnap.val(),
+        lanschool: lanSnap.exists() && lanSnap.val(),
+        linewize: linewizeSnap.exists() && linewizeSnap.val(),
+        blocksi: blocksiSnap.exists() && blocksiSnap.val()
     };
     userMetaCache[uid] = data;
     return data;
 }
 async function isUserMuted(uid) {
-    const data = dbGet(`mutedUsers/${uid}`);
-    if (data == null || data == undefined) return false;
+    const muteRef = ref(db, `mutedUsers/${uid}`);
+    const snap = await get(muteRef);
+    if (!snap.exists()) return false;
+    const data = snap.val();
     if (data.expires && Date.now() > data.expires) {
-        await dbDelete(`mutedUsers/${uid}`);
+        await remove(muteRef); 
         return false;
     }
-    if (data.expires && Date.now() < data.expires) {
-        return true;
-    }
+    return true;
 }
 function detachCurrentMessageListeners() {
     if (!currentMsgRef) return;
     try {
-        if (currentListeners.added && currentListeners.added.close) currentListeners.added.close();
-        if (currentListeners.removed && currentListeners.removed.close) currentListeners.removed.close();
-        if (currentListeners.changed && currentListeners.changed.close) currentListeners.changed.close();
+        if (currentListeners.added) off(currentMsgRef, 'child_added', currentListeners.added);
+        if (currentListeners.removed) off(currentMsgRef, 'child_removed', currentListeners.removed);
+        if (currentListeners.changed) off(currentMsgRef, 'child_changed', currentListeners.changed);
     } catch (e) {}
     currentMsgRef = null;
     currentListeners = {};
 }
 async function ensureDisplayName(user) {
-    const existingName = await dbGet(`users/${user.uid}/profile/displayName`);
-    if (!existingName) {
+    const nameSnap = await get(ref(db, `users/${user.uid}/profile/displayName`));
+    if (!nameSnap.exists()) {
         const name = (user.email === "infinitecodehs@gmail.com") ? "Hacker41 💎" : "User";
-        await dbSet(`users/${user.uid}/profile/displayName`, name);
+        await set(ref(db, `users/${user.uid}/profile/displayName`), name);
         currentName = name;
     } else {
-        currentName = existingName;
+        currentName = nameSnap.val();
         localStorage.setItem("displayName", currentName);
     }
-    const color = await dbGet(`users/${user.uid}/settings/color`);
-    if (color) {
-        currentColor = color;
+    const colorSnap = await get(ref(db, `users/${user.uid}/settings/color`));
+    if (colorSnap.exists()) {
+        currentColor = colorSnap.val();
         localStorage.setItem("color", currentColor);
     } else {
         currentColor = "#ffffff";
@@ -464,7 +375,7 @@ mentionToggle.addEventListener("change", async () => {
     if (!currentUser) return;
     const newValue = mentionToggle.checked;
     try {
-        await dbSet(`users/${currentUser.uid}/settings/showMentions`, newValue);
+        await set(ref(db, `users/${currentUser.uid}/settings/showMentions`), newValue);
         mentionToggleLabel.style.color = newValue ? "gold" : "#888";
     } catch (err) {
         showError("Failed To Save Mention Setting:", err);
@@ -472,12 +383,13 @@ mentionToggle.addEventListener("change", async () => {
 });
 async function loadMentionSetting(user) {
     try {
-        const val = await dbGet(`users/${user.uid}/settings/showMentions`);
-        if (val !== null && val !== undefined) {
-            mentionToggle.checked = val;
+        const settingRef = ref(db, `users/${user.uid}/settings/showMentions`);
+        const snap = await get(settingRef);
+        if (snap.exists()) {
+            mentionToggle.checked = snap.val();
         } else {
             mentionToggle.checked = true;
-            await dbSet(`users/${user.uid}/settings/showMentions`, true);
+            await set(settingRef, true);
         }
         mentionToggleLabel.style.color = mentionToggle.checked ? "gold" : "#888";
     } catch (err) {
@@ -486,14 +398,16 @@ async function loadMentionSetting(user) {
     }
 }
 async function getDisplayName(uid) {
-    let dn = await dbGet(`users/${uid}/profile/displayName`);
+    const snap = await get(ref(db, `users/${uid}/profile/displayName`));
+    let dn = snap.exists() ? snap.val() : "User";
     if (!dn || dn.trim() === "") dn = "Spam Account";
     return dn;
 }
 mentionNotif.addEventListener("click", () => {
     const msgId = mentionNotif.dataset.msgid;
     if (msgId) {
-        dbSet(`metadata/${currentUser.uid}/mentions/${msgId}/seen`, true);
+        const seenRef = ref(db, `metadata/${currentUser.uid}/mentions/${msgId}/seen`);
+        set(seenRef, true);
     }
     mentionNotif.style.display = "none";
 });
@@ -513,8 +427,8 @@ function messageMentionsYou(text) {
 }
 async function processChannelMentions(htmlText) {
     const channelRegex = /#([A-Za-z0-9_\-]+)/g;
-    const channels = await dbGet("channels");
-    const allChannels = channels ? Object.keys(channels) : [];
+    const channelSnap = await get(ref(db, "channels"));
+    const allChannels = channelSnap.exists() ? Object.keys(channelSnap.val()) : [];
     return htmlText.replace(channelRegex, (match, chName) => {
         if (allChannels.includes(chName)) {
             return `<span class="channel-mention" data-channel="${chName}" title="Go To The ${chName} Channel">#${chName}</span>`;
@@ -548,10 +462,10 @@ function isRestrictedChannel(ch) {
     return (ch === "Admin-Chat" || ch === "Premium-Chat");
 }
 async function getUidByDisplayName(name) {
-    const users = await dbGet("users");
-    if (!users) return null;
+    const snap = await get(ref(db, "users"));
+    if (!snap.exists()) return null;
     const clean = name.replace(/ 💎/g, "").toLowerCase();
-    for (const [uid, data] of Object.entries(users)) {
+    for (const [uid, data] of Object.entries(snap.val())) {
         const dn = data?.profile?.displayName;
         if (dn && dn.replace(/ 💎/g, "").toLowerCase() === clean) {
             return uid;
@@ -586,11 +500,9 @@ function toggleReply(id = null, name = null, text = null) {
 }
 async function renderMessageInstant(id, msg) {
     if (document.getElementById("msg-" + id)) return null;
-    if (id === "sender" || id === "text" || id === "timestamp") return null;
     const div = document.createElement("div");
     div.className = "msg";
     div.id = "msg-" + id;
-    if (!msg) return null;
     div.dataset.timestamp = msg.timestamp || Date.now();
     const msgBtns = document.createElement("div");
     msgBtns.id = 'msgBtns';
@@ -601,7 +513,7 @@ async function renderMessageInstant(id, msg) {
     nameSpan.className = "highlight";
     nameSpan.style.color = "#aaa";
     nameSpan.style.cursor = "pointer";
-    nameSpan.textContent = "Loading";
+    nameSpan.textContent = "User";
     const leftWrapper = document.createElement("span");
     leftWrapper.style.display = "flex";
     leftWrapper.style.gap = "6px";
@@ -612,7 +524,6 @@ async function renderMessageInstant(id, msg) {
     profilePic.style.border = "2px solid white";
     profilePic.style.objectFit = "cover";
     profilePic.style.cursor = "pointer";
-    profilePic.src = `${pfpDomain}/1.jpeg`;
     let profilePics = [];
     async function loadProfilePics() {
         const pfpDate = Date.now();
@@ -714,7 +625,7 @@ async function renderMessageInstant(id, msg) {
         }
     );
     safeText = safeText.replace(/\n/g, "<br>");
-    const mentionRegex = /@([^\s<]+(?:\s💎)?)/g;
+    const mentionRegex = /@([^\s<]+)/g;
     safeText = safeText.replace(mentionRegex, (match, name) => {
         const lower = name.toLowerCase();
         if (
@@ -782,10 +693,8 @@ async function renderMessageInstant(id, msg) {
         }
         return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
     });
+    safeText = await processChannelMentions(safeText);
     textDiv.innerHTML = safeText;
-    processChannelMentions(safeText).then(processed => {
-        textDiv.innerHTML = processed;
-    });
     try {
         const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
         if (existingScript) {
@@ -931,45 +840,42 @@ async function renderMessageInstant(id, msg) {
     editedSpan.textContent = msg.edited ? "(Edited)" : "";
     div.appendChild(msgBtns);
     if (msg.reply) {
-        (async () => {
-            try {
-                const rData = await dbGet(currentPath + "/" + msg.reply);
-                if (rData) {
-                    const rName = await getDisplayName(rData.sender);
-                    const replyPreview = document.createElement("div");
-                    replyPreview.style.display = "flex";
-                    const arrow = document.createElement("span");
-                    arrow.style.width = "30px";
-                    arrow.style.marginLeft = "15px";
-                    arrow.style.height = "8px";
-                    arrow.style.marginTop = "-3px";
-                    arrow.style.borderTop = "1px solid #aaa";
-                    arrow.style.borderLeft = "1px solid #aaa";
-                    arrow.style.borderTopLeftRadius = "10px";
-                    const reply = document.createElement("span");
-                    reply.style.fontSize = "0.8em";
-                    reply.style.marginRight = "44px";
-                    reply.style.color = "#aaa";
-                    reply.style.paddingLeft = "6px";
-                    reply.style.marginTop = "-11px";
-                    reply.style.whiteSpace = "nowrap";
-                    reply.style.overflow = "hidden";
-                    reply.style.textOverflow = "ellipsis";
-                    reply.style.maxWidth = "100%";
-                    const previewText = (rData.text || "").substring(0, 80);
-                    reply.textContent =
-                        `Replying To: @${rName}: ${previewText}`;
-                    replyPreview.appendChild(arrow);
-                    replyPreview.appendChild(reply);
-                    div.appendChild(replyPreview);
-                }
-            } catch (e) {
-                console.warn("Reply load failed:", e);
+        try {
+            const replySnap = await get(ref(db, currentPath + "/" + msg.reply));
+            if (replySnap.exists()) {
+                const rData = replySnap.val();
+                const rName = await getDisplayName(rData.sender);
+                const replyPreview = document.createElement("div");
+                replyPreview.style.display = "flex";
+                const arrow = document.createElement("span");
+                arrow.style.width = "30px";
+                arrow.style.marginLeft = "15px";
+                arrow.style.height = "8px";
+                arrow.style.marginTop = "-3px";
+                arrow.style.borderTop = "1px solid #aaa";
+                arrow.style.borderLeft = "1px solid #aaa";
+                arrow.style.borderTopLeftRadius = "10px";
+                const reply = document.createElement("span");
+                reply.style.fontSize = "0.8em";
+                reply.style.marginRight = "44px";
+                reply.style.color = "#aaa";
+                reply.style.paddingLeft = "6px";
+                reply.style.marginTop = "-11px";
+                reply.style.whiteSpace = "nowrap";
+                reply.style.overflow = "hidden";
+                reply.style.textOverflow = "ellipsis";
+                reply.style.maxWidth = "100%";
+                const previewText = (rData.text || "").substring(0, 80);
+                reply.textContent =
+                    `Replying To: @${rName}: ${previewText}`;
+                replyPreview.appendChild(arrow);
+                replyPreview.appendChild(reply);
+                div.appendChild(replyPreview);
             }
-        })
+        } catch (e) {
+            console.warn("Reply load failed:", e);
+        }
     }
-    const container = document.getElementById("chatLog");
-    if (container) container.appendChild(div);
     div.appendChild(topRow);
     div.appendChild(textDiv);
     div.appendChild(editedSpan);
@@ -1024,7 +930,9 @@ async function renderMessageInstant(id, msg) {
                         muteToggle.textContent = "Toggle";
                         muteToggle.style.cursor = "pointer";
                         muteToggle.onclick = async () => {
-                            await dbSet(`mutedUsers/${msg.sender}`, { expires: "Never" });
+                            const muteRef = ref(db, `mutedUsers/${msg.sender}`);
+                            const expireTime = "Never";
+                            await set(muteRef, { expires: expireTime });
                             delete userMetaCache[msg.sender];
                             showSuccess(`User Muted`);
                             closeMenu();
@@ -1036,7 +944,9 @@ async function renderMessageInstant(id, msg) {
                             let minutes = await customPrompt("Mute For How Many Minutes?", false, "5");
                             minutes = parseInt(minutes);
                             if (!isNaN(minutes) && minutes > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + minutes * 60 * 1000 });
+                                const muteRef = ref(db, `mutedUsers/${msg.sender}`);
+                                const expireTime = Date.now() + minutes * 60 * 1000;
+                                await set(muteRef, { expires: expireTime });
                                 delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${minutes} Minute(s).`);
                             } else {
@@ -1051,7 +961,9 @@ async function renderMessageInstant(id, msg) {
                             let hours = await customPrompt("Mute For How Many Hours?", false, "1");
                             hours = parseInt(hours);
                             if (!isNaN(hours) && hours > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + hours * 60 * 60 * 1000 });
+                                const muteRef = ref(db, `mutedUsers/${msg.sender}`);
+                                const expireTime = Date.now() + hours * 60 * 60 * 1000;
+                                await set(muteRef, { expires: expireTime });
                                 delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${hours} Hour(s).`);
                             } else {
@@ -1066,7 +978,9 @@ async function renderMessageInstant(id, msg) {
                             let days = await customPrompt("Mute For How Many Days?", false, "1");
                             days = parseInt(days);
                             if (!isNaN(days) && days > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + days * 24 * 60 * 60 * 1000 });
+                                const muteRef = ref(db, `mutedUsers/${msg.sender}`);
+                                const expireTime = Date.now() + days * 24 * 60 * 60 * 1000;
+                                await set(muteRef, { expires: expireTime });
                                 delete userMetaCache[msg.sender];
                                 showSuccess(`User Muted For ${days} Day(s).`);
                             } else {
@@ -1098,17 +1012,19 @@ async function renderMessageInstant(id, msg) {
             mutedBadge.style.display = "none";
             mutedBadge.title = "This User Is Muted";
             mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
-            dbListen(`mutedUsers/${msg.sender}`, async (data) => {
-                if (!data) {
+            const mutedRef = ref(db, `mutedUsers/${msg.sender}`);
+            onValue(mutedRef, async (snap) => {
+                if (!snap.exists()) {
                     mutedBadge.style.display = "none";
                     return;
                 }
+                const data = snap.val();
                 if (data.expires === "Never") {
                     mutedBadge.style.display = "inline";
                     return;
                 }
                 if (data.expires && Date.now() > data.expires) {
-                    await dbDelete(`mutedUsers/${msg.sender}`);
+                    await remove(mutedRef);
                     mutedBadge.style.display = "none";
                     return;
                 }
@@ -1321,7 +1237,7 @@ async function renderMessageInstant(id, msg) {
                                     return;
                                 }
                                 if (newText !== "") {
-                                    await dbUpdate(currentPath + "/" + id, {
+                                    await update(ref(db, currentPath + "/" + id), {
                                         text: newText,
                                         edited: true
                                     });
@@ -1341,7 +1257,7 @@ async function renderMessageInstant(id, msg) {
                     const delBtn = document.createElement("button");
                     delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
                     delBtn.title = 'Delete Message';
-                    delBtn.onclick = () => dbDelete(currentPath + "/" + id);
+                    delBtn.onclick = () => remove(ref(db, currentPath + "/" + id));
                     msgBtns.appendChild(delBtn);
                 }
             }
@@ -1356,13 +1272,14 @@ async function renderMessageInstant(id, msg) {
             const alreadyViewing =
                 currentPath &&
                 currentPath === `messages/${currentPath?.split("/")[1]}`;
-            const mentionPath = `metadata/${currentUser.uid}/mentions/${id}`;
-            dbGet(mentionPath).then((data) => {
+            const mentionRef = ref(db, `metadata/${currentUser.uid}/mentions/${id}`);
+            get(mentionRef).then((snapshot) => {
+                const data = snapshot.val();
                 if (!data || data.seen === false) {
                     mentionNotif.style.display = "inline";
                     mentionNotif.dataset.msgid = id;
                     if (!data) {
-                        dbSet(mentionPath, {
+                        set(mentionRef, {
                             seen: false,
                             channel: currentPath?.split("/")[1] || null,
                         });
@@ -1394,10 +1311,11 @@ async function renderMessageInstant(id, msg) {
 }
 async function showChannelMentionMenu() {
     if (!mentionMenu) return;
-    const channels = await dbGet("channels");
+    const snap = await get(ref(db, "channels"));
+    const channels = snap.exists() ? snap.val() : {};
     mentionMenu.innerHTML = "";
     mentionMenu.style.display = "block";
-    Object.entries(channels || {}).forEach(async ([ch, chData]) => {
+    Object.entries(channels).forEach(async ([ch, chData]) => {
         if (!(await hasPermission(chData, "read"))) return;
         if (isRestrictedChannel(ch) &&
             !(isOwner || isTester || isCoOwner || isHAdmin || isAdmin || isDev || isPre2 || isPre3)
@@ -1426,29 +1344,37 @@ async function showChannelMentionMenu() {
     });
 }
 async function cleanExpiredMutes() {
-    const allMutes = await dbGet('mutedUsers');
-    if (!allMutes) return;
+    const mutedRef = ref(db, 'mutedUsers');
+    const snap = await get(mutedRef);
+    if (!snap.exists()) return;
+    const allMutes = snap.val();
     for (const uid in allMutes) {
         const data = allMutes[uid];
         if (data.expires && Date.now() > data.expires) {
-            await dbDelete(`mutedUsers/${uid}`);
+            await remove(ref(db, `mutedUsers/${uid}`));
             console.log(`Expired Mute For ${uid} Removed`);
         }
     }
 }
 cleanExpiredMutes();
 setInterval(cleanExpiredMutes, 1000);
-async function attachMessageListeners(path) {
+async function attachMessageListeners(msgRef) {
     detachCurrentMessageListeners();
-    currentMsgRef = path;
+    currentMsgRef = msgRef;
     chatLog.innerHTML = "";
     oldestLoadedTimestamp = null;
     hasMoreMessages = true;
-    const res = await fetchAPI("limit-to-last", { path: pathToArray(path), limit: PAGE_SIZE });
-    const msgs = res?.data;
-    if (!msgs) return;
-    const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    oldestLoadedTimestamp = entries[0]?.[1]?.timestamp ?? null;
+    const initialQuery = query(
+        msgRef,
+        orderByChild("timestamp"),
+        limitToLast(PAGE_SIZE)
+    );
+    const snapshot = await get(initialQuery);
+    if (!snapshot.exists()) return;
+    const msgs = snapshot.val();
+    const entries = Object.entries(msgs)
+        .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    oldestLoadedTimestamp = entries[0][1].timestamp;
     const fragment = document.createDocumentFragment();
     for (const [id, msg] of entries) {
         const div = await renderMessageInstant(id, msg);
@@ -1456,71 +1382,131 @@ async function attachMessageListeners(path) {
     }
     chatLog.appendChild(fragment);
     scrollToBottom(false);
-    let lastSnapshot = { ...msgs };
-    const ws = await dbListen(path, async (newData) => {
-        if (currentMsgRef !== path) return;
-        if (!newData || typeof newData !== "object") return;
-        const renderedMessages = new Set();
-        for (const [key, val] of Object.entries(newData)) {
-            const existing = document.getElementById("msg-" + key);
-            if (!existing) {
-                if (val.timestamp <= (oldestLoadedTimestamp || 0)) continue;
-                const newDiv = await renderMessageInstant(key, val);
-                if (!newDiv) continue;
-                const newTs = Number(val.timestamp);
-                const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
-                let inserted = false;
-                for (const el of msgsEls) {
-                    if (Number(el.dataset.timestamp || 0) > newTs) {
-                        chatLog.insertBefore(newDiv, el);
-                        inserted = true;
-                        break;
+    currentListeners.added = onChildAdded(msgRef, async snap => {
+        if (msgRef !== currentMsgRef) return;
+        const key = snap.key;
+        const val = snap.val();
+        if (val.timestamp <= oldestLoadedTimestamp) return;
+        if (!document.getElementById("msg-" + key)) {
+            const newDiv = await renderMessageInstant(key, val);
+            if (!newDiv) return;
+            const newTs = Number(val.timestamp);
+            const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
+            let inserted = false;
+            for (const el of msgsEls) {
+                const elTs = Number(el.dataset.timestamp || 0);
+                if (elTs > newTs) {
+                    chatLog.insertBefore(newDiv, el);
+                    inserted = true;
+                    break;
+                }
+            }
+            if (!inserted) chatLog.appendChild(newDiv);
+            if (autoScrollEnabled) {
+                scrollToBottom(true);
+            }
+        }
+    });
+    currentListeners.removed = onChildRemoved(msgRef, snap => {
+        if (msgRef !== currentMsgRef) return;
+        const el = document.getElementById("msg-" + snap.key);
+        if (el) el.remove();
+    });
+    currentListeners.changed = onChildChanged(msgRef, snap => {
+        if (msgRef !== currentMsgRef) return;
+        const el = document.getElementById("msg-" + snap.key);
+        if (el) {
+            const textDiv = el.querySelector(".msg-text");
+            const editedSpan = el.querySelector(".edited-label");
+            const updatedMsg = snap.val();
+            let safeText = (updatedMsg.text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            safeText = safeText.replace(
+                /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+                (match, cls, style, title) => {
+                    let attrs = `class="${cls}"`;
+                    if (style) attrs += ` style="${style}"`;
+                    if (title) attrs += ` title="${title}"`;
+                    return `<i ${attrs}></i>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+                (match, color, content) => {
+                    const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                    return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
+                }
+            );
+            safeText = safeText.replace(
+                /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
                     }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
                 }
-                if (!inserted) chatLog.appendChild(newDiv);
-                if (autoScrollEnabled) scrollToBottom(true);
-            } else if (lastSnapshot[key] && JSON.stringify(lastSnapshot[key]) !== JSON.stringify(val)) {
-                const textDiv = existing.querySelector(".msg-text");
-                const editedSpan = existing.querySelector(".edited-label");
-                if (textDiv) {
-                    let safeText = (val.text || "")
-                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    safeText = safeText.replace(
-                        /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
-                        (match, cls, style, title) => {
-                            let attrs = `class="${cls}"`;
-                            if (style) attrs += ` style="${style}"`;
-                            if (title) attrs += ` title="${title}"`;
-                            return `<i ${attrs}></i>`;
-                        }
-                    );
-                    safeText = safeText.replace(
-                        /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-                        (match, color, content) => `<p style="color:${color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "")}; margin-bottom:0px;">${content}</p>`
-                    );
-                    safeText = safeText.replace(/\n/g, "<br>");
-                    const mentionRegex = /@([^\s<]+)/g;
-                    safeText = safeText.replace(mentionRegex, (match, name) => {
-                        const isSelfMention = currentName && (
-                            currentName.toLowerCase() === name.toLowerCase() ||
-                            currentName.toLowerCase() === name.toLowerCase().replace(" 💎", "")
-                        );
-                        return `<span class="${isSelfMention ? "mention-self" : "mention"}">@${name}</span>`;
-                    });
-                    textDiv.innerHTML = safeText;
-                    if (editedSpan) editedSpan.textContent = val.edited ? "(Edited)" : "";
+            );
+            safeText = safeText.replace(
+                /&lt;video\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    const safeAlt = alt ? alt.replace(/"/g, "") : "";
+                    let width = null;
+                    let height = null;
+                    let radius = null;
+                    if (style) {
+                        const w = style.match(/width\s*:\s*([0-9]+)px/i);
+                        const h = style.match(/height\s*:\s*([0-9]+)px/i);
+                        const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                        if (w) width = Math.min(parseInt(w[1]), 100);
+                        if (h) height = Math.min(parseInt(h[1]), 100);
+                        if (r) radius = parseInt(r[1]);
+                    }
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    if (width) finalStyle += `width:${width}px;`;
+                    if (height) finalStyle += `height:${height}px;`;
+                    if (radius !== null) finalStyle += `border-radius:${radius}px;`;
+                    return `<video src="${safeSrc}" class="chat-vid" style="${finalStyle}" controls loop>`;
                 }
-            }
+            );
+            safeText = safeText.replace(
+                /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
+                (match, src, alt, style) => {
+                    const safeSrc = src.replace(/"/g, "");
+                    let finalStyle = "margin-top:6px;cursor:pointer;";
+                    return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
+                }
+            );
+            safeText = safeText.replace(/\n/g, "<br>");
+            const mentionRegex = /@([^\s<]+)/g;
+            safeText = safeText.replace(mentionRegex, (match, name) => {
+                const isSelfMention =
+                    currentName &&
+                    (currentName.toLowerCase() === name.toLowerCase() ||
+                    currentName.toLowerCase() === name.toLowerCase().replace(" 💎", ""));
+                const cls = isSelfMention ? "mention-self" : "mention";
+                return `<span class="${cls}">@${name}</span>`;
+            });
+            textDiv.innerHTML = safeText;
+            editedSpan.textContent = snap.val().edited ? "(Edited)" : "";
         }
-        for (const key of Object.keys(lastSnapshot)) {
-            if (!newData[key]) {
-                const el = document.getElementById("msg-" + key);
-                if (el) el.remove();
-            }
-        }
-        lastSnapshot = { ...newData };
-    }, "messages");
-    currentListeners.added = ws;
+    });
 }
 function playNotificationSound() {
     const audio = new Audio("https://codehs.com/uploads/47d60c5093ca59dfa2078b03c0264f64");
@@ -1533,17 +1519,11 @@ function attachPrivateMessageListener(uid) {
     privateListeners.add(uid);
     const [a, b] = [currentUser.uid, uid].sort();
     const path = `private/${a}/${b}`;
-    let lastKeys = new Set();
-    dbListen(path, (data) => {
-        if (!data) return;
-        for (const key of Object.keys(data)) {
-            if (!lastKeys.has(key)) {
-                lastKeys.add(key);
-                const msg = data[key];
-                if (msg && msg.sender !== currentUser.uid) {
-                    playNotificationSound();
-                }
-            }
+    const msgRef = ref(db, path);
+    onChildAdded(msgRef, snap => {
+        const msg = snap.val();
+        if (msg && msg.sender !== currentUser.uid) {
+            playNotificationSound();
         }
     });
 }
@@ -1555,25 +1535,25 @@ async function sendPrivateMessage(otherUid, text) {
     }
     const [a, b] = [currentUser.uid, otherUid].sort();
     const path = `private/${a}/${b}`;
-    const existingEmail = await dbGet(`users/${currentUser.uid}/settings/userEmail`);
-    if (!existingEmail) {
-        await dbSet(`users/${currentUser.uid}/settings/userEmail`, currentUser.email);
+    const emailRef = ref(db, `users/${currentUser.uid}/settings/userEmail`);
+    const emailSnap = await get(emailRef);
+    if (!emailSnap.exists()) {
+        await set(emailRef, currentUser.email);
     }
     const msg = {
         sender: currentUser.uid,
         text,
         timestamp: Date.now()
     };
-    await dbPush(path, msg);
-    await dbUpdate(`metadata/${currentUser.uid}/privateChats/${otherUid}`, {
+    await set(push(ref(db, path)), msg);
+    await update(ref(db, `metadata/${currentUser.uid}/privateChats/${otherUid}`), {
         lastRead: Date.now(),
         unreadCount: 0
     });
-    const recipientMeta = await dbGet(`metadata/${otherUid}/privateChats/${currentUser.uid}`) || {};
-    await dbSet(`metadata/${otherUid}/privateChats/${currentUser.uid}`, {
-        ...recipientMeta,
-        lastRead: recipientMeta.lastRead || 0,
-        unreadCount: (recipientMeta.unreadCount || 0) + 1
+    const recipientMetaRef = ref(db, `metadata/${otherUid}/privateChats/${currentUser.uid}`);
+    await runTransaction(recipientMetaRef, curr => {
+        if (curr === null) return { lastRead: 0, unreadCount: 1 };
+        return { ...curr, unreadCount: (curr.unreadCount || 0) + 1 };
     });
 }
 async function openPrivateChat(uid, name) {
@@ -1587,8 +1567,8 @@ async function openPrivateChat(uid, name) {
     chatLog.innerHTML = "";
     const [a, b] = [currentUser.uid, uid].sort();
     currentPath = `private/${a}/${b}`;
-    attachMessageListeners(currentPath);
-    await dbUpdate(`metadata/${currentUser.uid}/privateChats/${uid}`, {
+    attachMessageListeners(ref(db, currentPath));
+    await update(ref(db, `metadata/${currentUser.uid}/privateChats/${uid}`), {
         lastRead: Date.now(),
         unreadCount: 0
     });
@@ -1622,7 +1602,7 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             e.stopPropagation();
             showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
                 if (result) {
-                    dbDelete(`metadata/${currentUser.uid}/privateChats/${otherUid}`);
+                    remove(ref(db, `metadata/${currentUser.uid}/privateChats/${otherUid}`));
                     showSuccess("Chat Closed");
                 } else {
                     showSuccess("Canceled");
@@ -1637,24 +1617,16 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
     }
 }
 function startChannelListeners() {
-    dbListen("channels", () => {
+    const channelsRef = ref(db, "channels");
+    onValue(channelsRef, () => {
         renderChannelsFromDB();
-    }, "others");
-    let lastChannelKeys = null;
-    dbListen("channels", (data) => {
-        const keys = data ? Object.keys(data) : [];
-        if (lastChannelKeys !== null) {
-            for (const removed of lastChannelKeys) {
-                if (!keys.includes(removed)) {
-                    if (currentPath && currentPath === `messages/${removed}`) {
-                        switchChannel("General");
-                        scrollToBottom();
-                    }
-                    renderChannelsFromDB();
-                }
-            }
+    });
+    onChildRemoved(channelsRef, snap => {
+        if (currentPath && currentPath.startsWith("messages/") && currentPath.endsWith("/" + snap.key) ) {
+            switchChannel("General");
+            scrollToBottom();
         }
-        lastChannelKeys = keys;
+        renderChannelsFromDB();
     });
 }
 function openChannelSettings(channel, data) {
@@ -1716,8 +1688,8 @@ function openChannelSettings(channel, data) {
         showConfirm(`Delete "${channel}"? This cannot be undone.`, async (result) => {
             if (!result) return;
             try {
-                await dbDelete(`channels/${channel}`);
-                await dbDelete(`messages/${channel}`);
+                await remove(ref(db, `channels/${channel}`));
+                await remove(ref(db, `messages/${channel}`));
                 if (currentPath === `messages/${channel}`) {
                     switchChannel("General");
                 }
@@ -1736,17 +1708,26 @@ function openChannelSettings(channel, data) {
         if (Object.keys(write).length === 0) write.verified = true;
         try {
             if (newName && newName !== channel) {
-                const oldData = await dbGet(`channels/${channel}`) || {};
-                await dbSet(`channels/${newName}`, { ...oldData, read, write });
-                await dbDelete(`channels/${channel}`);
-                const oldMsgs = await dbGet(`messages/${channel}`);
-                if (oldMsgs) {
-                    await dbSet(`messages/${newName}`, oldMsgs);
-                    await dbDelete(`messages/${channel}`);
+                const oldRef = ref(db, `channels/${channel}`);
+                const newRef = ref(db, `channels/${newName}`);
+                const snap = await get(oldRef);
+                const data = snap.val() || {};
+                await set(newRef, {
+                    ...data,
+                    read,
+                    write
+                });
+                await remove(oldRef);
+                const oldMsgs = ref(db, `messages/${channel}`);
+                const newMsgs = ref(db, `messages/${newName}`);
+                const msgSnap = await get(oldMsgs);
+                if (msgSnap.exists()) {
+                    await set(newMsgs, msgSnap.val());
+                    await remove(oldMsgs);
                 }
                 switchChannel(newName);
             } else {
-                await dbUpdate(`channels/${channel}`, { read, write });
+                await update(ref(db, `channels/${channel}`), { read, write });
             }
             overlay.remove();
         } catch (err) {
@@ -1797,15 +1778,16 @@ async function renderChannelsFromDB() {
     if (renderingChannels) return;
     renderingChannels = true;
     channelList.innerHTML = "";
-    const chans = await dbGet("channels") || {};
+    const snap = await get(ref(db, "channels"));
+    const chans = snap.exists() ? snap.val() : {};
     if (!("General" in chans)) {
-        await dbSet("channels/General", true);
+        await set(ref(db, "channels/General"), true);
         chans.General = true;
     }
     const keys = Object.keys(chans).sort();
     for (const ch of keys) {
         const chData = chans[ch];
-        if (!(await hasPermission(chData, "read"))) continue;
+        if (!(await hasPermission(chData, "read"))) continue;        
         const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
@@ -1822,7 +1804,8 @@ async function renderChannelsFromDB() {
             settingsBtn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const data = await dbGet(`channels/${ch}`) || {};
+                const snap = await get(ref(db, `channels/${ch}`));
+                const data = snap.val() || {};
                 openChannelSettings(ch, data);
             });
             btnWrap.appendChild(settingsBtn);
@@ -1837,7 +1820,7 @@ async function renderChannelsFromDB() {
     }
     renderingChannels = false;
 }
-async function switchChannel(ch) {
+function switchChannel(ch) {
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
@@ -1849,31 +1832,28 @@ async function switchChannel(ch) {
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         return;
     } else {
-        attachMessageListeners(currentPath);
+        attachMessageListeners(ref(db, currentPath));
     }
     if (typingRef) {
-        try {
-            if (typingRef.close) typingRef.close();
-        } catch (e) {}
+        try { 
+            off(typingRef, 'value'); 
+        } catch (e) { 
+        }
         typingRef = null;
     }
-    let typingVisibleTimeout = null;
-    typingRef = await dbListen(`typing/${ch}`, (typingUsers) => {
-        const names = Object.values(typingUsers || {})
-            .filter(u => u && u.name)
-            .map(u => u.name);
-        const uniqueNames = [...new Set(names)];
-        if (uniqueNames.length > 0) {
+    typingRef = ref(db, `typing/${ch}`);
+    onValue(typingRef, (snap) => {
+        const typingUsers = snap.val() || {};
+        const names = Object.entries(typingUsers)
+        .map(([_, val]) => (val && val.name) ? val.name : 'Someone');
+        if (names.length > 0) {
             typingIndicator.textContent =
-                uniqueNames.length === 1
-                    ? `${uniqueNames[0]} Is Typing...`
-                    : `${uniqueNames.join(", ")} Are Typing...`;
+            names.length === 1
+            ? `${names[0]} Is Typing...`
+            : `${names.join(", ")} Are Typing...`;
             typingIndicator.style.display = "block";
-            if (typingVisibleTimeout) clearTimeout(typingVisibleTimeout);
-            typingVisibleTimeout = setTimeout(() => {
-                typingIndicator.style.display = "none";
-            }, 2500);
         } else {
+            typingIndicator.style.display = "none";
         }
     });
     clearChannelMention(ch);
@@ -1881,19 +1861,19 @@ async function switchChannel(ch) {
 }
 function startMetadataListener() {
     if (metadataListenerRef) return;
-    const path = `metadata/${currentUser.uid}/privateChats`;
-    metadataListenerRef = true;
-    dbListen(path, (val) => {
-        updatePrivateListFromSnapshot(val || null);
-    }, "privateChats");
+    metadataListenerRef = ref(db, `metadata/${currentUser.uid}/privateChats`);
+    onValue(metadataListenerRef, snap => {
+        const val = snap.exists() ? snap.val() : null;
+        updatePrivateListFromSnapshot(val);
+    });
 }
 sendBtn.onclick = async () => {
-    if (!currentPath || !currentUser) return;
-    let text = chatInput.value.trim();
-    if (!text) return;
+    if (!currentPath) return;
+    let text = chatInput.value;
+    const trimmed = text.trim();
+    if (!trimmed) return;
     const muted = await isUserMuted(currentUser.uid);
     if (muted) {
-        showError("You Are Muted And Cannot Send Messages Right Now.");
         return;
     }
     if (!isAdmin && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
@@ -1904,20 +1884,21 @@ sendBtn.onclick = async () => {
         }
         lastMessageTimestamp = now;
     }
-    const mentions = text.match(/@\w+/g);
+    const mentions = trimmed.match(/@\w+/g);
     if (mentions && mentions.length > 1) {
         showError("Only One Mention Per Message Is Allowed.");
         chatInput.value = "";
         return;
     }
-    if (text.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
-        showError(`Your Message Is Too Long (${text.length} Characters). Please Keep It Under 1000.`);
+    if (trimmed.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
+        showError(`Your Message Is Too Long (${trimmed.length} Characters). Please Keep It Under 1000.`);
         chatInput.value = "";
         return;
     }
-    const existingEmail = await dbGet(`users/${currentUser.uid}/settings/userEmail`);
-    if (!existingEmail) {
-        await dbSet(`users/${currentUser.uid}/settings/userEmail`, currentUser.email);
+    const emailRef = ref(db, `users/${currentUser.uid}/settings/userEmail`);
+    const emailSnap = await get(emailRef);
+    if (!emailSnap.exists()) {
+        await set(emailRef, currentUser.email);
     }
     let outgoingText = text;
     outgoingText = outgoingText.replace(/@Hacker41(\b(?!\s*💎))/gi, "@Hacker41 💎");
@@ -1931,18 +1912,19 @@ sendBtn.onclick = async () => {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
         const ch = currentPath.split("/")[1];
-        const chData = await dbGet(`channels/${ch}`);
+        const snap = await get(ref(db, `channels/${ch}`));
+        const chData = snap.val();
         if (!(await hasPermission(chData, "write"))) {
             showError("You Cannot Send Messages In This Channel.");
             return;
         }
-        await dbPush(currentPath, msg);
+        await push(ref(db, currentPath), msg);
     }
     chatInput.value = "";
     toggleReply();
-    if (currentUser && currentPath.startsWith("messages/")) {
+    if (typingRef && currentUser) {
         const channelName = currentPath.split("/")[1];
-        dbDelete(`typing/${channelName}/${currentUser.uid}`);
+        remove(ref(db, `typing/${channelName}/${currentUser.uid}`));
     }
 };
 chatInput.addEventListener("input", () => {
@@ -1993,12 +1975,25 @@ chatInput.addEventListener("keydown", (e) => {
 chatInput.addEventListener("input", () => {
     if (!currentUser || !currentPath || !currentPath.startsWith("messages/")) return;
     const ch = currentPath.split("/")[1];
-    const typingPath = `typing/${ch}/${currentUser.uid}`;
-    dbSet(typingPath, { name: currentName, typing: true });
+    const thisTypingRef = ref(db, `typing/${ch}/${currentUser.uid}`);
+    set(thisTypingRef, { name: currentName, typing: true });
     clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
-        dbDelete(typingPath);
+        remove(thisTypingRef);
     }, 3000);
+});
+sendBtn.addEventListener("click", async () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    if (!currentUser) return;
+    const muted = await isUserMuted(currentUser.uid);
+    if (muted) {
+        showError("You Are Muted And Cannot Send Messages Right Now.");
+        return;
+    }
+    if (!currentUser || !currentPath || !currentPath.startsWith("messages/")) return;
+    const ch = currentPath.split("/")[1];
+    remove(ref(db, `typing/${ch}/${currentUser.uid}`));
 });
 chatInput.addEventListener("input", () => {
     const value = chatInput.value;
@@ -2021,27 +2016,34 @@ onAuthStateChanged(auth, async user => {
         setTimeout(() => location.href = "InfiniteLogins.html?chat=true", 1000);
         return; 
     }
+    const pre1snap = await get(ref(db, `users/${user.uid}/profile/premium1`));
+    const pre2snap = await get(ref(db, `users/${user.uid}/profile/premium2`));
+    const pre3snap = await get(ref(db, `users/${user.uid}/profile/premium3`));
+    const devSnap = await get(ref(db, `users/${user.uid}/profile/isDev`));
+    const adminSnap = await get(ref(db, `users/${user.uid}/profile/isAdmin`));
+    const coOwnerSnap = await get(ref(db, `users/${user.uid}/profile/isCoOwner`));
+    const hAdminSnap = await get(ref(db, `users/${user.uid}/profile/isHAdmin`));
+    const testerSnap = await get(ref(db, `users/${user.uid}/profile/isTester`));
+    const susSnap = await get(ref(db, `users/${user.uid}/profile/isSus`));
+    const partnerSnap = await get(ref(db, `users/${user.uid}/profile/isPartner`));
+    const linkSnap = await get(ref(db, `users/${user.uid}/profile/isLink`));
+    const verifySnap = await get(ref(db, `users/${user.uid}/profile/verified`));
     currentUser = user;
-    const [profile, settings] = await Promise.all([
-        dbGet(`users/${user.uid}/profile`),
-        dbGet(`users/${user.uid}/settings`)
-    ]);
-    const p = profile || {};
-    const s = settings || {};
-    isOwner = !!p.isOwner;
+    const ownerSnap = await get(ref(db, `users/${user.uid}/profile/isOwner`));
+    isOwner = ownerSnap.exists() && ownerSnap.val() === true;
     if (user.email === "infinitecodehs@gmail.com") isOwner = true;
-    isCoOwner = !!p.isCoOwner;
-    isAdmin = !!p.isAdmin;
-    isHAdmin = !!p.isHAdmin;
-    isTester = !!p.isTester;
-    isDev = !!p.isDev;
-    isPre1 = !!p.premium1;
-    isPre2 = !!p.premium2;
-    isPre3 = !!p.premium3;
-    isSus = !!p.isSus;
-    isPartner = !!p.isPartner;
-    isLinker = !!p.isLink;
-    isVerified = !!p.verified;
+    isCoOwner = coOwnerSnap.exists() ? coOwnerSnap.val() : false;
+    isAdmin = adminSnap.exists() ? adminSnap.val() : false;
+    isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
+    isTester = testerSnap.exists() ? testerSnap.val() : false;
+    isDev = devSnap.exists() ? devSnap.val() : false;
+    isPre1 = pre1snap.exists() ? pre1snap.val() : false;
+    isPre2 = pre2snap.exists() ? pre2snap.val() : false;
+    isPre3 = pre3snap.exists() ? pre3snap.val() : false;
+    isSus = susSnap.exists() ? susSnap.val() : false;
+    isPartner = partnerSnap.exists() ? partnerSnap.val() : false;
+    isLinker = linkSnap.exists() ? linkSnap.val() : false;
+    isVerified = verifySnap.exists() ? verifySnap.val() : false;
     if (!isVerified) {
         verifiedOverlay.style.display = "flex";
         document.body.appendChild(verifiedOverlay);
@@ -2059,9 +2061,8 @@ onAuthStateChanged(auth, async user => {
     }
     if (!currentPath) switchChannel("General");
     startMetadataListener();
-    dbListen(`mentions/${currentUser.uid}`, (data) => {
-        if (data) console.log("Mention: ", data);
-    });
+    const mentionsRef = ref(db, `mentions/${currentUser.uid}`);
+    onChildAdded(mentionsRef, snap => { console.log("Mention: ", snap.val()); });
     const storedUid = localStorage.getItem("openPrivateChatUid");
     if (storedUid) {
         getDisplayName(storedUid).then(name => {
@@ -2069,10 +2070,19 @@ onAuthStateChanged(auth, async user => {
         });
         localStorage.removeItem("openPrivateChatUid");
     }
-    let displayName = p.displayName || user.email;
-    if (!displayName || displayName.trim() === "") displayName = "Spam Account";
-    const bioDisplay = p.bio || "Bio Not Set";
-    const DNC = s.color || "#ffffff";
+    const nameSnap = await get(ref(db, `users/${user.uid}/profile/displayName`));
+    const bioSnap = await get(ref(db, `users/${user.uid}/profile/bio`));
+    const bioDisplay = bioSnap.exists() ? bioSnap.val() : `Bio Not Set`;
+    let displayName = nameSnap.exists() ? nameSnap.val() : user.email;
+    if (!displayName || displayName.trim() === "") {
+        displayName = "Spam Account";
+    }
+    const nameColor = await get(ref(db, `users/${user.uid}/settings/color`));
+    const DNC = nameColor.exists() ? nameColor.val() : `#ffffff`;
+    isAdmin = adminSnap.exists() ? adminSnap.val() : false;
+    isOwner = ownerSnap.exists() ? ownerSnap.val() : false;
+    isHAdmin = hAdminSnap.exists() ? hAdminSnap.val() : false;
+    isTester = testerSnap.exists() ? testerSnap.val() : false;
     roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" :(isLinker ? "Link Sharer" : "User")))))))))));
     roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isPartner ? "cornflowerblue" :(isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :(isLinker ? "#4fa3ff": "white")))))))))));
     bioSpan.textContent = bioDisplay;
@@ -2080,7 +2090,8 @@ onAuthStateChanged(auth, async user => {
     bioSpan.style.fontSize = "60%";
     usernameSpan.textContent = displayName;
     usernameSpan.style.color = DNC;
-    const pfpIndex = (p.pic !== undefined && p.pic !== null) ? p.pic : 0;
+    const pfpSnap = await get(ref(db, `users/${user.uid}/profile/pic`));
+    const pfpIndex = pfpSnap.exists() ? pfpSnap.val() : 0;
     let profilePics = [];
     async function loadProfilePics() {
         const pfpDate = Date.now();
@@ -2097,14 +2108,18 @@ onAuthStateChanged(auth, async user => {
     const sidebarPfp = document.getElementById("sidebarPfp");
     sidebarPfp.style.border = `2px solid ${DNC}`;
     if (sidebarPfp) {
-        const safeIndex = pfpIndex >= 0 && pfpIndex < profilePics.length ? pfpIndex : 0;
+        const safeIndex =
+            pfpIndex >= 0 && pfpIndex < profilePics.length
+                ? pfpIndex
+                : 0;
         sidebarPfp.src = profilePics[safeIndex] + "?t=" + Date.now();    
     }
 });
 async function loadAllUsernames() {
-    const data = dbGet("users");
+    const usersSnap = await get(ref(db, "users"));
     allUsernames = [];
-    if (data) {
+    if (usersSnap.exists()) {
+        const data = usersSnap.val();
         for (const uid of Object.keys(data)) {
             if (data[uid].profile && data[uid].profile.displayName) {
                 allUsernames.push(data[uid].profile.displayName);
@@ -2163,7 +2178,10 @@ addChannelBtn.onclick = async () => {
         const write = getSelectedRoles("write");
         if (Object.keys(read).length === 0) read.verified = true;
         if (Object.keys(write).length === 0) write.verified = true;
-        await dbSet(`channels/${name}`, { read, write });
+        await set(ref(db, `channels/${name}`), {
+            read,
+            write
+        });
         overlay.remove();
     };
 };

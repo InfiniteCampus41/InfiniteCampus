@@ -1,89 +1,7 @@
-import { auth, onAuthStateChanged } from "./imports.js";
+import { auth, db, onAuthStateChanged, ref, onValue, get, update } from "./imports.js";
 const partnerContainer = document.getElementById("partners");
 let currentUser = null;
 let profileData = null;
-let authReady = false;
-const authReadyPromise = new Promise((resolve) => {
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        authReady = true;
-        resolve(user);
-    });
-});
-async function getAuthToken() {
-    await authReadyPromise;
-    if (currentUser) {
-        return await currentUser.getIdToken();
-    }
-    return null;
-}
-async function fetchAPI(endpoint, body) {
-    const token = await getAuthToken();
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(`${a}/${endpoint}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body)
-    });
-    const json = await res.json();
-    if (!res.ok) {
-        throw new Error(json?.error || "Request failed");
-    }
-    return json;
-}
-function pathToArray(path) {
-    return path.split("/").filter(Boolean);
-}
-async function dbGet(path) {
-    const res = await fetchAPI("read", { path: pathToArray(path) });
-    return res.data;
-}
-async function dbSet(path, value) {
-    return await fetchAPI("write", {
-        path: pathToArray(path),
-        value
-    });
-}
-async function dbUpdate(path, updates) {
-    for (const key in updates) {
-        await dbSet(path + "/" + key, updates[key]);
-    }
-}
-function dbListen(path, callback) {
-    return getAuthToken().then(token => {
-        const pathArray = pathToArray(path);
-        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
-        const ws = new WebSocket(wsUrl);
-        ws.onmessage = (event) => {
-            if (!event.data) return;
-            if (event.data instanceof Blob) {
-                event.data.text().then(text => {
-                    if (!text || text.trim() === "" || text === "undefined") return;
-                    try {
-                        callback(JSON.parse(text));
-                    } catch (e) {
-                        console.warn("Invalid JSON from Blob:", text, e);
-                    }
-                });
-                return;
-            }
-            const raw = String(event.data).trim();
-            if (!raw || raw === "undefined") return;
-            try {
-                callback(JSON.parse(raw));
-            } catch (e) {
-                console.warn("Invalid JSON:", raw, e);
-            }
-        };
-        ws.onerror = () => {
-            ws.close();
-        };
-        ws.onclose = () => {
-        };
-        return ws;
-    });
-}
 function canEdit(partnerUid) {
     if (!currentUser || !profileData) return false;
     if (profileData.isOwner === true) return true;
@@ -143,12 +61,12 @@ function createPartnerBox(uid, partnerName, data) {
                 `Are You Sure You Want To Delete Partner "${partnerName}"?`,
                 async (result) => {
                     if (!result) return;
-                    await dbUpdate(`/partners/${uid}`, {
+                    await update(ref(db, `/partners/${uid}`), {
                         [partnerName]: null
                     });
-                    const userPartnersSnap = await dbGet(`/partners/${uid}`);
-                    if (!userPartnersSnap || Object.keys(userPartnersSnap).length === 0) {
-                        await dbUpdate(`users/${uid}/profile`, { isPartner: null });
+                    const userPartnersSnap = await get(ref(db, `/partners/${uid}`));
+                    if (!userPartnersSnap.exists() || !userPartnersSnap.hasChildren()) {
+                        await update(ref(db, `users/${uid}/profile`), { isPartner: null });
                     }
                     box.remove();
                 }
@@ -188,11 +106,11 @@ function createPartnerBox(uid, partnerName, data) {
             }
             if (!newName) return showError("Name Cannot Be Empty");
             if (newName !== partnerName) {
-                await dbUpdate(`/partners/${uid}`, {
+                await update(ref(db, `/partners/${uid}`), {
                     [partnerName]: null
                 });
             }
-            await dbSet(`/partners/${uid}/${newName}`, {
+            await update(ref(db, `/partners/${uid}/${newName}`), {
                 link: linkInput.value,
                 photo: photoInput.value,
                 desc: descInput.value
@@ -224,10 +142,13 @@ function createPartnerBox(uid, partnerName, data) {
     partnerContainer.appendChild(box);
 }
 function loadPartners() {
-    dbListen("/partners", (data) => {
+    onValue(ref(db, "/partners"), (snapshot) => {
         partnerContainer.innerHTML = "";
-        Object.entries(data || {}).forEach(([uid, userData]) => {
-            Object.entries(userData || {}).forEach(([partnerName, partnerData]) => {
+        snapshot.forEach(userSnap => {
+            const uid = userSnap.key;
+            userSnap.forEach(partnerSnap => {
+                const partnerName = partnerSnap.key;
+                const partnerData = partnerSnap.val();
                 createPartnerBox(uid, partnerName, partnerData);
             });
         });
@@ -292,10 +213,11 @@ async function createAddPartnerButton() {
     form.appendChild(btnDiv);
     overlay.appendChild(form);
     document.body.appendChild(overlay);
-    const usersSnap = await dbGet("/users");
-    if (usersSnap) {
-        Object.entries(usersSnap).forEach(([uid, userData]) => {
-            const displayName = userData?.profile?.displayName || uid;
+    const usersSnap = await get(ref(db, "/users"));
+    if (usersSnap.exists()) {
+        usersSnap.forEach(uSnap => {
+            const uid = uSnap.key;
+            const displayName = uSnap.child("profile/displayName").val() || uid;
             const option = document.createElement("option");
             option.value = uid;
             option.textContent = displayName;
@@ -312,8 +234,8 @@ async function createAddPartnerButton() {
         const photo = form.querySelector(".ptnPhotoInput").value.trim();
         const desc = form.querySelector(".ptnDescInput").value.trim();
         if (!name) return showError("Partner Name Cannot Be Empty");
-        await dbUpdate(`/partners/${selectedUid}/${name}`, { link, photo, desc });
-        await dbUpdate(`users/${selectedUid}/profile`, { isPartner: true });
+        await update(ref(db, `/partners/${selectedUid}/${name}`), { link, photo, desc });
+        await update(ref(db, `users/${selectedUid}/profile`), {isPartner:true});
         overlay.style.display = "none";
         showSuccess("Added Partner");
         loadPartners();
@@ -322,8 +244,8 @@ async function createAddPartnerButton() {
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-        const snap = await dbGet(`/users/${user.uid}/profile`);
-        profileData = snap || {};
+        const snap = await get(ref(db, `/users/${user.uid}/profile`));
+        profileData = snap.exists() ? snap.val() : {};
     }
     loadPartners();
     createAddPartnerButton();
