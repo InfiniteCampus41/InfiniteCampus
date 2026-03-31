@@ -714,7 +714,7 @@ async function renderMessageInstant(id, msg) {
         }
     );
     safeText = safeText.replace(/\n/g, "<br>");
-    const mentionRegex = /@([^\s<]+)/g;
+    const mentionRegex = /@([^\s<]+(?:\s💎)?)/g;
     safeText = safeText.replace(mentionRegex, (match, name) => {
         const lower = name.toLowerCase();
         if (
