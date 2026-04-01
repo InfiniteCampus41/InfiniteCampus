@@ -78,6 +78,32 @@
                 <br>
                 <br>
             </center>
+            <div id="jsonEditorModal" class="json-editor-modal" style="display:none;">
+                <div class="json-editor-box">
+                    <div class="json-editor-header">
+                        <span id="jsonEditorTitle">
+                            Edit Movie
+                        </span>
+                        <button id="closeJsonEditor" class="button">
+                            ✕
+                        </button>
+                    </div>
+                    <textarea id="jsonEditorTextarea"></textarea>
+                    <div class="json-editor-actions">
+                        <button id="formatJsonBtn" class="button">
+                            Format
+                        </button>
+                        <button id="saveJsonBtn" class="button">
+                            Save
+                        </button>
+                        <button id="cancelJsonBtn" class="button">
+                            Cancel
+                        </button>
+                    </div>
+                    <div id="jsonEditorError" style="color:red; margin-top:5px;">
+                    </div>
+                </div>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>

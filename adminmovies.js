@@ -473,21 +473,32 @@ function renderMoviesList() {
         item.dataset.index = index;
         item.innerHTML = `
             <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
-            ${movie.filename}
+            <span class="movie-name" data-index="${index}">${movie.filename}</span>
         `;
         addDragEvents(item);
+        const nameEl = item.querySelector(".movie-name");
+        nameEl.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openMovieEditor(index);
+        });
         container.appendChild(item);
     });
     addSaveButton();
 }
 function addDragEvents(item) {
+    const handle = item.querySelector(".drag-handle");
+    handle.addEventListener("mousedown", () => {
+        item.draggable = true;
+    });
     item.addEventListener("dragstart", () => {
+        if (!item.draggable) return;
         draggedEl = item;
         item.classList.add("dragging");
     });
     item.addEventListener("dragend", () => {
         item.classList.remove("dragging");
         draggedEl = null;
+        item.draggable = false;
         updateMoviesFromDOM();
     });
     item.addEventListener("dragover", (e) => {
@@ -500,6 +511,54 @@ function addDragEvents(item) {
             container.insertBefore(draggedEl, afterElement);
         }
     });
+}
+let currentEditIndex = null;
+function openMovieEditor(index) {
+    const movie = moviesData[index];
+    if (!movie) return;
+    currentEditIndex = index;
+    const modal = document.getElementById("jsonEditorModal");
+    const textarea = document.getElementById("jsonEditorTextarea");
+    const title = document.getElementById("jsonEditorTitle");
+    const errorBox = document.getElementById("jsonEditorError");
+    title.innerText = `Editing: ${movie.filename}`;
+    textarea.value = JSON.stringify(movie, null, 2);
+    errorBox.innerText = "";
+    modal.style.display = "flex";
+}
+document.getElementById("closeJsonEditor").onclick = closeJsonEditor;
+document.getElementById("cancelJsonBtn").onclick = closeJsonEditor;
+document.getElementById("formatJsonBtn").onclick = () => {
+    const textarea = document.getElementById("jsonEditorTextarea");
+    const errorBox = document.getElementById("jsonEditorError");
+    try {
+        const parsed = JSON.parse(textarea.value);
+        textarea.value = JSON.stringify(parsed, null, 2);
+        errorBox.innerText = "";
+    } catch (err) {
+        errorBox.innerText = "Invalid JSON.";
+    }
+};
+document.getElementById("saveJsonBtn").onclick = () => {
+    const textarea = document.getElementById("jsonEditorTextarea");
+    const errorBox = document.getElementById("jsonEditorError");
+    try {
+        const parsed = JSON.parse(textarea.value);
+        if (!parsed.filename) {
+            parsed.filename = moviesData[currentEditIndex].filename;
+        }
+        parsed.filename = moviesData[currentEditIndex].filename;
+        moviesData[currentEditIndex] = parsed;
+        showSuccess("Movie Updated (Not Saved Yet)");
+        closeJsonEditor();
+        renderMoviesList();
+    } catch (err) {
+        errorBox.innerText = "Invalid JSON.";
+    }
+};
+function closeJsonEditor() {
+    document.getElementById("jsonEditorModal").style.display = "none";
+    currentEditIndex = null;
 }
 function getDragAfterElement(container, y) {
     const draggableElements = [...container.querySelectorAll(".movie-item:not(.dragging)")];
