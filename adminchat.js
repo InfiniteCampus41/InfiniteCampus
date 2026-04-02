@@ -130,7 +130,7 @@ async function logMutedUsers() {
 }
 logMutedUsers();
 const deleteTypingBtn = document.getElementById("deleteTypingBtn");
-if (deleteTypingBtn) deleteTypingBtn.style.display = "none";
+if (deleteTypingBtn) deleteTypingBtn.style.display = "block";
 let typingContainer;
 let typingListDiv;
 let unverifiedContainer;
@@ -147,7 +147,7 @@ function createTypingAndUnverifiedUI() {
     typingContainer.style.display = "flex";
     typingContainer.style.flexDirection = "column";
     if (deleteTypingBtn) {
-        deleteTypingBtn.style.display = "none";
+        deleteTypingBtn.style.display = "block";
         deleteTypingBtn.style.marginBottom = "8px";
         deleteTypingBtn.style.padding = "8px 10px";
         deleteTypingBtn.style.borderRadius = "6px";
