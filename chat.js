@@ -1793,7 +1793,7 @@ async function renderChannelsFromDB() {
         li.appendChild(textNode);
         li.onclick = () => { currentPrivateUid = null; switchChannel(ch); };
         if (!currentPrivateUid && currentPath === `messages/${ch}`) li.classList.add("active");
-        if ((isOwner || isCoOwner || isTester) && ch !== "General") {
+        if (isOwner || isCoOwner || isTester) {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
