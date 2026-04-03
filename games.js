@@ -305,7 +305,8 @@ document.addEventListener("DOMContentLoaded", function () {
         { name: "ULTRAKILL", method: ["1", "2"], url: `${def}ultrakill/index.html` },
         { name: "Hollow Knight (2)", method: ["1", "2"], url: `https://orbit.foo.ng/games/hollowknight/index.html` },
         { name: "Tomb Of The Mask", method: ["1", "2"], url: `${def}totm/index.html` },
-        { name: "Tomb Of The Mask (2)", method: ["1", "2"], url: `https://mountain658.github.io/g/tombofthemask/index.html` } 
+        { name: "Tomb Of The Mask (2)", method: ["1", "2"], url: `https://mountain658.github.io/g/tombofthemask/index.html` },
+        { name: "Windows 11", method: ["1","2"], url: `https://win11.blueedge.me` }
 
     ];
     function showGames(method, filterText = "") {
