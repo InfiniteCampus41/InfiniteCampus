@@ -281,6 +281,8 @@ function toggleFullscreen() {
     const tab = getActiveTab();
     if (!tab || !tab.frame) return;
     if (!isFullscreen) {
+        const pxyTabFrameFull = tab.frame;
+        document.pxyTabFrameFull.requestFullscreen();
         tab.frame.style.position = "fixed";
         tab.frame.style.top = "0";
         tab.frame.style.left = "0";
