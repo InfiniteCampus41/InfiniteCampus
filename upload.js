@@ -182,6 +182,7 @@ if (fileParam) {
         async function uploadChunk(chunk, chunkNumber, totalChunks, fileId, file) {
             const formData = new FormData();
             formData.append("file", chunk);
+            const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
             const res = await fetch(`${a}/uploadthis`, {
                 method: "POST",
                 headers: {
@@ -189,7 +190,7 @@ if (fileParam) {
                     "X-Chunk-Number": chunkNumber,
                     "X-Total-Chunks": totalChunks,
                     "X-Filename": file.name,
-                    ...(auth.currentUser ? { "X-User-Id": auth.currentUser.uid } : {})
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
                 },
                 body: formData
             });
@@ -211,7 +212,6 @@ if (fileParam) {
                     const res = JSON.parse(responseText);
                     if (res.fileUrl) finalFileUrl = res.fileUrl;
                 }
-                await new Promise(r => setTimeout(r, 0));
             } catch (err) {
                 output.innerHTML = `
                     <p class="r">

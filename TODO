@@ -1,36 +1,3 @@
-- [x] Combine messages.js With modmessages.js
-    - [x] Delete modmessages.js
-    - [x] Rename messages.js to discord.js
-    - [x] Change Scripts Linking To messages.js To discord.js
-
-- [x] Combine InfiniteDiscordMods.html With InfiniteDiscords.html
-    - [x] Delete InfiniteDiscordMods.html
-
-- [x] Combine InfiniteArticles.html With InfiniteBlogs.html
-    - [x] Delete InfiniteBlogs.html
-
-- [x] Combine notes.js With updates.js
-    - [x] Delete notes.js
-    - [x] Change Script Linking To notes.js With updates.js
-- [x] Combine InfiniteDownloaders.html With InfiniteOpeners.html
-    - [x] Change Links In Header
-
-- [x] Combine news.js With updates.js
-    - [x] Delete news.js
-    - [x] Change Script Linking To news.js With updates.js
-
-- [x] Combine InfiniteContacts.html With InfiniteFeatures.html
-    - [x] Delete InfiniteFeatures.html
-
-- [x] Combine InfiniteFutures.html With InfiniteUpdaters.html
-    - [x] Delete InfiniteFutures.html
-
-- [x] Combine index.js With search.js
-    - [x] Delete search.js
-    - [x] Combine games.js With index.js
-    - [x] Combine oldproxy.js With index.js
-    - [x] Delete index.js
-
 The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
 Here Are The Steps To Do So
 
@@ -40,6 +7,6 @@ Here Are The Steps To Do So
     Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
     Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List(When Added)
     Fix Chat Message Loading Issue
-    Make All Messages And Files From Website Chat Go Into Discord And Be Stored In Discord
+    Make ALL Site Data Stored In A Backend DB
     Fix Notifications
     Allow Saving Of Site Settings Through Firebase
