@@ -170,10 +170,26 @@ downloadBtn.style.cursor = "pointer";
 imgViewer.appendChild(viewerImg);
 imgViewer.appendChild(downloadBtn);
 document.body.appendChild(imgViewer);
-if (!(e.includes(window.location.host))) {
-    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
+if (!window.location.host || window.location.protocol === "file:") {
+    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps";
 }
-viewerImg.addEventListener("click", () => {
+downloadBtn.href = "";
+downloadBtn.download = "";
+downloadBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
+document.body.addEventListener("click", (e) => {
+    const img = e.target.closest(".chat-img");
+    if (!img) return;
+    e.preventDefault();
+    viewerImg.src = img.src;
+    downloadBtn.href = img.src;
+    imgViewer.style.display = "flex";
+    zoomed = false;
+    viewerImg.style.transform = "scale(1)";
+});
+viewerImg.addEventListener("click", (e) => {
+    e.stopPropagation();
     zoomed = !zoomed;
     viewerImg.style.transform = zoomed ? "scale(2)" : "scale(1)";
 });
@@ -1206,7 +1222,7 @@ async function renderMessageInstant(id, msg) {
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
-                        textarea.value = textDiv.innerText.replace(/\n/g, "\n");
+                        textarea.value = msg.text || textDiv.innerText || "";
                         textarea.style.width = "100%";
                         textarea.style.boxSizing = "border-box";
                         textarea.style.resize = "vertical";
