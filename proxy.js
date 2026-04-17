@@ -280,29 +280,29 @@ function createFullscreenButton() {
 function toggleFullscreen() {
     const tab = getActiveTab();
     if (!tab || !tab.frame) return;
-    if (!isFullscreen) {
-        tab.frame.style.position = "fixed";
-        tab.frame.style.top = "0";
-        tab.frame.style.left = "0";
-        tab.frame.style.width = "100vw";
-        tab.frame.style.height = "100vh";
-        tab.frame.style.zIndex = "9998";
-        fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen-exit"></i>`;
-        isFullscreen = true;
+
+    // Use native Fullscreen API instead of manual CSS resizing
+    if (!document.fullscreenElement) {
+        tab.frame.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
     } else {
-        tab.frame.style.position = "";
-        tab.frame.style.top = "";
-        tab.frame.style.left = "";
-        tab.frame.style.width = "";
-        tab.frame.style.height = "";
-        tab.frame.style.zIndex = "";
-        fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
-        isFullscreen = false;
+        document.exitFullscreen();
     }
 }
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && isFullscreen) {
-        toggleFullscreen();
+document.addEventListener("fullscreenchange", () => {
+    const tab = getActiveTab();
+    if (!tab) return;
+    if (document.fullscreenElement) {
+        isFullscreen = true;
+        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen-exit"></i>`;
+        tab.frame.style.width = "100vw";
+        tab.frame.style.height = "100vh";
+    } else {
+        isFullscreen = false;
+        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
+        tab.frame.style.width = "";
+        tab.frame.style.height = "";
     }
 });
 async function loadIntoActiveTab(input) {
