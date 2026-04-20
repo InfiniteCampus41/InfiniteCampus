@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { getDatabase, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, increment } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { getFirestore, doc, getDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { forceWebSockets } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import { applyActionCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
@@ -22,5 +23,5 @@ export const messaging = getMessaging(app);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const firestore = getFirestore(app);
-export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io, increment, doc, getDoc, updateDoc, deleteDoc, setDoc, GoogleAuthProvider, signInWithPopup, getToken, Hyperbeam };
+export { onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, signInWithEmailAndPassword, createUserWithEmailAndPassword, applyActionCode, confirmPasswordReset, signInWithCustomToken, ref, get, set, update, onValue, remove, push, onChildAdded, onChildRemoved, onChildChanged, runTransaction, off, query, orderByChild, limitToLast, endAt, child, forceWebSockets, io, increment, doc, getDoc, updateDoc, deleteDoc, setDoc, GoogleAuthProvider, signInWithPopup, getToken, Hyperbeam };
 export default app;

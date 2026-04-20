@@ -1,4 +1,4 @@
-import { auth, db, onAuthStateChanged, ref, get, set, remove, onValue } from "./imports.js";
+import { auth, db, onAuthStateChanged, ref, get, set, remove, onValue, signOut, signInWithCustomToken } from "./imports.js";
 const privateChatsDiv = document.getElementById("privateChats");
 const chatView = document.getElementById("chatView");
 const chatTitle = document.getElementById("chatTitle");
@@ -23,8 +23,10 @@ let userProfiles = {};
 const userData = "/users/${uid}";
 let userSettings = {};
 let activeChatListener = null;
+let currentIsOwner = false;
 let profilePics = [];
 let pfpDomain = "/pfps";
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 if (!(e.includes(window.location.host))) {
     pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
 }
@@ -66,6 +68,55 @@ imgViewer.addEventListener("click", (e) => {
         zoomed = false;
     }
 });
+async function verifyAdminPassword() {
+    while (true) {
+        if (ADMIN_PASS) {
+            try {
+                const res = await fetch(BACKEND + "/check_pass", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "ngrok-skip-browser-warning": "true"
+                    },
+                    body: JSON.stringify({ password: ADMIN_PASS })
+                });
+                const data = await res.json().catch(() => null);
+                if (data && data.ok) {
+                    return true;
+                }
+            } catch (e) {}
+            localStorage.removeItem("a_pass");
+            ADMIN_PASS = null;
+        }
+        const entered = await customPrompt("Enter Admin Password:", true);
+        if (!entered) continue;
+        ADMIN_PASS = entered.trim();
+        try {
+            const res = await fetch(BACKEND + "/check_pass", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({ password: ADMIN_PASS })
+            });
+            const data = await res.json().catch(() => null);
+            if (data && data.ok) {
+                localStorage.setItem("a_pass", ADMIN_PASS);
+                return true;
+            }
+        } catch (e) {}
+        showError("Incorrect Password.");
+        ADMIN_PASS = null;
+    }
+}
+async function adminFetch(url, options = {}) {
+    options.headers = Object.assign({}, options.headers, {
+        "x-admin-password": ADMIN_PASS,
+        "ngrok-skip-browser-warning": "true"
+    });
+    return fetch(url, options);
+}
 async function loadProfilePics() {
     try {
         const res = await fetch(`${pfpDomain}/index.json?${Date.now()}`);
@@ -446,7 +497,6 @@ onAuthStateChanged(auth, async (user) => {
     await loadProfilePics();
     if (!user) {
         showError("You Must Be Logged In To View This Page.");
-        window.location.href = "InfiniteChatters.html";
         return;
     }
     const uid = user.uid;
@@ -461,6 +511,7 @@ onAuthStateChanged(auth, async (user) => {
     const hAdminSnap = await get(hAdminRef);
     const devSnap = await get(devRef);
     let isOwner = ownerSnap.exists() && ownerSnap.val() === true;
+    currentIsOwner = isOwner;
     let isCoOwner = coOwnerSnap.exists() && coOwnerSnap.val() === true;
     let isTester = testerSnap.exists() && testerSnap.val() === true;
     let isHAdmin = hAdminSnap.exists() && hAdminSnap.val() === true;
@@ -794,20 +845,98 @@ function editUser(uid, data) {
     currentUserEditUID = uid;
     userListDiv.style.display = "none";
     userEditDiv.style.display = "block";
-    editTitle.textContent = `Editing User: ${uid}`;
-    userDataTextarea.value = JSON.stringify(data, null, 2);
-    let delBtn = document.getElementById("deleteUserBtn");
-    if (delBtn) delBtn.remove();
-    delBtn = document.createElement("button");
-    delBtn.id = "deleteUserBtn";
-    delBtn.textContent = "Delete User";
-    delBtn.style.marginTop = "12px";
-    delBtn.style.background = "#7a0000";
-    delBtn.style.color = "white";
-    delBtn.style.padding = "8px";
-    delBtn.style.borderRadius = "6px";
-    delBtn.onclick = () => deleteEntireUser(uid);
-    userEditDiv.appendChild(delBtn);
+    editTitle.textContent = `User Actions: ${uid}`;
+    userDataTextarea.style.display = "none";
+    saveUserBtn.style.display = "none";
+    userEditDiv.querySelectorAll(".action-btn").forEach(el => el.remove());
+    const btnContainer = document.createElement("div");
+    btnContainer.style.display = "flex";
+    btnContainer.style.flexDirection = "column";
+    btnContainer.style.marginTop = "12px";
+    btnContainer.style.gap = "10px";
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit User Data";
+    editBtn.className = "button action-btn";
+    editBtn.onclick = () => {
+        userDataTextarea.style.display = "block";
+        saveUserBtn.style.display = "block";
+        userDataTextarea.value = JSON.stringify(data, null, 2);
+        btnContainer.style.display = "none";
+    };
+    backToListBtn.onclick = () => {
+        if (userDataTextarea.style.display === "block") {
+            userDataTextarea.style.display = "none";
+            saveUserBtn.style.display = "none";
+            btnContainer.style.display = "flex";
+        } else {
+            userEditDiv.style.display = "none";
+            userListDiv.style.display = "block";
+        }
+    };
+    btnContainer.appendChild(editBtn);
+    if (currentIsOwner) {
+        const loginBtn = document.createElement("button");
+        loginBtn.textContent = "Login As User";
+        loginBtn.className = "button action-btn";
+        loginBtn.onclick = async () => {
+            try {
+                const BACKEND = "https://api.infinitecampus.xyz";
+                const idToken = await auth.currentUser.getIdToken();
+                verifyAdminPassword().then(async (isValid) => {
+                    if (!isValid) {
+                        showError("Invalid Admin Password");
+                        return;
+                    } else {
+                        const res = await adminFetch(BACKEND + "/createCustomToken", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer " + idToken
+                            },
+                            body: JSON.stringify({ targetUid: uid })
+                        });
+                        const result = await res.json();
+                        if (!result.token) {
+                            showError("Failed: " + JSON.stringify(result));
+                            return;
+                        }
+                        await signOut(auth);
+                        await signInWithCustomToken(auth, result.token);
+                        await adminFetch(BACKEND + "/tokenUsed", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ uid })
+                        });
+                        showSuccess("Switched Account");
+                        window.location.href = "/InfiniteChatters.html";
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+                showError("Error Occurred");
+            }
+        };
+        btnContainer.appendChild(loginBtn);
+    }
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete User";
+    deleteBtn.className = "button action-btn";
+    deleteBtn.style.background = "#7a0000";
+    deleteBtn.style.color = "white";
+    deleteBtn.onclick = () => {
+        showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+            if (result) {
+                deleteEntireUser(uid);
+                userEditDiv.style.display = "none";
+                userListDiv.style.display = "block";
+                loadUserList();
+            } else {
+                showSuccess("Canceled");
+            }
+        });
+    };
+    btnContainer.appendChild(deleteBtn);
+    userEditDiv.appendChild(btnContainer);
 }
 async function deleteEntireUser(uid) {
     const [privateSnap, metadataSnap, messagesSnap] = await Promise.all([
@@ -857,10 +986,6 @@ saveUserBtn.onclick = async () => {
     } catch (err) {
         showError("Invalid JSON Or Save Failed: " + err.message);
     }
-};
-backToListBtn.onclick = () => {
-    userEditDiv.style.display = "none";
-    userListDiv.style.display = "block";
 };
 sendAdminMessageBtn.onclick = async () => {
     if (!currentChatPath) {

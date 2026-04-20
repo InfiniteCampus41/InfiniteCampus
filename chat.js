@@ -8,7 +8,6 @@ const chatInput = document.getElementById("chatInput");
 const chatLog = document.getElementById("chatLog");
 const downloadBtn = document.createElement("a");
 const imgViewer = document.createElement("div");
-const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const mentionHint = document.getElementById("mentionHint");
 const mentionMenu = document.getElementById("mentionMenu");
 const mentionNotif = document.getElementById("mentionNotif");
@@ -71,67 +70,6 @@ let triggerIndex = -1;
 let typingRef = null;
 let typingTimeout = null;
 let zoomed = false;
-const TOOLTIP_SELECTOR = 'i[title], i[data-title]';
-function showTooltip(el) {
-    const text = el.getAttribute('title') || el.dataset.title;
-    if (!text) return;
-    if (el.hasAttribute('title')) {
-        el.dataset.title = text;
-        el.removeAttribute('title');
-    }
-    document.querySelectorAll('.tooltip').forEach(t => t.remove());
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.textContent = text;
-    document.body.appendChild(tooltip);
-    const rect = el.getBoundingClientRect();
-    tooltip.style.left = "0px";
-    tooltip.style.top = "0px";
-    tooltip.classList.add("show");
-    const tooltipRect = tooltip.getBoundingClientRect();
-    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-    if (left < 8) left = 8;
-    if (left + tooltipRect.width > window.innerWidth - 8) {
-        left = window.innerWidth - tooltipRect.width - 8;
-    }
-    let top;
-    if (rect.top < tooltipRect.height + 20) {
-        top = rect.bottom + 10;
-    } else {
-        top = rect.top - tooltipRect.height - 10;
-    }
-    tooltip.style.left = left + "px";
-    tooltip.style.top = top + "px";
-    return tooltip;
-}
-if (isMobile) {
-    document.addEventListener('click', (e) => {
-        const el = e.target.closest(TOOLTIP_SELECTOR);
-        if (!el) return;
-        const tooltip = showTooltip(el);
-        if (!tooltip) return;
-        setTimeout(() => {
-            tooltip.classList.remove("show");
-            setTimeout(() => tooltip.remove(), 200);
-        }, 2000);
-    });
-} else {
-    document.addEventListener('mouseover', (e) => {
-        const el = e.target.closest(TOOLTIP_SELECTOR);
-        if (!el) return;
-        const tooltip = showTooltip(el);
-        if (!tooltip) return;
-        el._tooltip = tooltip;
-    });
-    document.addEventListener('mouseout', (e) => {
-        const el = e.target.closest(TOOLTIP_SELECTOR);
-        if (!el || !el._tooltip) return;
-        const tooltip = el._tooltip;
-        tooltip.classList.remove("show");
-        setTimeout(() => tooltip.remove(), 200);
-        el._tooltip = null;
-    });
-}
 verifiedOverlay.style.position = "fixed";
 verifiedOverlay.style.top = "0";
 verifiedOverlay.style.left = "0";
