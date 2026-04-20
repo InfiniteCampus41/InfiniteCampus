@@ -5,6 +5,7 @@ const chatTitle = document.getElementById("chatTitle");
 const chatMessages = document.getElementById("chatMessages");
 const deleteChatBtn = document.getElementById("deleteChat");
 deleteChatBtn.className = "button";
+const BACKEND = "https://api.infinitecampus.xyz";
 const backButton = document.getElementById("backButton");
 const userListDiv = document.getElementById("userList");
 const userEditDiv = document.getElementById("userEdit");
@@ -880,7 +881,6 @@ function editUser(uid, data) {
         loginBtn.className = "button action-btn";
         loginBtn.onclick = async () => {
             try {
-                const BACKEND = "https://api.infinitecampus.xyz";
                 const idToken = await auth.currentUser.getIdToken();
                 verifyAdminPassword().then(async (isValid) => {
                     if (!isValid) {
