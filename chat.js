@@ -599,6 +599,21 @@ async function renderMessageInstant(id, msg) {
         const cls = isSelfMention ? "mention-self" : "mention";
         return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
     });
+    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    safeText = safeText.replace(markdownLinkRegex, (match, text, url) => {
+        const cleanText = text.trim();
+        const cleanUrl = url.trim();
+        if (cleanText === cleanUrl) {
+            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+        } else if (cleanText.includes(".")) {
+            return `${cleanText} (${cleanUrl})`;
+        }
+        const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+        if (looksLikeUrl && cleanText !== cleanUrl) {
+            return `${cleanText} (${cleanUrl})`;
+        }
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+    });
     const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
     safeText = safeText.replace(urlRegex, (match, prefix, url) => {
         let display = url;
@@ -719,6 +734,51 @@ async function renderMessageInstant(id, msg) {
         document.body.appendChild(previewDiv);
     }
     const links = textDiv.querySelectorAll("a[href]");
+    links.forEach(link => {
+        const showLinkMenu = (x, y) => {
+            const old = document.querySelector(".link-context-menu");
+            if (old) old.remove();
+            const menu = document.createElement("div");
+            menu.className = "link-context-menu";
+            menu.style.position = "absolute";
+            menu.style.left = x + "px";
+            menu.style.top = y + "px";
+            menu.style.background = "#222";
+            menu.style.border = "1px solid #555";
+            menu.style.borderRadius = "6px";
+            menu.style.padding = "8px";
+            menu.style.color = "#fff";
+            menu.style.zIndex = "9999";
+            menu.style.maxWidth = "300px";
+            menu.style.wordBreak = "break-all";
+            menu.textContent = link.href;
+            document.body.appendChild(menu);
+            const close = () => {
+                menu.remove();
+                document.removeEventListener("click", close);
+            };
+            setTimeout(() => {
+                document.addEventListener("click", close);
+            }, 0);
+        };
+        link.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            showLinkMenu(e.pageX, e.pageY);
+        });
+        let pressTimer = null;
+        link.addEventListener("touchstart", (e) => {
+            pressTimer = setTimeout(() => {
+                const touch = e.touches[0];
+                showLinkMenu(touch.pageX, touch.pageY);
+            }, 500);
+        });
+        link.addEventListener("touchend", () => {
+            clearTimeout(pressTimer);
+        });
+        link.addEventListener("touchmove", () => {
+            clearTimeout(pressTimer);
+        });
+    });
     const cache = {};
     links.forEach((link) => {
         const url = link.href;
@@ -1366,7 +1426,7 @@ async function attachMessageListeners(msgRef) {
         const el = document.getElementById("msg-" + snap.key);
         if (el) el.remove();
     });
-    currentListeners.changed = onChildChanged(msgRef, snap => {
+    currentListeners.changed = onChildChanged(msgRef, async snap => {
         if (msgRef !== currentMsgRef) return;
         const el = document.getElementById("msg-" + snap.key);
         if (el) {
@@ -1441,7 +1501,7 @@ async function attachMessageListeners(msgRef) {
             );
             safeText = safeText.replace(
                 /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-                (match, src, alt, style) => {
+                (match, src) => {
                     const safeSrc = src.replace(/"/g, "");
                     let finalStyle = "margin-top:6px;cursor:pointer;";
                     return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
@@ -1450,13 +1510,88 @@ async function attachMessageListeners(msgRef) {
             safeText = safeText.replace(/\n/g, "<br>");
             const mentionRegex = /@([^\s<]+)/g;
             safeText = safeText.replace(mentionRegex, (match, name) => {
+                const lower = name.toLowerCase();
+                if (
+                    lower === "support" &&
+                    currentPath &&
+                    currentPath.startsWith("messages/") &&
+                    (isDev || isOwner || isTester)
+                ) {
+                    return `<span class="mention-self">@support</span>`;
+                }
                 const isSelfMention =
                     currentName &&
-                    (currentName.toLowerCase() === name.toLowerCase() ||
-                    currentName.toLowerCase() === name.toLowerCase().replace(" 💎", ""));
+                    (
+                        currentName.toLowerCase() === lower ||
+                        currentName.toLowerCase() === lower.replace(" 💎","")
+                    );
                 const cls = isSelfMention ? "mention-self" : "mention";
-                return `<span class="${cls}">@${name}</span>`;
+                return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
             });
+            const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+            safeText = safeText.replace(markdownLinkRegex, (match, text, url) => {
+                const cleanText = text.trim();
+                const cleanUrl = url.trim();
+                if (cleanText === cleanUrl) {
+                    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+                } else if (cleanText.includes(".")) {
+                    return `${cleanText} (${cleanUrl})`;
+                }
+                const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+                if (looksLikeUrl && cleanText !== cleanUrl) {
+                    return `${cleanText} (${cleanUrl})`;
+                }
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+            });
+            const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+            safeText = safeText.replace(urlRegex, (match, prefix, url) => {
+                let display = url;
+                while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
+                const trailing = url.slice(display.length);
+                if (display.includes("tenor.com")) {
+                    const clean = display.split("?")[0];
+                    const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                    return `${prefix}
+                    <img 
+                        src="${finalUrl}" 
+                        class="chat-img tenor-gif"
+                        data-tenor="${display}"
+                        style="max-width:250px;margin-top:6px;border-radius:8px;">
+                    ${trailing}`;
+                }
+                if (
+                    display.includes("youtube.com/watch") ||
+                    display.includes("youtu.be/") ||
+                    display.includes("youtube.com/shorts/")
+                ) {
+                    let videoId = "";
+                    if (display.includes("youtube.com/watch")) {
+                        const urlObj = new URL(display);
+                        videoId = urlObj.searchParams.get("v");
+                    }
+                    else if (display.includes("youtu.be/")) {
+                        videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                    }
+                    else if (display.includes("youtube.com/shorts/")) {
+                        videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+                    }
+                    const isShort = display.includes("/shorts/");
+                    return `${prefix}
+                    <div class="yt-embed ${isShort ? "short" : ""}">
+                        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+                    </div>
+                    ${trailing}`;
+                }
+                if (display.includes("tiktok.com")) {
+                    return `${prefix}
+                    <blockquote class="tiktok-embed" cite="${display}" data-video-id="">
+                        <a href="${display}"></a>
+                    </blockquote>
+                    ${trailing}`;
+                }
+                return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
+            });
+            safeText = await processChannelMentions(safeText);
             textDiv.innerHTML = safeText;
             editedSpan.textContent = snap.val().edited ? "(Edited)" : "";
         }
