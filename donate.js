@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, get, ref } from "./imports.js";
+import { auth, db, onAuthStateChanged, get, ref, onValue } from "./imports.js";
 const backend = `${a}`;
 const perksParams = new URLSearchParams(window.location.search);
 const showPerks = perksParams.get("perks");
@@ -17,9 +17,15 @@ onAuthStateChanged(auth, async (user) => {
         currentUserToken = await user.getIdToken();
     }
 });
+const donationsRef = ref(db, "/donations/amount");
+onValue(donationsRef, (snapshot) => {
+    const amount = snapshot.val();
+    updateProgress(amount);
+});
 function getAmount() {
     let value = parseFloat(amountInput.value);
-    if (isNaN(value) || value < 1) value = 1;
+    if (isNaN(value)) return;
+    if (value < 0.01) value = 0.01;
     if (value > 1000) value = 1000;
     amountInput.value = value;
     payBtn.textContent = `Pay $${value.toFixed(2)}`;
@@ -128,7 +134,6 @@ const payments = Square.payments(
   "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
   "L96ZX33510ER5"
 );
-
 async function initPayments() {
     const card = await payments.card();
     await card.attach("#card-container");
@@ -144,6 +149,16 @@ async function initPayments() {
             showError("Credit Card Payment Failed");
         }
     });
+}
+const GOAL = 201.16;
+const progressBar = document.getElementById("donation-progress-bar");
+const progressText = document.getElementById("donation-progress-text");
+function updateProgress(amount) {
+    if (!amount) amount = 0;
+    let percent = (amount / GOAL) * 100;
+    if (percent > 100) percent = 100;
+    progressBar.style.width = percent + "%";
+    progressText.textContent = `$${amount.toFixed(2)} / $${GOAL.toFixed(2)}`;
 }
 getAmount();
 initPayments();
