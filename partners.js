@@ -26,7 +26,7 @@ function createPartnerBox(uid, partnerName, data) {
     } else if (data.link) {
         img.src = getMetadataImage(data.link);
     } else {
-        img.src = "https://via.placeholder.com/300x200?text=No+Image";
+        img.src = "/res/icon.png";
     }
     box.appendChild(img);
     box.appendChild(name);

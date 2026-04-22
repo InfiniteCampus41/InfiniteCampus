@@ -102,7 +102,7 @@ async function refreshWallets() {
 }
 async function sendPayment(token, amount, methodName) {
     try {
-        const response = await fetch("https://api.infinitecampus.xyz/pay", {
+        const response = await fetch(`${backend}/pay`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

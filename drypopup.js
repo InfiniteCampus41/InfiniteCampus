@@ -99,7 +99,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         Clear Data
                     </a>
                     <br>
-                    <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca">
+                    <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca" target="_blank">
                         Join The Discord
                     </a>
                 </div>

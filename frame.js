@@ -514,7 +514,9 @@ function appendToMain() {
         "InfiniteArchives.html",
         "InfinitePolicies.html",
         "InfiniteTerms.html",
-        "InfiniteServers.html"
+        "InfiniteServers.html",
+        "InfinitePolls.html",
+        "InfiniteAis.html"
     ];
     const currentPage = window.location.pathname;
     if (excludedPages.some(page => currentPage.includes(page))) {
