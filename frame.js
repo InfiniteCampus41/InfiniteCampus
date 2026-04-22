@@ -494,7 +494,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     updateHeaderFooterHeights();
     window.addEventListener("resize", updateHeaderFooterHeights);
+    appendToMain();
 });
+function appendToMain() {
+    const excludedPages = [
+        "/InfiniteChatters.html",
+        "/InfiniteEmbeds.html",
+        "/InfiniteDiscords.html",
+        "/InfiniteGamers.html",
+        "/InfiniteBrowsers.html",
+        "/InfiniteDonaters.html",
+        "/InfiniteProxies.html",
+        "InfiniteOldProxies.html",
+        "InfiniteAdminChats.html",
+        "InfiniteAccounts.html",
+        "InfiniteAdminMovies.html",
+        "InfiniteAdminUrls.html",
+        "InfiniteAdmins.html",
+        "InfiniteArchives.html",
+        "InfinitePolicies.html",
+        "InfiniteTerms.html",
+        "InfiniteServers.html"
+    ];
+    const currentPage = window.location.pathname;
+    if (excludedPages.some(page => currentPage.includes(page))) {
+        return;
+    }
+    const main = document.querySelector("main");
+    if (!main) return;
+    const extraHTML = `
+        <center>
+            <div id="donation-auto-msg">
+                <p class="btxt">
+                    Infinite Campus Is A Free Service, But It Isn't Free To Run. If You Would Like To Support Us, Consider Donating
+                </p>
+                <a class="button apbtn" href="/InfiniteDonaters.html">
+                    Donate
+                </a>
+            </div>
+            <br>
+            <p class="btxt">
+                All New Updates Are On The Updates Page
+                <br>
+                Also Join The
+                <a href="https://discord.gg/4d9hJSVXca" class="discord" target="_blank">
+                    Discord
+                </a>
+                discord.gg/4d9hJSVXca
+            </p>
+            <br>
+            <br>
+            <br>
+        </center>
+    `;
+    main.insertAdjacentHTML("beforeend", extraHTML);
+}
 const isChattersPage = window.location.pathname
     .toLowerCase()
     .includes("infinitechatters.html");
