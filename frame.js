@@ -523,6 +523,8 @@ function appendToMain() {
     const main = document.querySelector("main");
     if (!main) return;
     const extraHTML = `
+        <br>
+        <br>
         <center>
             <div id="donation-auto-msg">
                 <p class="btxt">
