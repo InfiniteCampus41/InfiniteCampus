@@ -887,7 +887,7 @@ function editUser(uid, data) {
                         showError("Invalid Admin Password");
                         return;
                     } else {
-                        const res = await adminFetch(BACKEND + "/createCustomToken", {
+                        const res = await adminFetch(BACKEND + "/admin/createCustomToken", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
