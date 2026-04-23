@@ -4,6 +4,7 @@ const expandEdit = document.getElementById('expandMoviesOrder');
 const editOrderContainer = document.getElementById('editMoviesContainer');
 const progressCache = new Map();
 let isOpen = false;
+const fileElements = new Map();
 expandEdit.addEventListener("click", function () {
     if (isOpen) {
         editOrderContainer.style.right = '-500px';
@@ -107,15 +108,23 @@ socket.on("jobStarted", data => handleJobStarted(data));
 socket.on("jobDone", data => handleJobDone(data));
 let currentStatus = "";
 let percent = null;
-function find360Version(files) {
-    const matches = files.filter(f => is360File(f.file));
-    return matches.length === 1 ? matches[0] : null;
+function find360Version(files, targetFile) {
+    const base = targetFile
+        .replace("_copy", "")
+        .replace("_360", "")
+        .replace(/\.[^/.]+$/, "");
+    return files.find(f => {
+        const compareBase = f.file
+            .replace("_copy", "")
+            .replace("_360", "")
+            .replace(/\.[^/.]+$/, "");
+        return compareBase === base && is360File(f.file);
+    }) || null;
 }
 async function loadApply() {
     const isAuthenticated = await checkUserAuthentication();
     if (!isAuthenticated) return;
     const box = document.getElementById("applyList");
-    box.innerHTML = "Loading...";
     const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
@@ -148,10 +157,15 @@ async function loadApply() {
         box.innerHTML = "Failed To Load Applicants";
         return;
     }
-    box.innerHTML = "";
+    const seenFiles = new Set();
     for (const f of data.files) {
+        if (isCopyFile(f.file)) continue;
+        if (is360File(f.file)) continue;
+        if (f.file.toLowerCase().endsWith(".json")) continue;
+        seenFiles.add(f.file);
+        let existing = fileElements.get(f.file);
+        const file360 = find360Version(data.files, f.file);
         let displaySize = f.humanSize;
-        const file360 = find360Version(data.files);
         const applyInfo = applyData.find(a => a.file === f.file);
         if (applyInfo?.status && applyInfo.status.toLowerCase().includes("accept")) {
             if (file360 && file360.humanSize) {
@@ -168,28 +182,25 @@ async function loadApply() {
                 statusText += ` — ${formatTime(cached.eta)} left`;
             }
         }
-        if (isCopyFile(f.file)) continue;
-        if (is360File(f.file)) continue;
-        if (f.file.toLowerCase().endsWith(".json")) continue;
+        if (existing) {
+            const sizeEl = existing.querySelector(`#size-${f.file}`);
+            if (sizeEl) sizeEl.innerText = displaySize;
+            const statusEl = existing.querySelector(".btxt");
+            if (statusEl) statusEl.innerText = statusText;
+            const bar = existing.querySelector(".file-progress-bar");
+            if (bar) {
+                bar.style.width = progress + "%";
+                bar.innerText = `${Math.floor(progress)}%`;
+            }
+            continue;
+        }
         let uploaderName = "Unknown";
         const uploaderId = applyInfo?.uploader || f.uploadedBy;
         if (uploaderId) {
             try {
                 const snap = await get(ref(db, `/users/${uploaderId}/profile/displayName`));
-                if (snap.exists()) {
-                    uploaderName = snap.val();
-                }
-            } catch (e) {
-                console.error("Failed Loading Display Name", e);
-            }
-        }
-        if (applyInfo?.id && progressCache.has(applyInfo.id)) {
-            const cached = progressCache.get(applyInfo.id);
-            progress = cached.percent;
-            statusText = cached.status;
-            if (cached.eta !== undefined) {
-                statusText += ` — ${formatTime(cached.eta)} left`;
-            }
+                if (snap.exists()) uploaderName = snap.val();
+            } catch {}
         }
         const div = document.createElement("div");
         div.className = "file-item";
@@ -197,47 +208,33 @@ async function loadApply() {
         div.innerHTML = `
             <div style="display:inline-flex; width:100%;">
                 <span style="width:100%; text-align:center">
-                    <b>
-                        ${f.file}
-                    </b> 
-                    — 
-                    <span id="size-${f.file}">
-                        ${displaySize}
-                    </span>
-                </span>
-                <span id="upByIcon" style="width:0; margin-left:-20px;">
-                    <i class="bi bi-question-circle" title="Uploaded By: @${uploaderName}">
-                    </i>
+                    <b>${f.file}</b> — 
+                    <span id="size-${f.file}">${displaySize}</span>
                 </span>
             </div>
             <br>
-            <span class="btxt">
-                ${statusText}
-            </span>
+            <span class="btxt">${statusText}</span>
             <br>
-            <button class="button" onclick="watchApply('${f.file}')">
-                Watch
-            </button>
-            <button class="button" onclick="deleteApply('${f.file}')">
-                Delete
-            </button>
-            <button class="button" onclick="acceptFile('${f.file}')">
-                Accept
-            </button>
-            <div class="file-progress" id="progress-wrap-${f.file}" style="display:${applyInfo ? 'block' : 'none'};margin-top:8px;text-align:left;">
+            <button class="button" onclick="watchApply('${f.file}')">Watch</button>
+            <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
+            <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
+            <div class="file-progress" style="margin-top:8px;text-align:left;">
                 <div class="file-progress-bar" data-filename="${f.file}"
                     style="width:${progress}%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
-                    ${progress}%
+                    ${Math.floor(progress)}%
                 </div>
-            </div>
-            <div id="upByTxt" style="display:none">
-                Uploaded By: ${uploaderName}
             </div>
         `;
         box.appendChild(div);
+        fileElements.set(f.file, div);
+    }
+    for (const [file, el] of fileElements.entries()) {
+        if (!seenFiles.has(file)) {
+            el.remove();
+            fileElements.delete(file);
+        }
     }
 }
-setInterval(updateSizesFromListApply, 3000);
 async function updateSizesFromListApply() {
     try {
         const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
@@ -250,7 +247,7 @@ async function updateSizesFromListApply() {
             const span = document.getElementById(`size-${f.file}`);
             if (!span) continue;
             let displaySize = f.humanSize;
-            const file360 = find360Version(data.files);
+            const file360 = find360Version(data.files, f.file);
             if (file360 && file360.humanSize) {
                 displaySize = file360.humanSize;
             }
