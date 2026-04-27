@@ -257,7 +257,6 @@ function closeTab(id) {
         } else {
             switchTab(tabs[Math.max(0, index - 1)].id);
         }
-
     }, 250);
     if (tabs.length === 0) {
         createTab(true);
@@ -280,8 +279,6 @@ function createFullscreenButton() {
 function toggleFullscreen() {
     const tab = getActiveTab();
     if (!tab || !tab.frame) return;
-
-    // Use native Fullscreen API instead of manual CSS resizing
     if (!document.fullscreenElement) {
         tab.frame.requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message}`);
