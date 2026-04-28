@@ -1271,7 +1271,7 @@ async function renderMessageInstant(id, msg) {
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
-                        textarea.value = textDiv.innerText.replace(/\n/g, "\n");
+                        textarea.value = msg.text.replace(/\n/g, "\n");
                         textarea.style.width = "100%";
                         textarea.style.boxSizing = "border-box";
                         textarea.style.resize = "vertical";
