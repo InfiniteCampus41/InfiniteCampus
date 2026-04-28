@@ -1016,6 +1016,28 @@ main {
     #partners .partner-box {
         margin-bottom:40px;
     }
+    #profileCard {
+        display:flex;
+        flex-direction:column;
+    }
+    #profileContent {
+        display:flex !important;
+        flex-direction:column;
+        background:#333;
+        padding:10px;
+        border-radius:10px;
+    }
+    #profileContent .displayName div {
+        flex-direction:column;
+    }
+    #profileContent .displayName div img {
+        margin:0px !important;
+        height:220px !important;
+        width:220px !important;
+    }
+    #profileView {
+        max-width:90%;
+    }
     .qrDiv {
         display:flex;
         flex-direction:column;
@@ -1695,7 +1717,7 @@ pre code {
 }
 #profileCard {
     padding:20px 30px;
-    max-width:60%;
+    max-width:80%;
 }
 #profileContainer {
     justify-content:center;

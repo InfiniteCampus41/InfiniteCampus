@@ -1,6 +1,44 @@
-import { auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./imports.js";
+import { auth, onAuthStateChanged, forceWebSockets } from "./imports.js";
 forceWebSockets();
 const BACKEND = `${a}`;
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 async function verifyAdminPassword() {
     while (true) {
@@ -73,13 +111,13 @@ async function checkUserPermissions(user) {
         window.location.href = "/InfiniteLogins.html";
         return false;
     }
-    const userRef = ref(db, `users/${user.uid}/profile`);
-    const snapshot = await get(userRef);
-    if (!snapshot.exists()) {
+    const userRef = `users/${user.uid}/profile`;
+    const snapshot = await dbGet(userRef);
+    if (snapshot == null || snapshot == undefined) {
         showError("User Profile Not Found.");
         return false;
     }
-    const profile = snapshot.val();
+    const profile = snapshot;
     if (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev ) {
         return true;
     } else {

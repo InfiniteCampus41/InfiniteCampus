@@ -1,6 +1,44 @@
-import { auth, db, onAuthStateChanged, ref, get, child } from "./imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 const DEFAULT_MAX_SIZE = 100 * 1024 * 1024;
 const PREMIUM_MAX_SIZE = 500 * 1024 * 1024;
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 const appDiv = document.getElementById("app");
 const params = new URLSearchParams(window.location.search);
 const fileParam = params.get("file");
@@ -104,26 +142,16 @@ if (fileParam) {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const uid = user.uid;
-            const snapshot = await get(child(ref(db), `users/${uid}/profile/premium1`));
-            const isPremium1 = snapshot.exists() && snapshot.val() === true;
-            const twosnapshot = await get(child(ref(db), `users/${uid}/profile/premium2`));
-            const isPremium2 = twosnapshot.exists() && twosnapshot.val() === true;
-            const threesnapshot = await get(child(ref(db), `users/${uid}/profile/premium3`));
-            const isPremium3 = threesnapshot.exists() && threesnapshot.val() === true;
-            const devSnap = await get(child(ref(db), `users/${uid}/profile/isDev`));
-            const isDev = devSnap.exists() && devSnap.val() === true;
-            const adminSnap = await get(child(ref(db), `users/${uid}/profile/isAdmin`));
-            const isAdmin = adminSnap.exists() && adminSnap.val() === true;
-            const HAdminsnap = await get(child(ref(db), `users/${uid}/profile/isHAdmin`));
-            const isHAdmin = HAdminsnap.exists() && HAdminsnap.val() === true;
-            const CoOwnerSnap = await get(child(ref(db), `users/${uid}/profile/isCoOwner`));
-            const isCoOwner = CoOwnerSnap.exists() && CoOwnerSnap.val() === true;
-            const testerSnap = await get(child(ref(db), `users/${uid}/profile/isTester`));
-            const isTester = testerSnap.exists() && testerSnap.val() === true;
-            const ownerSnap = await get(child(ref(db), `users/${uid}/profile/isOwner`));
-            const isOwner = ownerSnap.exists() && ownerSnap.val() === true;
-            const partnerSnap = await get(child(ref(db), `users/${uid}/profile/isPartner`));
-            const isPartner = partnerSnap.exists() && partnerSnap.val() === true;
+            const isPremium1 = (await dbGet(`users/${uid}/profile/premium1`)) === true;
+            const isPremium2 = (await dbGet(`users/${uid}/profile/premium2`)) === true;
+            const isPremium3 = (await dbGet(`users/${uid}/profile/premium3`)) === true;
+            const isDev = (await dbGet(`users/${uid}/profile/isDev`)) === true;
+            const isAdmin = (await dbGet(`users/${uid}/profile/isAdmin`)) === true;
+            const isHAdmin = (await dbGet(`users/${uid}/profile/isHAdmin`)) === true;
+            const isCoOwner = (await dbGet(`users/${uid}/profile/isCoOwner`)) === true;
+            const isTester = (await dbGet(`users/${uid}/profile/isTester`)) === true;
+            const isOwner = (await dbGet(`users/${uid}/profile/isOwner`)) === true;
+            const isPartner = (await dbGet(`users/${uid}/profile/isPartner`)) === true;
             if (isPartner || isPremium1 || isPremium2 || isPremium3 || isDev || isAdmin || isHAdmin || isCoOwner || isTester || isOwner) {
                 maxFileSize = PREMIUM_MAX_SIZE;
                 premiumInfo.innerHTML = `

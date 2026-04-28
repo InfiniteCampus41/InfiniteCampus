@@ -1,4 +1,4 @@
-import { auth, db, onAuthStateChanged, get, ref, onValue } from "./imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 const backend = `${a}`;
 const perksParams = new URLSearchParams(window.location.search);
 const showPerks = perksParams.get("perks");
@@ -7,9 +7,13 @@ const payBtn = document.getElementById("pay-btn");
 const paymentMethodSelect = document.getElementById("payment-method");
 let currentUser = null;
 let currentUserToken = null;
+let authReady = false;
 let applePayInstance = null;
 let googlePayInstance = null;
 let lastAmount = null;
+const GOAL = 201.16;
+const progressBar = document.getElementById("donation-progress-bar");
+const progressText = document.getElementById("donation-progress-text");
 onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
@@ -17,15 +21,46 @@ onAuthStateChanged(auth, async (user) => {
         currentUserToken = await user.getIdToken();
     }
 });
-const donationsRef = ref(db, "/donations/amount");
-onValue(donationsRef, (snapshot) => {
-    const amount = snapshot.val();
-    updateProgress(amount);
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
 });
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
+updateProgress(await dbGet("/donations/amount"));
 function getAmount() {
     let value = parseFloat(amountInput.value);
-    if (isNaN(value)) return;
-    if (value < 0.01) value = 0.01;
+    if (isNaN(value) || value < 1) value = 1;
     if (value > 1000) value = 1000;
     amountInput.value = value;
     payBtn.textContent = `Pay $${value.toFixed(2)}`;
@@ -102,7 +137,7 @@ async function refreshWallets() {
 }
 async function sendPayment(token, amount, methodName) {
     try {
-        const response = await fetch(`${backend}/pay`, {
+        const response = await fetch(`${backend/pay}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -150,9 +185,6 @@ async function initPayments() {
         }
     });
 }
-const GOAL = 201.16;
-const progressBar = document.getElementById("donation-progress-bar");
-const progressText = document.getElementById("donation-progress-text");
 function updateProgress(amount) {
     if (!amount) amount = 0;
     let percent = (amount / GOAL) * 100;

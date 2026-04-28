@@ -1,5 +1,43 @@
-import { io, auth, db, onAuthStateChanged, ref, get, forceWebSockets } from "./imports.js";
+import { io, auth, onAuthStateChanged, forceWebSockets } from "./imports.js";
 forceWebSockets();
+let currentUser = null;
+let authReady = false;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 const expandEdit = document.getElementById('expandMoviesOrder');
 const editOrderContainer = document.getElementById('editMoviesContainer');
 const progressCache = new Map();
@@ -90,9 +128,9 @@ async function checkUserAuthentication() {
                 return;
             }
             const uid = user.uid;
-            const userProfileRef = ref(db, `/users/${uid}/profile`);
-            const profileSnapshot = await get(userProfileRef);
-            if (!profileSnapshot.exists() || !(profileSnapshot.val().isOwner || profileSnapshot.val().isTester || profileSnapshot.val().isCoOwner || profileSnapshot.val().isHAdmin || profileSnapshot.val().isDev)) {
+            const userProfileRef = `/users/${uid}/profile`
+            const profile = await dbGet(userProfileRef);
+            if (!profile || !(profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev)) {
                 showError('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
                 resolve(false);
                 return;
@@ -198,9 +236,13 @@ async function loadApply() {
         const uploaderId = applyInfo?.uploader || f.uploadedBy;
         if (uploaderId) {
             try {
-                const snap = await get(ref(db, `/users/${uploaderId}/profile/displayName`));
-                if (snap.exists()) uploaderName = snap.val();
-            } catch {}
+                const displayName = await dbGet(`/users/${uploaderId}/profile/displayName`);
+                if (displayName) {
+                    uploaderName = displayName;
+                }
+            } catch (e) {
+                console.error("Failed Loading Display Name", e);
+            }
         }
         const div = document.createElement("div");
         div.className = "file-item";

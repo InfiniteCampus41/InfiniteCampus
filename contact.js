@@ -1,13 +1,50 @@
-import { auth, db, onAuthStateChanged, ref, get } from "./imports.js";
 const nameInput = document.getElementById("name");
 const messageInput = document.getElementById("message");
+let authReady = false;
+let currentUser = null;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
     try {
-        const displayNameRef = ref(db, `users/${user.uid}/profile/displayName`);
-        const snapshot = await get(displayNameRef);
-        if (snapshot.exists()) {
-            nameInput.value = snapshot.val();
+        const displayNameRef = `users/${user.uid}/profile/displayName`;
+        const snapshot = await dbGet(displayNameRef);
+        if (snapshot != null && snapshot !== undefined) {
+            nameInput.value = snapshot;
         } else {
             if (user.displayName) {
                 nameInput.value = user.displayName;

@@ -1,4 +1,4 @@
-import { auth, db, ref, get } from "/imports.js";
+import { auth } from "/imports.js";
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
@@ -11,6 +11,28 @@ let finishingWatcher = null;
 const currentfile = document.getElementById("currentFile");
 const movies = document.getElementById("movies");
 const section = document.getElementById("section");
+async function fetchAPI(endpoint, body) {
+    const token = null;
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
 document.getElementById("applyFile").addEventListener("change", () => {
     const file = document.getElementById("applyFile").files[0];
     const label = document.getElementById("selectedFileName");
@@ -64,9 +86,9 @@ async function uploadApply() {
         if (currentUser) {
             uid = currentUser.uid;
             try {
-                const snap = await get(ref(db,"users/" + uid + "/profile/displayName"));
-                if (snap.exists()) {
-                    displayName = sanitizeUsername(snap.val());
+                const snap = await dbGet("users/" + uid + "/profile/displayName");
+                if (snap !== null && snap !== undefined) {
+                    displayName = sanitizeUsername(snap);
                 }
             } catch (err) {
                 console.error("Failed To Fetch DisplayName:", err);
@@ -156,14 +178,12 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
         let uploaderName = "";
         if (FIREBASE_AVAILABLE && v.uploadedBy && v.uploadedBy !== "") {
             try {
-                const snap = await get(
-                    ref(db, "users/" + v.uploadedBy + "/profile/displayName")
-                );
-                if (snap.exists()) {
-                    uploaderName = `@${snap.val()}`;
+                const snap = await dbGet("users/" + v.uploadedBy + "/profile/displayName");
+                if (snap !== null && snap !== undefined) {
+                    uploaderName = `@${snap}`;
                 }
             } catch (err) {
-                console.error("Firebase Connection Failed:", err);
+                console.error("Database Connection Failed:", err);
                 FIREBASE_AVAILABLE = false;
             }
         }
@@ -302,7 +322,7 @@ loadMovies();
 const networkWarning = document.getElementById("networkWarning");
 const SPEED_THRESHOLD_MS = 750;
 async function checkNetworkSpeed() {
-    const testURL = BACKEND + "/api/list_videos_x9a7b2";
+    const testURL = BACKEND + "/ping";
     const start = performance.now();
     try {
         const controller = new AbortController();

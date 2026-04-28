@@ -1,3 +1,105 @@
+import { auth, onAuthStateChanged } from "./imports.js";
+let authReady = false;
+const BACKEND = a;
+let currentUser = null;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
+async function getAuthToken() {
+    await authReadyPromise;
+    if (currentUser) {
+        return await currentUser.getIdToken();
+    }
+    return null;
+}
+async function fetchAPI(endpoint, body) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${BACKEND}/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Request failed");
+    }
+    return json;
+}
+function pathToArray(path) {
+    return path.split("/").filter(Boolean);
+}
+async function dbGet(path) {
+    const res = await fetchAPI("read", { path: pathToArray(path) });
+    return res.data;
+}
+async function dbSet(path, value) {
+    return await fetchAPI("write", {
+        path: pathToArray(path),
+        value
+    });
+}
+onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
+    try {
+        const [pankey, panurl, title, weather] = await Promise.all([
+            dbGet(`users/${user.uid}/settings/panicKey`),
+            dbGet(`users/${user.uid}/settings/panicUrl`),
+            dbGet(`users/${user.uid}/settings/pageTitle`),
+            dbGet(`users/${user.uid}/settings/betterWeather`)
+        ]);
+
+        if (pankey) localStorage.setItem('panicKey', pankey);
+        if (panurl) localStorage.setItem('panicUrl', panurl);
+        if (title) localStorage.setItem('pageTitle', title);
+        if (weather !== undefined) {
+            localStorage.setItem('betterWeather', weather ? 'true' : 'false');
+        }
+        window.dispatchEvent(new Event("settingsLoaded"));
+        applySettingsToUI();
+    } catch (error) {
+        console.warn("DB load failed:", error);
+    }
+});
+function applySettingsToUI() {
+    const panicKeyInput = document.getElementById('panicKeyInput');
+    const panicUrlInput = document.getElementById('panicUrlInput');
+    const titleInput = document.getElementById('titleInput');
+    const betterWeatherToggle = document.getElementById('betterWeatherToggle');
+    const savedTitle = localStorage.getItem('pageTitle') || '';
+    const savedFavicon = localStorage.getItem('customFavicon') || '';
+    const betterWeatherState = localStorage.getItem('betterWeather') === 'true';
+    const panicKey = localStorage.getItem('panicKey') || '';
+    const panicUrl = localStorage.getItem('panicUrl') || '';
+    if (panicKeyInput) {
+        panicKeyInput.value = panicKey ? `Key: ${panicKey}` : '';
+    }
+    if (panicUrlInput) {
+        panicUrlInput.value = panicUrl;
+    }
+    if (titleInput) {
+        titleInput.value = savedTitle;
+        if (savedTitle) document.title = savedTitle;
+    }
+    if (betterWeatherToggle) {
+        betterWeatherToggle.checked = betterWeatherState;
+    }
+    if (savedFavicon) {
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = savedFavicon;
+    }
+}
 window.addEventListener('DOMContentLoaded', () => {
     let savedTitle = '';
     let savedFavicon = '';
@@ -90,11 +192,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     </a>
                     <br>
                     <br>
-                    <a class="button" href="InfinitePolls.html">
-                        Take Part In A Poll
-                    </a>
-                    <br>
-                    <br>
                     <a class="button" id="resetAllBtn">
                         Clear Data
                     </a>
@@ -135,6 +232,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 showError('Please Set Both A Panic Key And URL');
                 return;
             }
+            if (currentUser) {
+                dbSet(`/users/${currentUser.uid}/settings/panicKey`, panicKey);
+                dbSet(`/users/${currentUser.uid}/settings/panicUrl`, url);
+            }
             localStorage.setItem('panicKey', panicKey);
             localStorage.setItem('panicUrl', url);
             panicUrl = url;
@@ -162,13 +263,17 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (clearPanicBtn) {
-        clearPanicBtn.addEventListener('click', () => {
+        clearPanicBtn.addEventListener('click', async () => {
             localStorage.removeItem('panicKey');
             localStorage.removeItem('panicUrl');
             panicKey = null;
             panicUrl = '';
             panicKeyInput.value = '';
             panicUrlInput.value = '';
+            if (currentUser) {
+                await dbSet(`/users/${currentUser.uid}/settings/panicKey`, null);
+                await dbSet(`/users/${currentUser.uid}/settings/panicUrl`, null);
+            }
             showSuccess('Panic Settings Cleared');
         });
     }
@@ -182,6 +287,9 @@ window.addEventListener('DOMContentLoaded', () => {
     betterWeatherToggle.addEventListener('change', function () {
         const isEnabled = this.checked;
         localStorage.setItem('betterWeather', isEnabled ? 'true' : 'false');
+        if (currentUser) {
+            dbSet(`/users/${currentUser.uid}/settings/betterWeather`, isEnabled);
+        }
         sessionStorage.clear();
         location.reload();
         if (isEnabled && navigator.geolocation) {
@@ -241,11 +349,17 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             showError('Please Enter A Valid Title Before Saving.');
         }
+        if (currentUser) {
+            dbSet(`/users/${currentUser.uid}/settings/pageTitle`, newTitle);
+        }
     });
-    resetTitleBtn.addEventListener('click', () => {
+    resetTitleBtn.addEventListener('click', async () => {
         localStorage.removeItem('pageTitle');
         titleInput.value = '';
-        setTitle(`${c}`);
+        setTitle(c);
+        if (currentUser) {
+            await dbSet(`/users/${currentUser.uid}/settings/pageTitle`, null);
+        }
     });
     const faviconInput = document.getElementById('faviconInput');
     const setFaviconBtn = document.getElementById('setFaviconBtn');
@@ -261,27 +375,27 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         link.href = url;
     }
-    if (savedFavicon) {
-        updateFavicon(savedFavicon);
-    }
+    if (savedFavicon) updateFavicon(savedFavicon);
     setFaviconBtn.addEventListener('click', () => {
         const file = faviconInput.files[0];
-        if (!file) {
-            showError('Please Select An Image File First.');
-            return;
-        }
+        if (!file) return showError('Select An Image First');
         const reader = new FileReader();
         reader.onload = function(e) {
             const dataUrl = e.target.result;
             localStorage.setItem('customFavicon', dataUrl);
             updateFavicon(dataUrl);
+            // if (currentUser) {
+            //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, dataUrl);
+            // }
         };
         reader.readAsDataURL(file);
     });
     resetFaviconBtn.addEventListener('click', () => {
         localStorage.removeItem('customFavicon');
-        faviconInput.value = '';
-        updateFavicon(originalFaviconUrl);
+        updateFavicon('/res/icon.png');
+        // if (currentUser) {
+        //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, null);
+        // }
     });
     function updateTime() {
         const now = new Date();
@@ -301,4 +415,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     updateTime();
     setInterval(updateTime, 1000);
+    applySettingsToUI();
+});
+window.addEventListener("settingsLoaded", () => {
+    applySettingsToUI();
 });
