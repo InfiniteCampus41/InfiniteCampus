@@ -256,18 +256,17 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
         try {
             const updates = [];
             snapshot.forEach(child => {
-                updates.push({ key: child.key, ...child.val() });
+                const val = child.val();
+                if (val && typeof val === 'object' && typeof val.content === 'string') {
+                    updates.push({ key: child.key, ...val });
+                }
             });
             updates.sort((a, b) => b.timestamp - a.timestamp);
             if (updates.length <= 10) return;
             const toDelete = updates.slice(10);
-            const multi = {};
-            toDelete.forEach(u => {
-                multi["updates/" + u.key] = null;
-            });
-			for (const path in multi) {
-				await dbSet(path, multi[path]);
-			}
+            for (const u of toDelete) {
+                await fetchAPI("delete", { path: pathToArray("updates/" + u.key) });
+            }
         } finally {
             cleanupRunning = false;
         }
@@ -306,7 +305,10 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
     function renderUpdates(snapshot) {
         const updates = [];
         snapshot.forEach((child) => {
-            updates.push({ key: child.key, ...child.val() });
+            const val = child.val();
+            if (val && typeof val === 'object' && typeof val.content === 'string') {
+                updates.push({ key: child.key, ...val });
+            }
         });
         updates.sort((a, b) => b.timestamp - a.timestamp);
         const container = document.getElementById("updates");
@@ -342,7 +344,10 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 		};
         const updates = [];
         snapshot.forEach(child => {
-            updates.push({ key: child.key, ...child.val() });
+            const val = child.val();
+            if (val && typeof val === 'object' && typeof val.content === 'string') {
+                updates.push({ key: child.key, ...val });
+            }
         });
         updates.sort((a, b) => b.timestamp - a.timestamp);
         if (!hasLoaded && updates.length) {
