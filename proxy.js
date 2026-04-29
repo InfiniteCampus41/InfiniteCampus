@@ -482,10 +482,13 @@ function setRandomPhrase() {
         "Nitrix67 Likes Men",
         "Life Is A Highway",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "Japan Is Turning Footsteps Into Electricity",
         `${btMsg}`,
         "https://discord.gg/4d9hJSVXca",
-        "Kim Jong Un Is Master Of Goon"
+        "Kim Jong Un Is Master Of Goon",
+        "Rest In Peace My Granny She Got Hit By A Bazooka",
+        "Kaboom, Kablow, Kaboom",
+        "justinjustin2008 Will Save Us All",
+        "What Is This Diddyblud Doin On The Calculator"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 

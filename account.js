@@ -25,12 +25,13 @@ try {
 let profileImages = [];
 async function loadProfileImages() {
     try {
-        const res = await fetch(`${pfpDomain}/index.json?t=${Date.now()}`);        
+        const res = await fetch(`${pfpDomain}/index.json`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const files = await res.json();
         return files.map(f => `${pfpDomain}/` + f);
     } catch (e) {
         console.error("Failed To Load Profile Images:", e);
-        return [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
+        return [`${pfpDomain}/1.jpeg`];
     }
 }
 let currentUser = null;
@@ -83,53 +84,62 @@ async function dbUpdate(path, updates) {
     }
 }
 function dbListen(path, callback) {
-    return getAuthToken().then(token => {
-        const pathArray = pathToArray(path);
-        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
-        const ws = new WebSocket(wsUrl);
-        ws.onmessage = (event) => {
-            if (!event.data) return;
-            if (event.data instanceof Blob) {
-                event.data.text().then(text => {
-                    if (!text || text.trim() === "" || text === "undefined") return;
-                    try {
-                        callback(JSON.parse(text));
-                    } catch (e) {
-                        console.warn("Invalid JSON from Blob:", text, e);
-                    }
-                });
-                return;
-            }
-            const raw = String(event.data).trim();
-            if (!raw || raw === "undefined") return;
-            try {
-                callback(JSON.parse(raw));
-            } catch (e) {
-                console.warn("Invalid JSON:", raw, e);
-            }
-        };
-        ws.onerror = () => {
-            ws.close();
-        };
-        ws.onclose = () => {
-        };
-        return ws;
-    });
+    const isIosSafari = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    let reconnectTimer = null;
+    function connect() {
+        return getAuthToken().then(token => {
+            const pathArray = pathToArray(path);
+            const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
+            const ws = new WebSocket(wsUrl);
+            ws.onmessage = (event) => {
+                if (!event.data) return;
+                if (event.data instanceof Blob) {
+                    event.data.text().then(text => {
+                        if (!text || text.trim() === "" || text === "undefined") return;
+                        try {
+                            callback(JSON.parse(text));
+                        } catch (e) {
+                            console.warn("Invalid JSON from Blob:", text, e);
+                        }
+                    });
+                    return;
+                }
+                const raw = String(event.data).trim();
+                if (!raw || raw === "undefined") return;
+                try {
+                    callback(JSON.parse(raw));
+                } catch (e) {
+                    console.warn("Invalid JSON:", raw, e);
+                }
+            };
+            ws.onerror = () => {
+                ws.close();
+            };
+            ws.onclose = () => {
+                if (isIosSafari) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = setTimeout(() => connect(), 3000);
+                }
+            };
+            return ws;
+        });
+    }
+    return connect();
 }
 if (notif) {
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isInStandaloneMode = window.navigator.standalone === true;
     async function enableNotifications() {
         if (!("Notification" in window)) {
-            showError("Your browser does not support notifications.");
+            showError("Your Browser Does Not Support Notifications.");
             return;
         }
         if (!("serviceWorker" in navigator)) {
-            showError("Your browser does not support service workers required for notifications.");
+            showError("Your Browser Does Not Support Service Workers Required For Notifications.");
             return;
         }
         if (isIos && !isInStandaloneMode) {
-            showError("To enable notifications on iPhone or iPad, please add this app to your Home Screen first, then try again.");
+            showError("To Enable Notifications On iPhone Or iPad, Please Add This App To Your Home Screen First, Then Try Again.");
             return;
         }
         try {
@@ -150,10 +160,10 @@ if (notif) {
                 }
                 window.location.href = 'InfiniteAccounts.html';
             } else {
-                showError("Notification permission was denied.");
+                showError("Notification Permission Was Denied.");
             }
         } catch (err) {
-            showError("Failed to enable notifications: " + err.message);
+            showError("Failed To Enable Notifications: " + err.message);
         }
     }
     if (enableNotifBtn) {
@@ -353,7 +363,8 @@ if (notif) {
             const email = foundUser.settings?.userEmail || "(Hidden)";
             const picValue = foundUser.profile?.pic ?? 0;
             const profileImages = await loadProfileImages();
-            const imgSrc = profileImages[picValue] || profileImages[0];
+            const rawSrc = profileImages[picValue] || profileImages[0];
+            const imgSrc = rawSrc.split("?")[0] + "?t=" + Date.now();
             loadingEl.style.display = "none";
             errorEl.style.display = "none";
             profileContent.style.display = "block";
@@ -590,11 +601,14 @@ if (notif) {
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("uid", currentUser.uid);
+                const token = getAuthToken();
+                if (token) headers["Authorization"] = "Bearer " + token;
                 pfpModalBg.style.display = "none";
                 showSuccess("Uploading...");
                 const res = await fetch(`${a}/upload-pfp`, {
                     method: "POST",
-                    body: formData
+                    body: formData,
+                    Authorization: `Bearer ${token}` 
                 });
                 const data = await res.json();
                 if (!data.success) {
@@ -1017,9 +1031,10 @@ if (notif) {
             if (!profileImages || profileImages.length === 0) {
                 profileImages = await loadProfileImages();
             }
-            const imgSrc = profileImages[picIndex] || profileImages[0] || `${pfpDomain}/1.jpeg?t=${Date.now()}`;
-            panelPic.src = imgSrc + "?t=" + Date.now();            
-            setSetting("pic", imgSrc);
+            const baseUrl = profileImages[picIndex] || profileImages[0] || `${pfpDomain}/1.jpeg`;
+            const cleanBase = baseUrl.split("?")[0];
+            panelPic.src = cleanBase + "?t=" + Date.now();
+            setSetting("pic", cleanBase);
         } catch (err) {
             console.error("Failed To Load Profile Picture:", err);
             panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
