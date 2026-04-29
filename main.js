@@ -61,12 +61,19 @@ function safeSetItem(key, value) {
     }
 }
 const DEFAULT_BACKEND_URL = "https://api.infinitecampus.xyz";
+const DEFAULT_WS_URL = "wss://api.infinitecampus.xyz";
 let a = localStorage.getItem('backendUrl') || DEFAULT_BACKEND_URL;
-window.addEventListener('storage', (e) => {
-    if (e.key === 'backendUrl') {
-        a = e.newValue || DEFAULT_BACKEND_URL;
+function getModifiedUrl(key) {
+    let url = localStorage.getItem('backendUrl');
+    if (!url) return "wss://api.infinitecampus.xyz";
+    if (url.startsWith("http://")) {
+        return "ws://" + url.slice(7);
     }
-});
+    if (url.startsWith("https://")) {
+        return "wss://" + url.slice(8);
+    }
+    return url;
+}
 const b = "https://www.infinitecampus.xyz";
 const c = "Infinite Campus";
 const d = "https://included-touched-joey.ngrok-free.app";
@@ -83,7 +90,13 @@ const g = [
     "infinitecampus.xyz",
     "instructure.space"
 ];
-const h = "wss://api.infinitecampus.xyz";
+let h = getModifiedUrl(localStorage.getItem('backendUrl')) || DEFAULT_WS_URL;
+window.addEventListener('storage', (e) => {
+    if (e.key === 'backendUrl') {
+        h = getModifiedUrl(e.newValue) || DEFAULT_BACKEND_URL;
+        a = e.newValue || DEFAULT_BACKEND_URL;
+    }
+});
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 const o = [
     "Dad", 

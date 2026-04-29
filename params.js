@@ -1025,7 +1025,7 @@ if (x3tfypage === '/InfiniteAbouts.html') {
                 return url;
             }
             url = url.replace(/^https?:\/\//i, '');
-            return 'https://.' + url;
+            return 'https://' + url;
         }
         async function checkURLStatus(url) {
             url = normalizeUrl(url);
@@ -1204,7 +1204,7 @@ if (x3tfypage === '/InfiniteAbouts.html') {
                 return url;
             }
             url = url.replace(/^https?:\/\//i, '');
-            return 'https://.' + url;
+            return 'https://' + url;
         }
         async function checkURLStatus(url) {
             url = normalizeUrl(url);
