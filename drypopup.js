@@ -1,11 +1,15 @@
 import { auth, onAuthStateChanged } from "./imports.js";
 let authReady = false;
+let isLoggedInMsg = "Login";
+let isLoggedInLink = "/InfiniteLogins.html";
 const DEFAULT_BACKEND = a;
 let BACKEND = localStorage.getItem('backendUrl') || DEFAULT_BACKEND;
 let currentUser = null;
 const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
+        isLoggedInMsg = "My Account";
+        isLoggedInLink = "/InfiniteAccounts.html"; 
         authReady = true;
         resolve(user);
     });
@@ -46,8 +50,7 @@ async function dbSet(path, value) {
     });
 }
 onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-
+    if (!user) return;   
     try {
         const [pankey, panurl, title, weather] = await Promise.all([
             dbGet(`users/${user.uid}/settings/panicKey`),
@@ -55,7 +58,6 @@ onAuthStateChanged(auth, async (user) => {
             dbGet(`users/${user.uid}/settings/pageTitle`),
             dbGet(`users/${user.uid}/settings/betterWeather`)
         ]);
-
         if (pankey) localStorage.setItem('panicKey', pankey);
         if (panurl) localStorage.setItem('panicUrl', panurl);
         if (title) localStorage.setItem('pageTitle', title);
@@ -78,6 +80,11 @@ function applySettingsToUI() {
     const betterWeatherState = localStorage.getItem('betterWeather') === 'true';
     const panicKey = localStorage.getItem('panicKey') || '';
     const panicUrl = localStorage.getItem('panicUrl') || '';
+    const popuplogin = document.getElementById('popuplogin');
+    if (currentUser) {
+        popuplogin.innerText = isLoggedInMsg;
+        popuplogin.href = isLoggedInLink;
+    }
     if (panicKeyInput) {
         panicKeyInput.value = panicKey ? `Key: ${panicKey}` : '';
     }
@@ -125,8 +132,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 <p class="btxt">
                     Settings
                 </p>
-                <a class="button" href="InfiniteAccounts.html">
-                    My Account
+                <a class="button" id="popuplogin" href="${isLoggedInLink}">
+                    ${isLoggedInMsg}
                 </a>
                 <div class="section weather-section">
                     <p>
