@@ -602,7 +602,6 @@ if (notif) {
                 formData.append("file", selectedFile);
                 formData.append("uid", currentUser.uid);
                 const token = getAuthToken();
-                if (token) headers["Authorization"] = "Bearer " + token;
                 pfpModalBg.style.display = "none";
                 showSuccess("Uploading...");
                 const res = await fetch(`${a}/upload-pfp`, {
