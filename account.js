@@ -9,6 +9,7 @@ const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
 const enableNotifBtn = document.getElementById('enableNotifBtn');
+let Notification = null;
 let pfpDomain = "/pfps";
 if (!(e.includes(window.location.host))) {
     pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
@@ -113,25 +114,53 @@ function dbListen(path, callback) {
     });
 }
 if (notif) {
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandaloneMode = window.navigator.standalone === true;
     async function enableNotifications() {
-        const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            const token = await getToken(messaging, {
-                vapidKey: "BFzJJQnddg7dRJlByA9q76_jhw5XHgSydywvChgLXI6a6jSUimHA3vhMLRS0VtBRMWl_EfZx6BSvNVtTdVbXhOg",
-                serviceWorkerRegistration: registration
-            });
-            const user = auth.currentUser;
-            if (user) {
-                dbSet("pushTokens/" + user.uid + "/" + token, true);
-                showSuccess("Notifications Have Been Enabled");
+        if (!("Notification" in window)) {
+            showError("Your browser does not support notifications.");
+            return;
+        }
+        if (!("serviceWorker" in navigator)) {
+            showError("Your browser does not support service workers required for notifications.");
+            return;
+        }
+        if (isIos && !isInStandaloneMode) {
+            showError("To enable notifications on iPhone or iPad, please add this app to your Home Screen first, then try again.");
+            return;
+        }
+        try {
+            const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                const token = await getToken(messaging, {
+                    vapidKey: "BFzJJQnddg7dRJlByA9q76_jhw5XHgSydywvChgLXI6a6jSUimHA3vhMLRS0VtBRMWl_EfZx6BSvNVtTdVbXhOg",
+                    serviceWorkerRegistration: registration
+                });
+                const user = auth.currentUser;
+                if (user) {
+                    dbSet("pushTokens/" + user.uid + "/" + token, true);
+                    showSuccess("Notifications Have Been Enabled");
+                } else {
+                    window.location.href = 'InfiniteLogins.html';
+                    return;
+                }
+                window.location.href = 'InfiniteAccounts.html';
             } else {
-                window.location.href = 'InfiniteLogins.html';
+                showError("Notification permission was denied.");
             }
-            window.location.href = 'InfiniteAccounts.html';
+        } catch (err) {
+            showError("Failed to enable notifications: " + err.message);
         }
     }
-    enableNotifications();
+    if (enableNotifBtn) {
+        enableNotifBtn.style.removeProperty("display");
+        enableNotifBtn.addEventListener("click", enableNotifications);
+    } else {
+        if (!isIos) {
+            enableNotifications();
+        }
+    }
 } else if (mode) {
     authcontainer.style.display = 'block';
     settingsPage.style.display = 'none';
