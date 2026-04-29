@@ -6,7 +6,5 @@ Here Are The Steps To Do So
     Allow Editing And Deleting Movies From Site
     Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
     Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
-    Fix Chat Message Loading Issue
-    Make ALL Site Data Stored In A Backend DB
     Fix Notifications
     Allow Saving Of Site Settings Through DB
