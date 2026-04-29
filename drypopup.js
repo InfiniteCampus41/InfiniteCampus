@@ -1,6 +1,7 @@
 import { auth, onAuthStateChanged } from "./imports.js";
 let authReady = false;
-const BACKEND = a;
+const DEFAULT_BACKEND = a;
+let BACKEND = localStorage.getItem('backendUrl') || DEFAULT_BACKEND;
 let currentUser = null;
 const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
@@ -175,6 +176,16 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <hr>
                 <div class="section">
+                    <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
+                    <button id="saveBackendBtn" class="button">
+                        Save
+                    </button>
+                    <button id="resetBackendBtn" class="button">
+                        Reset
+                    </button>
+                </div>
+                <hr>
+                <div class="section">
                     <br>
                     <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
                         Change Site Theme
@@ -214,6 +225,34 @@ window.addEventListener('DOMContentLoaded', () => {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = popupHTML;
     document.body.appendChild(wrapper);
+    const backendUrlInput = document.getElementById('backendUrlInput');
+    const saveBackendBtn = document.getElementById('saveBackendBtn');
+    const resetBackendBtn = document.getElementById('resetBackendBtn');
+    if (saveBackendBtn) {
+        saveBackendBtn.addEventListener('click', () => {
+            const url = backendUrlInput.value.trim();
+            if (!url) {
+                showError('Please Enter A Valid Backend URL');
+                return;
+            }
+            localStorage.setItem('backendUrl', url);
+            BACKEND = url;
+            showSuccess(`Backend URL Saved: ${url}`);
+        });
+    }
+    if (resetBackendBtn) {
+        resetBackendBtn.addEventListener('click', () => {
+            localStorage.removeItem('backendUrl');
+            BACKEND = DEFAULT_BACKEND;
+            backendUrlInput.value = '';
+            showSuccess('Backend URL Reset To Default');
+        });
+    }
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'backendUrl') {
+            BACKEND = e.newValue || DEFAULT_BACKEND;
+        }
+    });
     const panicKeyInput = document.getElementById('panicKeyInput');
     const panicUrlInput = document.getElementById('panicUrlInput');
     const savePanicBtn = document.getElementById('savePanicBtn');
