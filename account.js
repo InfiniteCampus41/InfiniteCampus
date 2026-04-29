@@ -13,8 +13,10 @@ let pfpDomain = "/pfps";
 if (!(e.includes(window.location.host))) {
     pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
 }
-if (Notification.permission === "granted") {
-    enableNotifBtn.style.setProperty("display", "none", "important");
+if (Notification) {
+    if (Notification.permission === "granted") {
+        enableNotifBtn.style.setProperty("display", "none", "important");
+    }
 }
 let profileImages = [];
 async function loadProfileImages() {
