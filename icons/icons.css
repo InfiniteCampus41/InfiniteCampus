@@ -27,6 +27,14 @@
     mask-image: url('/icons/linewize.png');
     -webkit-mask-image: url('/icons/linewize.png');
 }
+.ic-offline {
+    mask-image: url('/icons/offline.png');
+    -webkit-mask-image: url('/icons/offline.png');
+}
+.ic-online {
+    mask-image: url('/icons/online.png');
+    -webkit-mask-image: url('/icons/online.png');
+}
 .ic-securely {
     mask-image: url('/icons/securely.png');
     -webkit-mask-image: url('/icons/securely.png');

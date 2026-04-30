@@ -333,7 +333,8 @@ async function getUserMeta(uid) {
         guardian: !!p.guardian,
         lanschool: !!p.lanschool,
         linewize: !!p.linewize,
-        blocksi: !!p.blocksi
+        blocksi: !!p.blocksi,
+        online: !!p.online
     };
     userMetaCache[uid] = data;
     return data;
@@ -1239,6 +1240,24 @@ async function renderMessageInstant(id, msg) {
                 icon.title = `This User Has Blocksi At School`;
                 badgeContainer.appendChild(icon);
             }
+            const onlineBadge = document.createElement("i");
+            onlineBadge.style.marginLeft = "6px";
+            function setOnlineStatus(isOnline) {
+                if (isOnline) {
+                    onlineBadge.className = "bi ic ic-online";
+                    onlineBadge.style.color = "#69a84f";
+                    onlineBadge.title = "Online";
+                } else {
+                    onlineBadge.className = "bi ic ic-offline";
+                    onlineBadge.style.color = "#999999";
+                    onlineBadge.title = "Offline";
+                }
+            }
+            setOnlineStatus(meta.online);
+            badgeContainer.appendChild(onlineBadge);
+            dbListen(`users/${msg.sender}/profile/online`, (val) => {
+                setOnlineStatus(!!val);
+            });
             badgeContainer.appendChild(mutedBadge);
             leftWrapper.appendChild(badgeContainer);
             const isSelf = msg.sender === currentUser.uid;
@@ -2308,3 +2327,18 @@ document.addEventListener("click", (e) => {
         mentionActive = false;
     }
 });
+setInterval(async () => {
+    if (currentUser) {
+        const token = await getAuthToken();
+        const res = await fetch(`${a}/online`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+        });
+        if (!res.ok) {
+            throw new Error("Online Indicator Post Failed");
+        }
+    }
+}, 20000);

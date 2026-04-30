@@ -102,6 +102,7 @@ let userProfiles = {};
 const userData = "/users/${uid}";
 let userSettings = {};
 let activeChatListener = null;
+let currentIsOwner = false;
 let profilePics = [];
 let pfpDomain = "/pfps";
 let ADMIN_PASS = localStorage.getItem("a_pass") || null;
@@ -583,6 +584,7 @@ onAuthStateChanged(auth, async (user) => {
     const hAdminSnap = await dbGet(`users/${uid}/profile/isHAdmin`);
     const devSnap = await dbGet(`users/${uid}/profile/isDev`);
     let isOwner = ownerSnap !== null && ownerSnap !== undefined && ownerSnap === true;
+    currentIsOwner = isOwner;
     let isCoOwner = coOwnerSnap !== null && coOwnerSnap !== undefined && coOwnerSnap === true;
     let isTester = testerSnap !== null && testerSnap !== undefined && testerSnap === true;
     let isHAdmin = hAdminSnap !== null && hAdminSnap !== undefined && hAdminSnap === true;
