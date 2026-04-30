@@ -1,6 +1,7 @@
 import { auth, onAuthStateChanged, forceWebSockets } from "./imports.js";
 forceWebSockets();
 const BACKEND = `${a}`;
+const bk2 = `https://infinitecampus.xyz`;
 let currentUser = null;
 let authReady = false;
 const authReadyPromise = new Promise((resolve) => {
@@ -46,7 +47,7 @@ async function verifyAdminPassword() {
             try {
                 const res = await fetch(BACKEND + "/check_pass", {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
                         "ngrok-skip-browser-warning": "true"
                     },
@@ -66,7 +67,7 @@ async function verifyAdminPassword() {
         try {
             const res = await fetch(BACKEND + "/check_pass", {
                 method: "POST",
-                headers: { 
+                headers: {
                     "Content-Type": "application/json",
                     "ngrok-skip-browser-warning": "true"
                 },
@@ -83,28 +84,14 @@ async function verifyAdminPassword() {
     }
 }
 async function adminFetch(url, options = {}) {
+    const token = await getAuthToken();
     options.headers = Object.assign({}, options.headers, {
         "x-admin-password": ADMIN_PASS,
         "ngrok-skip-browser-warning": "true"
     });
+    if (token) options.headers["Authorization"] = "Bearer " + token;
     return fetch(url, options);
 }
-const tableBody = document.querySelector("#url-table tbody");
-function formatTime(value) {
-    if (!value || value === "Unknown") return "Unknown";
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return "Unknown";
-    return new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-    }).format(date);
-}
-window.addUrl = addUrl;
 async function checkUserPermissions(user) {
     if (!user) {
         showError("You Must Be Logged In To Access This Page.");
@@ -118,7 +105,7 @@ async function checkUserPermissions(user) {
         return false;
     }
     const profile = snapshot;
-    if (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev ) {
+    if (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev) {
         return true;
     } else {
         showError("You Do Not Have The Required Permissions To Access This Page.");
@@ -133,7 +120,7 @@ async function fetchUrls() {
     }
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
-    const res = await adminFetch("/edit-urls", {
+    const res = await adminFetch(bk2 + "/edit-urls", {
         headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
@@ -158,6 +145,7 @@ function populateBlockedList(data) {
         list.appendChild(div);
     }
 }
+window.addUrl = addUrl;
 async function addUrl() {
     const user = auth.currentUser;
     if (!user) {
@@ -173,9 +161,9 @@ async function addUrl() {
         error.textContent = "URL And Reason Required.";
         return;
     }
-    const res = await adminFetch("/edit-urls/add", {
+    const res = await adminFetch(BACKEND + "/edit-urls/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         body: JSON.stringify({ url, reason })
     });
     const data = await res.json();
@@ -198,68 +186,129 @@ async function deleteUrl(url) {
     if (!hasPermission) return;
     showConfirm("Delete This URL?", function(result) {
         if (result) {
-            adminFetch("/edit-urls/delete", {
+            adminFetch(BACKEND + "/edit-urls/delete", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"},
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ url })
             });
             fetchUrls();
         } else {
             showSuccess("Canceled");
         }
-    })
+    });
 }
-async function fetchLogs() {
+let _rulesOriginal = "";
+async function fetchRules() {
     const user = auth.currentUser;
-    if (!user) {
-        showError("You Must Be Logged In To Fetch Logs.");
-        return;
-    }
+    if (!user) return;
     const hasPermission = await checkUserPermissions(user);
     if (!hasPermission) return;
+    const statusEl = document.getElementById("rules-status");
+    statusEl.textContent = "Loading...";
+    statusEl.style.color = "";
     try {
-        const response = await adminFetch("/logs", {
+        const res = await adminFetch(BACKEND + "/admin/modify-rules", {
+            method: "GET",
             headers: { "ngrok-skip-browser-warning": "true" }
         });
-        const data = await response.json();
-        if (!data || Object.keys(data).length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4">No Logs Found.</td></tr>';
+        const data = await res.json();
+        if (!res.ok) {
+            statusEl.textContent = data.error || "Failed to load rules.";
             return;
         }
-        const logs = Object.entries(data).map(([url, info]) => {
-            if (typeof info === "number") {
-                return { url, count: info, lastVisit: "Unknown" };
-            }
-            return { url, count: info.count, lastVisit: formatTime(info.lastVisit) };
-        });
-        logs.sort((a, b) => b.count - a.count);
-        tableBody.innerHTML = "";
-        logs.forEach((log, index) => {
-            const tr = document.createElement("tr");
-            const colors = ["gold", "silver", "peru"];
-            tr.style.background = colors[index] || "white";
-            tr.style.color = "black";
-            tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${log.url}</td>
-                <td>${log.count}</td>
-                <td>${log.lastVisit}</td>
-            `;
-            tableBody.appendChild(tr);
-        });
+        const pretty = JSON.stringify(data.rules, null, 2);
+        _rulesOriginal = pretty;
+        const editor = document.getElementById("rules-editor");
+        editor.innerHTML = syntaxHighlight(pretty);
+        updateLineNumbers();
+        statusEl.textContent = "Loaded.";
     } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="4">Error Fetching Logs: ${err.message}</td></tr>`;
+        statusEl.textContent = "Error: " + err.message;
     }
+}
+async function saveRules() {
+    const user = auth.currentUser;
+    if (!user) { showError("Not logged in."); return; }
+    const hasPermission = await checkUserPermissions(user);
+    if (!hasPermission) return;
+    const raw = document.getElementById("rules-editor").innerText;
+    const statusEl = document.getElementById("rules-status");
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (e) {
+        showError(`Invalid JSON ${e.message}`);
+        return;
+    }
+    statusEl.textContent = "Saving...";
+    statusEl.style.color = "";
+    try {
+        const res = await adminFetch(BACKEND + "/admin/modify-rules", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+            body: JSON.stringify({ rules: parsed })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showError(data.error || "Save Failed");
+            return;
+        }
+        _rulesOriginal = JSON.stringify(parsed, null, 2);
+        showSuccess(`Saved. Total modifications: ${data.timesRulesModified}`);
+        document.getElementById("rules-editor").innerHTML = syntaxHighlight(_rulesOriginal);
+        updateLineNumbers();
+    } catch (err) {
+        showError(err.message);
+    }
+}
+function syntaxHighlight(json) {
+    const escaped = json
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    return escaped.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function(match) {
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    const keyName = match.replace(/"/g, "").replace(/:$/, "");
+                    if (keyName === ".read" || keyName === ".write" || keyName === ".validate" || keyName === ".indexOn") {
+                        return `<span class="hl-rule-key">${match}</span>`;
+                    }
+                    if (keyName.startsWith("$")) {
+                        return `<span class="hl-wildcard">${match}</span>`;
+                    }
+                    if (keyName === "rules") {
+                        return `<span class="hl-rules-root">${match}</span>`;
+                    }
+                    return `<span class="hl-key">${match}</span>`;
+                }
+                const inner = match.replace(/^"|"$/g, "");
+                if (/\bauth\b/.test(inner)) return `<span class="hl-auth">${match}</span>`;
+                if (/\b(data|newData|root)\b/.test(inner)) return `<span class="hl-data">${match}</span>`;
+                return `<span class="hl-string">${match}</span>`;
+            }
+            if (/true|false/.test(match)) return `<span class="hl-bool">${match}</span>`;
+            if (/null/.test(match)) return `<span class="hl-null">${match}</span>`;
+            return `<span class="hl-number">${match}</span>`;
+        }
+    );
+}
+
+function updateLineNumbers() {
+    const editor = document.getElementById("rules-editor");
+    const lines = editor.innerText.split("\n").length;
+    const gutter = document.getElementById("rules-gutter");
+    gutter.innerHTML = Array.from({ length: lines }, (_, i) => `<div>${i + 1}</div>`).join("");
 }
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         fetchUrls();
-        fetchLogs();
+        fetchRules();
     } else {
         window.location.href = "/InfiniteLogins.html";
     }
 });
-setInterval(fetchLogs, 5000);
 const panelBtn = document.getElementById("panel-btn");
 const panel = document.getElementById("panel");
 panelBtn.onclick = () => {
@@ -275,6 +324,21 @@ document.getElementById("add-url-btn").onclick = () =>
 document.getElementById("add-close").onclick = () =>
     document.getElementById("add-panel").classList.remove("open");
 document.getElementById("search").oninput = fetchUrls;
+document.getElementById("rules-save-btn").onclick = saveRules;
+document.getElementById("rules-refresh-btn").onclick = fetchRules;
+document.getElementById("rules-editor").addEventListener("input", () => {
+    updateLineNumbers();
+});
+document.getElementById("rules-editor").addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        document.execCommand("insertText", false, "  ");
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveRules();
+    }
+});
 (async () => {
     await verifyAdminPassword();
 })();

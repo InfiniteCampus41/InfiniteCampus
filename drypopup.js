@@ -129,95 +129,105 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="text">
-                <p class="btxt">
+                <h3 class="btxt">
                     Settings
-                </p>
+                </h3>
+                <hr>
+                <br>
                 <a class="button" id="popuplogin" href="${isLoggedInLink}">
                     ${isLoggedInMsg}
                 </a>
                 <div class="section weather-section">
-                    <p>
+                    <label>
                         Enable More Accurate Weather?
-                    </p>
+                    </label>
                     <label class="switch">
                         <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
                         <span class="slider">
                         </span>
                     </label>
                 </div>
+                <button class="button" id="toggleSnowBtn" class="button">
+                    Toggle Snow
+                </button>
                 <hr>
                 <div class="section">
-                    <button class="button" id="toggleSnowBtn" class="button">
-                        Toggle Snow
-                    </button>
-                    <br>
-                    <input class="button" type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
-                    <button id="saveTitleBtn" class="button">
-                        Save
-                    </button>
-                    <button id="resetTitleBtn" class="button">
-                        Reset
-                    </button>
-                    <br>
-                    <label id="fLabel" for="faviconInput" class="button">
-                        Choose Favicon Image
-                    </label>
-                    <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
-                    <button class="button" id="setFaviconBtn">
-                        Save
-                    </button>
-                    <button class="button" id="resetFaviconBtn">
-                        Reset
-                    </button>
+                    <div style="display:flex;flex-direction:row;justify-self:center;gap:10px;flex-wrap:wrap;">
+                        <div>
+                            <input class="button" type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
+                            <div style="display:flex;justify-content:space-between;">
+                                <button id="saveTitleBtn" class="button">
+                                    Save
+                                </button>
+                                <button id="resetTitleBtn" class="button">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="margin:5px 3px;" id="fLabel" for="faviconInput" class="button">
+                                Choose Favicon Image
+                            </label>
+                            <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
+                            <div style="display:flex;justify-content:space-between">
+                                <button class="button" id="setFaviconBtn">
+                                    Save
+                                </button>
+                                <button class="button" id="resetFaviconBtn">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex;flex-direction: column;">
+                                <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
+                                <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
+                            </div>
+                            <div style="display:flex;justify-content:space-between">
+                                <button id="savePanicBtn" class="button">
+                                    Save
+                                </button>
+                                <button id="clearPanicBtn" class="button">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
+                            <div style="display:flex;justify-content:space-between">
+                                <button id="saveBackendBtn" class="button">
+                                    Save
+                                </button>
+                                <button id="resetBackendBtn" class="button">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <hr>
-                <div class="section">
-                    <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
-                    <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
-                    <button id="savePanicBtn" class="button">
-                        Save
-                    </button>
-                    <button id="clearPanicBtn" class="button">
-                        Reset
-                    </button>
-                </div>
-                <hr>
-                <div class="section">
-                    <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
-                    <button id="saveBackendBtn" class="button">
-                        Save
-                    </button>
-                    <button id="resetBackendBtn" class="button">
-                        Reset
-                    </button>
-                </div>
-                <hr>
-                <div class="section">
-                    <br>
+                <div class="section" style="max-width:410px;justify-content:center">
                     <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
                         Change Site Theme
                     </a>
                     <a class="button" href="InfiniteDonaters.html">
                         Help Support By Donating
                     </a>
-                    <br>
-                    <br>
                     <a class="button" href="InfiniteApps.html?blank=true">
                         Open In About:Blank
                     </a>
                     <a class="button" href="InfiniteContacts.html?suggest=true">
                         Suggest A Feature
                     </a>
-                    <br>
-                    <br>
-                    <a class="button" id="resetAllBtn">
-                        Clear Data
-                    </a>
-                    <br>
-                    <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca" target="_blank">
-                        Join The Discord
-                    </a>
                 </div>
+                <a class="button" id="resetAllBtn">
+                    Clear Data
+                </a>
+                <br>
+                <br>
+                <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca" target="_blank">
+                    Join The Discord
+                </a>
             </div>
             <div class="bar themed">
                 <a id="CTCbtn" class="darkbuttons" href="InfiniteContacts.html">

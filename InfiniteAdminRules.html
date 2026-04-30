@@ -31,27 +31,121 @@
         </script>
         <script type="module" src="login.js">
         </script>
+        <style>
+            #rules-toolbar {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                margin-bottom: 0.6rem;
+                flex-wrap: wrap;
+            }
+            #rules-status {
+                font-size: 0.85rem;
+                opacity: 0.85;
+                margin-left: auto;
+            }
+            #rules-wrap {
+                display: flex;
+                border: 1px solid #3e3e3e;
+                border-radius: 6px;
+                overflow: hidden;
+                background: #1e1e2e;
+                font-family: "Fira Code", "Cascadia Code", "Consolas", monospace;
+                font-size: 0.82rem;
+                line-height: 1.6;
+                min-height: 420px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            #rules-gutter {
+                min-width: 2.8rem;
+                padding: 0.75rem 0.5rem;
+                text-align: right;
+                color: #555;
+                background: #181825;
+                border-right: 1px solid #313145;
+                user-select: none;
+                line-height: 1.6;
+                font-size: 0.78rem;
+            }
+            #rules-gutter div {
+                height: 1.6em;
+            }
+            #rules-editor {
+                flex: 1;
+                padding: 0.75rem 1rem;
+                outline: none;
+                overflow:scroll;
+                white-space: pre;
+                word-break: break-all;
+                overflow-wrap: anywhere;
+                color: #cdd6f4;
+                caret-color: #cdd6f4;
+                min-height: 420px;
+            }
+            .hl-rules-root { 
+                color: #89b4fa; 
+                font-weight: 600; 
+            }
+            .hl-rule-key { 
+                color: #a6e3a1; 
+                font-weight: 600; 
+            }
+            .hl-wildcard { 
+                color: #cba6f7; 
+            }
+            .hl-key { 
+                color: #89dceb; 
+            }
+            .hl-auth { 
+                color: #fab387; 
+            }
+            .hl-data { 
+                color: #f9e2af; 
+            }
+            .hl-string { 
+                color: #a6e3a1;
+            }
+            .hl-bool { 
+                color: #f38ba8; 
+                font-weight: 600;
+            }
+            .hl-null { 
+                color: #6c7086; 
+                font-style: italic; 
+            }
+            .hl-number { 
+                color: #fab387; 
+            }
+        </style>
     </head>
     <body>
         <main>
             <center>
                 <h1 class="tptxt">
-                    Proxy URL Logs
+                    Rules Editor
                 </h1>
                 <hr>
-                <br>
-                <table id="url-table">
-                    <tbody>
-                        <tr>
-                            <td colspan="4">
-                                Loading
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <br>
-                <br>
             </center>
+            <div id="rules-section">
+                <div id="rules-toolbar">
+                    <button id="rules-save-btn" class="button">
+                        Save
+                    </button>
+                    <button id="rules-refresh-btn" class="button">
+                        Refresh
+                    </button>
+                    <span id="rules-status">
+                        Loading
+                    </span>
+                </div>
+                <div id="rules-wrap">
+                    <div id="rules-gutter">
+                    </div>
+                    <div id="rules-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">
+                    </div>
+                </div>
+            </div>
             <div id="panel-btn" class="button">
                 <i class="bi bi-arrow-left">
                 </i>
@@ -95,11 +189,9 @@
                 </div>
             </div>
         </main>
-        <script type="module" src="adminurls.js">
+        <script type="module" src="adminrules.js">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-        </script>
-        <script src="popup.js">
         </script>
         <script src="frame.js">
         </script>

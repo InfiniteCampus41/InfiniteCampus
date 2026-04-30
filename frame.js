@@ -509,7 +509,7 @@ function appendToMain() {
         "InfiniteAdminChats.html",
         "InfiniteAccounts.html",
         "InfiniteAdminMovies.html",
-        "InfiniteAdminUrls.html",
+        "InfiniteAdminRules.html",
         "InfiniteAdmins.html",
         "InfiniteArchives.html",
         "InfinitePolicies.html",

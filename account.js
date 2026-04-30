@@ -1077,6 +1077,16 @@ if (notif) {
             dbListen(`users/${user.uid}/profile`, (profile) => {
                 if (!profile) return;
                 loadExtensionCheckbox(profile);
+                const profileStats = document.getElementById('profileStats');
+                function addStat(name, value) {
+                    const stat = document.createElement("div");
+                    stat.classList = "btxt";
+                    stat.style.padding = "5px 3px";
+                    stat.style.borderRadius = "5px";
+                    stat.style.background = "#333";
+                    stat.innerHTML = `<span>${name}:</span><span>${value}</span>`;
+                    profileStats.appendChild(stat);
+                }
                 const badges = document.getElementById('badges');
                 badges.innerHTML = "";
                 function addBadge(name, color, icon) {
@@ -1162,6 +1172,10 @@ if (notif) {
                     const discordUser = profile.dUsername;
                     addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
                     hasAnyRole = true;
+                }
+                if (profile.uploads) {
+                    const uploads = profile.uploads;
+                    addStat("Movies Uploaded", uploads);
                 }
                 if (profile.isLink) {
                     addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");

@@ -1517,9 +1517,6 @@ main {
     font-size: 20px;
     margin-bottom: 15px;
 }
-#panicKeyInput {
-    width:90px;
-}
 .partner-box {
     width: 180px;
     height: 180px;
@@ -1652,27 +1649,20 @@ main {
 }
 .popup2 {
     position: fixed;
-    border-left:1px solid white;
-    border-top:1px solid white;
-    border-bottom:1px solid white;
-    border-top-left-radius:20px;
-    border-bottom-left-radius:20px;
     top: var(--headerHeight);
     right: 0;
-    width: 364px;
-    max-width: 90vw;
+    width: 100%;
+    height:100%;
     height: calc(100vh - calc(var(--headerHeight) + var(--footerHeight)));
     background-image:url('/res/popupbg.jpg');
     box-shadow: -8px 0 25px rgba(0,0,0,0.4);
     transform: translateX(100%);
     transition: transform 0.35s ease;
-    z-index: 10000;
+    z-index: 2000;
     display: flex;
     flex-direction: column;
 }
 .popup2 .bar:first-child {
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
     height: 45px;
     display: flex;
     align-items: center;
@@ -1681,8 +1671,6 @@ main {
     font-weight: 600;
 }
 .popup2 .bar:last-child {
-    border-bottom-left-radius: 20px;
-    border-top-left-radius: 20px;
     height: 40px;
     display: flex;
     align-items: center;
@@ -1702,6 +1690,9 @@ main {
 }
 .popup2 .section {
     margin-bottom: 10px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-self:center;
 }
 .popup2.shows {
     transform: translateX(0);
@@ -2026,7 +2017,7 @@ select {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
 }
 .settings-button:hover img {
     transform: rotate(180deg);
