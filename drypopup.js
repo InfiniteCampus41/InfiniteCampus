@@ -152,7 +152,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </button>
                 <hr>
                 <div class="section">
-                    <div style="display:flex;flex-direction:row;justify-self:center;gap:10px;flex-wrap:wrap;">
+                    <div style="display:flex;flex-direction:row;justify-self:center;gap:10px;flex-wrap:wrap;justify-content:center;">
                         <div>
                             <input class="button" type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
                             <div style="display:flex;justify-content:space-between;">
