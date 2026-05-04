@@ -98,19 +98,22 @@ async function checkUserPermissions(user) {
         window.location.href = "/InfiniteLogins.html";
         return false;
     }
-    const userRef = `users/${user.uid}/profile`;
-    const snapshot = await dbGet(userRef);
+    const snapshot = await dbGet(`users/${user.uid}/profile`);
     if (snapshot == null || snapshot == undefined) {
         showError("User Profile Not Found.");
         return false;
     }
-    const profile = snapshot;
-    if (profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev) {
+    if (snapshot.isOwner || snapshot.isTester || snapshot.isCoOwner || snapshot.isHAdmin || snapshot.isDev) {
         return true;
     } else {
         showError("You Do Not Have The Required Permissions To Access This Page.");
         return false;
     }
+}
+async function checkOwnerPermissions(user) {
+    if (!user) return false;
+    const snapshot = await dbGet(`users/${user.uid}/profile`);
+    return !!(snapshot && snapshot.isOwner);
 }
 async function fetchUrls() {
     const user = auth.currentUser;
@@ -197,6 +200,71 @@ async function deleteUrl(url) {
         }
     });
 }
+function escAttr(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+function syntaxHighlightCollapsible(json, editorId) {
+    const lines = json.split("\n");
+    return lines.map(line => highlightLineText(line, editorId)).join("\n");
+}
+function highlightLineText(line, editorId) {
+    const isRules = editorId === "rules-editor";
+    const escaped = line
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    return escaped.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function(match) {
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    const keyName = match.replace(/"/g, "").replace(/:$/, "");
+                    if (isRules) {
+                        if ([".read", ".write", ".validate", ".indexOn"].includes(keyName)) {
+                            return `<span class="hl-rule-key">${match}</span>`;
+                        }
+                        if (keyName.startsWith("$")) {
+                            return `<span class="hl-wildcard">${match}</span>`;
+                        }
+                        if (keyName === "rules") {
+                            return `<span class="hl-rules-root">${match}</span>`;
+                        }
+                    }
+                    return `<span class="hl-key">${match}</span>`;
+                }
+                const inner = match.replace(/^"|"$/g, "");
+                if (isRules && /\bauth\b/.test(inner)) return `<span class="hl-auth">${match}</span>`;
+                if (isRules && /\b(data|newData|root)\b/.test(inner)) return `<span class="hl-data">${match}</span>`;
+                return `<span class="hl-string">${match}</span>`;
+            }
+            if (/true|false/.test(match)) return `<span class="hl-bool">${match}</span>`;
+            if (/null/.test(match)) return `<span class="hl-null">${match}</span>`;
+            return `<span class="hl-number">${match}</span>`;
+        }
+    );
+}
+function syntaxHighlight(json) {
+    return syntaxHighlightCollapsible(json, "rules-editor");
+}
+function updateLineNumbers(editorId) {
+    const gutterMap = { "rules-editor": "rules-gutter", "data-editor": "data-gutter" };
+    const editor = document.getElementById(editorId);
+    const gutter = document.getElementById(gutterMap[editorId]);
+    if (!editor || !gutter) return;
+    const lineCount = editor.innerText.split("\n").length;
+    gutter.innerHTML = Array.from({ length: lineCount }, (_, i) => `<div>${i + 1}</div>`).join("");
+}
+function reRenderEditor(editorId) {
+    const editor = document.getElementById(editorId);
+    if (!editor) return;
+    const raw = editor.innerText;
+    editor.innerHTML = syntaxHighlightCollapsible(raw, editorId);
+    updateLineNumbers(editorId);
+}
 let _rulesOriginal = "";
 async function fetchRules() {
     const user = auth.currentUser;
@@ -218,9 +286,8 @@ async function fetchRules() {
         }
         const pretty = JSON.stringify(data.rules, null, 2);
         _rulesOriginal = pretty;
-        const editor = document.getElementById("rules-editor");
-        editor.innerHTML = syntaxHighlight(pretty);
-        updateLineNumbers();
+        document.getElementById("rules-editor").innerHTML = syntaxHighlightCollapsible(pretty, "rules-editor");
+        updateLineNumbers("rules-editor");
         statusEl.textContent = "Loaded.";
     } catch (err) {
         statusEl.textContent = "Error: " + err.message;
@@ -255,52 +322,147 @@ async function saveRules() {
         }
         _rulesOriginal = JSON.stringify(parsed, null, 2);
         showSuccess(`Saved. Total modifications: ${data.timesRulesModified}`);
-        document.getElementById("rules-editor").innerHTML = syntaxHighlight(_rulesOriginal);
-        updateLineNumbers();
+        document.getElementById("rules-editor").innerHTML = syntaxHighlightCollapsible(_rulesOriginal, "rules-editor");
+        updateLineNumbers("rules-editor");
+        statusEl.textContent = "Saved.";
     } catch (err) {
         showError(err.message);
     }
 }
-function syntaxHighlight(json) {
-    const escaped = json
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    return escaped.replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function(match) {
-            if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    const keyName = match.replace(/"/g, "").replace(/:$/, "");
-                    if (keyName === ".read" || keyName === ".write" || keyName === ".validate" || keyName === ".indexOn") {
-                        return `<span class="hl-rule-key">${match}</span>`;
-                    }
-                    if (keyName.startsWith("$")) {
-                        return `<span class="hl-wildcard">${match}</span>`;
-                    }
-                    if (keyName === "rules") {
-                        return `<span class="hl-rules-root">${match}</span>`;
-                    }
-                    return `<span class="hl-key">${match}</span>`;
-                }
-                const inner = match.replace(/^"|"$/g, "");
-                if (/\bauth\b/.test(inner)) return `<span class="hl-auth">${match}</span>`;
-                if (/\b(data|newData|root)\b/.test(inner)) return `<span class="hl-data">${match}</span>`;
-                return `<span class="hl-string">${match}</span>`;
-            }
-            if (/true|false/.test(match)) return `<span class="hl-bool">${match}</span>`;
-            if (/null/.test(match)) return `<span class="hl-null">${match}</span>`;
-            return `<span class="hl-number">${match}</span>`;
+let _dataOriginal = "";
+let _isOwner = false;
+async function fetchData() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const statusEl = document.getElementById("data-status");
+    statusEl.textContent = "Checking permissions...";
+    _isOwner = await checkOwnerPermissions(user);
+    if (!_isOwner) {
+        statusEl.textContent = "Owner access required.";
+        document.getElementById("data-editor").contentEditable = "false";
+        document.getElementById("data-editor").style.opacity = "0.5";
+        document.getElementById("data-save-btn").disabled = true;
+        return;
+    }
+    statusEl.textContent = "Loading...";
+    statusEl.style.color = "";
+    try {
+        const res = await adminFetch(BACKEND + "/admin/modify-data", {
+            method: "GET",
+            headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const result = await res.json();
+        if (!res.ok) {
+            statusEl.textContent = result.error || "Failed to load data.";
+            return;
         }
-    );
+        const pretty = JSON.stringify(result.data, null, 2);
+        _dataOriginal = pretty;
+        document.getElementById("data-editor").innerHTML = syntaxHighlightCollapsible(pretty, "data-editor");
+        updateLineNumbers("data-editor");
+        statusEl.textContent = "Loaded.";
+    } catch (err) {
+        statusEl.textContent = "Error: " + err.message;
+    }
 }
-
-function updateLineNumbers() {
-    const editor = document.getElementById("rules-editor");
-    const lines = editor.innerText.split("\n").length;
-    const gutter = document.getElementById("rules-gutter");
-    gutter.innerHTML = Array.from({ length: lines }, (_, i) => `<div>${i + 1}</div>`).join("");
+function collectLeafPaths(obj, prefix, out) {
+    if (obj === null || typeof obj !== "object" || Array.isArray(obj)) {
+        out[prefix] = obj;
+        return;
+    }
+    const keys = Object.keys(obj);
+    if (keys.length === 0) {
+        out[prefix] = obj;
+        return;
+    }
+    for (const k of keys) {
+        collectLeafPaths(obj[k], prefix ? prefix + "/" + k : k, out);
+    }
 }
+function diffJSON(oldObj, newObj) {
+    const oldLeaves = {};
+    const newLeaves = {};
+    collectLeafPaths(oldObj, "", oldLeaves);
+    collectLeafPaths(newObj, "", newLeaves);
+    const patches = [];
+    for (const p in newLeaves) {
+        if (JSON.stringify(newLeaves[p]) !== JSON.stringify(oldLeaves[p])) {
+            patches.push({ path: p, value: newLeaves[p] });
+        }
+    }
+    for (const p in oldLeaves) {
+        if (!(p in newLeaves)) {
+            patches.push({ path: p, value: null });
+        }
+    }
+    return patches;
+}
+async function saveData() {
+    const user = auth.currentUser;
+    if (!user) { showError("Not Logged In."); return; }
+    if (!_isOwner) { showError("Owner Access Required."); return; }
+    const raw = document.getElementById("data-editor").innerText;
+    const statusEl = document.getElementById("data-status");
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (e) {
+        showError(`Invalid JSON: ${e.message}`);
+        return;
+    }
+    let oldParsed;
+    try {
+        oldParsed = _dataOriginal ? JSON.parse(_dataOriginal) : {};
+    } catch {
+        oldParsed = {};
+    }
+    const patches = diffJSON(oldParsed, parsed);
+    if (patches.length === 0) {
+        showSuccess("No Changes Detected.");
+        statusEl.textContent = "No Changes.";
+        return;
+    }
+    showConfirm(`This Will Apply ${patches.length} Change(s) To data.json. Are You Sure?`, async (confirmed) => {
+        if (!confirmed) return;
+        statusEl.textContent = "Saving...";
+        statusEl.style.color = "";
+        try {
+            const res = await adminFetch(BACKEND + "/admin/modify-data", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ patches })
+            });
+            const result = await res.json();
+            if (!res.ok) {
+                showError(result.error || "Save Failed");
+                statusEl.textContent = "Save failed.";
+                return;
+            }
+            _dataOriginal = JSON.stringify(parsed, null, 2);
+            showSuccess(`data.json saved (${patches.length} change(s) applied).`);
+            document.getElementById("data-editor").innerHTML = syntaxHighlightCollapsible(_dataOriginal, "data-editor");
+            updateLineNumbers("data-editor");
+            statusEl.textContent = "Saved.";
+        } catch (err) {
+            showError(err.message);
+            statusEl.textContent = "Error.";
+        }
+    });
+}
+let _dataLoaded = false;
+document.querySelectorAll(".editor-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".editor-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const target = tab.dataset.tab;
+        document.getElementById("rules-section").classList.toggle("visible", target === "rules");
+        document.getElementById("data-section").classList.toggle("visible", target === "data");
+        if (target === "data" && !_dataLoaded) {
+            _dataLoaded = true;
+            fetchData();
+        }
+    });
+});
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         fetchUrls();
@@ -327,7 +489,7 @@ document.getElementById("search").oninput = fetchUrls;
 document.getElementById("rules-save-btn").onclick = saveRules;
 document.getElementById("rules-refresh-btn").onclick = fetchRules;
 document.getElementById("rules-editor").addEventListener("input", () => {
-    updateLineNumbers();
+    updateLineNumbers("rules-editor");
 });
 document.getElementById("rules-editor").addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
@@ -337,6 +499,21 @@ document.getElementById("rules-editor").addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         saveRules();
+    }
+});
+document.getElementById("data-save-btn").onclick = saveData;
+document.getElementById("data-refresh-btn").onclick = fetchData;
+document.getElementById("data-editor").addEventListener("input", () => {
+    updateLineNumbers("data-editor");
+});
+document.getElementById("data-editor").addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        document.execCommand("insertText", false, "  ");
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveData();
     }
 });
 (async () => {
