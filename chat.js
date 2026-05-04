@@ -434,22 +434,29 @@ async function loadOlderMessages() {
             limit: 25
         });
         const msgs = res.data;
-        if (!msgs || Object.keys(msgs).length === 0) {
+        if (!msgs || (Array.isArray(msgs) && msgs.length === 0)) {
             hasMoreMessages = false;
             loadingOlderMessages = false;
             return;
         }
-        const entries = Object.entries(msgs).sort((a, b) => Number(a[1].timestamp) - Number(b[1].timestamp));
+        const entries = (Array.isArray(msgs) ? msgs : Object.entries(msgs).map(([id, v]) => ({ id, ...v })))
+            .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+        if (entries.length === 0) {
+            hasMoreMessages = false;
+            loadingOlderMessages = false;
+            return;
+        }
         const container = document.getElementById("chatLog");
         const oldHeight = container.scrollHeight;
         for (let i = entries.length - 1; i >= 0; i--) {
-            const [id, msg] = entries[i];
+            const msg = entries[i];
+            const id = msg.id;
             const div = await renderMessageInstant(id, msg);
             if (div) {
                 container.prepend(div);
             }
         }
-        oldestLoadedTimestamp = Number(entries[0][1].timestamp) - 1;
+        oldestLoadedTimestamp = Number(entries[0].timestamp) - 1;
         const newHeight = container.scrollHeight;
         container.scrollTop += (newHeight - oldHeight);
     } catch (e) {
@@ -467,6 +474,32 @@ function scrollToBottom(smooth = false) {
             }
         }, 50);
     });
+}
+function scrollToMessage(msgId, attempts = 0) {
+    const el = document.getElementById("msg-" + msgId);
+    if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("msg-highlight");
+        setTimeout(() => el.classList.remove("msg-highlight"), 2500);
+        if (!document.getElementById("__msg-highlight-style")) {
+            const s = document.createElement("style");
+            s.id = "__msg-highlight-style";
+            s.textContent = `
+                @keyframes msgHighlight {
+                    0%   { background: rgba(79,163,255,0.25); }
+                    70%  { background: rgba(79,163,255,0.15); }
+                    100% { background: transparent; }
+                }
+                .msg-highlight {
+                    animation: msgHighlight 2.5s ease forwards;
+                    border-radius: 6px;
+                }
+            `;
+            document.head.appendChild(s);
+        }
+    } else if (attempts < 12) {
+        setTimeout(() => scrollToMessage(msgId, attempts + 1), 300);
+    }
 }
 async function unmuteUser(uid) {
     await fetchAPI("delete", { path: ["mutedUsers", uid] });
@@ -1708,46 +1741,53 @@ async function openPrivateChat(uid, name) {
     });
 }
 async function updatePrivateListFromSnapshot(chatsSnapshot) {
-    privateList.innerHTML = "";
     if (!chatsSnapshot) return;
     const chats = chatsSnapshot;
     for (const otherUid of Object.keys(chats)) {
         const meta = chats[otherUid] || {};
+        let li = privateList.querySelector(`li[data-uid="${otherUid}"]`);
         const name = await getDisplayName(otherUid);
-        const li = document.createElement("li");
-        li.dataset.uid = otherUid;
-        const left = document.createElement("div");
-        left.className = "left";
+        if (!li) {
+            li = document.createElement("li");
+            li.dataset.uid = otherUid;
+            const left = document.createElement("div");
+            left.className = "left";
+            const usernameSpan = document.createElement("span");
+            usernameSpan.className = "username";
+            left.appendChild(usernameSpan);
+            li.appendChild(left);
+            const closeBtn = document.createElement("button");
+            closeBtn.className = "closeBtn";
+            closeBtn.innerHTML = `<i class="bi bi-x-circle" title="Close PM"></i>`;
+            closeBtn.onclick = async (e) => {
+                e.stopPropagation();
+                showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
+                    if (result) {
+                        dbDelete(`metadata/${currentUser.uid}/privateChats/${otherUid}`);
+                        showSuccess("Chat Closed");
+                    } else {
+                        showSuccess("Canceled");
+                    }
+                });
+            };
+            li.appendChild(closeBtn);
+            li.onclick = () => openPrivateChat(otherUid, name);
+            privateList.appendChild(li);
+            attachPrivateMessageListener(otherUid);
+        }
+        const left = li.querySelector(".left");
+        const usernameSpan = left.querySelector(".username");
+        usernameSpan.textContent = name;
+        const oldDot = left.querySelector(".notifDot");
+        if (oldDot) oldDot.remove();
         const unreadCount = Number(meta.unreadCount || 0);
         if (unreadCount > 0 && currentPrivateUid !== otherUid) {
             const dot = document.createElement("span");
             dot.className = "notifDot";
             dot.textContent = "•";
-            left.appendChild(dot);
+            left.prepend(dot);
         }
-        const usernameSpan = document.createElement("span");
-        usernameSpan.textContent = "" + name;
-        left.appendChild(usernameSpan);
-        li.appendChild(left);
-        const closeBtn = document.createElement("button");
-        closeBtn.className = "closeBtn";
-        closeBtn.innerHTML = `<i class="bi bi-x-circle" title="Close PM"></i>`;
-        closeBtn.onclick = async (e) => {
-            e.stopPropagation();
-            showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
-                if (result) {
-                    dbDelete(`metadata/${currentUser.uid}/privateChats/${otherUid}`);
-                    showSuccess("Chat Closed");
-                } else {
-                    showSuccess("Canceled");
-                }
-            })
-        };
-        li.appendChild(closeBtn);
-        li.onclick = () => openPrivateChat(otherUid, name);
-        if (currentPrivateUid === otherUid) li.classList.add("active");
-        privateList.appendChild(li);
-        attachPrivateMessageListener(otherUid);
+        li.classList.toggle("active", currentPrivateUid === otherUid);
     }
 }
 function startChannelListeners() {
@@ -2171,7 +2211,36 @@ onAuthStateChanged(auth, async user => {
     if (currentPath && ((currentPath.includes("messages/Admin-Chat")) || (currentPath.includes("messages/Premium-Chat"))) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre3 || isPre2)) {
         switchChannel("General");
     }
-    if (!currentPath) switchChannel("General");
+    if (!currentPath) {
+        const _urlParams = new URLSearchParams(window.location.search);
+        const _dmUid = _urlParams.get("dm");
+        const _channel = _urlParams.get("channel");
+        const _msgId = window.location.hash.replace("#msg-", "").trim() || null;
+        if (_dmUid) {
+            getDisplayName(_dmUid).then(name => {
+                openPrivateChat(_dmUid, name).then(() => {
+                    if (_msgId) scrollToMessage(_msgId);
+                });
+            });
+        } else if (_channel) {
+            switchChannel(decodeURIComponent(_channel)).then ? 
+                switchChannel(decodeURIComponent(_channel)).then(() => {
+                    if (_msgId) scrollToMessage(_msgId);
+                }) :
+                (() => {
+                    switchChannel(decodeURIComponent(_channel));
+                    if (_msgId) setTimeout(() => scrollToMessage(_msgId), 800);
+                })();
+        } else if (_msgId) {
+            switchChannel("General");
+            setTimeout(() => scrollToMessage(_msgId), 800);
+        } else {
+            switchChannel("General");
+        }
+        if (_dmUid || _channel || _msgId) {
+            history.replaceState(null, "", window.location.pathname);
+        }
+    }
     startMetadataListener();
     dbListen(`mentions/${currentUser.uid}`, (data) => {
         if (data) console.log("Mention: ", data);
@@ -2460,3 +2529,48 @@ setInterval(async () => {
         }
     }
 }, 20000);
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", async (event) => {
+        const data = event.data;
+        if (!data) return;
+        if (data.type === "notificationAction") {
+            const { action, notifData } = data;
+            if (!notifData) return;
+            if (action === "verify" && notifData.uid) {
+                try {
+                    const token = await getAuthToken();
+                    if (!token) { showError("Not Logged In"); return; }
+                    const res = await fetch(`${a}/admin/verify-user`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ uid: notifData.uid })
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                        showSuccess(json.message || "User Verified");
+                    } else {
+                        showError(json.error || "Verification Failed");
+                    }
+                } catch (e) {
+                    showError("Verify failed: " + (e?.message || e));
+                }
+                return;
+            }
+            if (notifData.url) {
+                window.location.href = notifData.url;
+            }
+        }
+        if (data.type === "notificationClick") {
+            const url = data.url || (data.notifData && data.notifData.url);
+            if (url) window.location.href = url;
+        }
+    });
+    navigator.serviceWorker.ready.then((registration) => {
+        if (registration.active) {
+            registration.active.postMessage({ type: "chatReady" });
+        }
+    }).catch(() => {});
+}
