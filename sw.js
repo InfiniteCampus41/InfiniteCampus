@@ -18,7 +18,9 @@ messaging.onBackgroundMessage((payload) => {
       			title: "Verify User"
     		}
   		],
-  		data: payload.data
+  		data: {
+            url: payload.data?.url || "/"
+        }
 	});
 });
 self.addEventListener("push", function(event) {
@@ -29,7 +31,7 @@ self.addEventListener("push", function(event) {
     	icon: data.icon,
 		image: data.image,
     	data: {
-      		url: data.data.url
+      		url: data.data?.url || "/"
     	}
   	};
   	event.waitUntil(
@@ -37,11 +39,20 @@ self.addEventListener("push", function(event) {
   	);
 });
 self.addEventListener("notificationclick", function(event) {
-	const data = event.data.json();
-	const url = data.data.url;
-	event.waitUntil(
-   	 	clients.openWindow(url)
-  	);
+    event.notification.close();
+    const url = event.notification.data?.url || "/";
+    event.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+            for (const client of clientList) {
+                if ("focus" in client) {
+                    client.focus();
+                    if ("navigate" in client) return client.navigate(url);
+                    return;
+                }
+            }
+            if (clients.openWindow) return clients.openWindow(url);
+        })
+    );
 });
 importScripts("/scram/scramjet.all.js");
 const { ScramjetServiceWorker } = $scramjetLoadWorker();

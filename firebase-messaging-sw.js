@@ -12,6 +12,28 @@ messaging.onBackgroundMessage((payload) => {
   	self.registration.showNotification(payload.notification.title, {
     	body: payload.notification.body,
     	icon: "/icon.png",
-		data: { url: payload.notification.url }
+		data: {
+            url: payload.data?.url || payload.notification?.url || "/"
+        }
   	});
+});
+self.addEventListener("notificationclick", function(event) {
+    event.notification.close();
+    const url = event.notification.data?.url || "/";
+    event.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+            for (const client of clientList) {
+                if ("focus" in client) {
+                    client.focus();
+                    if ("navigate" in client) {
+                        return client.navigate(url);
+                    }
+                    return;
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
 });

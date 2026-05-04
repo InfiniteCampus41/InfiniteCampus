@@ -74,6 +74,182 @@ let typingRef = null;
 let typingTimeout = null;
 let zoomed = false;
 const MAX_LISTENERS = 500;
+const REACTION_EMOJIS = ["👍","👎","❤️","😂","🔥","😮","😢","🎉","👀","💯","🙏","😍","😎","🤔","🥰","😅","✅","⭐","💀","🤯"];
+const MAX_REACTIONS_PER_MESSAGE = 5;
+const MAX_REACTIONS_PER_USER = 20;
+(function injectReactionStyles() {
+    if (document.getElementById("__reaction-styles")) return;
+    const style = document.createElement("style");
+    style.id = "__reaction-styles";
+    style.textContent = `
+        .reactions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-left: 40px;
+            margin-top: 4px;
+            min-height: 0;
+        }
+        .reaction-chip {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 0.82em;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.15s, border-color 0.15s;
+            line-height: 1.6;
+        }
+        .reaction-chip:hover { background: rgba(255,255,255,0.13); }
+        .reaction-chip.reacted {
+            background: rgba(79,163,255,0.18);
+            border-color: rgba(79,163,255,0.5);
+        }
+        .reaction-chip.reacted:hover { background: rgba(79,163,255,0.26); }
+        .emoji-picker-popup {
+            position: fixed;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            max-width: 220px;
+            z-index: 99999;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+        }
+        .emoji-picker-popup button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25em;
+            padding: 3px;
+            border-radius: 5px;
+            transition: background 0.1s;
+            line-height: 1;
+        }
+        .emoji-picker-popup button:hover { background: #333; }
+        .msg .react-btn { opacity: 0; transition: opacity 0.15s; }
+        .msg:hover .react-btn { opacity: 1; }
+        #msgBadges {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            vertical-align: middle;
+        }
+        .badge-extra-chip {
+            font-size: 0.7em;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 0px 5px;
+            cursor: default;
+            color: #ccc;
+            line-height: 1.6;
+            user-select: none;
+        }
+        .badge-popover {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 6px 8px;
+            z-index: 9999;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            gap: 6px;
+            flex-direction: column;
+            min-width: 140px;
+        }
+        .badge-popover-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82em;
+            color: #ddd;
+        }
+        #msgBadges:hover .badge-popover,
+        .badge-extra-chip:hover + .badge-popover,
+        .badge-popover:hover {
+            display: flex;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+function renderReactionsInRow(reactionsRow, reactions) {
+    if (!reactionsRow) return;
+    reactionsRow.innerHTML = "";
+    if (!reactions || typeof reactions !== "object") return;
+    for (const [emoji, users] of Object.entries(reactions)) {
+        if (!users || typeof users !== "object") continue;
+        const count = Object.keys(users).length;
+        if (count === 0) continue;
+        const reacted = !!(currentUser && users[currentUser.uid]);
+        const chip = document.createElement("button");
+        chip.className = "reaction-chip" + (reacted ? " reacted" : "");
+        chip.textContent = `${emoji} ${count}`;
+        const msgId = reactionsRow.dataset.msgid;
+        chip.onclick = () => toggleReaction(msgId, emoji);
+        reactionsRow.appendChild(chip);
+    }
+}
+function showEmojiPicker(event, msgId) {
+    const existing = document.querySelector(".emoji-picker-popup");
+    if (existing) { existing.remove(); return; }
+    const picker = document.createElement("div");
+    picker.className = "emoji-picker-popup";
+    REACTION_EMOJIS.forEach(emoji => {
+        const btn = document.createElement("button");
+        btn.textContent = emoji;
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            toggleReaction(msgId, emoji);
+            picker.remove();
+        };
+        picker.appendChild(btn);
+    });
+    const rect = event.currentTarget.getBoundingClientRect();
+    picker.style.top  = Math.min(rect.bottom + 4, window.innerHeight - 160) + "px";
+    picker.style.left = Math.min(rect.left,  window.innerWidth  - 230) + "px";
+    document.body.appendChild(picker);
+    setTimeout(() => {
+        document.addEventListener("click", function close(e) {
+            if (!picker.contains(e.target)) {
+                picker.remove();
+                document.removeEventListener("click", close);
+            }
+        });
+    }, 0);
+}
+async function toggleReaction(msgId, emoji) {
+    if (!currentUser || !currentPath) return;
+    const pathParts = pathToArray(currentPath + "/" + msgId);
+    try {
+        const token = await getAuthToken();
+        const channel = currentPath.split("/")[1] || null;
+        const res = await fetch(`${a}/react`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ path: pathParts, emoji, channel })
+        });
+        const json = await res.json();
+        if (!res.ok) showError(json?.error || "Could Not React To Message");
+    } catch (e) {
+        showError("Reaction failed: " + (e?.message || e));
+    }
+}
 const activeListeners = {
     typing: null,
     messages: null,
@@ -955,6 +1131,17 @@ async function renderMessageInstant(id, msg) {
     div.appendChild(topRow);
     div.appendChild(textDiv);
     div.appendChild(editedSpan);
+    const reactionsRow = document.createElement("div");
+    reactionsRow.className = "reactions-row";
+    reactionsRow.dataset.msgid = id;
+    div.appendChild(reactionsRow);
+    renderReactionsInRow(reactionsRow, msg.reactions);
+    if (currentPath) {
+        dbListen(`${currentPath}/${id}/reactions`, (reactionsData) => {
+            const row = document.querySelector(`.reactions-row[data-msgid="${id}"]`);
+            if (row) renderReactionsInRow(row, reactionsData);
+        }).catch(() => {});
+    }
     (async () => {
         try {
             const meta = await getUserMeta(msg.sender);
@@ -1069,26 +1256,14 @@ async function renderMessageInstant(id, msg) {
             }
             const badgeContainer = document.createElement("span");
             badgeContainer.id = "msgBadges";
-            badgeContainer.style.marginLeft = "3px";
-            badgeContainer.style.fontWeight = "bold";
-            badgeContainer.style.display = "inline-flex";
-            badgeContainer.style.alignItems = "flex-start";
-            badgeContainer.style.gap = "3px";
             const mutedBadge = document.createElement("span");
             mutedBadge.style.color = "red";
-            mutedBadge.style.fontWeight = "bold";
             mutedBadge.style.display = "none";
             mutedBadge.title = "This User Is Muted";
             mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
             dbListen(`mutedUsers/${msg.sender}`, async (data) => {
-                if (!data) {
-                    mutedBadge.style.display = "none";
-                    return;
-                }
-                if (data.expires === "Never") {
-                    mutedBadge.style.display = "inline";
-                    return;
-                }
+                if (!data) { mutedBadge.style.display = "none"; return; }
+                if (data.expires === "Never") { mutedBadge.style.display = "inline"; return; }
                 if (data.expires && Date.now() > data.expires) {
                     await dbDelete(`mutedUsers/${msg.sender}`);
                     mutedBadge.style.display = "none";
@@ -1096,152 +1271,50 @@ async function renderMessageInstant(id, msg) {
                 }
                 mutedBadge.style.display = "inline";
             });
-            let dontShowOthers = false;
-            if (meta.sus) {
-                dontShowOthers = true;
-                badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation" style="color:red" title="This User Is Currently Under Investigation, Please Do Not Interact With This User"></i>';
-            } else if (meta.owner && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield-plus" style="color:lime" title="Owner"></i>';
-            } else if (meta.tester && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="fa-solid fa-cogs" style="color:darkGoldenRod" title="Tester"></i>';
-            } else if (meta.coOwner && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield-fill" style="color:lightblue" title="Co-Owner"></i>';
-            } else if (meta.hAdmin && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:#00cc99" title="Head Admin"></i>';
-            } else if (meta.admin && !dontShowOthers) {
-                badgeContainer.innerHTML = '<i class="bi bi-shield" style="color:dodgerblue" title="Admin"></i>';
+            const allPrimaryBadges = [];
+            function mkPrimary(cls, color, title) {
+                allPrimaryBadges.push({ cls, color, title });
+            }
+            if (meta.sus)      mkPrimary("bi bi-shield-exclamation","red","Under Investigation — Do Not Interact");
+            if (meta.owner)    mkPrimary("bi bi-shield-plus","lime","Owner");
+            if (meta.tester)   mkPrimary("fa-solid fa-cogs","darkGoldenRod","Tester");
+            if (meta.coOwner)  mkPrimary("bi bi-shield-fill","lightblue","Co-Owner");
+            if (meta.hAdmin)   mkPrimary("fa-solid fa-shield-halved","#00cc99","Head Admin");
+            if (meta.admin)    mkPrimary("bi bi-shield","dodgerblue","Admin");
+            if (meta.dev)      mkPrimary("bi bi-code-square","green","Developer");
+            if (meta.premium3) mkPrimary("bi bi-hearts","red","Infinite Campus Premium T3");
+            if (meta.premium2) mkPrimary("bi bi-heart-fill","orange","Infinite Campus Premium T2");
+            if (meta.premium1) mkPrimary("bi bi-heart-half","yellow","Infinite Campus Premium T1");
+            if (meta.donor)    mkPrimary("bi bi-balloon-heart","#00E5FF","Donated To Infinite Campus");
+            const extraBadges = [];
+            function mkExtra(cls, color, label, title) {
+                extraBadges.push({ cls, color, label, title });
+            }
+            if (meta.partner)  mkExtra("fa fa-handshake","cornflowerblue","Partner","Partner Of Infinite Campus");
+            if (meta.uploader) mkExtra("bi bi-film","grey","Uploader","Uploaded A Movie To Infinite Campus");
+            if (meta.milestone) mkExtra("bi bi-award","yellow","Award","100th Signed Up User");
+            if (meta.guesser)  mkExtra("bi bi-stopwatch","#ff0000","Guesser","This User Has A Lot Of Freetime");
+            if (meta.discord && meta.discord.trim() !== "") mkExtra("bi bi-discord","#5865F2",`@${meta.discord}`,`Known As @${meta.discord} On The Infinite Campus Discord`);
+            if (meta.linker)   mkExtra("bi bi-link","#4fa3ff","Linker","Sent Lots Of Links In The Links Channel");
+            if (meta.secure)   mkExtra("bi ic ic-securely","dodgerblue","Securely","Has Securely At School");
+            if (meta.guardian) mkExtra("bi ic ic-goguardian","grey","GoGuardian","Has GoGuardian At School");
+            if (meta.lanschool) mkExtra("bi ic ic-lanschool","greenyellow","Lanschool","Has Lanschool At School");
+            if (meta.linewize) mkExtra("bi ic ic-linewize","lightskyblue","Linewize","Has Linewize At School");
+            if (meta.blocksi)  mkExtra("bi ic ic-blocksi","cadetblue","Blocksi","Has Blocksi At School");
+            const totalRoles = allPrimaryBadges.length + extraBadges.length;
+            let inlinePrimaries, overflowPrimaries, inlineExtras, popoverExtras;
+            if (totalRoles <= 3) {
+                inlinePrimaries = allPrimaryBadges;
+                overflowPrimaries = [];
+                inlineExtras = extraBadges;
+                popoverExtras = [];
             } else {
-            }
-            if (meta.dev) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-code-square";
-                icon.style.color = "green";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is A Developer For Infinitecampus.xyz`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.premium3) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-hearts";
-                icon.style.color = "red";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T3`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.premium2) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-heart-fill";
-                icon.style.color = "orange";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T2`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.premium1) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-heart-half";
-                icon.style.color = "yellow";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Infinite Campus Premium T1`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.donor) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-balloon-heart";
-                icon.style.color = "#00E5FF";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Donated To Infinite Campus`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.partner) {
-                const icon = document.createElement("i");
-                icon.className = "fa fa-handshake";
-                icon.style.color = "cornflowerblue";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is A Partner Of Infinite Campus`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.uploader) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-film";
-                icon.style.color = "grey";
-                icon.style.marginLeft = "6px";
-                icon.title = "This User Has Uploaded A Movie To Infinite Campus";
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.milestone) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-award";
-                icon.style.color = "yellow";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Is The 100th Signed Up User`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.guesser) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-stopwatch";
-                icon.style.color = "#ff0000";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has A Lot Of Freetime`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.discord.trim() !== "") {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-discord";
-                icon.style.color = "#5865F2";
-                icon.style.marginLeft = "6px";
-                icon.title = `Known As @${meta.discord} On The Infinite Campus Discord Server`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.linker) {
-                const icon = document.createElement("i");
-                icon.className = "bi bi-link";
-                icon.style.color = "#4fa3ff";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Sent Lots Of Links In The Links Channel`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.secure) {
-                const icon = document.createElement("i");
-                icon.className = "bi ic ic-securely";
-                icon.style.color = "dodgerblue";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Securely At School`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.guardian) {
-                const icon = document.createElement("i");
-                icon.className = "bi ic ic-goguardian";
-                icon.style.color = "grey";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has GoGuardian At School`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.lanschool) {
-                const icon = document.createElement("i");
-                icon.className = "bi ic ic-lanschool";
-                icon.style.color = "greenyellow";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has lanschool At School`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.linewize) {
-                const icon = document.createElement("i");
-                icon.className = "bi ic ic-linewize";
-                icon.style.color = "lightskyblue";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Linewize At School`;
-                badgeContainer.appendChild(icon);
-            }
-            if (meta.blocksi) {
-                const icon = document.createElement("i");
-                icon.className = "bi ic ic-blocksi";
-                icon.style.color = "cadetblue";
-                icon.style.marginLeft = "6px";
-                icon.title = `This User Has Blocksi At School`;
-                badgeContainer.appendChild(icon);
+                inlinePrimaries = allPrimaryBadges.slice(0, 3);
+                overflowPrimaries = allPrimaryBadges.slice(3);
+                inlineExtras = [];
+                popoverExtras = extraBadges;
             }
             const onlineBadge = document.createElement("i");
-            onlineBadge.style.marginLeft = "6px";
             function setOnlineStatus(isOnline) {
                 if (isOnline) {
                     onlineBadge.className = "bi ic ic-online";
@@ -1254,11 +1327,45 @@ async function renderMessageInstant(id, msg) {
                 }
             }
             setOnlineStatus(meta.online);
-            badgeContainer.appendChild(onlineBadge);
-            dbListen(`users/${msg.sender}/profile/online`, (val) => {
-                setOnlineStatus(!!val);
+            dbListen(`users/${msg.sender}/profile/online`, (val) => setOnlineStatus(!!val));
+            inlinePrimaries.forEach(({ cls, color, title }) => {
+                const span = document.createElement("span");
+                span.innerHTML = `<i class="${cls}" style="color:${color}" title="${title}"></i>`;
+                badgeContainer.appendChild(span);
             });
             badgeContainer.appendChild(mutedBadge);
+            inlineExtras.forEach(({ cls, color, label, title }) => {
+                const span = document.createElement("span");
+                span.innerHTML = `<i class="${cls}" style="color:${color}" title="${title}"></i>`;
+                badgeContainer.appendChild(span);
+            });
+            const popoverBadges = [
+                ...overflowPrimaries.map(({ cls, color, title }) => ({ cls, color, label: title.split(" — ")[0], title })),
+                ...popoverExtras
+            ];
+            if (popoverBadges.length > 0) {
+                const chip = document.createElement("span");
+                chip.className = "badge-extra-chip";
+                chip.textContent = `+${popoverBadges.length}`;
+                const popover = document.createElement("div");
+                popover.className = "badge-popover";
+                popoverBadges.forEach(({ cls, color, label, title }) => {
+                    const row = document.createElement("div");
+                    row.className = "badge-popover-row";
+                    row.title = title;
+                    const icon = document.createElement("i");
+                    icon.className = cls;
+                    icon.style.color = color;
+                    const lbl = document.createElement("span");
+                    lbl.textContent = label;
+                    row.appendChild(icon);
+                    row.appendChild(lbl);
+                    popover.appendChild(row);
+                });
+                badgeContainer.appendChild(chip);
+                badgeContainer.appendChild(popover);
+            }
+            badgeContainer.appendChild(onlineBadge);
             leftWrapper.appendChild(badgeContainer);
             const isSelf = msg.sender === currentUser.uid;
             let canReply = true;
@@ -1272,6 +1379,15 @@ async function renderMessageInstant(id, msg) {
                 }
                 msgBtns.appendChild(replyBtn);
             }
+            const reactBtn = document.createElement("button");
+            reactBtn.className = "react-btn";
+            reactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
+            reactBtn.title = "Add Reaction";
+            reactBtn.onclick = (e) => {
+                e.stopPropagation();
+                showEmojiPicker(e, id);
+            };
+            msgBtns.appendChild(reactBtn);
             if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
                 let canDelete = false;
                 if (isSelf) canDelete = true;
@@ -1506,6 +1622,8 @@ async function attachMessageListeners(path) {
                     textDiv.innerHTML = safeText;
                     if (editedSpan) editedSpan.textContent = val.edited ? "(Edited)" : "";
                 }
+                const reactRow = existing.querySelector(".reactions-row");
+                if (reactRow) renderReactionsInRow(reactRow, val.reactions);
             }
         }
         for (const key of Object.keys(lastSnapshot)) {
