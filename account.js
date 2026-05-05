@@ -149,8 +149,9 @@ async function enableNotifications() {
             });
             const user = auth.currentUser;
             if (user) {
-                dbSet("pushTokens/" + user.uid + "/" + token, true);
+                await dbSet("notifications/" + user.uid + "/tokens/" + token, true);
                 showSuccess("Notifications Have Been Enabled");
+                document.dispatchEvent(new Event("notificationsEnabled"));
             } else {
                 window.location.href = 'InfiniteLogins.html';
                 return;
@@ -173,6 +174,103 @@ if (enableNotifBtn) {
         enableNotifications();
     }
 }
+(function setupNotifSettings() {
+    const notifSettingsBtn = document.createElement("a");
+    notifSettingsBtn.id = "notifSettingsBtn";
+    notifSettingsBtn.className = "button apbtn";
+    notifSettingsBtn.textContent = "Notification Settings";
+    notifSettingsBtn.style.display = "none";
+    if (enableNotifBtn && enableNotifBtn.parentNode) {
+        enableNotifBtn.parentNode.insertBefore(notifSettingsBtn, enableNotifBtn.nextSibling);
+        const br = document.createElement("br");
+        enableNotifBtn.parentNode.insertBefore(br, notifSettingsBtn.nextSibling);
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "notifSettingsOverlay";
+    overlay.style.cssText = `
+        display:none; position:fixed; inset:0; z-index:9999;
+        background:rgba(0,0,0,0.6); align-items:center; justify-content:center;
+    `;
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+        background:#1e1e1e; border:1px solid #444; border-radius:12px;
+        padding:24px 28px; min-width:280px; max-width:360px; color:#fff; position:relative;
+    `;
+    modal.innerHTML = `
+        <h3 style="margin:0 0 14px;font-size:1.1em;font-weight:700;color:#8cbe37;">Notification Settings</h3>
+        <hr style="border-color:#333;margin-bottom:16px;">
+        <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="color:#ccc;">Direct Messages</span>
+            <label class="switch" style="margin:0">
+                <input type="checkbox" id="notifToggleDms" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="color:#ccc;">Mentions</span>
+            <label class="switch" style="margin:0">
+                <input type="checkbox" id="notifToggleMentions" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <span style="color:#ccc;">Message Reactions</span>
+            <label class="switch" style="margin:0">
+                <input type="checkbox" id="notifToggleReactions" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <small style="color:#666;display:block;margin-bottom:14px;">
+            Note: Messages From Owners Will Always Notify You Regardless Of These Settings.
+        </small>
+        <button id="notifSettingsSaveBtn" class="button apbtn" style="width:100%;margin-top:4px;">Save</button>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.style.display = "none";
+    });
+    async function openNotifSettings() {
+        overlay.style.display = "flex";
+        try {
+            const user = auth.currentUser;
+            if (!user) return;
+            const settings = await dbGet(`notifications/${user.uid}/settings`) || {};
+            document.getElementById("notifToggleDms").checked = settings.dms !== false;
+            document.getElementById("notifToggleMentions").checked = settings.mentions !== false;
+            document.getElementById("notifToggleReactions").checked = settings.reactions !== false;
+        } catch (e) {
+            console.error("Failed to load notif settings:", e);
+        }
+    }
+    notifSettingsBtn.addEventListener("click", openNotifSettings);
+    document.getElementById("notifSettingsSaveBtn").addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        const dms = document.getElementById("notifToggleDms").checked;
+        const mentions = document.getElementById("notifToggleMentions").checked;
+        const reactions = document.getElementById("notifToggleReactions").checked;
+        try {
+            await dbSet(`notifications/${user.uid}/settings`, { dms, mentions, reactions });
+            overlay.style.display = "none";
+            showSuccess("Notification Settings Saved.");
+        } catch (e) {
+            showError("Failed To Save Notification Settings: " + e.message);
+        }
+    });
+    function refreshNotifButtons() {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") {
+            if (enableNotifBtn) enableNotifBtn.style.setProperty("display", "none", "important");
+            notifSettingsBtn.style.removeProperty("display");
+        } else {
+            if (enableNotifBtn) enableNotifBtn.style.removeProperty("display");
+            notifSettingsBtn.style.setProperty("display", "none", "important");
+        }
+    }
+    refreshNotifButtons();
+    document.addEventListener("notificationsEnabled", refreshNotifButtons);
+})();
 if (mode) {
     authcontainer.style.display = 'block';
     settingsPage.style.display = 'none';
