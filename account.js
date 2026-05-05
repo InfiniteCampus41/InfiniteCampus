@@ -115,10 +115,8 @@ function dbListen(path, callback) {
                 ws.close();
             };
             ws.onclose = () => {
-                if (isIosSafari) {
-                    clearTimeout(reconnectTimer);
-                    reconnectTimer = setTimeout(() => connect(), 3000);
-                }
+                clearTimeout(reconnectTimer);
+                reconnectTimer = setTimeout(() => connect(), isIosSafari ? 3000 : 5000);
             };
             return ws;
         });
@@ -141,18 +139,8 @@ async function enableNotifications() {
         return;
     }
     try {
-        let registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-        if (registration.installing) {
-            await new Promise((resolve) => {
-                registration.installing.addEventListener("statechange", function handler(e) {
-                    if (e.target.state === "activated") {
-                        e.target.removeEventListener("statechange", handler);
-                        resolve();
-                    }
-                });
-            });
-            registration = await navigator.serviceWorker.getRegistration("/firebase-messaging-sw.js");
-        }
+        await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+        const registration = await navigator.serviceWorker.ready;
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
             const token = await getToken(messaging, {
@@ -176,7 +164,9 @@ async function enableNotifications() {
     }
 }
 if (enableNotifBtn) {
-    enableNotifBtn.style.removeProperty("display");
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+        enableNotifBtn.style.removeProperty("display");
+    }
     enableNotifBtn.addEventListener("click", enableNotifications);
 } else {
     if (!isIos) {

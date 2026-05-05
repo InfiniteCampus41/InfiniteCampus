@@ -39,7 +39,7 @@ async function fetchAPI(endpoint, body) {
     const token = await getAuthToken();
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = "Bearer " + token;
-    const res = await fetch(`${a}/${endpoint}`, {
+    const res = await fetch(`${backend}/${endpoint}`, {
         method: "POST",
         headers,
         body: JSON.stringify(body)
@@ -96,32 +96,34 @@ async function refreshWallets() {
         if (applePayInstance) await applePayInstance.destroy();
         applePayInstance = await payments.applePay(paymentRequest);
         if (applePayInstance && await applePayInstance.canMakePayment()) {
-            const appleBtn = await applePayInstance.attach("#apple-pay-container");
-            appleBtn.onclick = async () => {
-                const amount = getAmount();
+            await applePayInstance.attach("#apple-pay-container");
+            const appleContainer = document.getElementById("apple-pay-container");
+            const newAppleContainer = appleContainer.cloneNode(true);
+            appleContainer.parentNode.replaceChild(newAppleContainer, appleContainer);
+            newAppleContainer.addEventListener("click", async () => {
+                const currentAmount = getAmount();
                 const tokenResult = await applePayInstance.tokenize();
                 if (tokenResult.status === "OK") {
-                    await sendPayment(tokenResult.token, amount, "Apple Pay");
+                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
                 } else {
                     showError("Apple Pay Failed");
                 }
-            };
+            });
         }
     } catch (e) {
         console.warn("Apple Pay Not Available", e);
     }
     try {
         if (googlePayInstance) await googlePayInstance.destroy();
-        const paymentRequest = createPaymentRequest();
         googlePayInstance = await payments.googlePay(paymentRequest);
         if (googlePayInstance) {
             await googlePayInstance.attach("#google-pay-container");
             payBtn.onclick = async () => {
                 try {
-                    const amount = getAmount();
+                    const currentAmount = getAmount();
                     const tokenResult = await googlePayInstance.tokenize();
                     if (tokenResult.status === "OK") {
-                        await sendPayment(tokenResult.token, amount, "Google Pay");
+                        await sendPayment(tokenResult.token, currentAmount, "Google Pay");
                     } else {
                         showError("Google Pay Failed");
                     }
@@ -137,7 +139,7 @@ async function refreshWallets() {
 }
 async function sendPayment(token, amount, methodName) {
     try {
-        const response = await fetch(`${backend/pay}`, {
+        const response = await fetch(`${backend}/pay`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
