@@ -103,47 +103,6 @@ async function refreshWallets() {
     lastAmount = amount;
     const paymentRequest = createPaymentRequest();
     try {
-        if (applePayInstance) {
-            try { await applePayInstance.destroy(); } catch (_) {}
-            applePayInstance = null;
-        }
-        applePayInstance = await payments.applePay(paymentRequest);
-        const stagingEl = document.getElementById("apple-pay-staging");
-        const realContainer = document.getElementById("apple-pay-container");
-        await applePayInstance.attach("#apple-pay-staging");
-        const appleObserver = new MutationObserver(() => {
-            if (realContainer.style.display !== "none" && stagingEl.firstChild) {
-                realContainer.innerHTML = "";
-                while (stagingEl.firstChild) realContainer.appendChild(stagingEl.firstChild);
-                appleObserver.disconnect();
-            }
-        });
-        appleObserver.observe(realContainer, { attributes: true, attributeFilter: ["style"] });
-        const capturedInstance = applePayInstance;
-        stagingEl.addEventListener("click", async () => {
-            try {
-                const currentAmount = getAmount();
-                const tokenResult = await capturedInstance.tokenize();
-                if (tokenResult.status === "OK") {
-                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
-                } else {
-                    const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
-                    const msg = `Apple Pay tokenization failed: ${errDetail}`;
-                    console.error("[ApplePay]", msg, tokenResult);
-                    showError(msg);
-                }
-            } catch (tokenErr) {
-                const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
-                console.error("[ApplePay]", msg, tokenErr);
-                showError(msg);
-            }
-        });
-    } catch (e) {
-        const appleOption = document.querySelector("#payment-method option[value='applePay']");
-        if (appleOption) appleOption.remove();
-        console.log("[ApplePay] Not available:", e?.message || e);
-    }
-    try {
         if (googlePayInstance) await googlePayInstance.destroy();
         googlePayInstance = await payments.googlePay(paymentRequest);
         if (googlePayInstance) {
@@ -201,10 +160,53 @@ const payments = Square.payments(
   "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
   "L96ZX33510ER5"
 );
+async function initApplePay() {
+    try {
+        const paymentRequest = createPaymentRequest();
+        applePayInstance = await payments.applePay(paymentRequest);
+        console.log("[ApplePay] instance:", applePayInstance, "attach type:", typeof applePayInstance?.attach);
+        const stagingEl = document.getElementById("apple-pay-staging");
+        const realContainer = document.getElementById("apple-pay-container");
+        await applePayInstance.attach("#apple-pay-staging");
+        const appleObserver = new MutationObserver(() => {
+            if (realContainer.style.display !== "none" && stagingEl.firstChild) {
+                realContainer.innerHTML = "";
+                while (stagingEl.firstChild) realContainer.appendChild(stagingEl.firstChild);
+                appleObserver.disconnect();
+            }
+        });
+        appleObserver.observe(realContainer, { attributes: true, attributeFilter: ["style"] });
+        const capturedInstance = applePayInstance;
+        stagingEl.addEventListener("click", async () => {
+            try {
+                const currentAmount = getAmount();
+                const tokenResult = await capturedInstance.tokenize();
+                if (tokenResult.status === "OK") {
+                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
+                } else {
+                    const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
+                    const msg = `Apple Pay tokenization failed: ${errDetail}`;
+                    console.error("[ApplePay]", msg, tokenResult);
+                    showError(msg);
+                }
+            } catch (tokenErr) {
+                const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
+                console.error("[ApplePay]", msg, tokenErr);
+                showError(msg);
+            }
+        });
+        console.log("[ApplePay] initialized successfully");
+    } catch (e) {
+        const appleOption = document.querySelector("#payment-method option[value='applePay']");
+        if (appleOption) appleOption.remove();
+        console.log("[ApplePay] Not available:", e?.message || e);
+    }
+}
 async function initPayments() {
-    const card = await payments.card();
-    await card.attach("#card-container");
-    await refreshWallets();
+    const [card] = await Promise.all([
+        payments.card().then(c => c.attach("#card-container").then(() => c)),
+        initApplePay()
+    ]);
     payBtn.addEventListener("click", async () => {
         if (!currentUser) return location.href = "InfiniteLogins.html";
         const result = await card.tokenize();
