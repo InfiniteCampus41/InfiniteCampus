@@ -105,16 +105,16 @@ async function refreshWallets() {
     try {
         if (applePayInstance) {
             try { await applePayInstance.destroy(); } catch (_) {}
+            applePayInstance = null;
         }
-        applePayInstance = await payments.applePay(paymentRequest);
-        console.log("[ApplePay] instance:", applePayInstance);
-        console.log("[ApplePay] typeof attach:", typeof applePayInstance?.attach);
-        console.log("[ApplePay] instance keys:", Object.keys(applePayInstance || {}));
-        if (!applePayInstance || typeof applePayInstance.attach !== "function") {
-            const msg = `Apple Pay unavailable: payments.applePay() returned ${JSON.stringify(applePayInstance)} — attach is ${typeof applePayInstance?.attach}`;
-            console.error("[ApplePay]", msg);
-            showError(msg);
+        const applePayAvailable = await payments.hasPaymentMethod("apple_pay");
+        console.log("[ApplePay] hasPaymentMethod result:", applePayAvailable);
+        if (!applePayAvailable) {
+            const appleOption = document.querySelector("#payment-method option[value='applePay']");
+            if (appleOption) appleOption.remove();
+            console.log("[ApplePay] Not available on this device/browser — option removed from dropdown");
         } else {
+            applePayInstance = await payments.applePay(paymentRequest);
             await applePayInstance.attach("#apple-pay-staging");
             const stagingEl = document.getElementById("apple-pay-staging");
             const realContainer = document.getElementById("apple-pay-container");
