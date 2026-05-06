@@ -205,10 +205,7 @@ function updatePaymentUI() {
 }
 paymentMethodSelect.addEventListener("change", updatePaymentUI);
 updatePaymentUI();
-const payments = Square.payments(
-  "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
-  "L96ZX33510ER5"
-);
+const payments = window.squarePayments;
 async function initPayments() {
     const card = await payments.card();
     await card.attach("#card-container");
