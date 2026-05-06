@@ -106,46 +106,46 @@ async function refreshWallets() {
         if (applePayInstance) {
             try { await applePayInstance.destroy(); } catch (_) {}
         }
-        // payments.applePay() throws if Apple Pay is unavailable on this device/browser
         applePayInstance = await payments.applePay(paymentRequest);
-
-        // Square refuses to attach to a display:none element.
-        // Attach to the always-visible off-screen staging div instead.
-        await applePayInstance.attach("#apple-pay-staging");
-
-        // When the user switches the dropdown to "Apple Pay", transplant the button
-        // from the staging div into the real visible container.
-        const stagingEl = document.getElementById("apple-pay-staging");
-        const realContainer = document.getElementById("apple-pay-container");
-        const appleObserver = new MutationObserver(() => {
-            if (realContainer.style.display !== "none" && stagingEl.firstChild) {
-                realContainer.innerHTML = "";
-                while (stagingEl.firstChild) realContainer.appendChild(stagingEl.firstChild);
-                appleObserver.disconnect();
-            }
-        });
-        appleObserver.observe(realContainer, { attributes: true, attributeFilter: ["style"] });
-
-        // Attach click handler to staging — events bubble regardless of where button ends up
-        const capturedInstance = applePayInstance;
-        stagingEl.addEventListener("click", async () => {
-            try {
-                const currentAmount = getAmount();
-                const tokenResult = await capturedInstance.tokenize();
-                if (tokenResult.status === "OK") {
-                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
-                } else {
-                    const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
-                    const msg = `Apple Pay tokenization failed: ${errDetail}`;
-                    console.error("[ApplePay]", msg, tokenResult);
+        console.log("[ApplePay] instance:", applePayInstance);
+        console.log("[ApplePay] typeof attach:", typeof applePayInstance?.attach);
+        console.log("[ApplePay] instance keys:", Object.keys(applePayInstance || {}));
+        if (!applePayInstance || typeof applePayInstance.attach !== "function") {
+            const msg = `Apple Pay unavailable: payments.applePay() returned ${JSON.stringify(applePayInstance)} — attach is ${typeof applePayInstance?.attach}`;
+            console.error("[ApplePay]", msg);
+            showError(msg);
+        } else {
+            await applePayInstance.attach("#apple-pay-staging");
+            const stagingEl = document.getElementById("apple-pay-staging");
+            const realContainer = document.getElementById("apple-pay-container");
+            const appleObserver = new MutationObserver(() => {
+                if (realContainer.style.display !== "none" && stagingEl.firstChild) {
+                    realContainer.innerHTML = "";
+                    while (stagingEl.firstChild) realContainer.appendChild(stagingEl.firstChild);
+                    appleObserver.disconnect();
+                }
+            });
+            appleObserver.observe(realContainer, { attributes: true, attributeFilter: ["style"] });
+            const capturedInstance = applePayInstance;
+            stagingEl.addEventListener("click", async () => {
+                try {
+                    const currentAmount = getAmount();
+                    const tokenResult = await capturedInstance.tokenize();
+                    if (tokenResult.status === "OK") {
+                        await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
+                    } else {
+                        const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
+                        const msg = `Apple Pay tokenization failed: ${errDetail}`;
+                        console.error("[ApplePay]", msg, tokenResult);
+                        showError(msg);
+                    }
+                } catch (tokenErr) {
+                    const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
+                    console.error("[ApplePay]", msg, tokenErr);
                     showError(msg);
                 }
-            } catch (tokenErr) {
-                const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
-                console.error("[ApplePay]", msg, tokenErr);
-                showError(msg);
-            }
-        });
+            });
+        }
     } catch (e) {
         const msg = `Apple Pay init failed: ${e?.message || e}`;
         console.error("[ApplePay]", msg, e);
@@ -155,18 +155,8 @@ async function refreshWallets() {
         if (googlePayInstance) await googlePayInstance.destroy();
         googlePayInstance = await payments.googlePay(paymentRequest);
         if (googlePayInstance) {
-            await googlePayInstance.attach("#google-pay-staging");
-            const gStagingEl = document.getElementById("google-pay-staging");
-            const gRealContainer = document.getElementById("google-pay-container");
-            const googleObserver = new MutationObserver(() => {
-                if (gRealContainer.style.display !== "none" && gStagingEl.firstChild) {
-                    gRealContainer.innerHTML = "";
-                    while (gStagingEl.firstChild) gRealContainer.appendChild(gStagingEl.firstChild);
-                    googleObserver.disconnect();
-                }
-            });
-            googleObserver.observe(gRealContainer, { attributes: true, attributeFilter: ["style"] });
-            gStagingEl.addEventListener("click", async () => {
+            await googlePayInstance.attach("#google-pay-container");
+            payBtn.onclick = async () => {
                 try {
                     const currentAmount = getAmount();
                     const tokenResult = await googlePayInstance.tokenize();
@@ -179,7 +169,7 @@ async function refreshWallets() {
                     console.error(err);
                     showError("Google Pay Error");
                 }
-            });
+            };
         }
     } catch (e) {
         console.warn("Google Pay Not Available", e);
