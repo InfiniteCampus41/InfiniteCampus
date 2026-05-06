@@ -1,3 +1,4 @@
+import { auth, onAuthStateChanged } from "./imports.js";
 const nameInput = document.getElementById("name");
 const messageInput = document.getElementById("message");
 let authReady = false;
