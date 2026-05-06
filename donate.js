@@ -107,44 +107,29 @@ async function refreshWallets() {
             try { await applePayInstance.destroy(); } catch (_) {}
         }
         applePayInstance = await payments.applePay(paymentRequest);
-        let canPay = false;
-        try {
-            canPay = await applePayInstance.canMakePayment();
-        } catch (canPayErr) {
-            const msg = `Apple Pay canMakePayment() threw: ${canPayErr?.message || canPayErr}`;
-            console.error("[ApplePay]", msg, canPayErr);
-            showError(msg);
-        }
-        if (canPay || canPay == false) {
-            await applePayInstance.attach("#apple-pay-container");
-            const appleContainer = document.getElementById("apple-pay-container");
-            const newAppleContainer = appleContainer.cloneNode(true);
-            appleContainer.parentNode.replaceChild(newAppleContainer, appleContainer);
-            const capturedInstance = applePayInstance;
-            newAppleContainer.addEventListener("click", async () => {
-                try {
-                    const currentAmount = getAmount();
-                    const tokenResult = await capturedInstance.tokenize();
-                    if (tokenResult.status === "OK") {
-                        await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
-                    } else {
-                        const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
-                        const msg = `Apple Pay tokenization failed: ${errDetail}`;
-                        console.error("[ApplePay]", msg, tokenResult);
-                        showError(msg);
-                    }
-                } catch (tokenErr) {
-                    const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
-                    console.error("[ApplePay]", msg, tokenErr);
+        await applePayInstance.attach("#apple-pay-container");
+        const appleContainer = document.getElementById("apple-pay-container");
+        const newAppleContainer = appleContainer.cloneNode(true);
+        appleContainer.parentNode.replaceChild(newAppleContainer, appleContainer);
+        const capturedInstance = applePayInstance;
+        newAppleContainer.addEventListener("click", async () => {
+            try {
+                const currentAmount = getAmount();
+                const tokenResult = await capturedInstance.tokenize();
+                if (tokenResult.status === "OK") {
+                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
+                } else {
+                    const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
+                    const msg = `Apple Pay tokenization failed: ${errDetail}`;
+                    console.error("[ApplePay]", msg, tokenResult);
                     showError(msg);
                 }
-            });
-        } 
-        // else if (canPay === false) {
-        //     const msg = "Apple Pay is not available on this device or browser.";
-        //     console.error("[ApplePay]", msg);
-        //     showError(msg);
-        // }
+            } catch (tokenErr) {
+                const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
+                console.error("[ApplePay]", msg, tokenErr);
+                showError(msg);
+            }
+        });
     } catch (e) {
         const msg = `Apple Pay init failed: ${e?.message || e}`;
         console.error("[ApplePay]", msg, e);
