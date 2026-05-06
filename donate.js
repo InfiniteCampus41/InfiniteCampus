@@ -1,4 +1,14 @@
 import { auth, onAuthStateChanged } from "./imports.js";
+const _errorLog = [];
+const _origConsoleError = console.error.bind(console);
+console.error = (...args) => {
+    _errorLog.push({ ts: new Date().toISOString(), args });
+    _origConsoleError(...args);
+};
+window.__errorLog = _errorLog;
+window.addEventListener("unhandledrejection", (event) => {
+    console.error("[UnhandledRejection]", event.reason);
+});
 const backend = `${a}`;
 const perksParams = new URLSearchParams(window.location.search);
 const showPerks = perksParams.get("perks");
@@ -93,25 +103,51 @@ async function refreshWallets() {
     lastAmount = amount;
     const paymentRequest = createPaymentRequest();
     try {
-        if (applePayInstance) await applePayInstance.destroy();
+        if (applePayInstance) {
+            try { await applePayInstance.destroy(); } catch (_) {}
+        }
         applePayInstance = await payments.applePay(paymentRequest);
-        if (applePayInstance && await applePayInstance.canMakePayment()) {
+        let canPay = false;
+        try {
+            canPay = await applePayInstance.canMakePayment();
+        } catch (canPayErr) {
+            const msg = `Apple Pay canMakePayment() threw: ${canPayErr?.message || canPayErr}`;
+            console.error("[ApplePay]", msg, canPayErr);
+            showError(msg);
+        }
+        if (canPay) {
             await applePayInstance.attach("#apple-pay-container");
             const appleContainer = document.getElementById("apple-pay-container");
             const newAppleContainer = appleContainer.cloneNode(true);
             appleContainer.parentNode.replaceChild(newAppleContainer, appleContainer);
+            const capturedInstance = applePayInstance;
             newAppleContainer.addEventListener("click", async () => {
-                const currentAmount = getAmount();
-                const tokenResult = await applePayInstance.tokenize();
-                if (tokenResult.status === "OK") {
-                    await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
-                } else {
-                    showError("Apple Pay Failed");
+                try {
+                    const currentAmount = getAmount();
+                    const tokenResult = await capturedInstance.tokenize();
+                    if (tokenResult.status === "OK") {
+                        await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
+                    } else {
+                        const errDetail = tokenResult.errors?.map(e => e.message).join(", ") || "Unknown error";
+                        const msg = `Apple Pay tokenization failed: ${errDetail}`;
+                        console.error("[ApplePay]", msg, tokenResult);
+                        showError(msg);
+                    }
+                } catch (tokenErr) {
+                    const msg = `Apple Pay tokenize() threw: ${tokenErr?.message || tokenErr}`;
+                    console.error("[ApplePay]", msg, tokenErr);
+                    showError(msg);
                 }
             });
+        } else if (canPay === false) {
+            const msg = "Apple Pay is not available on this device or browser.";
+            console.error("[ApplePay]", msg);
+            showError(msg);
         }
     } catch (e) {
-        showError("Apple Pay Not Available", e);
+        const msg = `Apple Pay init failed: ${e?.message || e}`;
+        console.error("[ApplePay]", msg, e);
+        showError(msg);
     }
     try {
         if (googlePayInstance) await googlePayInstance.destroy();
