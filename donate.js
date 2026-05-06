@@ -115,7 +115,7 @@ async function refreshWallets() {
             console.error("[ApplePay]", msg, canPayErr);
             showError(msg);
         }
-        if (canPay) {
+        if (canPay || canPay == false) {
             await applePayInstance.attach("#apple-pay-container");
             const appleContainer = document.getElementById("apple-pay-container");
             const newAppleContainer = appleContainer.cloneNode(true);
@@ -139,11 +139,12 @@ async function refreshWallets() {
                     showError(msg);
                 }
             });
-        } else if (canPay === false) {
-            const msg = "Apple Pay is not available on this device or browser.";
-            console.error("[ApplePay]", msg);
-            showError(msg);
-        }
+        } 
+        // else if (canPay === false) {
+        //     const msg = "Apple Pay is not available on this device or browser.";
+        //     console.error("[ApplePay]", msg);
+        //     showError(msg);
+        // }
     } catch (e) {
         const msg = `Apple Pay init failed: ${e?.message || e}`;
         console.error("[ApplePay]", msg, e);
