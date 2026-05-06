@@ -16,7 +16,6 @@ const amountInput = document.getElementById("amount-input");
 const payBtn = document.getElementById("pay-btn");
 const paymentMethodSelect = document.getElementById("payment-method");
 let currentUser = null;
-let currentUserToken = null;
 let authReady = false;
 let applePayInstance = null;
 let googlePayInstance = null;
@@ -24,16 +23,12 @@ let lastAmount = null;
 const GOAL = 201.16;
 const progressBar = document.getElementById("donation-progress-bar");
 const progressText = document.getElementById("donation-progress-text");
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    if (user) {
-        sessionStorage.setItem("donUID", user.uid);
-        currentUserToken = await user.getIdToken();
-    }
-});
 const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
+        if (user) {
+            sessionStorage.setItem("donUID", user.uid);
+        }
         authReady = true;
         resolve(user);
     });
@@ -67,7 +62,6 @@ async function dbGet(path) {
     const res = await fetchAPI("read", { path: pathToArray(path) });
     return res.data;
 }
-updateProgress(await dbGet("/donations/amount"));
 function getAmount() {
     let value = parseFloat(amountInput.value);
     if (isNaN(value) || value < 1) value = 1;
@@ -107,32 +101,30 @@ async function refreshWallets() {
         googlePayInstance = await payments.googlePay(paymentRequest);
         if (googlePayInstance) {
             await googlePayInstance.attach("#google-pay-container");
-            payBtn.onclick = async () => {
-                try {
-                    const currentAmount = getAmount();
-                    const tokenResult = await googlePayInstance.tokenize();
-                    if (tokenResult.status === "OK") {
-                        await sendPayment(tokenResult.token, currentAmount, "Google Pay");
-                    } else {
-                        showError("Google Pay Failed");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    showError("Google Pay Error");
-                }
-            };
         }
     } catch (e) {
         console.warn("Google Pay Not Available", e);
     }
+    try {
+        if (applePayInstance) {
+            if (typeof applePayInstance.destroy === "function") {
+                await applePayInstance.destroy();
+            }
+            applePayInstance = null;
+        }
+        await initApplePay();
+    } catch (e) {
+        console.warn("Apple Pay refresh failed", e);
+    }
 }
 async function sendPayment(token, amount, methodName) {
     try {
+        const freshToken = await getAuthToken();
         const response = await fetch(`${backend}/pay`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${currentUserToken}`
+                ...(freshToken && { "Authorization": `Bearer ${freshToken}` })
             },
             body: JSON.stringify({
                 token,
@@ -157,30 +149,37 @@ function updatePaymentUI() {
 paymentMethodSelect.addEventListener("change", updatePaymentUI);
 updatePaymentUI();
 const payments = Square.payments(
-  "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
-  "L96ZX33510ER5"
+    "sq0idp-ZwyFevqeeIAhxJX3XWBVQQ",
+    "L96ZX33510ER5"
 );
 async function initApplePay() {
     try {
         const paymentRequest = createPaymentRequest();
         applePayInstance = await payments.applePay(paymentRequest);
-        console.log("[ApplePay] instance:", applePayInstance, "attach type:", typeof applePayInstance?.attach);
-        const stagingEl = document.getElementById("apple-pay-staging");
-        const realContainer = document.getElementById("apple-pay-container");
-        await applePayInstance.attach("#apple-pay-staging");
-        const appleObserver = new MutationObserver(() => {
-            if (realContainer.style.display !== "none" && stagingEl.firstChild) {
-                realContainer.innerHTML = "";
-                while (stagingEl.firstChild) realContainer.appendChild(stagingEl.firstChild);
-                appleObserver.disconnect();
-            }
-        });
-        appleObserver.observe(realContainer, { attributes: true, attributeFilter: ["style"] });
-        const capturedInstance = applePayInstance;
-        stagingEl.addEventListener("click", async () => {
+        const container = document.getElementById("apple-pay-container");
+        let appleBtn = container.querySelector(".apple-pay-btn");
+        if (!appleBtn) {
+            appleBtn = document.createElement("button");
+            appleBtn.className = "apple-pay-btn";
+            appleBtn.setAttribute("aria-label", "Pay with Apple Pay");
+            appleBtn.style.cssText = `
+                -webkit-appearance: -apple-pay-button;
+                -apple-pay-button-type: donate;
+                display: block;
+                width: 100%;
+                min-height: 44px;
+                cursor: pointer;
+                border: none;
+                background: none;
+            `;
+            container.appendChild(appleBtn);
+        }
+        const freshBtn = appleBtn.cloneNode(true);
+        container.replaceChild(freshBtn, appleBtn);
+        freshBtn.addEventListener("click", async () => {
             try {
                 const currentAmount = getAmount();
-                const tokenResult = await capturedInstance.tokenize();
+                const tokenResult = await applePayInstance.tokenize();
                 if (tokenResult.status === "OK") {
                     await sendPayment(tokenResult.token, currentAmount, "Apple Pay");
                 } else {
@@ -226,6 +225,14 @@ function updateProgress(amount) {
     progressBar.style.width = percent + "%";
     progressText.textContent = `$${amount.toFixed(2)} / $${GOAL.toFixed(2)}`;
 }
+(async () => {
+    try {
+        updateProgress(await dbGet("/donations/amount"));
+    } catch (e) {
+        console.error("Failed to load donation progress", e);
+        updateProgress(0);
+    }
+})();
 getAmount();
 initPayments();
 const perks1 = document.getElementById('perks1');
