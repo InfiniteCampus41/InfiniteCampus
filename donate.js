@@ -111,7 +111,7 @@ async function refreshWallets() {
             });
         }
     } catch (e) {
-        console.warn("Apple Pay Not Available", e);
+        showError("Apple Pay Not Available", e);
     }
     try {
         if (googlePayInstance) await googlePayInstance.destroy();
