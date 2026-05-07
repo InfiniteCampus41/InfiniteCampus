@@ -101,6 +101,20 @@ async function refreshWallets() {
         googlePayInstance = await payments.googlePay(paymentRequest);
         if (googlePayInstance) {
             await googlePayInstance.attach("#google-pay-container");
+            payBtn.onclick = async () => {
+                try {
+                    const currentAmount = getAmount();
+                    const tokenResult = await googlePayInstance.tokenize();
+                    if (tokenResult.status === "OK") {
+                        await sendPayment(tokenResult.token, currentAmount, "Google Pay");
+                    } else {
+                        showError("Google Pay Failed");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showError("Google Pay Error");
+                }
+            };
         }
     } catch (e) {
         console.warn("Google Pay Not Available", e);
@@ -206,6 +220,7 @@ async function initPayments() {
         payments.card().then(c => c.attach("#card-container").then(() => c)),
         initApplePay()
     ]);
+    await refreshWallets();
     payBtn.addEventListener("click", async () => {
         if (!currentUser) return location.href = "InfiniteLogins.html";
         const result = await card.tokenize();
