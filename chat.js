@@ -718,6 +718,7 @@ function toggleReply(id = null, name = null, text = null) {
     isReplyActive = true;
 }
 async function renderMessageInstant(id, msg) {
+    const meta = await getUserMeta(msg.sender);
     if (document.getElementById("msg-" + id)) return null;
     if (id === "sender" || id === "text" || id === "timestamp") return null;
     const div = document.createElement("div");
@@ -742,7 +743,7 @@ async function renderMessageInstant(id, msg) {
     profilePic.style.width = "32px";
     profilePic.style.height = "32px";
     profilePic.style.borderRadius = "50%";
-    profilePic.style.border = "2px solid white";
+    profilePic.style.border = `2px solid ${meta.color}`;
     profilePic.style.objectFit = "cover";
     profilePic.style.cursor = "pointer";
     profilePic.src = `${pfpDomain}/1.jpeg`;
@@ -1177,7 +1178,6 @@ async function renderMessageInstant(id, msg) {
     }
     (async () => {
         try {
-            const meta = await getUserMeta(msg.sender);
             let displayName = meta.displayName;
             if (!displayName || displayName.trim() === "") {
                 displayName = "Spam Account";
@@ -1477,6 +1477,7 @@ async function renderMessageInstant(id, msg) {
                                 }
                                 textarea.remove();
                                 textDiv.style.display = "block";
+                                textDiv.innerHTML = newText;
                             } else if (e.key === "Escape") {
                                 e.preventDefault();
                                 textarea.remove();
@@ -1490,7 +1491,10 @@ async function renderMessageInstant(id, msg) {
                     const delBtn = document.createElement("button");
                     delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
                     delBtn.title = 'Delete Message';
-                    delBtn.onclick = () => dbDelete(currentPath + "/" + id);
+                    delBtn.onclick = () => {
+                        dbDelete(currentPath + "/" + id);
+                        div.remove();
+                    }
                     msgBtns.appendChild(delBtn);
                 }
             }
@@ -1950,7 +1954,9 @@ async function hasPermission(channelData, type) {
 async function renderChannelsFromDB() {
     if (renderingChannels) return;
     renderingChannels = true;
-    channelList.innerHTML = "";
+    if (!channelList.querySelector("li")) {
+        channelList.innerHTML = "";
+    }
     const chans = await dbGet("channels") || {};
     if (!("General" in chans)) {
         await dbSet("channels/General", true);
@@ -1960,11 +1966,22 @@ async function renderChannelsFromDB() {
     for (const ch of keys) {
         const chData = chans[ch];
         if (!(await hasPermission(chData, "read"))) continue;
+        if (channelList.querySelector(`li[data-channel="${CSS.escape(ch)}"]`)) {
+            continue;
+        }
         const li = document.createElement("li");
         const textNode = document.createTextNode("" + ch);
         li.appendChild(textNode);
-        li.onclick = () => { currentPrivateUid = null; switchChannel(ch); };
-        if (!currentPrivateUid && currentPath === `messages/${ch}`) li.classList.add("active");
+        li.setAttribute("data-channel", ch);
+        li.onclick = () => {
+            currentPrivateUid = null;
+            switchChannel(ch);
+            channelList.querySelector(".active").classList.toggle("active");
+            li.classList.add("active");
+        };
+        if (!currentPrivateUid && currentPath === `messages/${ch}`) {
+            li.classList.add("active");
+        }
         if ((isOwner || isCoOwner || isTester) && ch !== "General") {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
@@ -1983,7 +2000,7 @@ async function renderChannelsFromDB() {
             li.appendChild(btnWrap);
         }
         channelList.appendChild(li);
-    };
+    }
     if (isOwner || isCoOwner || isTester) {
         addChannelBtn.style.display = "inline-block";
     } else {
