@@ -1153,12 +1153,12 @@ async function renderMessageInstant(id, msg) {
                         `Replying To: @${rName}: ${previewText}`;
                     replyPreview.appendChild(arrow);
                     replyPreview.appendChild(reply);
-                    div.appendChild(replyPreview);
+                    div.prepend(replyPreview);
                 }
             } catch (e) {
                 console.warn("Reply load failed:", e);
             }
-        })
+        })();
     }
     const container = document.getElementById("chatLog");
     if (container) container.appendChild(div);
@@ -1791,6 +1791,9 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             dot.textContent = "•";
             left.prepend(dot);
         }
+        if (channelList.querySelector(".active")) {
+            channelList.querySelector(".active").classList.toggle("active");
+        }
         li.classList.toggle("active", currentPrivateUid === otherUid);
     }
 }
@@ -1976,7 +1979,12 @@ async function renderChannelsFromDB() {
         li.onclick = () => {
             currentPrivateUid = null;
             switchChannel(ch);
-            channelList.querySelector(".active").classList.toggle("active");
+            if (channelList.querySelector(".active")) {
+                channelList.querySelector(".active").classList.toggle("active");
+            }
+            if (privateList.querySelector(".active")) {
+                privateList.querySelector(".active").classList.toggle("active");
+            }
             li.classList.add("active");
         };
         if (!currentPrivateUid && currentPath === `messages/${ch}`) {
