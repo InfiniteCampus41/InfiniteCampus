@@ -1180,11 +1180,12 @@ if (mode) {
             await loadUserDis(user.uid);
             profileImages = await loadProfileImages();
             await loadUserProfilePic(user.uid);
-            dbListen(`users/${user.uid}/profile`, (profile) => {
+            function applyProfile(profile) {
                 if (!profile) return;
                 loadExtensionCheckbox(profile);
                 const badges = document.getElementById('badges');
                 badges.innerHTML = "";
+                adminBtn.style.display = 'none';
                 function addBadge(name, color, icon) {
                     const badge = document.createElement("span");
                     const badgeContainer = document.getElementById('badgeContainer');
@@ -1297,9 +1298,11 @@ if (mode) {
                     addBadge("Verified User", "white", "bi bi-shield-check");
                     hasAnyRole = true;
                 }
-                if (!hasAnyRole) {
-                }
-            });
+            }
+            dbGet(`users/${user.uid}/profile`).then(applyProfile).catch(() => {});
+            setInterval(() => {
+                dbGet(`users/${user.uid}/profile`).then(applyProfile).catch(() => {});
+            }, 15000);
             statusEl.textContent = `Logged In As ${user.email}`;
             const userSettingsRef = `users/${user.uid}/settings`;
             const userSettingsSnap = await dbGet(userSettingsRef);

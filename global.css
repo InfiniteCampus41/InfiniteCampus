@@ -421,6 +421,10 @@ body {
     border:1px solid black;
     border-radius:7px;
 }
+.musicContainer {
+    max-width: 1200px;
+    padding: 28px 20px;
+}
 .content {
     flex: 1;
     text-align:left;

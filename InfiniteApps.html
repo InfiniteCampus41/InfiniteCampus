@@ -76,7 +76,7 @@
                     </a>
                     <br>
                     <br>
-                    <a class="button apbtn" href="InfiniteListeners.html">
+                    <a class="button apbtn" href="InfiniteApps.html?listen=true">
                         Music
                     </a>
                     <a class="button apbtn" href="InfiniteEmbeds.html?choice=4">
@@ -2833,6 +2833,79 @@
                 <button class="button" id="copyBtn">
                     Copy To Clipboard
                 </button>
+            </center>
+            <center id="listenPage" style="display:none">
+                <div class="musicContainer">
+                    <h1 class="tptxt">
+                        Music
+                    </h1>
+                    <div id="mainPage">
+                        <div class="search-box">
+                            <input id="searchInput" class="button" placeholder="Search Songs">
+                            <button class="button" onclick="searchSongs()">
+                                Search
+                            </button>
+                        </div>
+                        <div id="results">
+                        </div>
+                    </div>
+                    <div id="detailPage" style="display:none;">
+                    </div>
+                </div>
+                <div id="player">
+                    <div class="player-info">
+                        <div id="playerThumb">
+                            <i class="fa-solid fa-music">
+                            </i>
+                        </div>
+                        <div class="player-text">
+                            <div id="playerTitle" class="btxt">
+                                No Track Selected
+                            </div>
+                            <div id="playerArtist" onclick="goToCurrentArtist()">
+                                —
+                            </div>
+                        </div>
+                    </div>
+                    <div class="player-controls">
+                        <div class="player-btns">
+                            <button class="ctrl-btn" id="loopBtn" onclick="toggleLoop()" title="Loop">
+                                <i class="fa-solid fa-repeat">
+                                </i>
+                            </button>
+                            <button class="ctrl-btn" onclick="seekRelative(-10)" title="-10s">
+                                <i class="fa-solid fa-backward-step">
+                                </i>
+                            </button>
+                            <button class="ctrl-btn" id="playPauseBtn" onclick="togglePlay()">
+                                <i class="fa-solid fa-play" id="playIcon">
+                                </i>
+                            </button>
+                            <button class="ctrl-btn" onclick="seekRelative(10)" title="+10s">
+                                <i class="fa-solid fa-forward-step">
+                                </i>
+                            </button>
+                            <button class="ctrl-btn" onclick="downloadCurrent()" title="Download / Open Source">
+                                <i class="fa-solid fa-arrow-up-right-from-square">
+                                </i>
+                            </button>
+                        </div>
+                        <div class="progress-row">
+                            <span class="time-label" id="timeCurrent">
+                                0:00
+                            </span>
+                            <input type="range" id="seekBar" min="0" max="100" value="0">
+                            <span class="time-label right" id="timeDuration">
+                                0:00
+                            </span>
+                        </div>
+                    </div>
+                    <div class="player-right">
+                        <i class="fa-solid fa-volume-high" style="color:#8888aa;font-size:14px;">
+                        </i>
+                        <input type="range" id="volumeBar" min="0" max="100" value="100">
+                    </div>
+                </div>
             </center>
         </main>
         <audio id="audio" preload="metadata" crossorigin="anonymous">
