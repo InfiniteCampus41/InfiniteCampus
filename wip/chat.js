@@ -1125,8 +1125,8 @@ async function renderMessageInstant(id, msg) {
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
     if (isDiscordMsg) {
-        profilePic.src = `${BACKEND}/${msg.a}` || "/res/default.png";
-        profilePic.onerror = () => { profilePic.src = `${BACKEND}${msg.a}`; };
+        profilePic.src = `${BACKEND}${msg.a}` || "/res/discord.png";
+        profilePic.onerror = () => { profilePic.src = "/res/discord.png"; };
         nameSpan.textContent = msg.u || "This Message Is From The Discord";
         nameSpan.style.color = "#5865F2";
         const discordBadge = document.createElement("span");
@@ -1189,8 +1189,6 @@ async function renderMessageInstant(id, msg) {
         msgBtns.appendChild(discordReplyBtn);
         msgBtns.appendChild(discordReactBtn);
         div.insertBefore(msgBtns, topRow);
-        const container = document.getElementById("chatLog");
-        if (container) container.appendChild(div);
         return div;
     }
     const senderId = msg.sender || msg.s;
@@ -1629,7 +1627,7 @@ async function attachMessageListeners(path) {
     currentListeners.added = ws;
 }
 function playNotificationSound() {
-    const audio = new Audio("https://codehs.com/uploads/47d60c5093ca59dfa2078b03c0264f64");
+    const audio = new Audio("/res/notif.mp3");
     audio.play().catch(err => {
         console.warn("Autoplay Prevented:", err);
     });
@@ -2083,6 +2081,11 @@ sendBtn.onclick = async () => {
             return;
         }
         lastMessageTimestamp = now;
+    }
+    if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
+        showError("@everyone And @here Mentions Are Not Allowed.");
+        chatInput.value = "";
+        return;
     }
     const mentions = text.match(/@\w+/g);
     if (mentions && mentions.length > 1) {

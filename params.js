@@ -649,7 +649,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         let targetDate;
         let audioStarted = false;
         let lastLoggedAt = 0;
-        const audio = new Audio("https://codehs.com/uploads/4c43e4c918e704a08db7b92ff1daadf3");
+        const audio = new Audio("/res/outro.mp3");
         const picker = document.getElementById("dateTimePicker");
         const startBtn = document.getElementById("startBtn");
         const digitalClock = document.getElementById("digitalClock");

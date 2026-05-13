@@ -3,7 +3,21 @@ let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
 const frameToday = new Date();
 const month = frameToday.getMonth() + 1;
 const day = frameToday.getDate();
-if (month === 1 && day === 1) {
+const isSecondSundayOfMay =
+    month === 5 &&
+    frameToday.getDay() === 0 &&
+    day >= 8 &&
+    day <= 14;
+const isThirdSundayOfJune =
+    month === 6 &&
+    frameToday.getDay() === 0 &&
+    day >= 15 &&
+    day <= 21;
+if (isSecondSundayOfMay) {
+    leftFtMsg = `Made With Motherly Love`;
+} else if (isThirdSundayOfJune) {
+    leftFtMsg = `Made With Fatherly Love`;
+} else if (month === 1 && day === 1) {
     rightFtMsg = `New Year, Same Chaos Since 2024`;
     leftFtMsg = `Starting The Year Questionably!`;
 } else if (month === 2 && day === 14) {
