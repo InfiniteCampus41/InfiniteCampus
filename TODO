@@ -1,12 +1,24 @@
-The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
-Here Are The Steps To Do So
-
-    Make Games List Come From Server Instead Of Locally
-    Allow Editing And Deleting Games From Site
-    Allow Deleting Movies From Site
-    Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
-    Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
-
-Add Reply Notifications
-
-Combine InfiniteListeners.html And The MP3 Player Page
+TODO
+    General:
+        Add Reply Notifications
+        Combine The Music Streamin Page With MP3 Player Page
+    Website Chat:
+        Must Do:
+            Fix New Messages Sent From Discord Not Showing Up
+            Disallow @everyone
+            Add True Slowmode
+            Add File Uploading Abilities
+            Add Embed Viewing Support
+        Might Do:
+            Map Discord Roles To Website Roles To Allow Deleting Of Discord Messages From Website
+            Allow Deleting Of Your Discord Messages If Your Account And Discord Are Connected
+            Fix Discord Username Mentions In Chat
+            Fix Discord Channel Mentions In Chat
+            Add Codeblocks
+    The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
+        Here Are The Steps To Do So:
+            Make Games List Come From Server Instead Of Locally
+            Allow Editing And Deleting Games From Site
+            Allow Deleting Movies From Site
+            Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
+            Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
