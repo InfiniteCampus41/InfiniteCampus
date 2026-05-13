@@ -2841,7 +2841,6 @@ table {
     overflow-x: auto;
 }
 .tenor-gif {
-    margin-left: -40px;
     height:300px;
     width:300px;
 }
@@ -2929,9 +2928,9 @@ th, td {
 }
 #topRow {
     display: flex;
-    justify-content: space-between;
     margin-bottom: 2px;
-    align-items:self-end;
+    align-items:center;
+    gap:5px;
 }
 .tptxt {
     color:lime;

@@ -16,6 +16,8 @@ const mentionToggle = document.getElementById("mentionToggle");
 const mentionToggleLabel = document.getElementById("mentionToggleLabel");
 const MESSAGE_COOLDOWN = 3000;
 const PAGE_SIZE = 50;
+const BACKEND = a;
+let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 const privateList = document.getElementById("privateList");
 const privateListeners = new Set();
 const reply = document.getElementById("reply");
@@ -305,7 +307,8 @@ async function dbUpdate(path, updates) {
 }
 async function dbPush(path, value) {
     const key = Date.now().toString();
-    await dbSet(path + "/" + key, value);
+    const valueWithTs = { ...value, timestamp: Number(key) };
+    await dbSet(path + "/" + key, valueWithTs);
     return key;
 }
 async function dbDelete(path) {
@@ -427,22 +430,35 @@ chatLog.addEventListener("scroll", () => {
 async function loadOlderMessages() {
     if (loadingOlderMessages || !hasMoreMessages || !oldestLoadedTimestamp) return;
     loadingOlderMessages = true;
+    let loadingBar = document.getElementById("__loadMoreIndicator");
+    if (!loadingBar) {
+        loadingBar = document.createElement("div");
+        loadingBar.id = "__loadMoreIndicator";
+        loadingBar.style.cssText = "text-align:center;padding:8px;color:#888;font-size:0.8em;";
+        loadingBar.textContent = "Loading Messages";
+    }
+    chatLog.prepend(loadingBar);
     try {
+        const savePath = currentPath;
         const res = await fetchAPI("load-more-messages", {
             path: pathToArray(currentPath),
             before: oldestLoadedTimestamp,
             limit: 25
         });
+        if (currentPath !== savePath) { loadingBar.remove(); loadingOlderMessages = false; return; }
         const msgs = res.data;
         if (!msgs || (Array.isArray(msgs) && msgs.length === 0)) {
             hasMoreMessages = false;
+            loadingBar.textContent = "No More Messages";
+            setTimeout(() => loadingBar.remove(), 1500);
             loadingOlderMessages = false;
             return;
         }
         const entries = (Array.isArray(msgs) ? msgs : Object.entries(msgs).map(([id, v]) => ({ id, ...v })))
-            .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+            .sort((a, b) => Number(a.timestamp || a.id) - Number(b.timestamp || b.id));
         if (entries.length === 0) {
             hasMoreMessages = false;
+            loadingBar.remove();
             loadingOlderMessages = false;
             return;
         }
@@ -451,16 +467,20 @@ async function loadOlderMessages() {
         for (let i = entries.length - 1; i >= 0; i--) {
             const msg = entries[i];
             const id = msg.id;
+            if (document.getElementById("msg-" + id)) continue;
             const div = await renderMessageInstant(id, msg);
             if (div) {
-                container.prepend(div);
+                loadingBar.insertAdjacentElement("afterend", div);
             }
         }
-        oldestLoadedTimestamp = Number(entries[0].timestamp) - 1;
+        if (entries.length < 25) hasMoreMessages = false;
+        oldestLoadedTimestamp = Number(entries[0].timestamp || entries[0].id) - 1;
         const newHeight = container.scrollHeight;
         container.scrollTop += (newHeight - oldHeight);
+        loadingBar.remove();
     } catch (e) {
         console.error("Load Older Messages Failed:", e);
+        if (loadingBar) loadingBar.remove();
     }
     loadingOlderMessages = false;
 }
@@ -718,453 +738,599 @@ function toggleReply(id = null, name = null, text = null) {
     isReplyActive = true;
 }
 async function renderMessageInstant(id, msg) {
-    const meta = await getUserMeta(msg.sender);
     if (document.getElementById("msg-" + id)) return null;
-    if (id === "sender" || id === "text" || id === "timestamp") return null;
-    const div = document.createElement("div");
-    div.className = "msg";
-    div.id = "msg-" + id;
+    if (id === "sender" || id === "text" || id === "timestamp" || id === "s" || id === "t") return null;
     if (!msg) return null;
-    div.dataset.timestamp = msg.timestamp || Date.now();
-    const msgBtns = document.createElement("div");
-    msgBtns.id = 'msgBtns';
+    const isDiscordMsg = !!(msg.u !== undefined && msg.a !== undefined);
+    const div = document.createElement("div");
+    div.className = "msg" + (isDiscordMsg ? " msg-discord" : "");
+    div.id = "msg-" + id;
+    div.dataset.timestamp = msg.timestamp || Number(id) || Date.now();
     const topRow = document.createElement("div");
     topRow.id = "topRow";
-    const nameSpan = document.createElement("span");
-    nameSpan.id = "msgName";
-    nameSpan.className = "highlight";
-    nameSpan.style.color = "#aaa";
-    nameSpan.style.cursor = "pointer";
-    nameSpan.textContent = "Loading";
     const leftWrapper = document.createElement("span");
     leftWrapper.style.display = "flex";
     leftWrapper.style.gap = "6px";
+    leftWrapper.style.alignItems = "center";
     const profilePic = document.createElement("img");
     profilePic.style.width = "32px";
     profilePic.style.height = "32px";
     profilePic.style.borderRadius = "50%";
-    profilePic.style.border = `2px solid ${meta.color}`;
+    profilePic.style.border = `2px solid #5865F2`;
     profilePic.style.objectFit = "cover";
-    profilePic.style.cursor = "pointer";
-    profilePic.src = `${pfpDomain}/1.jpeg`;
-    let profilePics = [];
-    async function loadProfilePics() {
-        const pfpDate = Date.now();
-        try {
-            const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
-            const files = await res.json();
-            profilePics = files.map(file => `${pfpDomain}/${file}`);
-        } catch (e) {
-            console.error("Failed To Load Profile Pics:", e);
-            profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
-        }
-    }
-    await loadProfilePics();
-    leftWrapper.appendChild(profilePic);
-    leftWrapper.appendChild(nameSpan);
+    profilePic.style.cursor = isDiscordMsg ? "default" : "pointer";
+    const nameSpan = document.createElement("span");
+    nameSpan.id = "msgName";
+    nameSpan.className = "highlight";
+    nameSpan.style.cursor = isDiscordMsg ? "default" : "pointer";
     const timeSpan = document.createElement("span");
     timeSpan.className = "timestamp";
-    timeSpan.textContent = msg.timestamp ? formatTimestamp(msg.timestamp) : "";
-    topRow.appendChild(leftWrapper);
-    topRow.appendChild(timeSpan);
+    const tsMs = msg.timestamp || Number(id) || Date.now();
+    timeSpan.textContent = tsMs ? formatTimestamp(tsMs) : "";
+    const msgBtns = document.createElement("div");
+    msgBtns.id = 'msgBtns';
     const textDiv = document.createElement("div");
     textDiv.className = "msg-text";
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.overflowWrap = "anywhere";
     textDiv.style.marginLeft = "40px";
     textDiv.style.marginTop = "-11px";
-    let safeText = (msg.text || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    safeText = safeText.replace(
-        /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
-        (match, cls, style, title) => {
-            let attrs = `class="${cls}"`;
-            if (style) attrs += ` style="${style}"`;
-            if (title) attrs += ` title="${title}"`;
-            return `<i ${attrs}></i>`;
-        }
-    );
-    safeText = safeText.replace(
-        /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-        (match, color, content) => {
-            const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
-            return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
-        }
-    );
-    safeText = safeText.replace(
-        /&lt;img\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-        (match, src, alt, style) => {
-            const safeSrc = src.replace(/"/g, "");
-            const safeAlt = alt ? alt.replace(/"/g, "") : "";
-            let width = null;
-            let height = null;
-            let radius = null;
-            if (style) {
-                const w = style.match(/width\s*:\s*([0-9]+)px/i);
-                const h = style.match(/height\s*:\s*([0-9]+)px/i);
-                const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
-                if (w) width = Math.min(parseInt(w[1]), 100);
-                if (h) height = Math.min(parseInt(h[1]), 100);
-                if (r) radius = parseInt(r[1]);
+    let editedSpan = null;
+    if (msg.edited || msg.e) {
+        editedSpan = document.createElement("span");
+        editedSpan.className = "edited-label";
+        editedSpan.style.fontSize = "0.72em";
+        editedSpan.style.color = "#888";
+        editedSpan.style.marginLeft = "40px";
+    }
+    const rawText = isDiscordMsg ? (msg.t || "") : (msg.t || msg.text || "");
+    async function buildRichText(raw, textDivEl) {
+        let safe = raw
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        safe = safe.replace(
+            /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+            (_, cls, style, title) => {
+                let attrs = `class="${cls}"`;
+                if (style) attrs += ` style="${style}"`;
+                if (title) attrs += ` title="${title}"`;
+                return `<i ${attrs}></i>`;
             }
-            let finalStyle = "margin-top:6px;cursor:pointer;";
-            if (width) finalStyle += `width:${width}px;`;
-            if (height) finalStyle += `height:${height}px;`;
-            if (radius !== null) finalStyle += `border-radius:${radius}px;`;
-            return `<img src="${safeSrc}" alt="${safeAlt}" class="chat-img" style="${finalStyle}">`;
-        }
-    );
-    safeText = safeText.replace(
-        /&lt;video\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-        (match, src, alt, style) => {
-            const safeSrc = src.replace(/"/g, "");
-            const safeAlt = alt ? alt.replace(/"/g, "") : "";
-            let width = null;
-            let height = null;
-            let radius = null;
-            if (style) {
-                const w = style.match(/width\s*:\s*([0-9]+)px/i);
-                const h = style.match(/height\s*:\s*([0-9]+)px/i);
-                const r = style.match(/border-radius\s*:\s*([0-9]+)px/i);
-                if (w) width = Math.min(parseInt(w[1]), 100);
-                if (h) height = Math.min(parseInt(h[1]), 100);
-                if (r) radius = parseInt(r[1]);
+        );
+        safe = safe.replace(
+            /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+            (_, color, content) => {
+                const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
             }
-            let finalStyle = "margin-top:6px;cursor:pointer;";
-            if (width) finalStyle += `width:${width}px;`;
-            if (height) finalStyle += `height:${height}px;`;
-            if (radius !== null) finalStyle += `border-radius:${radius}px;`;
-            return `<video src="${safeSrc}" class="chat-vid" style="${finalStyle}" controls loop>`;
-        }
-    );
-    safeText = safeText.replace(
-        /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-        (match, src) => {
-            const safeSrc = src.replace(/"/g, "");
-            let finalStyle = "margin-top:6px;cursor:pointer;";
-            return `<audio src="${safeSrc}" class="chat-aud" style="${finalStyle}" controls>`;
-        }
-    );
-    safeText = safeText.replace(/\n/g, "<br>");
-    const mentionRegex = /@([^\s<]+)/g;
-    safeText = safeText.replace(mentionRegex, (match, name) => {
-        const lower = name.toLowerCase();
-        if (
-            lower === "support" &&
-            currentPath &&
-            currentPath.startsWith("messages/") &&
-            (isDev || isOwner || isTester)
-        ) {
-            return `<span class="mention-self">@support</span>`;
-        }
-        const isSelfMention =
-            currentName &&
-            (
+        );
+        safe = safe.replace(
+            /&lt;img\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                const style = styleMatch ? styleMatch[1] : "";
+                let w = null, h = null, r = null;
+                if (style) {
+                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                    const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                    if (wm) w = Math.min(parseInt(wm[1]), 300);
+                    if (hm) h = Math.min(parseInt(hm[1]), 300);
+                    if (rm) r = parseInt(rm[1]);
+                }
+                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+                if (w) st += `width:${w}px;`;
+                if (h) st += `height:${h}px;`;
+                if (r !== null) st += `border-radius:${r}px;`;
+                return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+            }
+        );
+        safe = safe.replace(
+            /&lt;video\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                const style = styleMatch ? styleMatch[1] : "";
+                let w = null, h = null;
+                if (style) {
+                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                    if (wm) w = Math.min(parseInt(wm[1]), 300);
+                    if (hm) h = Math.min(parseInt(hm[1]), 300);
+                }
+                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;height:fit-content;";
+                if (w) st += `width:${w}px;`;
+                if (h) st += `height:${h}px;`;
+                return `<video src="${safeSrc}" alt="${alt}" class="chat-vid" style="${st}" onerror="this.style.display='none'" controls>`;
+            }
+        );
+        safe = safe.replace(/&lt;\/video&gt;/gi, "</video>");
+        safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        safe = safe.replace(
+            /&lt;audio\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
+            }
+        );
+        safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
+        safe = safe.replace(/\n/g, "<br>");
+        const mentionRegex = /@([^\s<]+)/g;
+        safe = safe.replace(mentionRegex, (match, name) => {
+            const lower = name.toLowerCase();
+            if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
+                return `<span class="mention-self">@support</span>`;
+            }
+            const isSelfMention = currentName && (
                 currentName.toLowerCase() === lower ||
-                currentName.toLowerCase() === lower.replace(" 💎","")
+                currentName.toLowerCase() === lower.replace(" 💎", "")
             );
-        const cls = isSelfMention ? "mention-self" : "mention";
-        return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
-    });
-    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-    safeText = safeText.replace(markdownLinkRegex, (match, text, url) => {
-        const cleanText = text.trim();
-        const cleanUrl = url.trim();
-        if (cleanText === cleanUrl) {
+            const cls = isSelfMention ? "mention-self" : "mention";
+            return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
+        });
+        const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+        safe = safe.replace(markdownLinkRegex, (match, text, url) => {
+            const cleanText = text.trim();
+            const cleanUrl = url.trim();
+            if (cleanText === cleanUrl) {
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+            } else if (cleanText.includes(".")) {
+                return `${cleanText} (${cleanUrl})`;
+            }
+            const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+            if (looksLikeUrl && cleanText !== cleanUrl) return `${cleanText} (${cleanUrl})`;
             return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
-        } else if (cleanText.includes(".")) {
-            return `${cleanText} (${cleanUrl})`;
-        }
-        const looksLikeUrl = /^https?:\/\//i.test(cleanText);
-        if (looksLikeUrl && cleanText !== cleanUrl) {
-            return `${cleanText} (${cleanUrl})`;
-        }
-        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
-    });
-    const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
-    safeText = safeText.replace(urlRegex, (match, prefix, url) => {
-        let display = url;
-        while (/[.,!?;:)\]\"]$/.test(display)) display = display.slice(0, -1);
-        const trailing = url.slice(display.length);
-        if (display.includes("tenor.com")) {
-            const clean = display.split("?")[0];
-            const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
-            return `${prefix}
-            <img 
-                src="${finalUrl}" 
-                class="chat-img tenor-gif"
-                data-tenor="${display}"
-                style="max-width:250px;margin-top:6px;border-radius:8px;">
-            ${trailing}`;
-        }
-        if (
-            display.includes("youtube.com/watch") ||
-            display.includes("youtu.be/") ||
-            display.includes("youtube.com/shorts/")
-        ) {
-            let videoId = "";
-            if (display.includes("youtube.com/watch")) {
-                const urlObj = new URL(display);
-                videoId = urlObj.searchParams.get("v");
+        });
+        const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+        safe = safe.replace(urlRegex, (match, prefix, url) => {
+            let display = url;
+            while (/[.,!?;:)\]\\"]$/.test(display)) display = display.slice(0, -1);
+            const trailing = url.slice(display.length);
+            if (display.includes("tenor.com")) {
+                const clean = display.split("?")[0];
+                const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                return `${prefix}<img src="${finalUrl}" class="chat-img tenor-gif" data-tenor="${display}" style="max-width:250px;margin-top:10px;border-radius:8px;">${trailing}`;
             }
-            else if (display.includes("youtu.be/")) {
-                videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
-            }
-            else if (display.includes("youtube.com/shorts/")) {
-                videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
-            }
-            const isShort = display.includes("/shorts/");
-            return `${prefix}
-            <div class="yt-embed ${isShort ? "short" : ""}">
-                <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
-            </div>
-            ${trailing}`;
-        }
-        if (display.includes("tiktok.com")) {
-            return `${prefix}
-            <blockquote class="tiktok-embed" cite="${display}" data-video-id="">
-                <a href="${display}"></a>
-            </blockquote>
-            ${trailing}`;
-        }
-        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer"style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
-    });
-    safeText = await processChannelMentions(safeText);
-    textDiv.innerHTML = safeText;
-    try {
-        const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
-        if (existingScript) {
-            existingScript.remove();
-        }
-        const script = document.createElement("script");
-        script.src = "https://www.tiktok.com/embed.js";
-        script.async = true;
-        script.onload = () => {
-            if (window.tiktokEmbedLoad) {
-                try {
-                    window.tiktokEmbedLoad();
-                } catch (e) {
-                    console.warn("TikTok embed init failed:", e);
+            if (display.includes("youtube.com/watch") || display.includes("youtu.be/") || display.includes("youtube.com/shorts/")) {
+                let videoId = "";
+                if (display.includes("youtube.com/watch")) {
+                    const urlObj = new URL(display);
+                    videoId = urlObj.searchParams.get("v");
+                } else if (display.includes("youtu.be/")) {
+                    videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                } else if (display.includes("youtube.com/shorts/")) {
+                    videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
                 }
+                const isShort = display.includes("/shorts/");
+                return `${prefix}<div class="yt-embed ${isShort ? "short" : ""}"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${trailing}`;
             }
-        };
-        script.onerror = () => {
-            console.warn("TikTok embed script blocked or failed to load.");
-        };
-        document.body.appendChild(script);
-    } catch (err) {
-        console.warn("TikTok script handling failed:", err);
-    }
-    textDiv.querySelectorAll(".mention-user").forEach(span => {
-        span.style.cursor = "pointer";
-        span.addEventListener("click", async () => {
-            const name = span.dataset.name;
-            const uid = await getUidByDisplayName(name);
-            if (!uid) {
-                showError("User Profile Not Found.");
-                return;
+            if (display.includes("tiktok.com")) {
+                return `${prefix}<blockquote class="tiktok-embed" cite="${display}" data-video-id=""><a href="${display}"></a></blockquote>${trailing}`;
             }
-            window.location.href = `InfiniteAccounts.html?user=${uid}`;
+            return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
         });
-    });
-    textDiv.querySelectorAll(".channel-mention").forEach(span => {
-        span.style.color = "#4fa3ff";
-        span.style.cursor = "pointer";
-        span.addEventListener("click", () => {
-            const ch = span.dataset.channel;
-            if (typeof switchChannel === "function") {
-                switchChannel(ch);
-            } else {
-                showError("switchChannel() Not Defined, Cannot Change Channel:", ch);
+        safe = await processChannelMentions(safe);
+        textDivEl.innerHTML = safe;
+        textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {
+            try {
+                const b64 = el.getAttribute("data") || "";
+                const decoded = atob(b64);
+                const wrapper = document.createElement("div");
+                wrapper.innerHTML = decoded;
+                el.replaceWith(wrapper.firstChild || wrapper);
+            } catch {}
+        });
+        textDivEl.querySelectorAll(".mention-user").forEach(span => {
+            span.style.cursor = "pointer";
+            span.addEventListener("click", async () => {
+                const name = span.dataset.name;
+                const uid = await getUidByDisplayName(name);
+                if (!uid) { showError("User Profile Not Found."); return; }
+                window.location.href = `InfiniteAccounts.html?user=${uid}`;
+            });
+        });
+        textDivEl.querySelectorAll(".channel-mention").forEach(span => {
+            span.style.color = "#4fa3ff";
+            span.style.cursor = "pointer";
+            span.addEventListener("click", () => {
+                const ch = span.dataset.channel;
+                if (typeof switchChannel === "function") switchChannel(ch);
+            });
+        });
+        textDivEl.querySelectorAll(".chat-img").forEach(img => {
+            img.style.cursor = "pointer";
+            img.addEventListener("click", () => {
+                viewerImg.src = img.src;
+                downloadBtn.href = img.src;
+                downloadBtn.download = img.alt || "image";
+                imgViewer.style.display = "flex";
+            });
+        });
+        try {
+            const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
+            if (existingScript) existingScript.remove();
+            if (textDivEl.querySelector(".tiktok-embed")) {
+                const script = document.createElement("script");
+                script.src = "https://www.tiktok.com/embed.js";
+                script.async = true;
+                document.body.appendChild(script);
             }
-        });
-    });
-    let previewDiv = document.querySelector(".link-preview-global");
-    if (!previewDiv) {
-        previewDiv = document.createElement("div");
-        previewDiv.className = "link-preview-global";
-        Object.assign(previewDiv.style, {
-            position: "absolute",
-            zIndex: "9999",
-            display: "none",
-            width: "320px",
-            background: "rgba(20,20,20,0.95)",
-            padding: "10px",
-            borderRadius: "10px",
-            border: "1px solid #333",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-            color: "#fff",
-            transition: "opacity 0.15s ease",
-            opacity: "0",
-            pointerEvents: "none"
-        });
-        document.body.appendChild(previewDiv);
-    }
-    const links = textDiv.querySelectorAll("a[href]");
-    links.forEach(link => {
-        const showLinkMenu = (x, y) => {
-            const old = document.querySelector(".link-context-menu");
-            if (old) old.remove();
-            const menu = document.createElement("div");
-            menu.className = "link-context-menu";
-            menu.style.position = "absolute";
-            menu.style.left = x + "px";
-            menu.style.top = y + "px";
-            menu.style.background = "#222";
-            menu.style.border = "1px solid #555";
-            menu.style.borderRadius = "6px";
-            menu.style.padding = "8px";
-            menu.style.color = "#fff";
-            menu.style.zIndex = "9999";
-            menu.style.maxWidth = "300px";
-            menu.style.wordBreak = "break-all";
-            menu.textContent = link.href;
-            document.body.appendChild(menu);
-            const close = () => {
-                menu.remove();
-                document.removeEventListener("click", close);
-            };
-            setTimeout(() => {
-                document.addEventListener("click", close);
-            }, 0);
-        };
-        link.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            showLinkMenu(e.pageX, e.pageY);
-        });
-        let pressTimer = null;
-        link.addEventListener("touchstart", (e) => {
-            pressTimer = setTimeout(() => {
-                const touch = e.touches[0];
-                showLinkMenu(touch.pageX, touch.pageY);
-            }, 500);
-        });
-        link.addEventListener("touchend", () => {
-            clearTimeout(pressTimer);
-        });
-        link.addEventListener("touchmove", () => {
-            clearTimeout(pressTimer);
-        });
-    });
-    const cache = {};
-    links.forEach((link) => {
-        const url = link.href;
-        link.addEventListener("mouseenter", async (e) => {
-            const rect = link.getBoundingClientRect();
-            previewDiv.style.top = `${rect.bottom + 6}px`;
-            previewDiv.style.left = `${Math.min(rect.left, window.innerWidth - 340)}px`;
-            previewDiv.style.display = "block";
-            previewDiv.style.opacity = "1";
-            previewDiv.innerHTML = "Loading Preview...";
-            if (!cache[url]) {
-                try {
-                    const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
-                    const data = await res.json();
-                    if (data.status === "success" && data.data) {
-                        const { title, description, image } = data.data;
-                        cache[url] = { title, description, image };
-                    } else {
-                        cache[url] = { error: "(No Preview Available)" };
+        } catch {}
+        const previewCache = {};
+        let previewDiv = document.querySelector(".link-preview-global");
+        if (!previewDiv) {
+            previewDiv = document.createElement("div");
+            previewDiv.className = "link-preview-global";
+            Object.assign(previewDiv.style, {
+                position: "fixed", zIndex: "9999", display: "none", width: "320px",
+                background: "rgba(20,20,20,0.95)", padding: "10px", borderRadius: "10px",
+                border: "1px solid #333", boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                color: "#fff", transition: "opacity 0.15s ease", opacity: "0", pointerEvents: "none"
+            });
+            document.body.appendChild(previewDiv);
+        }
+        textDivEl.querySelectorAll("a[href]").forEach(link => {
+            const url = link.href;
+            link.addEventListener("mouseenter", async () => {
+                const rect = link.getBoundingClientRect();
+                previewDiv.style.top = `${rect.bottom + 6}px`;
+                previewDiv.style.left = `${Math.min(rect.left, window.innerWidth - 340)}px`;
+                previewDiv.style.display = "block";
+                previewDiv.style.opacity = "1";
+                previewDiv.innerHTML = "Loading Preview...";
+                if (!previewCache[url]) {
+                    try {
+                        const r = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                        const data = await r.json();
+                        if (data.status === "success" && data.data) {
+                            const { title, description, image } = data.data;
+                            previewCache[url] = { title, description, image };
+                        } else { previewCache[url] = { error: "(No Preview Available)" }; }
+                    } catch { previewCache[url] = { error: "(Preview Failed)" }; }
+                }
+                const info = previewCache[url];
+                if (info.error) {
+                    previewDiv.textContent = info.error;
+                } else {
+                    previewDiv.innerHTML = "";
+                    const content = document.createElement("div");
+                    content.style.cssText = "display:flex;align-items:center;gap:8px;";
+                    if (info.image?.url) {
+                        const img = document.createElement("img");
+                        img.src = info.image.url;
+                        img.style.cssText = "width:60px;height:60px;border:1px solid white;object-fit:cover;border-radius:6px;";
+                        content.appendChild(img);
                     }
-                } catch {
-                    cache[url] = { error: "(Preview Failed)" };
+                    const details = document.createElement("div");
+                    details.style.flex = "1";
+                    if (info.title) { const t = document.createElement("div"); t.textContent = info.title; t.style.fontWeight = "bold"; details.appendChild(t); }
+                    if (info.description) { const d = document.createElement("div"); d.textContent = info.description; d.style.cssText = "font-size:0.8em;color:#ccc;line-height:1.2em;"; details.appendChild(d); }
+                    content.appendChild(details);
+                    previewDiv.appendChild(content);
                 }
-            }
-            const info = cache[url];
-            if (info.error) {
-                previewDiv.textContent = info.error;
-            } else {
-                previewDiv.innerHTML = "";
-                const content = document.createElement("div");
-                content.style.display = "flex";
-                content.style.alignItems = "center";
-                content.style.gap = "8px";
-                if (info.image?.url) {
-                    const img = document.createElement("img");
-                    img.src = info.image.url;
-                    img.style.width = "60px";
-                    img.style.height = "60px";
-                    img.style.border = "1px solid white";
-                    img.style.objectFit = "cover";
-                    img.style.borderRadius = "6px";
-                    content.appendChild(img);
-                }
-                const details = document.createElement("div");
-                details.style.flex = "1";
-                if (info.title) {
-                    const titleEl = document.createElement("div");
-                    titleEl.textContent = info.title;
-                    titleEl.style.fontWeight = "bold";
-                    details.appendChild(titleEl);
-                }
-                if (info.description) {
-                    const descEl = document.createElement("div");
-                    descEl.textContent = info.description;
-                    descEl.style.fontSize = "0.8em";
-                    descEl.style.color = "#ccc";
-                    descEl.style.lineHeight = "1.2em";
-                    details.appendChild(descEl);
-                }
-                content.appendChild(details);
-                previewDiv.appendChild(content);
-            }
+            });
+            link.addEventListener("mouseleave", () => {
+                previewDiv.style.opacity = "0";
+                setTimeout(() => { previewDiv.style.display = "none"; }, 150);
+            });
+            const showLinkMenu = (x, y) => {
+                const old = document.querySelector(".link-context-menu");
+                if (old) old.remove();
+                const menu = document.createElement("div");
+                menu.className = "link-context-menu";
+                menu.style.cssText = `position:fixed;left:${x}px;top:${y}px;background:#222;border:1px solid #555;border-radius:6px;padding:8px;color:#fff;z-index:9999;max-width:300px;word-break:break-all;`;
+                menu.textContent = link.href;
+                document.body.appendChild(menu);
+                const close = () => { menu.remove(); document.removeEventListener("click", close); };
+                setTimeout(() => { document.addEventListener("click", close); }, 0);
+            };
+            link.addEventListener("contextmenu", (e) => { e.preventDefault(); showLinkMenu(e.clientX, e.clientY); });
+            let pressTimer = null;
+            link.addEventListener("touchstart", (e) => { pressTimer = setTimeout(() => { const t = e.touches[0]; showLinkMenu(t.clientX, t.clientY); }, 500); });
+            link.addEventListener("touchend", () => clearTimeout(pressTimer));
+            link.addEventListener("touchmove", () => clearTimeout(pressTimer));
         });
-        link.addEventListener("mouseleave", () => {
-            previewDiv.style.opacity = "0";
-            setTimeout(() => {
-                previewDiv.style.display = "none";
-            }, 150);
+    }
+    function buildSafeText(raw) {
+        let safe = raw
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        safe = safe.replace(
+            /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+            (_, cls, style, title) => {
+                let attrs = `class="${cls}"`;
+                if (style) attrs += ` style="${style}"`;
+                if (title) attrs += ` title="${title}"`;
+                return `<i ${attrs}></i>`;
+            }
+        );
+        safe = safe.replace(
+            /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
+            (_, color, content) => {
+                const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
+            }
+        );
+        safe = safe.replace(
+            /&lt;img\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                const style = styleMatch ? styleMatch[1] : "";
+                let w = null, h = null, r = null;
+                if (style) {
+                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                    const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                    if (wm) w = Math.min(parseInt(wm[1]), 300);
+                    if (hm) h = Math.min(parseInt(hm[1]), 300);
+                    if (rm) r = parseInt(rm[1]);
+                }
+                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+                if (w) st += `width:${w}px;`;
+                if (h) st += `height:${h}px;`;
+                if (r !== null) st += `border-radius:${r}px;`;
+                return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+            }
+        );
+        safe = safe.replace(
+            /&lt;video\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                const style = styleMatch ? styleMatch[1] : "";
+                let w = null, h = null;
+                if (style) {
+                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                    if (wm) w = Math.min(parseInt(wm[1]), 300);
+                    if (hm) h = Math.min(parseInt(hm[1]), 300);
+                }
+                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;height:fit-content;";
+                if (w) st += `width:${w}px;`;
+                if (h) st += `height:${h}px;`;
+                return `<video src="${safeSrc}" alt="${alt}" class="chat-vid" style="${st}" onerror="this.style.display='none'" controls>`;
+            }
+        );
+        safe = safe.replace(/&lt;\/video&gt;/gi, "</video>");
+        safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        safe = safe.replace(
+            /&lt;audio\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
+            }
+        );
+        safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
+        safe = safe.replace(/\n/g, "<br>");
+        const mentionRegex = /@([^\s<]+)/g;
+        safe = safe.replace(mentionRegex, (match, name) => {
+            const lower = name.toLowerCase();
+            if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
+                return `<span class="mention-self">@support</span>`;
+            }
+            const isSelfMention = currentName && (
+                currentName.toLowerCase() === lower ||
+                currentName.toLowerCase() === lower.replace(" 💎", "")
+            );
+            const cls = isSelfMention ? "mention-self" : "mention";
+            return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
         });
-    });
-    const editedSpan = document.createElement("div");
-    editedSpan.className = "edited-label";
-    editedSpan.textContent = msg.edited ? "(Edited)" : "";
-    div.appendChild(msgBtns);
-    if (msg.reply) {
+        const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+        safe = safe.replace(markdownLinkRegex, (match, text, url) => {
+            const cleanText = text.trim();
+            const cleanUrl = url.trim();
+            if (cleanText === cleanUrl) {
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+            } else if (cleanText.includes(".")) {
+                return `${cleanText} (${cleanUrl})`;
+            }
+            const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+            if (looksLikeUrl && cleanText !== cleanUrl) return `${cleanText} (${cleanUrl})`;
+            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+        });
+        const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+        safe = safe.replace(urlRegex, (match, prefix, url) => {
+            let display = url;
+            while (/[.,!?;:)\]\\"]$/.test(display)) display = display.slice(0, -1);
+            const trailing = url.slice(display.length);
+            if (display.includes("tenor.com")) {
+                const clean = display.split("?")[0];
+                const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                return `${prefix}<img src="${finalUrl}" class="chat-img tenor-gif" data-tenor="${display}" style="max-width:250px;margin-top:10px;border-radius:8px;">${trailing}`;
+            }
+            if (display.includes("youtube.com/watch") || display.includes("youtu.be/") || display.includes("youtube.com/shorts/")) {
+                let videoId = "";
+                if (display.includes("youtube.com/watch")) {
+                    const urlObj = new URL(display);
+                    videoId = urlObj.searchParams.get("v");
+                } else if (display.includes("youtu.be/")) {
+                    videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                } else if (display.includes("youtube.com/shorts/")) {
+                    videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+                }
+                const isShort = display.includes("/shorts/");
+                return `${prefix}<div class="yt-embed ${isShort ? "short" : ""}"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${trailing}`;
+            }
+            if (display.includes("tiktok.com")) {
+                return `${prefix}<blockquote class="tiktok-embed" cite="${display}" data-video-id=""><a href="${display}"></a></blockquote>${trailing}`;
+            }
+            return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
+        });
+        return safe;
+    }
+    buildRichText(rawText, textDiv).catch(() => { textDiv.innerHTML = buildSafeText(rawText); });
+    if (msg.edited || msg.e) editedSpan.textContent = "(Edited)";
+    topRow.appendChild(leftWrapper);
+    topRow.appendChild(timeSpan);
+    leftWrapper.appendChild(profilePic);
+    leftWrapper.appendChild(nameSpan);
+    if (isDiscordMsg) {
+        profilePic.src = `${BACKEND}${msg.a}` || "/res/discord.png";
+        profilePic.onerror = () => { profilePic.src = "/res/discord.png"; };
+        nameSpan.textContent = msg.u || "This Message Is From The Discord";
+        nameSpan.style.color = "#5865F2";
+        const discordBadge = document.createElement("span");
+        discordBadge.innerHTML = `<i class="bi bi-discord" style="color:#5865F2" title="This Message Is From The Discord"></i>`;
+        discordBadge.style.marginLeft = "4px";
+        leftWrapper.appendChild(discordBadge);
+        if (msg.r) {
+            (async () => {
+                const replyTs = msg.r;
+                try {
+                    const rData = await dbGet(`${currentPath}/${replyTs}`);
+                    if (rData) {
+                        const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
+                        let rText = (rData.t || rData.text || "").substring(0, 80)
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;");
+                        rText = buildSafeText(rText);
+                        const replyPreview = document.createElement("div");
+                        replyPreview.style.display = "flex";
+                        replyPreview.style.cursor = "pointer";
+                        replyPreview.style.gap = "5px";
+                        replyPreview.onclick = () => scrollToMessage(String(replyTs));
+                        const arrow = document.createElement("span");
+                        arrow.style.width = "30px";
+                        arrow.style.marginLeft = "15px";
+                        arrow.style.height = "8px";
+                        arrow.style.marginTop = "11px";
+                        arrow.style.borderTop = "1px solid #aaa";
+                        arrow.style.borderLeft = "1px solid #aaa";
+                        arrow.style.borderTopLeftRadius = "10px";
+                        const reply = document.createElement("span");
+                        reply.style.fontSize = "0.8em";
+                        reply.style.marginRight = "44px";
+                        reply.style.color = "#aaa";
+                        reply.style.whiteSpace = "nowrap";
+                        reply.style.overflow = "hidden";
+                        reply.style.textOverflow = "ellipsis";
+                        reply.style.maxWidth = "100%";
+                        reply.innerHTML = `Replying To: @${rName}: ${rText}`;
+                        replyPreview.appendChild(arrow);
+                        replyPreview.appendChild(reply);
+                        div.prepend(replyPreview);
+                    }
+                } catch {}
+            })();
+        }
+        div.appendChild(topRow);
+        div.appendChild(textDiv);
+        if (editedSpan) div.appendChild(editedSpan);
+        const reactionsRow = document.createElement("div");
+        reactionsRow.className = "reactions-row";
+        reactionsRow.dataset.msgid = id;
+        div.appendChild(reactionsRow);
+        const discordReactBtn = document.createElement("button");
+        discordReactBtn.className = "react-btn";
+        discordReactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
+        discordReactBtn.title = "Add Reaction";
+        discordReactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
+        const discordReplyBtn = document.createElement("button");
+        discordReplyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
+        discordReplyBtn.title = "Reply to Discord message";
+        discordReplyBtn.onclick = () => toggleReply(id, msg.u || "Discord User", rawText);
+        msgBtns.appendChild(discordReplyBtn);
+        msgBtns.appendChild(discordReactBtn);
+        div.insertBefore(msgBtns, topRow);
+        return div;
+    }
+    const senderId = msg.sender || msg.s;
+    if (!senderId) return null;
+    nameSpan.textContent = "Loading...";
+    nameSpan.style.color = "#aaa";
+    profilePic.src = `${pfpDomain}/1.jpeg`;
+    const replyId = msg.reply || msg.r;
+    if (replyId) {
         (async () => {
             try {
-                const rData = await dbGet(currentPath + "/" + msg.reply);
+                const rData = await dbGet(`${currentPath}/${replyId}`);
                 if (rData) {
-                    const rName = await getDisplayName(rData.sender);
+                    const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : (rData.sender ? await getDisplayName(rData.sender) : "Unknown"));
+                    let rText = (rData.t || rData.text || "").substring(0, 80)
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+                    rText = buildSafeText(rText);
                     const replyPreview = document.createElement("div");
                     replyPreview.style.display = "flex";
+                    replyPreview.style.cursor = "pointer";
+                    replyPreview.style.gap = "5px";
+                    replyPreview.onclick = () => scrollToMessage(String(replyId));
                     const arrow = document.createElement("span");
                     arrow.style.width = "30px";
                     arrow.style.marginLeft = "15px";
                     arrow.style.height = "8px";
-                    arrow.style.marginTop = "-3px";
+                    arrow.style.marginTop = "11px";
                     arrow.style.borderTop = "1px solid #aaa";
                     arrow.style.borderLeft = "1px solid #aaa";
                     arrow.style.borderTopLeftRadius = "10px";
-                    const reply = document.createElement("span");
-                    reply.style.fontSize = "0.8em";
+                    const replySpan = document.createElement("span");
+                    replySpan.style.fontSize = "0.8em";
                     reply.style.marginRight = "44px";
-                    reply.style.color = "#aaa";
-                    reply.style.paddingLeft = "6px";
+                    replySpan.style.color = "#aaa";
                     reply.style.marginTop = "-11px";
-                    reply.style.whiteSpace = "nowrap";
-                    reply.style.overflow = "hidden";
-                    reply.style.textOverflow = "ellipsis";
-                    reply.style.maxWidth = "100%";
-                    const previewText = (rData.text || "").substring(0, 80);
-                    reply.textContent =
-                        `Replying To: @${rName}: ${previewText}`;
+                    replySpan.style.whiteSpace = "nowrap";
+                    replySpan.style.overflow = "hidden";
+                    replySpan.style.textOverflow = "ellipsis";
+                    replySpan.style.maxWidth = "100%";
+                    replySpan.innerHTML = `Replying To: @${rName}: ${rText}`;
                     replyPreview.appendChild(arrow);
-                    replyPreview.appendChild(reply);
+                    replyPreview.appendChild(replySpan);
                     div.prepend(replyPreview);
                 }
-            } catch (e) {
-                console.warn("Reply load failed:", e);
-            }
+            } catch {}
         })();
     }
-    const container = document.getElementById("chatLog");
-    if (container) container.appendChild(div);
+    const reactBtn = document.createElement("button");
+    reactBtn.className = "react-btn";
+    reactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
+    reactBtn.title = "Add Reaction";
+    reactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
+    msgBtns.appendChild(reactBtn);
     div.appendChild(topRow);
     div.appendChild(textDiv);
-    div.appendChild(editedSpan);
+    if (editedSpan) div.appendChild(editedSpan);
     const reactionsRow = document.createElement("div");
     reactionsRow.className = "reactions-row";
     reactionsRow.dataset.msgid = id;
@@ -1176,110 +1342,56 @@ async function renderMessageInstant(id, msg) {
             if (row) renderReactionsInRow(row, reactionsData);
         }).catch(() => {});
     }
+    const container = document.getElementById("chatLog");
+    if (container) container.appendChild(div);
     (async () => {
         try {
+            const meta = await getUserMeta(senderId);
             let displayName = meta.displayName;
-            if (!displayName || displayName.trim() === "") {
-                displayName = "Spam Account";
+            if (!displayName || displayName.trim() === "") displayName = "Spam Account";
+            let profilePics = [];
+            try {
+                const pfpDate = Date.now();
+                const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
+                const files = await res.json();
+                profilePics = files.map(file => `${pfpDomain}/${file}`);
+            } catch {
+                profilePics = [`${pfpDomain}/1.jpeg`];
             }
             const picVal = meta.pic;
             const picIndex = (picVal >= 0 && picVal < profilePics.length) ? picVal : 0;
             profilePic.src = profilePics[picIndex] + "?t=" + Date.now();
+            profilePic.style.border = `2px solid ${meta.color}`;
             nameSpan.textContent = displayName;
             nameSpan.style.color = meta.color;
-            const openProfile = () => {
-                window.location.href = `InfiniteAccounts.html?user=${msg.sender}`;
-            };
+            const openProfile = () => { window.location.href = `InfiniteAccounts.html?user=${senderId}`; };
             nameSpan.onclick = openProfile;
             profilePic.onclick = openProfile;
-            nameSpan.textContent = displayName;
-            nameSpan.style.color = meta.color;
             if (((isOwner || isTester) && !meta.owner) || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin) || (isAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin && !meta.admin)) {
                 nameSpan.addEventListener("contextmenu", async (e) => {
                     e.preventDefault();
-                    const freshMeta = await getUserMeta(msg.sender);
-                    const alreadyMuted = freshMeta.muted;                    
+                    const freshMeta = await getUserMeta(senderId);
+                    const alreadyMuted = freshMeta.muted;
                     const menu = document.createElement("div");
-                    menu.style.position = "absolute";
+                    menu.style.cssText = "position:absolute;background:#222;border:1px solid #555;border-radius:6px;padding:6px 10px;color:#fff;cursor:pointer;z-index:9999;";
                     menu.style.left = e.pageX + "px";
                     menu.style.top = e.pageY + "px";
-                    menu.style.background = "#222";
-                    menu.style.border = "1px solid #555";
-                    menu.style.borderRadius = "6px";
-                    menu.style.padding = "6px 10px";
-                    menu.style.color = "#fff";
-                    menu.style.cursor = "pointer";
-                    menu.style.zIndex = 9999;
                     if (alreadyMuted) {
                         menu.textContent = "Unmute User";
-                        menu.onclick = async () => {
-                            await unmuteUser(msg.sender);
-                            closeMenu();
-                        };
+                        menu.onclick = async () => { await unmuteUser(senderId); closeMenu(); };
                     } else {
                         menu.textContent = "Mute User";
                         const options = document.createElement("div");
-                        options.style.display = "flex";
-                        options.style.flexDirection = "column";
-                        options.style.marginTop = "4px";
-                        const muteToggle = document.createElement('div');
-                        muteToggle.textContent = "Toggle";
-                        muteToggle.style.cursor = "pointer";
-                        muteToggle.onclick = async () => {
-                            await dbSet(`mutedUsers/${msg.sender}`, { expires: "Never" });
-                            delete userMetaCache[msg.sender];
-                            showSuccess(`User Muted`);
-                            closeMenu();
+                        options.style.cssText = "display:flex;flex-direction:column;margin-top:4px;";
+                        const mkOpt = (label, fn) => {
+                            const d = document.createElement("div");
+                            d.textContent = label; d.style.cursor = "pointer";
+                            d.onclick = fn; options.appendChild(d);
                         };
-                        const muteMinutes = document.createElement("div");
-                        muteMinutes.textContent = "Minutes";
-                        muteMinutes.style.cursor = "pointer";
-                        muteMinutes.onclick = async () => {
-                            let minutes = await customPrompt("Mute For How Many Minutes?", false, "5");
-                            minutes = parseInt(minutes);
-                            if (!isNaN(minutes) && minutes > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + minutes * 60 * 1000 });
-                                delete userMetaCache[msg.sender];
-                                showSuccess(`User Muted For ${minutes} Minute(s).`);
-                            } else {
-                                showError("Invalid Duration Entered.");
-                            }
-                            closeMenu();
-                        };
-                        const muteHours = document.createElement("div");
-                        muteHours.textContent = "Hours";
-                        muteHours.style.cursor = "pointer";
-                        muteHours.onclick = async () => {
-                            let hours = await customPrompt("Mute For How Many Hours?", false, "1");
-                            hours = parseInt(hours);
-                            if (!isNaN(hours) && hours > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + hours * 60 * 60 * 1000 });
-                                delete userMetaCache[msg.sender];
-                                showSuccess(`User Muted For ${hours} Hour(s).`);
-                            } else {
-                                showError("Invalid Duration Entered.");
-                            }
-                            closeMenu();
-                        };
-                        const muteDays = document.createElement("div");
-                        muteDays.textContent = "Days";
-                        muteDays.style.cursor = "pointer";
-                        muteDays.onclick = async () => {
-                            let days = await customPrompt("Mute For How Many Days?", false, "1");
-                            days = parseInt(days);
-                            if (!isNaN(days) && days > 0) {
-                                await dbSet(`mutedUsers/${msg.sender}`, { expires: Date.now() + days * 24 * 60 * 60 * 1000 });
-                                delete userMetaCache[msg.sender];
-                                showSuccess(`User Muted For ${days} Day(s).`);
-                            } else {
-                                showError("Invalid Duration Entered.");
-                            }
-                            closeMenu();
-                        };
-                        options.appendChild(muteToggle);
-                        options.appendChild(muteMinutes);
-                        options.appendChild(muteHours);
-                        options.appendChild(muteDays);
+                        mkOpt("Toggle", async () => { await dbSet(`mutedUsers/${senderId}`, { expires: "Never" }); delete userMetaCache[senderId]; showSuccess("User Muted"); closeMenu(); });
+                        mkOpt("Minutes", async () => { let m = parseInt(await customPrompt("Minutes?", false, "5")); if (!isNaN(m) && m > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + m * 60000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${m}m`); } closeMenu(); });
+                        mkOpt("Hours", async () => { let h = parseInt(await customPrompt("Hours?", false, "1")); if (!isNaN(h) && h > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + h * 3600000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${h}h`); } closeMenu(); });
+                        mkOpt("Days", async () => { let d = parseInt(await customPrompt("Days?", false, "1")); if (!isNaN(d) && d > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + d * 86400000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${d}d`); } closeMenu(); });
                         menu.appendChild(options);
                     }
                     document.body.appendChild(menu);
@@ -1294,73 +1406,56 @@ async function renderMessageInstant(id, msg) {
             mutedBadge.style.display = "none";
             mutedBadge.title = "This User Is Muted";
             mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
-            dbListen(`mutedUsers/${msg.sender}`, async (data) => {
+            dbListen(`mutedUsers/${senderId}`, async (data) => {
                 if (!data) { mutedBadge.style.display = "none"; return; }
                 if (data.expires === "Never") { mutedBadge.style.display = "inline"; return; }
-                if (data.expires && Date.now() > data.expires) {
-                    await dbDelete(`mutedUsers/${msg.sender}`);
-                    mutedBadge.style.display = "none";
-                    return;
-                }
+                if (data.expires && Date.now() > data.expires) { await dbDelete(`mutedUsers/${senderId}`); mutedBadge.style.display = "none"; return; }
                 mutedBadge.style.display = "inline";
             });
             const allPrimaryBadges = [];
-            function mkPrimary(cls, color, title) {
-                allPrimaryBadges.push({ cls, color, title });
-            }
-            if (meta.sus)      mkPrimary("bi bi-shield-exclamation","red","Under Investigation — Do Not Interact");
-            if (meta.owner)    mkPrimary("bi bi-shield-plus","lime","Owner");
-            if (meta.tester)   mkPrimary("fa-solid fa-cogs","darkGoldenRod","Tester");
-            if (meta.coOwner)  mkPrimary("bi bi-shield-fill","lightblue","Co-Owner");
-            if (meta.hAdmin)   mkPrimary("fa-solid fa-shield-halved","#00cc99","Head Admin");
-            if (meta.admin)    mkPrimary("bi bi-shield","dodgerblue","Admin");
-            if (meta.dev)      mkPrimary("bi bi-code-square","green","Developer");
-            if (meta.premium3) mkPrimary("bi bi-hearts","red","Infinite Campus Premium T3");
-            if (meta.premium2) mkPrimary("bi bi-heart-fill","orange","Infinite Campus Premium T2");
-            if (meta.premium1) mkPrimary("bi bi-heart-half","yellow","Infinite Campus Premium T1");
-            if (meta.donor)    mkPrimary("bi bi-balloon-heart","#00E5FF","Donated To Infinite Campus");
             const extraBadges = [];
-            function mkExtra(cls, color, label, title) {
-                extraBadges.push({ cls, color, label, title });
-            }
-            if (meta.partner)  mkExtra("fa fa-handshake","cornflowerblue","Partner","Partner Of Infinite Campus");
-            if (meta.uploader) mkExtra("bi bi-film","grey","Uploader","Uploaded A Movie To Infinite Campus");
-            if (meta.milestone) mkExtra("bi bi-award","yellow","Award","100th Signed Up User");
-            if (meta.guesser)  mkExtra("bi bi-stopwatch","#ff0000","Guesser","This User Has A Lot Of Freetime");
-            if (meta.discord && meta.discord.trim() !== "") mkExtra("bi bi-discord","#5865F2",`@${meta.discord}`,`Known As @${meta.discord} On The Infinite Campus Discord`);
-            if (meta.linker)   mkExtra("bi bi-link","#4fa3ff","Linker","Sent Lots Of Links In The Links Channel");
-            if (meta.secure)   mkExtra("bi ic ic-securely","dodgerblue","Securely","Has Securely At School");
-            if (meta.guardian) mkExtra("bi ic ic-goguardian","grey","GoGuardian","Has GoGuardian At School");
-            if (meta.lanschool) mkExtra("bi ic ic-lanschool","greenyellow","Lanschool","Has Lanschool At School");
-            if (meta.linewize) mkExtra("bi ic ic-linewize","lightskyblue","Linewize","Has Linewize At School");
-            if (meta.blocksi)  mkExtra("bi ic ic-blocksi","cadetblue","Blocksi","Has Blocksi At School");
+            const mkP = (cls, color, title) => allPrimaryBadges.push({ cls, color, title });
+            const mkE = (cls, color, label, title) => extraBadges.push({ cls, color, label, title });
+            if (meta.sus) mkP("bi bi-shield-exclamation","red","Under Investigation");
+            if (meta.owner) mkP("bi bi-shield-plus","lime","Owner");
+            if (meta.tester) mkP("fa-solid fa-cogs","darkGoldenRod","Tester");
+            if (meta.coOwner) mkP("bi bi-shield-fill","lightblue","Co-Owner");
+            if (meta.hAdmin) mkP("fa-solid fa-shield-halved","#00cc99","Head Admin");
+            if (meta.admin) mkP("bi bi-shield","dodgerblue","Admin");
+            if (meta.dev) mkP("bi bi-code-square","green","Developer");
+            if (meta.premium3) mkP("bi bi-hearts","red","Premium T3");
+            if (meta.premium2) mkP("bi bi-heart-fill","orange","Premium T2");
+            if (meta.premium1) mkP("bi bi-heart-half","yellow","Premium T1");
+            if (meta.donor) mkP("bi bi-balloon-heart","#00E5FF","Donated");
+            if (meta.partner) mkE("fa fa-handshake","cornflowerblue","Partner","Partner");
+            if (meta.uploader) mkE("bi bi-film","grey","Uploader","Uploaded A Movie");
+            if (meta.milestone) mkE("bi bi-award","yellow","Award","Award Badge");
+            if (meta.guesser) mkE("bi bi-stopwatch","#ff0000","Guesser","Guesser");
+            if (meta.discord && meta.discord.trim()) mkE("bi bi-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
+            if (meta.linker) mkE("bi bi-link","#4fa3ff","Linker","Link Sharer");
+            if (meta.secure) mkE("bi ic ic-securely","dodgerblue","Securely","Has Securely");
+            if (meta.guardian) mkE("bi ic ic-goguardian","grey","GoGuardian","Has GoGuardian");
+            if (meta.lanschool) mkE("bi ic ic-lanschool","greenyellow","Lanschool","Has Lanschool");
+            if (meta.linewize) mkE("bi ic ic-linewize","lightskyblue","Linewize","Has Linewize");
+            if (meta.blocksi) mkE("bi ic ic-blocksi","cadetblue","Blocksi","Has Blocksi");
             const totalRoles = allPrimaryBadges.length + extraBadges.length;
             let inlinePrimaries, overflowPrimaries, inlineExtras, popoverExtras;
             if (totalRoles <= 3) {
-                inlinePrimaries = allPrimaryBadges;
-                overflowPrimaries = [];
-                inlineExtras = extraBadges;
-                popoverExtras = [];
+                inlinePrimaries = allPrimaryBadges; overflowPrimaries = [];
+                inlineExtras = extraBadges; popoverExtras = [];
             } else {
                 inlinePrimaries = allPrimaryBadges.slice(0, 3);
                 overflowPrimaries = allPrimaryBadges.slice(3);
-                inlineExtras = [];
-                popoverExtras = extraBadges;
+                inlineExtras = []; popoverExtras = extraBadges;
             }
             const onlineBadge = document.createElement("i");
-            function setOnlineStatus(isOnline) {
-                if (isOnline) {
-                    onlineBadge.className = "bi ic ic-online";
-                    onlineBadge.style.color = "#69a84f";
-                    onlineBadge.title = "Online";
-                } else {
-                    onlineBadge.className = "bi ic ic-offline";
-                    onlineBadge.style.color = "#999999";
-                    onlineBadge.title = "Offline";
-                }
-            }
+            const setOnlineStatus = (isOnline) => {
+                onlineBadge.className = isOnline ? "bi ic ic-online" : "bi ic ic-offline";
+                onlineBadge.style.color = isOnline ? "#69a84f" : "#999999";
+                onlineBadge.title = isOnline ? "Online" : "Offline";
+            };
             setOnlineStatus(meta.online);
-            dbListen(`users/${msg.sender}/profile/online`, (val) => setOnlineStatus(!!val));
+            dbListen(`users/${senderId}/profile/online`, (val) => setOnlineStatus(!!val));
             inlinePrimaries.forEach(({ cls, color, title }) => {
                 const span = document.createElement("span");
                 span.innerHTML = `<i class="${cls}" style="color:${color}" title="${title}"></i>`;
@@ -1400,149 +1495,68 @@ async function renderMessageInstant(id, msg) {
             }
             badgeContainer.appendChild(onlineBadge);
             leftWrapper.appendChild(badgeContainer);
-            const isSelf = msg.sender === currentUser.uid;
-            let canReply = true;
-            if (isSelf) canReply = false;
-            if (canReply) {
+            const isSelf = senderId === currentUser?.uid;
+            if (!isSelf) {
                 const replyBtn = document.createElement("button");
                 replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
                 replyBtn.title = "Reply";
-                replyBtn.onclick = () => {
-                    toggleReply(id, displayName, msg.text);
-                }
-                msgBtns.appendChild(replyBtn);
+                replyBtn.onclick = () => toggleReply(id, displayName, rawText);
+                msgBtns.insertBefore(replyBtn, reactBtn);
             }
-            const reactBtn = document.createElement("button");
-            reactBtn.className = "react-btn";
-            reactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
-            reactBtn.title = "Add Reaction";
-            reactBtn.onclick = (e) => {
-                e.stopPropagation();
-                showEmojiPicker(e, id);
-            };
-            msgBtns.appendChild(reactBtn);
             if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
-                let canDelete = false;
-                if (isSelf) canDelete = true;
-                else if (isOwner || isTester) canDelete = true;
-                else if (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.owner) canDelete = true;
-                else if (isHAdmin && !meta.owner && !meta.coOwner && !meta.tester && !meta.hAdmin) canDelete = true;
-                else if (isAdmin && !meta.hAdmin && !meta.admin && !meta.coOwner && !meta.owner && meta.tester) canDelete = true;
-                let canEdit = false;
-                if (isSelf) canEdit = true;
-                else if (isOwner || isTester) canEdit = true;
-                else if (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin) canEdit = true;
+                let canDelete = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.coOwner && !meta.tester && !meta.hAdmin);
+                let canEdit   = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin);
                 if (canEdit) {
                     const editBtn = document.createElement("button");
                     editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
-                    editBtn.title = 'Edit Message';
+                    editBtn.title = "Edit Message";
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
-                        textarea.value = msg.text.replace(/\n/g, "\n");
-                        textarea.style.width = "100%";
-                        textarea.style.boxSizing = "border-box";
-                        textarea.style.resize = "vertical";
-                        textarea.style.background = "#121212";
-                        textarea.style.overflowY = "auto";
-                        textarea.style.color = "white";
-                        textarea.style.minHeight = "40px";
-                        textarea.style.maxHeight = "400px";
-                        textarea.style.height = "auto";
-                        textDiv.style.display = "none";
-                        div.insertBefore(textarea, textDiv.nextSibling);
-                        textarea.focus();
-                        requestAnimationFrame(() => {
-                            textarea.style.height = "auto";
-                            textarea.style.height = textarea.scrollHeight + "px";
-                        });
-                        textarea.addEventListener("input", () => {
-                            textarea.style.height = "auto";
-                            textarea.style.height = textarea.scrollHeight + "px";
-                        });
-                        textarea.addEventListener("keydown", async (e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                const newText = textarea.value.trim();
-                                if (newText.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
-                                    showError(`Your Edited Message Is Too Long (${newText.length} Characters). Please Keep It Under 1000.`);
-                                    textarea.value = "";
-                                    return;
-                                }
-                                if (newText !== "") {
-                                    await dbUpdate(currentPath + "/" + id, {
-                                        text: newText,
-                                        edited: true
-                                    });
-                                }
-                                textarea.remove();
-                                textDiv.style.display = "block";
-                                textDiv.innerHTML = newText;
-                            } else if (e.key === "Escape") {
-                                e.preventDefault();
-                                textarea.remove();
-                                textDiv.style.display = "block";
-                            }
-                        });
+                        textarea.value = rawText;
+                        textarea.style.cssText = "width:100%;box-sizing:border-box;resize:vertical;background:#121212;color:#fff;border:1px solid #555;border-radius:4px;padding:4px;margin-top:4px;";
+                        const saveBtn = document.createElement("button");
+                        saveBtn.textContent = "Save";
+                        saveBtn.style.marginRight = "6px";
+                        const cancelBtn = document.createElement("button");
+                        cancelBtn.textContent = "Cancel";
+                        saveBtn.onclick = async () => {
+                            const newText = textarea.value.trim();
+                            if (!newText) return;
+                            await dbSet(`${currentPath}/${id}/t`, newText);
+                            await dbSet(`${currentPath}/${id}/e`, "edited");
+                            textarea.remove(); 
+                            saveBtn.remove(); 
+                            cancelBtn.remove();
+                            textDiv.innerHTML = buildSafeText(newText);
+                        };
+                        cancelBtn.onclick = () => { textarea.remove(); saveBtn.remove(); cancelBtn.remove(); };
+                        textDiv.after(textarea);
+                        textarea.after(saveBtn);
+                        saveBtn.after(cancelBtn);
                     };
-                    msgBtns.appendChild(editBtn);
+                    msgBtns.insertBefore(editBtn, reactBtn);
                 }
                 if (canDelete) {
                     const delBtn = document.createElement("button");
-                    delBtn.innerHTML = "<i class='bi bi-trash-fill'></i>";
-                    delBtn.title = 'Delete Message';
-                    delBtn.onclick = () => {
-                        dbDelete(currentPath + "/" + id);
-                        div.remove();
-                    }
+                    delBtn.innerHTML = "<i class='bi bi-trash'></i>";
+                    delBtn.title = "Delete Message";
+                    delBtn.onclick = async () => {
+                        showConfirm("Delete this message?", async (ok) => {
+                            if (!ok) return;
+                            await dbDelete(`${currentPath}/${id}`);
+                            div.remove();
+                        });
+                    };
                     msgBtns.appendChild(delBtn);
                 }
             }
-        } catch (err) {
-            console.error("Metadata Fetch Failed:", err);
-            showError("Metadata Fetch Failed: " + (err?.message || err));
+            div.insertBefore(msgBtns, topRow);
+        } catch (e) {
+            console.warn("Failed To Load User Data For Message:", e);
+            nameSpan.textContent = "User";
         }
     })();
-    try {
-        const mentionedYou = messageMentionsYou(msg.text);
-        if (mentionedYou && msg.sender !== currentUser.uid && mentionToggle.checked) {
-            const alreadyViewing =
-                currentPath &&
-                currentPath === `messages/${currentPath?.split("/")[1]}`;
-            const mentionPath = `metadata/${currentUser.uid}/mentions/${id}`;
-            dbGet(mentionPath).then((data) => {
-                if (!data || data.seen === false) {
-                    mentionNotif.style.display = "inline";
-                    mentionNotif.dataset.msgid = id;
-                    if (!data) {
-                        dbSet(mentionPath, {
-                            seen: false,
-                            channel: currentPath?.split("/")[1] || null,
-                        });
-                    }
-                    (async () => {
-                        const nm = await getDisplayName(msg.sender);
-                        mentionNotif.textContent =
-                            `You Were Mentioned By ${nm}!`;
-                        mentionNotif.animate(
-                            [
-                                { opacity: 0 },
-                                { opacity: 1 },
-                                { opacity: 0.5 },
-                                { opacity: 1 }
-                            ],
-                            { duration: 1000 }
-                        );
-                        if (!alreadyViewing) {
-                            playNotificationSound();
-                        }
-                    })();
-                }
-            });
-        }
-    } catch (e) {
-        showError(e);
-    }
     return div;
 }
 async function showChannelMentionMenu() {
@@ -1594,11 +1608,34 @@ async function attachMessageListeners(path) {
     chatLog.innerHTML = "";
     oldestLoadedTimestamp = null;
     hasMoreMessages = true;
+    function filterMirroredMessages(messagesObj) {
+        if (!messagesObj || typeof messagesObj !== "object") return {};
+        const entries = Object.entries(messagesObj);
+        const mirroredIds = new Set(
+            entries
+                .map(([_, msg]) => msg?._discordMirrorId)
+                .filter(Boolean)
+                .map(String)
+        );
+        const filtered = {};
+        for (const [id, msg] of entries) {
+            if (msg?._discordId && mirroredIds.has(String(msg._discordId))) {
+                continue;
+            }
+            filtered[id] = msg;
+        }
+        return filtered;
+    }
     const res = await fetchAPI("limit-to-last", { path: pathToArray(path), limit: PAGE_SIZE });
-    const msgs = res?.data;
+    let msgs = res?.data;
     if (!msgs) return;
-    const entries = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
-    oldestLoadedTimestamp = entries[0]?.[1]?.timestamp ? Number(entries[0][1].timestamp) - 1 : null;
+    msgs = filterMirroredMessages(msgs);
+    const entries = Object.entries(msgs).sort((a, b) => {
+        const tsA = a[1].timestamp ? Number(a[1].timestamp) : Number(a[0]);
+        const tsB = b[1].timestamp ? Number(b[1].timestamp) : Number(b[0]);
+        return tsA - tsB;
+    });
+    oldestLoadedTimestamp = entries[0] ? (Number(entries[0][1].timestamp || entries[0][0]) - 1) : null;
     const fragment = document.createDocumentFragment();
     for (const [id, msg] of entries) {
         const div = await renderMessageInstant(id, msg);
@@ -1607,17 +1644,24 @@ async function attachMessageListeners(path) {
     chatLog.appendChild(fragment);
     scrollToBottom(false);
     let lastSnapshot = { ...msgs };
+    const renderedKeys = new Set(Object.keys(msgs));
     const ws = await dbListen(path, async (newData) => {
         if (currentMsgRef !== path) return;
         if (!newData || typeof newData !== "object") return;
-        const renderedMessages = new Set();
+        newData = filterMirroredMessages(newData);
         for (const [key, val] of Object.entries(newData)) {
             const existing = document.getElementById("msg-" + key);
             if (!existing) {
+                const newTs = Number(val.timestamp || key);
+                const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
+                const oldestRenderedTs = msgsEls.length > 0
+                    ? Number(msgsEls[0].dataset.timestamp || 0) : 0;
+                if (!renderedKeys.has(key) && newTs < oldestRenderedTs) {
+                    continue;
+                }
+                renderedKeys.add(key);
                 const newDiv = await renderMessageInstant(key, val);
                 if (!newDiv) continue;
-                const newTs = Number(val.timestamp);
-                const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
                 let inserted = false;
                 for (const el of msgsEls) {
                     if (Number(el.dataset.timestamp || 0) > newTs) {
@@ -1632,11 +1676,13 @@ async function attachMessageListeners(path) {
                 const textDiv = existing.querySelector(".msg-text");
                 const editedSpan = existing.querySelector(".edited-label");
                 if (textDiv) {
-                    let safeText = (val.text || "")
-                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    let safeText = (val.t || "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
                     safeText = safeText.replace(
                         /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
-                        (match, cls, style, title) => {
+                        (_, cls, style, title) => {
                             let attrs = `class="${cls}"`;
                             if (style) attrs += ` style="${style}"`;
                             if (title) attrs += ` title="${title}"`;
@@ -1645,19 +1691,137 @@ async function attachMessageListeners(path) {
                     );
                     safeText = safeText.replace(
                         /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-                        (match, color, content) => `<p style="color:${color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "")}; margin-bottom:0px;">${content}</p>`
+                        (_, color, content) => {
+                            const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                            return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
+                        }
                     );
+                    safeText = safeText.replace(
+                        /&lt;img\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            const style = styleMatch ? styleMatch[1] : "";
+                            let w = null, h = null, r = null;
+                            if (style) {
+                                const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                                const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                                const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                                if (wm) w = Math.min(parseInt(wm[1]), 300);
+                                if (hm) h = Math.min(parseInt(hm[1]), 300);
+                                if (rm) r = parseInt(rm[1]);
+                            }
+                            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+                            if (w) st += `width:${w}px;`;
+                            if (h) st += `height:${h}px;`;
+                            if (r !== null) st += `border-radius:${r}px;`;
+                            return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+                        }
+                    );
+                    safeText = safeText.replace(
+                        /&lt;video\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            const style = styleMatch ? styleMatch[1] : "";
+                            let w = null, h = null;
+                            if (style) {
+                                const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                                const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                                if (wm) w = Math.min(parseInt(wm[1]), 300);
+                                if (hm) h = Math.min(parseInt(hm[1]), 300);
+                            }
+                            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;height:fit-content;";
+                            if (w) st += `width:${w}px;`;
+                            if (h) st += `height:${h}px;`;
+                            return `<video src="${safeSrc}" alt="${alt}" class="chat-vid" style="${st}" onerror="this.style.display='none'" controls>`;
+                        }
+                    );
+                    safeText = safeText.replace(/&lt;\/video&gt;/gi, "</video>");
+                    safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                    safeText = safeText.replace(
+                        /&lt;audio\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
+                        }
+                    );
+                    safeText = safeText.replace(/&lt;\/audio&gt;/gi, "</audio>");
                     safeText = safeText.replace(/\n/g, "<br>");
                     const mentionRegex = /@([^\s<]+)/g;
                     safeText = safeText.replace(mentionRegex, (match, name) => {
+                        const lower = name.toLowerCase();
+                        if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
+                            return `<span class="mention-self">@support</span>`;
+                        }
                         const isSelfMention = currentName && (
-                            currentName.toLowerCase() === name.toLowerCase() ||
-                            currentName.toLowerCase() === name.toLowerCase().replace(" 💎", "")
+                            currentName.toLowerCase() === lower ||
+                            currentName.toLowerCase() === lower.replace(" 💎", "")
                         );
-                        return `<span class="${isSelfMention ? "mention-self" : "mention"}">@${name}</span>`;
+                        const cls = isSelfMention ? "mention-self" : "mention";
+                        return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
+                    });
+                    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+                    safeText = safeText.replace(markdownLinkRegex, (match, text, url) => {
+                        const cleanText = text.trim();
+                        const cleanUrl = url.trim();
+                        if (cleanText === cleanUrl) {
+                            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+                        } else if (cleanText.includes(".")) {
+                            return `${cleanText} (${cleanUrl})`;
+                        }
+                        const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+                        if (looksLikeUrl && cleanText !== cleanUrl) return `${cleanText} (${cleanUrl})`;
+                        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+                    });
+                    const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+                    safeText = safeText.replace(urlRegex, (match, prefix, url) => {
+                        let display = url;
+                        while (/[.,!?;:)\]\\"]$/.test(display)) display = display.slice(0, -1);
+                        const trailing = url.slice(display.length);
+                        if (display.includes("tenor.com")) {
+                            const clean = display.split("?")[0];
+                            const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                            return `${prefix}<img src="${finalUrl}" class="chat-img tenor-gif" data-tenor="${display}" style="max-width:250px;margin-top:10px;border-radius:8px;">${trailing}`;
+                        }
+                        if (display.includes("youtube.com/watch") || display.includes("youtu.be/") || display.includes("youtube.com/shorts/")) {
+                            let videoId = "";
+                            if (display.includes("youtube.com/watch")) {
+                                const urlObj = new URL(display);
+                                videoId = urlObj.searchParams.get("v");
+                            } else if (display.includes("youtu.be/")) {
+                                videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                            } else if (display.includes("youtube.com/shorts/")) {
+                                videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+                            }
+                            const isShort = display.includes("/shorts/");
+                            return `${prefix}<div class="yt-embed ${isShort ? "short" : ""}"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${trailing}`;
+                        }
+                        if (display.includes("tiktok.com")) {
+                            return `${prefix}<blockquote class="tiktok-embed" cite="${display}" data-video-id=""><a href="${display}"></a></blockquote>${trailing}`;
+                        }
+                        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
                     });
                     textDiv.innerHTML = safeText;
-                    if (editedSpan) editedSpan.textContent = val.edited ? "(Edited)" : "";
+                    if (editedSpan) editedSpan.textContent = (val.e || val.edited) ? "(Edited)" : "";
                 }
                 const reactRow = existing.querySelector(".reactions-row");
                 if (reactRow) renderReactionsInRow(reactRow, val.reactions);
@@ -1667,6 +1831,7 @@ async function attachMessageListeners(path) {
             if (!newData[key]) {
                 const el = document.getElementById("msg-" + key);
                 if (el) el.remove();
+                renderedKeys.delete(key);
             }
         }
         lastSnapshot = { ...newData };
@@ -1674,7 +1839,7 @@ async function attachMessageListeners(path) {
     currentListeners.added = ws;
 }
 function playNotificationSound() {
-    const audio = new Audio("https://codehs.com/uploads/47d60c5093ca59dfa2078b03c0264f64");
+    const audio = new Audio("/res/notif.mp3");
     audio.play().catch(err => {
         console.warn("Autoplay Prevented:", err);
     });
@@ -1831,6 +1996,9 @@ function openChannelSettings(channel, data) {
             <br>
             <input id="channelNameInput" class="form-control" value="${channel}" placeholder="Channel Name" style="width:100%; padding:6px;margin-bottom:10px;">
             <br>
+            <label style="color:#aaa;font-size:0.85em;">Discord Channel ID (Leave Empty To Unlink)</label>
+            <input id="discordChannelIdInput" class="form-control" placeholder="Discord Channel ID" style="width:100%; padding:6px;margin-bottom:10px;">
+            <div id="discordIdStatus" style="font-size:0.78em;color:#aaa;margin-bottom:10px;"></div>
             <center>
                 <h3>
                     Read
@@ -1864,6 +2032,24 @@ function openChannelSettings(channel, data) {
         </div>
     `;
     document.body.appendChild(overlay);
+    (async () => {
+        try {
+            const token = await getAuthToken();
+            const res = await fetch(`${BACKEND}/admin/discord-channel-map`, {
+                headers: { "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS }
+            });
+            if (res.ok) {
+                const json = await res.json();
+                const currentId = json.map?.[channel] || "";
+                const input = overlay.querySelector("#discordChannelIdInput");
+                if (input) {
+                    input.value = currentId;
+                    const status = overlay.querySelector("#discordIdStatus");
+                    if (status) status.textContent = currentId ? `Currently Mapped To: ${currentId}` : "Not Mapped To Any Discord Channel";
+                }
+            }
+        } catch {}
+    })();
     for (let key in data.read || {}) {
         const el = overlay.querySelector(`input[data-read="${key}"]`);
         if (el) el.checked = true;
@@ -1874,11 +2060,19 @@ function openChannelSettings(channel, data) {
     }
     document.getElementById("cancelSettings").onclick = () => overlay.remove();
     document.getElementById("deleteChannel").onclick = async () => {
-        showConfirm(`Delete "${channel}"? This cannot be undone.`, async (result) => {
+        showConfirm(`Delete "${channel}"? This Cannot Be Undone.`, async (result) => {
             if (!result) return;
             try {
                 await dbDelete(`channels/${channel}`);
                 await dbDelete(`messages/${channel}`);
+                try {
+                    const token = await getAuthToken();
+                    await fetch(`${BACKEND}/admin/discord-channel-map`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS },
+                        body: JSON.stringify({ channelName: channel, discordChannelId: "" })
+                    });
+                } catch {}
                 if (currentPath === `messages/${channel}`) {
                     switchChannel("General");
                 }
@@ -1891,10 +2085,15 @@ function openChannelSettings(channel, data) {
     };
     document.getElementById("saveSettings").onclick = async () => {
         const newName = document.getElementById("channelNameInput").value.trim();
+        const discordId = (document.getElementById("discordChannelIdInput")?.value || "").trim();
         const read = getSelectedRoles("read");
         const write = getSelectedRoles("write");
         if (Object.keys(read).length === 0) read.verified = true;
         if (Object.keys(write).length === 0) write.verified = true;
+        if (discordId && !/^\d+$/.test(discordId)) {
+            showError("Discord Channel ID Must Be A Number");
+            return;
+        }
         try {
             if (newName && newName !== channel) {
                 const oldData = await dbGet(`channels/${channel}`) || {};
@@ -1909,7 +2108,19 @@ function openChannelSettings(channel, data) {
             } else {
                 await dbUpdate(`channels/${channel}`, { read, write });
             }
+            try {
+                const token = await getAuthToken();
+                const targetName = (newName && newName !== channel) ? newName : channel;
+                await fetch(`${BACKEND}/admin/discord-channel-map`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS },
+                    body: JSON.stringify({ channelName: targetName, discordChannelId: discordId })
+                });
+            } catch (e) {
+                console.warn("Failed To Dave Discord Channel Mapping:", e);
+            }
             overlay.remove();
+            showSuccess("Channel Settings Saved!");
         } catch (err) {
             showError("Failed To Save Channel Settings:", err);
         }
@@ -2083,6 +2294,11 @@ sendBtn.onclick = async () => {
         }
         lastMessageTimestamp = now;
     }
+    if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
+        showError("@everyone And @here Mentions Are Not Allowed.");
+        chatInput.value = "";
+        return;
+    }
     const mentions = text.match(/@\w+/g);
     if (mentions && mentions.length > 1) {
         showError("Only One Mention Per Message Is Allowed.");
@@ -2101,11 +2317,11 @@ sendBtn.onclick = async () => {
     let outgoingText = text;
     outgoingText = outgoingText.replace(/@Hacker41(\b(?!\s*💎))/gi, "@Hacker41 💎");
     const msg = {
-        sender: currentUser.uid,
-        text: outgoingText,
-        timestamp: Date.now(),
-        reply: replyMsgId || null
+        s: currentUser.uid,
+        t: outgoingText,
+        r: replyMsgId || null
     };
+    if (!msg.r) delete msg.r;
     if (currentPrivateUid) {
         await sendPrivateMessage(currentPrivateUid, outgoingText);
     } else {
@@ -2115,9 +2331,10 @@ sendBtn.onclick = async () => {
             showError("You Cannot Send Messages In This Channel.");
             return;
         }
-        await dbPush(currentPath, msg);
+        await dbPushWithFile(currentPath, msg, pendingAttachFile);
     }
     chatInput.value = "";
+    if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
     toggleReply();
     if (currentUser && currentPath.startsWith("messages/")) {
         const channelName = currentPath.split("/")[1];
@@ -2443,12 +2660,100 @@ function getSelectedRoles(type) {
     });
     return selected;
 }
+let pendingAttachFile = null;
+(function injectFileAttachUI() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.id = "chatFileInput";
+    fileInput.accept = "image/*,video/*,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.pptx,.js,.html,";
+    fileInput.style.display = "none";
+    document.body.appendChild(fileInput);
+    const attachBtn = document.createElement("button");
+    attachBtn.id = "chatAttachBtn";
+    attachBtn.title = "Attach File";
+    attachBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 0 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 0 1-7 0z"/></svg>`;
+    attachBtn.style.cssText = "background:none;border:none;cursor:pointer;color:#aaa;display:flex;align-items:center;padding:4px 6px;flex-shrink:0;transition:color 0.15s;";
+    attachBtn.onmouseenter = () => attachBtn.style.color = "#fff";
+    attachBtn.onmouseleave = () => attachBtn.style.color = "#aaa";
+    attachBtn.onclick = () => fileInput.click();
+    const previewBar = document.createElement("div");
+    previewBar.id = "chatFilePreview";
+    previewBar.style.cssText = "display:none;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.06);border-radius:8px;margin-bottom:4px;font-size:0.85em;color:#ccc;max-width:100%;";
+    const previewIcon = document.createElement("span");
+    previewIcon.textContent = "📎";
+    const previewName = document.createElement("span");
+    previewName.style.cssText = "flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+    const previewClear = document.createElement("button");
+    previewClear.textContent = "✕";
+    previewClear.style.cssText = "background:none;border:none;cursor:pointer;color:#888;font-size:0.9em;padding:0 4px;";
+    previewClear.title = "Remove attachment";
+    previewClear.onclick = () => clearAttachment();
+    previewBar.appendChild(previewIcon);
+    previewBar.appendChild(previewName);
+    previewBar.appendChild(previewClear);
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        const MAX = 10 * 1024 * 1024;
+        if (file.size > MAX) {
+            showError("File is too large. Maximum size is 10 MB.");
+            fileInput.value = "";
+            return;
+        }
+        pendingAttachFile = file;
+        previewName.textContent = file.name + ` (${(file.size / 1024).toFixed(1)} KB)`;
+        previewBar.style.display = "flex";
+        fileInput.value = "";
+    });
+    function clearAttachment() {
+        pendingAttachFile = null;
+        previewBar.style.display = "none";
+        previewName.textContent = "";
+    }
+    window._clearChatAttachment = clearAttachment;
+    sendBtn.parentElement.insertBefore(attachBtn, sendBtn);
+    const inputRow = chatInput.closest("div") || chatInput.parentElement;
+    if (inputRow && inputRow.parentElement) {
+        inputRow.parentElement.insertBefore(previewBar, inputRow);
+    } else {
+        sendBtn.parentElement.insertBefore(previewBar, sendBtn.parentElement.firstChild);
+    }
+})();
+async function dbPushWithFile(path, value, file) {
+    if (!file) return dbPush(path, value);
+    const key = Date.now().toString();
+    const valueWithTs = { ...value, timestamp: Number(key) };
+    const token = await getAuthToken();
+    const form = new FormData();
+    form.append("path", JSON.stringify([...path.split("/").filter(Boolean), key]));
+    form.append("value", JSON.stringify(valueWithTs));
+    form.append("file", file, file.name);
+    if (token) form.append("token", token);
+    const headers = {};
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/write`, { method: "POST", headers, body: form });
+    if (!res.ok) {
+        let errMsg = "Upload failed";
+        try { const j = await res.json(); errMsg = j?.error || errMsg; } catch {}
+        throw new Error(errMsg);
+    }
+    return key;
+}
 chatInput.addEventListener("paste", (e) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
         if (items[i].type.startsWith("image/")) {
-            e.preventDefault();
-            showError("You Cannot Paste Images Unfortunately.");
+            const file = items[i].getAsFile();
+            if (file) {
+                e.preventDefault();
+                const MAX = 10 * 1024 * 1024;
+                if (file.size > MAX) { showError("Pasted Image Is Too Large (max 10 MB)."); return; }
+                pendingAttachFile = new File([file], "pasted-image.png", { type: file.type });
+                const previewBar = document.getElementById("chatFilePreview");
+                const previewName = previewBar?.querySelector("span:nth-child(2)");
+                if (previewName) previewName.textContent = "pasted-image.png" + ` (${(file.size / 1024).toFixed(1)} KB)`;
+                if (previewBar) previewBar.style.display = "flex";
+            }
             return;
         }
     }
