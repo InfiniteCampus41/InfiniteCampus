@@ -783,7 +783,7 @@ async function renderMessageInstant(id, msg) {
         editedSpan.style.color = "#888";
         editedSpan.style.marginLeft = "40px";
     }
-    const rawText = isDiscordMsg ? (msg.t || "") : (msg.text || msg.t || "");
+    const rawText = isDiscordMsg ? (msg.t || "") : (msg.t || msg.text || "");
     async function buildRichText(raw, textDivEl) {
         let safe = raw
             .replace(/&/g, "&amp;")
@@ -861,12 +861,19 @@ async function renderMessageInstant(id, msg) {
         safe = safe.replace(/&lt;\/video&gt;/gi, "</video>");
         safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
         safe = safe.replace(
-            /&lt;audio\s+src="([^"]+)"(?:\s+alt="([^"]*)")?(?:\s+style="([^"]*)")?\s*&gt;/gi,
-            (_, src) => {
-                const safeSrc = src.replace(/"/g, "");
-                return `<audio src="${safeSrc}" class="chat-aud" style="margin-top:6px;" controls>`;
+            /&lt;audio\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
             }
         );
+        safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
         safe = safe.replace(/\n/g, "<br>");
         const mentionRegex = /@([^\s<]+)/g;
         safe = safe.replace(mentionRegex, (match, name) => {
@@ -1051,7 +1058,38 @@ async function renderMessageInstant(id, msg) {
         );
         safe = safe.replace(
             /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-            (_, color, content) => `<p style="color:${color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "")}; margin-bottom:0px;">${content}</p>`
+            (_, color, content) => {
+                const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
+            }
+        );
+        safe = safe.replace(
+            /&lt;img\b([\s\S]*?)&gt;/gi,
+            (fullTag, attrs) => {
+                const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                if (safeSrc.startsWith("/")) {
+                    safeSrc = BACKEND + safeSrc;
+                }
+                const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                const alt = altMatch ? altMatch[1] : "";
+                const style = styleMatch ? styleMatch[1] : "";
+                let w = null, h = null, r = null;
+                if (style) {
+                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                    const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                    if (wm) w = Math.min(parseInt(wm[1]), 300);
+                    if (hm) h = Math.min(parseInt(hm[1]), 300);
+                    if (rm) r = parseInt(rm[1]);
+                }
+                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+                if (w) st += `width:${w}px;`;
+                if (h) st += `height:${h}px;`;
+                if (r !== null) st += `border-radius:${r}px;`;
+                return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+            }
         );
         safe = safe.replace(
             /&lt;video\b([\s\S]*?)&gt;/gi,
@@ -1081,7 +1119,7 @@ async function renderMessageInstant(id, msg) {
         safe = safe.replace(/&lt;\/video&gt;/gi, "</video>");
         safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
         safe = safe.replace(
-            /&lt;img\b([\s\S]*?)&gt;/gi,
+            /&lt;audio\b([\s\S]*?)&gt;/gi,
             (fullTag, attrs) => {
                 const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
                 let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
@@ -1089,32 +1127,65 @@ async function renderMessageInstant(id, msg) {
                     safeSrc = BACKEND + safeSrc;
                 }
                 const altMatch = attrs.match(/\balt="([^"]*)"/i);
-                const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
                 const alt = altMatch ? altMatch[1] : "";
-                const style = styleMatch ? styleMatch[1] : "";
-                let w = null, h = null, r = null;
-                if (style) {
-                    const wm = style.match(/width\s*:\s*([0-9]+)px/i);
-                    const hm = style.match(/height\s*:\s*([0-9]+)px/i);
-                    const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
-                    if (wm) w = Math.min(parseInt(wm[1]), 300);
-                    if (hm) h = Math.min(parseInt(hm[1]), 300);
-                    if (rm) r = parseInt(rm[1]);
-                }
-                let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
-                if (w) st += `width:${w}px;`;
-                if (h) st += `height:${h}px;`;
-                if (r !== null) st += `border-radius:${r}px;`;
-                return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+                return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
             }
         );
+        safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
         safe = safe.replace(/\n/g, "<br>");
-        safe = safe.replace(/@([^\s<]+)/g, (match, name) => {
+        const mentionRegex = /@([^\s<]+)/g;
+        safe = safe.replace(mentionRegex, (match, name) => {
+            const lower = name.toLowerCase();
+            if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
+                return `<span class="mention-self">@support</span>`;
+            }
             const isSelfMention = currentName && (
-                currentName.toLowerCase() === name.toLowerCase() ||
-                currentName.toLowerCase() === name.toLowerCase().replace(" 💎", "")
+                currentName.toLowerCase() === lower ||
+                currentName.toLowerCase() === lower.replace(" 💎", "")
             );
-            return `<span class="${isSelfMention ? "mention-self" : "mention"}">@${name}</span>`;
+            const cls = isSelfMention ? "mention-self" : "mention";
+            return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
+        });
+        const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+        safe = safe.replace(markdownLinkRegex, (match, text, url) => {
+            const cleanText = text.trim();
+            const cleanUrl = url.trim();
+            if (cleanText === cleanUrl) {
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+            } else if (cleanText.includes(".")) {
+                return `${cleanText} (${cleanUrl})`;
+            }
+            const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+            if (looksLikeUrl && cleanText !== cleanUrl) return `${cleanText} (${cleanUrl})`;
+            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+        });
+        const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+        safe = safe.replace(urlRegex, (match, prefix, url) => {
+            let display = url;
+            while (/[.,!?;:)\]\\"]$/.test(display)) display = display.slice(0, -1);
+            const trailing = url.slice(display.length);
+            if (display.includes("tenor.com")) {
+                const clean = display.split("?")[0];
+                const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                return `${prefix}<img src="${finalUrl}" class="chat-img tenor-gif" data-tenor="${display}" style="max-width:250px;margin-top:10px;border-radius:8px;">${trailing}`;
+            }
+            if (display.includes("youtube.com/watch") || display.includes("youtu.be/") || display.includes("youtube.com/shorts/")) {
+                let videoId = "";
+                if (display.includes("youtube.com/watch")) {
+                    const urlObj = new URL(display);
+                    videoId = urlObj.searchParams.get("v");
+                } else if (display.includes("youtu.be/")) {
+                    videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                } else if (display.includes("youtube.com/shorts/")) {
+                    videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+                }
+                const isShort = display.includes("/shorts/");
+                return `${prefix}<div class="yt-embed ${isShort ? "short" : ""}"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${trailing}`;
+            }
+            if (display.includes("tiktok.com")) {
+                return `${prefix}<blockquote class="tiktok-embed" cite="${display}" data-video-id=""><a href="${display}"></a></blockquote>${trailing}`;
+            }
+            return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
         });
         return safe;
     }
@@ -1140,7 +1211,11 @@ async function renderMessageInstant(id, msg) {
                     const rData = await dbGet(`${currentPath}/${replyTs}`);
                     if (rData) {
                         const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
-                        const rText = (rData.t || rData.text || "").substring(0, 80);
+                        let rText = (rData.t || rData.text || "").substring(0, 80)
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;");
+                        rText = buildSafeText(rText);
                         const replyPreview = document.createElement("div");
                         replyPreview.style.display = "flex";
                         replyPreview.style.cursor = "pointer";
@@ -1162,7 +1237,7 @@ async function renderMessageInstant(id, msg) {
                         reply.style.overflow = "hidden";
                         reply.style.textOverflow = "ellipsis";
                         reply.style.maxWidth = "100%";
-                        reply.textContent = `Replying To: @${rName}: ${rText}`;
+                        reply.innerHTML = `Replying To: @${rName}: ${rText}`;
                         replyPreview.appendChild(arrow);
                         replyPreview.appendChild(reply);
                         div.prepend(replyPreview);
@@ -1203,7 +1278,11 @@ async function renderMessageInstant(id, msg) {
                 const rData = await dbGet(`${currentPath}/${replyId}`);
                 if (rData) {
                     const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : (rData.sender ? await getDisplayName(rData.sender) : "Unknown"));
-                    const rText = (rData.t || rData.text || "").substring(0, 80);
+                    let rText = (rData.t || rData.text || "").substring(0, 80)
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+                    rText = buildSafeText(rText);
                     const replyPreview = document.createElement("div");
                     replyPreview.style.display = "flex";
                     replyPreview.style.cursor = "pointer";
@@ -1226,7 +1305,7 @@ async function renderMessageInstant(id, msg) {
                     replySpan.style.overflow = "hidden";
                     replySpan.style.textOverflow = "ellipsis";
                     replySpan.style.maxWidth = "100%";
-                    replySpan.textContent = `Replying To: @${rName}: ${rText}`;
+                    replySpan.innerHTML = `Replying To: @${rName}: ${rText}`;
                     replyPreview.appendChild(arrow);
                     replyPreview.appendChild(replySpan);
                     div.prepend(replyPreview);
@@ -1437,7 +1516,10 @@ async function renderMessageInstant(id, msg) {
                             if (!newText) return;
                             await dbSet(`${currentPath}/${id}/t`, newText);
                             await dbSet(`${currentPath}/${id}/e`, "edited");
-                            textarea.remove(); saveBtn.remove(); cancelBtn.remove();
+                            textarea.remove(); 
+                            saveBtn.remove(); 
+                            cancelBtn.remove();
+                            textDiv.innerHTML = buildSafeText(newText);
                         };
                         cancelBtn.onclick = () => { textarea.remove(); saveBtn.remove(); cancelBtn.remove(); };
                         textDiv.after(textarea);
@@ -1454,6 +1536,7 @@ async function renderMessageInstant(id, msg) {
                         showConfirm("Delete this message?", async (ok) => {
                             if (!ok) return;
                             await dbDelete(`${currentPath}/${id}`);
+                            div.remove();
                         });
                     };
                     msgBtns.appendChild(delBtn);
@@ -1584,11 +1667,13 @@ async function attachMessageListeners(path) {
                 const textDiv = existing.querySelector(".msg-text");
                 const editedSpan = existing.querySelector(".edited-label");
                 if (textDiv) {
-                    let safeText = (val.t || val.text || "")
-                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    let safeText = (val.t || "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
                     safeText = safeText.replace(
                         /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
-                        (match, cls, style, title) => {
+                        (_, cls, style, title) => {
                             let attrs = `class="${cls}"`;
                             if (style) attrs += ` style="${style}"`;
                             if (title) attrs += ` title="${title}"`;
@@ -1597,16 +1682,134 @@ async function attachMessageListeners(path) {
                     );
                     safeText = safeText.replace(
                         /&lt;p\s+style="color:\s*([^";]+)\s*;"\s*&gt;([\s\S]*?)&lt;\/p&gt;/gi,
-                        (match, color, content) => `<p style="color:${color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "")}; margin-bottom:0px;">${content}</p>`
+                        (_, color, content) => {
+                            const safeColor = color.replace(/[^a-zA-Z0-9#(),.%\s]/g, "");
+                            return `<p style="color:${safeColor}; margin-bottom:0px;">${content}</p>`;
+                        }
                     );
+                    safeText = safeText.replace(
+                        /&lt;img\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            const style = styleMatch ? styleMatch[1] : "";
+                            let w = null, h = null, r = null;
+                            if (style) {
+                                const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                                const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                                const rm = style.match(/border-radius\s*:\s*([0-9]+)px/i);
+                                if (wm) w = Math.min(parseInt(wm[1]), 300);
+                                if (hm) h = Math.min(parseInt(hm[1]), 300);
+                                if (rm) r = parseInt(rm[1]);
+                            }
+                            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+                            if (w) st += `width:${w}px;`;
+                            if (h) st += `height:${h}px;`;
+                            if (r !== null) st += `border-radius:${r}px;`;
+                            return `<img src="${safeSrc}" alt="${alt}" class="chat-img" style="${st}" onerror="this.style.display='none'">`;
+                        }
+                    );
+                    safeText = safeText.replace(
+                        /&lt;video\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            const style = styleMatch ? styleMatch[1] : "";
+                            let w = null, h = null;
+                            if (style) {
+                                const wm = style.match(/width\s*:\s*([0-9]+)px/i);
+                                const hm = style.match(/height\s*:\s*([0-9]+)px/i);
+                                if (wm) w = Math.min(parseInt(wm[1]), 300);
+                                if (hm) h = Math.min(parseInt(hm[1]), 300);
+                            }
+                            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;height:fit-content;";
+                            if (w) st += `width:${w}px;`;
+                            if (h) st += `height:${h}px;`;
+                            return `<video src="${safeSrc}" alt="${alt}" class="chat-vid" style="${st}" onerror="this.style.display='none'" controls>`;
+                        }
+                    );
+                    safeText = safeText.replace(/&lt;\/video&gt;/gi, "</video>");
+                    safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                    safeText = safeText.replace(
+                        /&lt;audio\b([\s\S]*?)&gt;/gi,
+                        (fullTag, attrs) => {
+                            const srcMatch = attrs.match(/\bsrc="([^"]*)"/i);
+                            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+                            if (safeSrc.startsWith("/")) {
+                                safeSrc = BACKEND + safeSrc;
+                            }
+                            const altMatch = attrs.match(/\balt="([^"]*)"/i);
+                            const alt = altMatch ? altMatch[1] : "";
+                            return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
+                        }
+                    );
+                    safeText = safeText.replace(/&lt;\/audio&gt;/gi, "</audio>");
                     safeText = safeText.replace(/\n/g, "<br>");
                     const mentionRegex = /@([^\s<]+)/g;
                     safeText = safeText.replace(mentionRegex, (match, name) => {
+                        const lower = name.toLowerCase();
+                        if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
+                            return `<span class="mention-self">@support</span>`;
+                        }
                         const isSelfMention = currentName && (
-                            currentName.toLowerCase() === name.toLowerCase() ||
-                            currentName.toLowerCase() === name.toLowerCase().replace(" 💎", "")
+                            currentName.toLowerCase() === lower ||
+                            currentName.toLowerCase() === lower.replace(" 💎", "")
                         );
-                        return `<span class="${isSelfMention ? "mention-self" : "mention"}">@${name}</span>`;
+                        const cls = isSelfMention ? "mention-self" : "mention";
+                        return `<span class="${cls} mention-user" data-name="${name}">@${name}</span>`;
+                    });
+                    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+                    safeText = safeText.replace(markdownLinkRegex, (match, text, url) => {
+                        const cleanText = text.trim();
+                        const cleanUrl = url.trim();
+                        if (cleanText === cleanUrl) {
+                            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+                        } else if (cleanText.includes(".")) {
+                            return `${cleanText} (${cleanUrl})`;
+                        }
+                        const looksLikeUrl = /^https?:\/\//i.test(cleanText);
+                        if (looksLikeUrl && cleanText !== cleanUrl) return `${cleanText} (${cleanUrl})`;
+                        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${cleanText}</a>`;
+                    });
+                    const urlRegex = /(^|[\s>])((https?:\/\/)[^\s<]+)/gi;
+                    safeText = safeText.replace(urlRegex, (match, prefix, url) => {
+                        let display = url;
+                        while (/[.,!?;:)\]\\"]$/.test(display)) display = display.slice(0, -1);
+                        const trailing = url.slice(display.length);
+                        if (display.includes("tenor.com")) {
+                            const clean = display.split("?")[0];
+                            const finalUrl = clean.endsWith(".gif") ? display : display + ".gif";
+                            return `${prefix}<img src="${finalUrl}" class="chat-img tenor-gif" data-tenor="${display}" style="max-width:250px;margin-top:10px;border-radius:8px;">${trailing}`;
+                        }
+                        if (display.includes("youtube.com/watch") || display.includes("youtu.be/") || display.includes("youtube.com/shorts/")) {
+                            let videoId = "";
+                            if (display.includes("youtube.com/watch")) {
+                                const urlObj = new URL(display);
+                                videoId = urlObj.searchParams.get("v");
+                            } else if (display.includes("youtu.be/")) {
+                                videoId = display.split("youtu.be/")[1].split(/[?&]/)[0];
+                            } else if (display.includes("youtube.com/shorts/")) {
+                                videoId = display.split("/shorts/")[1].split(/[?&]/)[0];
+                            }
+                            const isShort = display.includes("/shorts/");
+                            return `${prefix}<div class="yt-embed ${isShort ? "short" : ""}"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>${trailing}`;
+                        }
+                        if (display.includes("tiktok.com")) {
+                            return `${prefix}<blockquote class="tiktok-embed" cite="${display}" data-video-id=""><a href="${display}"></a></blockquote>${trailing}`;
+                        }
+                        return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
                     });
                     textDiv.innerHTML = safeText;
                     if (editedSpan) editedSpan.textContent = (val.e || val.edited) ? "(Edited)" : "";
