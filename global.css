@@ -361,11 +361,15 @@ body {
 }
 #chatInput {
     width: 100%;
-    background: #1a1a1a;
-    border: 1px solid #444;
+    background: transparent;
+    border: none;
     color: #eee;
     padding: 10px;
     border-radius: 8px;
+    resize:none;
+}
+#chatInput:focus-visible {
+    outline:none;
 }
 #chatLog {
     overflow-x:hidden;
@@ -375,6 +379,14 @@ body {
 #chatLog > div {
     border-bottom: 1px solid #333;
     padding: 10px 0;
+}
+#chatMsgFunctions {
+    display:flex;
+    background: #1a1a1a;
+    border:1px solid #444;
+    color:#eee;
+    border-radius:8px;
+    align-items:flex-start;
 }
 .chat-vid {
     width:50%;
@@ -2771,6 +2783,10 @@ select {
 }
 #stats small {
     margin-bottom:10px;
+}
+.subtext {
+    font-size: 0.85em;
+    color: #888;
 }
 .switch {
     position: relative;
