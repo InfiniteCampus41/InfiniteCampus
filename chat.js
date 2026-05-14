@@ -39,6 +39,9 @@ let activeListenersCount = 0;
 let allUsernames = [];
 let authReady = false;
 let autoScrollEnabled = true;
+let pendingAttachFile = null;
+let typingInterval = null;
+let typingStopTimeout = null;
 let currentColor = "#ffffff";
 let currentListeners = {};
 let currentMsgRef = null;
@@ -532,7 +535,6 @@ async function unmuteUser(uid) {
     delete userMetaCache[uid];
     showSuccess("User Unmuted.");
 }
-window.getUserMeta = getUserMeta;
 async function getUserMeta(uid) {
     if (userMetaCache[uid]) return userMetaCache[uid];
     const [profile, settings, muteData] = await Promise.all([
@@ -2124,85 +2126,6 @@ sendBtn.onclick = async () => {
         dbDelete(`typing/${channelName}/${currentUser.uid}`);
     }
 };
-chatInput.addEventListener("input", () => {
-    const mentions = chatInput.value.match(/@\w+/g);
-    if (mentions && mentions.length > 1) {
-        showError("Only One Mention Per Message Is Allowed.");
-        chatInput.value = "";
-    }
-});
-chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        if (e.shiftKey) {
-            const start = chatInput.selectionStart;
-            const end = chatInput.selectionEnd;
-            chatInput.value = chatInput.value.substring(0, start) + "\n" + chatInput.value.substring(end);
-            chatInput.selectionStart = chatInput.selectionEnd = start + 1;
-            e.preventDefault();
-        } else {
-            e.preventDefault();
-            sendBtn.click();
-        }
-    } else if (e.key === "#") {
-        triggerIndex = chatInput.selectionStart;
-        mentionActive = true;
-        setTimeout(() => {
-            showChannelMentionMenu();
-        }, 0);
-    } else if (e.key === "Tab") {
-        if (currentPrivateUid && currentPrivateName) {
-            e.preventDefault();
-            const pos = chatInput.selectionStart;
-            const text = chatInput.value;
-            let i = pos - 1;
-            while (i >= 0 && /\S/.test(text[i])) i--;
-            const tokenStart = i + 1;
-            const token = text.substring(tokenStart, pos);
-            if (token.startsWith("@")) {
-                const nameToInsert = "@" + currentPrivateName.replace(/ 💎/g, "");
-                const newValue = text.substring(0, tokenStart) + nameToInsert + text.substring(pos);
-                chatInput.value = newValue;
-                const newPos = tokenStart + nameToInsert.length;
-                chatInput.selectionStart = chatInput.selectionEnd = newPos;
-            } else {
-            }
-        }
-    }
-});
-let typingInterval = null;
-let typingStopTimeout = null;
-chatInput.addEventListener("input", () => {
-    if (!currentUser || !currentPath || !currentPath.startsWith("messages/")) return;
-    const ch = currentPath.split("/")[1];
-    const typingPath = `typing/${ch}/${currentUser.uid}`;
-    if (!typingInterval) {
-        dbSet(typingPath, { name: currentName, typing: true });
-        typingInterval = setInterval(() => {
-            dbSet(typingPath, { name: currentName, typing: true });
-        }, 3000);
-    }
-    clearTimeout(typingStopTimeout);
-    typingStopTimeout = setTimeout(() => {
-        clearInterval(typingInterval);
-        typingInterval = null;
-        dbDelete(typingPath);
-    }, 3000);
-});
-chatInput.addEventListener("input", () => {
-    const value = chatInput.value;
-    const cursorPos = chatInput.selectionStart;
-    const justTypedAt = value.slice(0, cursorPos).endsWith("@");
-    const afterAt = /@[\w\d_-]{1,20}$/.test(value.slice(0, cursorPos));
-    if (currentPrivateUid && justTypedAt) {
-        mentionHint.textContent = `Press Tab To Mention ${currentPrivateName || "This User"}`;
-        mentionHint.style.display = "block";
-    } else if (!afterAt) {
-        mentionHint.style.display = "none";
-    }
-});
-chatInput.addEventListener("blur", () => {
-    mentionHint.style.display = "none";
-});
 onAuthStateChanged(auth, async user => {
     if (!user) { 
         showError("Not Logged In!"); 
@@ -2319,7 +2242,7 @@ onAuthStateChanged(auth, async user => {
     }
 });
 async function loadAllUsernames() {
-    const data = dbGet("users");
+    const data = await dbGet("users");
     allUsernames = [];
     if (data) {
         for (const uid of Object.keys(data)) {
@@ -2452,7 +2375,6 @@ function getSelectedRoles(type) {
     });
     return selected;
 }
-let pendingAttachFile = null;
 (function injectFileAttachUI() {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
@@ -2550,8 +2472,72 @@ chatInput.addEventListener("paste", (e) => {
     }
 });
 chatInput.addEventListener("input", () => {
+    const mentions = chatInput.value.match(/@\w+/g);
+    if (mentions && mentions.length > 1) {
+        showError("Only One Mention Per Message Is Allowed.");
+        chatInput.value = "";
+    }
+});
+chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        if (e.shiftKey) {
+            const start = chatInput.selectionStart;
+            const end = chatInput.selectionEnd;
+            chatInput.value = chatInput.value.substring(0, start) + "\n" + chatInput.value.substring(end);
+            chatInput.selectionStart = chatInput.selectionEnd = start + 1;
+            e.preventDefault();
+        } else {
+            e.preventDefault();
+            sendBtn.click();
+        }
+    } else if (e.key === "#") {
+        triggerIndex = chatInput.selectionStart;
+        mentionActive = true;
+        setTimeout(() => {
+            showChannelMentionMenu();
+        }, 0);
+    } else if (e.key === "Tab") {
+        if (currentPrivateUid && currentPrivateName) {
+            e.preventDefault();
+            const pos = chatInput.selectionStart;
+            const text = chatInput.value;
+            let i = pos - 1;
+            while (i >= 0 && /\S/.test(text[i])) i--;
+            const tokenStart = i + 1;
+            const token = text.substring(tokenStart, pos);
+            if (token.startsWith("@")) {
+                const nameToInsert = "@" + currentPrivateName.replace(/ 💎/g, "");
+                const newValue = text.substring(0, tokenStart) + nameToInsert + text.substring(pos);
+                chatInput.value = newValue;
+                const newPos = tokenStart + nameToInsert.length;
+                chatInput.selectionStart = chatInput.selectionEnd = newPos;
+            } else {
+            }
+        }
+    }
+});
+chatInput.addEventListener("input", () => {
+    if (!currentUser || !currentPath || !currentPath.startsWith("messages/")) return;
+    const ch = currentPath.split("/")[1];
+    const typingPath = `typing/${ch}/${currentUser.uid}`;
+    if (!typingInterval) {
+        dbSet(typingPath, { name: currentName, typing: true });
+        typingInterval = setInterval(() => {
+            dbSet(typingPath, { name: currentName, typing: true });
+        }, 3000);
+    }
+    clearTimeout(typingStopTimeout);
+    typingStopTimeout = setTimeout(() => {
+        clearInterval(typingInterval);
+        typingInterval = null;
+        dbDelete(typingPath);
+    }, 3000);
+});
+chatInput.addEventListener("input", () => {
     const value = chatInput.value;
     const cursorPos = chatInput.selectionStart;
+    const justTypedAt = value.slice(0, cursorPos).endsWith("@");
+    const afterAt = /@[\w\d_-]{1,20}$/.test(value.slice(0, cursorPos));
     const lastAt = value.lastIndexOf("@", cursorPos - 1);
     if (lastAt === -1) {
         mentionMenu.style.display = "none";
@@ -2568,7 +2554,16 @@ chatInput.addEventListener("input", () => {
         mentionMenu.style.display = "none";
         return;
     }
+    if (currentPrivateUid && justTypedAt) {
+        mentionHint.textContent = `Press Tab To Mention ${currentPrivateName || "This User"}`;
+        mentionHint.style.display = "block";
+    } else if (!afterAt) {
+        mentionHint.style.display = "none";
+    }
     renderMentionMenu(matches);
+});
+chatInput.addEventListener("blur", () => {
+    mentionHint.style.display = "none";
 });
 function renderMentionMenu(names) {
     mentionMenu.innerHTML = "";
