@@ -520,16 +520,11 @@ function appendToMain() {
         "/InfiniteDonaters.html",
         "/InfiniteProxies.html",
         "InfiniteOldProxies.html",
-        "InfiniteAdminChats.html",
         "InfiniteAccounts.html",
-        "InfiniteAdminMovies.html",
-        "InfiniteAdminRules.html",
         "InfiniteAdmins.html",
         "InfiniteArchives.html",
         "InfinitePolicies.html",
         "InfiniteTerms.html",
-        "InfiniteServers.html",
-        "InfinitePolls.html",
         "InfiniteAis.html"
     ];
     const currentPage = window.location.pathname;

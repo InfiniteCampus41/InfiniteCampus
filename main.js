@@ -206,6 +206,32 @@ function showError(err) {
     });
     document.body.insertBefore(errDiv, document.body.firstChild);
 }
+function showWarn(warn) {
+    const existing = document.getElementById("warnDiv");
+    if (existing) existing.remove();
+    const warnDiv = document.createElement("div");
+    warnDiv.id = "warnDiv";
+    warnDiv.textContent = warn;
+    warnDiv.style.marginTop = "60px";
+    warnDiv.style.background = "#fbbf24";
+    warnDiv.style.color = "darkgoldenrod";
+    warnDiv.style.border = "3px solid darkgoldenrod";
+    warnDiv.style.borderRadius = "5px";
+    warnDiv.style.padding = "3px";
+    warnDiv.style.cursor = "pointer";
+    warnDiv.style.position = "fixed";
+    warnDiv.style.zIndex = "9998";
+    warnDiv.style.textAlign = "center";
+    warnDiv.style.fontWeight = "bold";
+    warnDiv.style.maxWidth = "fit-content";
+    warnDiv.style.height = "35px";
+    warnDiv.style.top = "70px";
+    warnDiv.style.justifySelf = "center";
+    warnDiv.addEventListener("click", () => {
+        warnDiv.remove();
+    });
+    document.body.insertBefore(warnDiv, document.body.firstChild);
+}
 function showSuccess(success) {
     const existing = document.getElementById("successDiv");
     if (existing) existing.remove();
@@ -708,8 +734,8 @@ function initSettingsUI(apply) {
     });
     if (e.includes(window.location.host)) {
     } else {
-        let showWarn = localStorage.getItem("warn");
-        if ( showWarn !== '1') {
+        let showWarn2 = localStorage.getItem("warn");
+        if ( showWarn2 !== '1') {
             showError("You Are On A Non Official Link. Go To The About Tab To Learn More");
             localStorage.setItem("warn", "1");
         }

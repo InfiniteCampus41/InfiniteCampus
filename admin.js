@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, forceWebSockets, io } from "./imports.js";
+import { auth, onAuthStateChanged, forceWebSockets, io, getToken } from "./imports.js";
 const kdsuhPage = window.location.pathname;
 const kdsuhParams = new URLSearchParams(window.location.search);
 if (kdsuhPage == "/InfiniteAdmins.html") {
@@ -7,10 +7,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
     const adminMovies = document.getElementById("adminMovies");
     const adminRules = document.getElementById("adminRules");
     const adminServer = document.getElementById("adminServer");
+    const adminEmail = document.getElementById("adminEmail");
     const adminChatParams = kdsuhParams.get("chat");
     const adminMovieParams = kdsuhParams.get("movies");
     const adminRuleParams = kdsuhParams.get("rules");
     const adminServerParams = kdsuhParams.get("server");
+    const adminEmailParams = kdsuhParams.get("email");
     if (adminChatParams) {
         adminChat.style.display = 'block';
         adminPages.style.display = 'none';
@@ -2618,8 +2620,907 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         fetchLogs();
         window.deleteFile = deleteFile;
         window.downloadFile = downloadFile;
+    } else if (adminEmailParams) {
+        const style = document.createElement("style");
+        style.innerHTML = `
+            body {
+    			display: flex;
+    			flex-direction: column;
+  			}
+  			main {
+    			z-index: 1;
+    			display: grid;
+    			grid-template-columns: 300px 1fr;
+    			gap: 0;
+    			flex: 1;
+                padding-top:25px;
+    			overflow: hidden;
+  			}
+            #adminEmail {
+                height:calc(100vh - var(--headerHeight));
+            }
+  			.user-item {
+    			display: flex;
+    			align-items: center;
+    			gap: 10px;
+    			padding: 8px 14px;
+    			cursor: pointer;
+    			transition: background 0.2s;
+    			user-select: none;
+    			background: #222;
+    			border-bottom: 1px solid #333;
+  			}
+  			.user-item:hover { 
+				background: #333; 
+			}
+  			.user-item.selected { 
+				background: #2a2a2a; 
+			}
+  			.user-checkbox {
+    			width: 14px;
+    			height: 14px;
+    			border: 1px solid white;
+    			border-radius: 3px;
+    			flex-shrink: 0;
+    			display: flex;
+    			align-items: center;
+    			justify-content: center;
+    			transition: all 0.1s;
+    			background: black;
+  			}
+  			.user-checkbox::after {
+   	 			content: '';
+    			width: 7px;
+    			height: 5px;
+    			border-left: 1.5px solid #fff;
+    			border-bottom: 1.5px solid #fff;
+    			transform: rotate(-45deg) translate(0px, -1px);
+    			opacity: 0;
+    			transition: opacity 0.1s;
+  			}
+  			.user-item.selected .user-checkbox::after { 
+				opacity: 1; 
+			}
+  			.user-info { 
+				flex: 1; 
+				min-width: 0; 
+			}
+  			.user-name { 
+				font-size: 12px; 
+				color: white; 
+				white-space: nowrap; 
+				overflow: hidden; 
+				text-overflow: ellipsis; 
+			}
+  			.user-email { 
+				font-size: 10px; 
+				color: #aaa; 
+				white-space: nowrap; 
+				overflow: hidden; 
+				text-overflow: ellipsis; 
+			}
+  			.user-role-dot {
+    			width: 6px;
+    			height: 6px;
+    			border-radius: 50%;
+    			flex-shrink: 0;
+    			background: #3a4055;
+  			}
+  			.role-owner {
+				background: lime;
+			}
+  			.role-tester { 
+				background: darkgoldenrod;
+			}
+  			.role-coowner { 
+				background: lightblue; 
+			}
+  			.role-headadmin { 
+				background: #00cc99;
+			}
+  			.role-dev { 
+				background: green;
+			}
+  			.role-admin { 
+				background: dodgerblue; 
+			}
+  			.role-p1 {
+				background:yellow;
+			}
+  			.role-p2 { 
+				background:orange;
+			}
+  			.role-p3 { 
+				background:red;
+			}
+  			.role-partner { 
+				background: cornflowerblue; 
+			}
+  			.role-verified { 
+				background: #64748b; 
+			}
+  			.composer {
+    			display: flex;
+    			flex-direction: column;
+    			overflow: hidden;
+  			}
+  			.composer-head {
+    			padding: 14px 20px;
+    			border-bottom: 1px solid #444;
+    			display: flex;
+    			align-items: center;
+    			gap: 12px;
+  			}
+  			.composer-title {
+    			font-weight: 700;
+    			font-size: 11px;
+    			letter-spacing: 0.12em;
+    			text-transform: uppercase;
+    			color: white;
+  			}
+  			.selected-tags {
+    			display: flex;
+    			flex-wrap: wrap;
+    			gap: 5px;
+    			align-items: center;
+    			flex: 1;
+  			}
+  			.selected-tag {
+    			display: flex;
+    			align-items: center;
+    			gap: 5px;
+    			background: #222;
+    			border: 1px solid white;
+    			border-radius: 7px;
+    			padding: 2px 8px;
+    			font-size: 11px;
+    			color: white;
+    			cursor: pointer;
+    			transition: all 0.3s;
+  			}
+  			.composer-body {
+    			flex: 1;
+    			overflow-y: auto;
+    			padding: 16px 20px;
+    			display: flex;
+    			flex-direction: column;
+    			gap: 14px;
+    			height: fit-content;
+  			}
+  			.composer-body::-webkit-scrollbar { 
+				width: 4px;
+			}
+  			.composer-body::-webkit-scrollbar-thumb { 
+				background: #3a4055; 
+				border-radius: 2px; 
+			}
+  			.field-group {
+    			display: flex;
+    			flex-direction: column;
+    			gap: 5px;
+  			}
+  			.field-label {
+    			font-size: 10px;
+    			letter-spacing: 0.1em;
+    			text-transform: uppercase;
+    			color: white;
+    			display: flex;
+    			align-items: center;
+    			gap: 6px;
+  			}
+  			.field-hint {
+                font-size: 10px;
+                color: white;
+                font-style: italic;
+                margin-left: auto;
+            }
+            .field-row { 
+                display: flex; 
+                gap: 10px; 
+            }
+            .field-row .field-group { 
+                flex: 1; 
+            }
+            .multi-email-input {
+                position: relative;
+            }
+            .email-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                padding: 7px 10px;
+                background: black;
+                border: 1px solid white;
+                border-radius: 7px;
+                min-height: 38px;
+                cursor: text;
+                transition: border-color 0.15s;
+            }
+            .email-tag {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                background: rgba(79,156,249,0.12);
+                border: 1px solid rgba(79,156,249,0.25);
+                border-radius: 3px;
+                padding: 1px 6px;
+                font-size: 11px;
+                color: var(--accent);
+            }
+            .email-tag .rm { 
+                cursor: pointer; 
+                opacity: 0.6;
+            }
+            .email-tag .rm:hover { 
+                opacity: 1; 
+                color: #f87171; 
+            }
+            .email-tags input {
+                border: none;
+                background: transparent;
+                outline: none;
+                color: #e8ecf5;
+                font-family: 'DM Mono', monospace;
+                font-size: 12px;
+                min-width: 140px;
+                flex: 1;
+                padding: 1px 2px;
+            }
+            .body-editor {
+                position: relative;
+            }
+            .toolbar {
+                display: flex;
+                gap: 4px;
+                padding: 6px 8px;
+                background: #222;
+                border: 1px solid white;
+                border-bottom: none;
+                border-radius: 7px 7px 0 0;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .tb-btn {
+                padding: 3px 8px;
+                background: black;
+                border: 1px solid white;
+                border-radius: 7px;
+                color: white;
+                font-family: 'DM Mono', monospace;
+                font-size: 11px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .tb-sep {
+                width: 1px;
+                height: 16px;
+                background: #444;
+                margin: 0 2px;
+            }
+            .body-textarea {
+                border-radius: 0 0 6px 6px;
+                min-height: 200px;
+                font-size: 13px;
+                line-height: 1.7;
+                width: 100%;
+            }
+            .preview-box {
+                background: #222;
+                border: 1px solid white;
+                border-radius: 7px;
+                padding: 16px;
+                font-size: 13px;
+                line-height: 1.7;
+                min-height: 120px;
+                color: white;
+            }
+            .tabs {
+                display: flex;
+                gap: 2px;
+                padding: 2px;
+                background: #222;
+                border-radius: 7px;
+                border: 1px solid white;
+                width: fit-content;
+            }
+            .tab-btn {
+                padding: 4px 12px;
+                border-radius: 5px;
+                border: none;
+                background: transparent;
+                color: white;
+                font-family: 'DM Mono', monospace;
+                font-size: 11px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .tab-btn.active { 
+                background: black; 
+                color: white; 
+                border: 1px solid white; 
+            }
+            .composer-footer {
+                padding: 14px 20px;
+                border-top: 1px solid #444;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: #1a1a1a;
+            }
+            .send-info {
+                font-size: 11px;
+                color: #aaa;
+                flex: 1;
+            }
+            .send-info strong { 
+                color: white; 
+            }
+            .send-btn {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 9px 20px;
+                background: black;
+                color: #fff;
+                border: 1px solid white;
+                border-radius: 7px;
+                font-family: 'Syne', sans-serif;
+                font-weight: 700;
+                font-size: 12px;
+                letter-spacing: 0.05em;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .send-btn:hover { 
+                filter: invert(0.9);
+                transform: translateY(-1px); 
+            }
+            .send-btn:disabled { 
+                opacity: 0.4; 
+                cursor: not-allowed; 
+                transform: none; 
+                filter: none; 
+            }
+            #progress-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.85);
+                z-index: 300;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            #progress-modal.active { 
+                display: flex; 
+            }
+            .progress-card {
+                background: #222;
+                border: 1px solid white;
+                border-radius: 10px;
+                padding: 28px 32px;
+                width: 380px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            .progress-card h3 {
+                font-family: 'Syne', sans-serif;
+                font-weight: 700;
+                font-size: 14px;
+            }
+            .progress-bar-track {
+                height: 4px;
+                background: #333;
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            .progress-bar-fill {
+                height: 100%;
+                border-radius: 2px;
+                transition: width 0.3s ease;
+                width: 0%;
+            }
+            .progress-log {
+                font-size: 11px;
+                color: white;
+                height: 80px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+            .progress-log span { 
+                display: block; 
+            }
+            .progress-log .ok { 
+                color: #34d399; 
+            }
+            .progress-log .err { 
+                color: #f87171; 
+            }
+            .no-email-badge {
+                font-size: 9px;
+                padding: 1px 5px;
+                border-radius: 2px;
+                background: rgba(251,191,36,0.1);
+                border: 1px solid rgba(251,191,36,0.25);
+                color: #fbbf24;
+                letter-spacing: 0.04em;
+                flex-shrink: 0;
+            }
+            .unsub-badge {
+                font-size: 9px;
+                padding: 1px 5px;
+                border-radius: 2px;
+                background: rgba(248,113,113,0.1);
+                border: 1px solid rgba(248,113,113,0.3);
+                color: #f87171;
+                letter-spacing: 0.04em;
+                flex-shrink: 0;
+            }
+            .loading-users {
+                padding: 24px 14px;
+                text-align: center;
+                color: white;
+                font-size: 11px;
+            }
+            .select-all-row {
+                padding: 7px 14px;
+                border-bottom: 1px solid #444;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                font-size: 11px;
+                color: #aaa;
+                transition: color 0.2s;
+                user-select: none;
+                background: #1a1a1a;
+            }
+            .select-all-row:hover { 
+                color: white; 
+                background: #2a2a2a; 
+            }
+            hr.divider {
+                border: none;
+                border-top: 1px solid #444;
+                margin: 0;
+            }
+            .sidebar {
+                overflow:scroll;
+            }
+        `;
+        document.head.appendChild(style);
+        adminPages.style.display = "none";
+        adminEmail.style.display = "flex";
+        let currentUser = null;
+        let authReady = false;
+        const authReadyPromise = new Promise((resolve) => {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                authReady = true;
+                init()
+                resolve(user);
+            });
+        });
+        async function getAuthToken() {
+            await authReadyPromise;
+            if (currentUser) {
+                return await currentUser.getIdToken();
+            }
+            return null;
+        }
+        async function fetchAPI(endpoint, body) {
+            const token = await getAuthToken();
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = "Bearer " + token;
+            const res = await fetch(`${a}/${endpoint}`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(body)
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                throw new Error(json?.error || "Request Failed");
+            }
+            return json;
+        }
+        function pathToArray(path) {
+            return path.split("/").filter(Boolean);
+        }
+        async function dbGet(path) {
+            const res = await fetchAPI("read", { path: pathToArray(path) });
+            return res.data;
+        }
+        let allUsers = [];
+        let selectedUids = new Set();
+        let ccEmails = [];
+        let bccEmails = [];
+        let currentTab = 'write';
+        async function init() {
+            await authReady;
+            const user = currentUser;
+            if (!user) {
+                window.location = "/infiniteLogins.html";
+                return;
+            }
+            try {
+                const res = await dbGet(`users/${currentUser.uid}/profile`);
+                console.log(res);
+                if (!res.isOwner) {
+                    window.location = "/InfiniteLogins.html";
+                    return;
+                }
+                await loadUsers();
+            } catch (e) {
+                window.location = "/InfiniteLogins.html";
+            }
+        }
+        async function loadUsers() {
+            const res = await dbGet('users');
+            parseUsers(res || {});
+            renderUserList();
+        }
+        function parseUsers(usersRaw) {
+            allUsers = [];
+            for (const [uid, userData] of Object.entries(usersRaw || {})) {
+                const profile = userData?.profile || {};
+                const settings = userData?.settings || {};
+                const email = settings.userEmail || profile.email || null;
+                const displayName = profile.displayName || uid;
+                const subbed = settings.subbed !== false;
+                let role = 'user';
+                if (profile.isOwner) role = 'owner';
+                else if (profile.isTester) role = 'tester';
+                else if (profile.isCoOwner) role = 'coowner';
+                else if (profile.isHAdmin) role = 'headadmin';
+                else if (profile.isDev) role = 'dev';
+                else if (profile.isAdmin) role = 'admin';
+                else if (profile.premium3) role = 'p3';
+                else if (profile.premium2) role = 'p2';
+                else if (profile.premium1) role = 'p1';
+                else if (profile.isPartner) role = 'partner';
+                else if (profile.verified) role = 'verified';
+                allUsers.push({ uid, displayName, email, role, subbed });
+            }
+            allUsers.sort((a, b) => {
+                const rOrder = { owner:0, tester:1, coowner:2, headadmin:3, dev:4, admin:5, p3:6, p2:7, p1:8, partner:9, verified:10, user:11 };
+                if (rOrder[a.role] !== rOrder[b.role]) return rOrder[a.role] - rOrder[b.role];
+                return a.displayName.localeCompare(b.displayName);
+            });
+            document.getElementById('user-count').textContent = allUsers.length + ' users';
+        }
+        window.filterUsers = function() { renderUserList(); };
+        function getFilteredUsers() {
+            const q = document.getElementById('user-search').value.toLowerCase();
+            if (!q) return allUsers;
+            return allUsers.filter(u =>
+                u.displayName.toLowerCase().includes(q) ||
+                (u.email && u.email.toLowerCase().includes(q))
+            );
+        }
+        const roleClass = { owner:'role-owner', tester:'role-tester', coowner:'role-coowner', headadmin:'role-headadmin', dev:'role-dev', admin:'role-admin', p3:'role-p3', p2:'role-p2', p1:'role-p1', partner:'role-partner', verified:'role-verified' };
+        function renderUserList() {
+            const list = document.getElementById('user-list');
+            const filtered = getFilteredUsers();
+            if (!filtered.length) {
+                list.innerHTML = '<div class="loading-users">No Users Found.</div>';
+                return;
+            }
+            list.innerHTML = filtered.map(u => `
+                <div class="user-item ${selectedUids.has(u.uid) ? 'selected' : ''} ${!u.subbed ? 'unsubscribed-user' : ''}" onclick="window.toggleUser('${u.uid}')" style="${!u.subbed ? 'opacity:0.55;' : ''}">
+                    <div class="user-checkbox">
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">
+                            ${escHtml(u.displayName)}
+                        </div>
+                        <div class="user-email">
+                            ${u.email ? escHtml(u.email) : '<span style="color:#fbbf24">No Email</span>'}
+                        </div>
+                    </div>
+                    ${!u.subbed ? '<span class="unsub-badge">UNSUBSCRIBED</span>' : ''}
+                    ${u.email ? '' : '<span class="no-email-badge">NO EMAIL</span>'}
+                    <div class="user-role-dot ${roleClass[u.role] || ''}">
+                    </div>
+                </div>
+            `).join('');
+            updateSelectAllBox();
+        }
+        window.toggleUser = function(uid) {
+            if (selectedUids.has(uid)) selectedUids.delete(uid);
+            else selectedUids.add(uid);
+            renderUserList();
+            updateSelectedTags();
+            updateSendBtn();
+        };
+        window.toggleSelectAll = function() {
+            const filtered = getFilteredUsers();
+            const uidsWithEmail = filtered.filter(u => u.email && u.subbed).map(u => u.uid);
+            const allSelected = uidsWithEmail.every(uid => selectedUids.has(uid));
+            if (allSelected) {
+                uidsWithEmail.forEach(uid => selectedUids.delete(uid));
+                document.getElementById('select-all-label').textContent = 'Select All';
+            } else {
+                uidsWithEmail.forEach(uid => selectedUids.add(uid));
+                document.getElementById('select-all-label').textContent = 'Deselect All';
+            }
+            renderUserList();
+            updateSelectedTags();
+            updateSendBtn();
+        };
+        function updateSelectAllBox() {
+            const filtered = getFilteredUsers().filter(u => u.email && u.subbed);
+            const box = document.getElementById('select-all-box');
+            if (!filtered.length) { box.style.background = ''; box.style.borderColor = ''; return; }
+        }
+        function updateSelectedTags() {
+            const container = document.getElementById('selected-tags');
+            const selected = allUsers.filter(u => selectedUids.has(u.uid));
+            if (!selected.length) {
+                container.innerHTML = '<span style="font-size:11px;color:white;">No Recipients Selected</span>';
+                return;
+            }
+            const shown = selected.slice(0, 6);
+            const rest = selected.length - shown.length;
+            container.innerHTML = shown.map(u => `
+                <div class="selected-tag" onclick="window.toggleUser('${u.uid}')" title="${escHtml(u.email || 'No Email')}">
+                    ${escHtml(u.displayName)} 
+                    <span class="remove">
+                        ✕
+                    </span>
+                </div>
+            `).join('') + (rest > 0 ? `<span style="font-size:11px;color:white;">+${rest} More</span>` : '');
+        }
+        window.handleEmailInput = function(e, type) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const inp = document.getElementById(type + '-input');
+                const val = inp.value.replace(/,/g, '').trim();
+                if (val && isValidEmail(val)) {
+                    if (type === 'cc') { ccEmails.push(val); renderEmailTags('cc'); }
+                    else { bccEmails.push(val); renderEmailTags('bcc'); }
+                    inp.value = '';
+                } else if (val) {
+                    showError('Invalid Email: ' + val);
+                }
+            } else if (e.key === 'Backspace') {
+                const inp = document.getElementById(type + '-input');
+                if (!inp.value) {
+                    if (type === 'cc' && ccEmails.length) { ccEmails.pop(); renderEmailTags('cc'); }
+                    else if (type === 'bcc' && bccEmails.length) { bccEmails.pop(); renderEmailTags('bcc'); }
+                }
+            }
+        };
+        window.focusCcInput = function() { document.getElementById('cc-input').focus(); };
+        window.focusBccInput = function() { document.getElementById('bcc-input').focus(); };
+        window.removeEmailTag = function(type, idx) {
+            if (type === 'cc') ccEmails.splice(idx, 1);
+            else bccEmails.splice(idx, 1);
+            renderEmailTags(type);
+        };
+        function renderEmailTags(type) {
+            const arr = type === 'cc' ? ccEmails : bccEmails;
+            const container = document.getElementById(type + '-tags');
+            const inp = document.getElementById(type + '-input');
+            container.innerHTML = arr.map((e, i) => `
+                <span class="email-tag">
+                    ${escHtml(e)}
+                    <span class="rm" onclick="window.removeEmailTag('${type}',${i})">
+                        ✕
+                    </span>
+                </span>
+            `).join('');
+            container.appendChild(inp);
+        }
+        window.wrapText = function(before, after) {
+            const ta = document.getElementById('email-body');
+            const start = ta.selectionStart, end = ta.selectionEnd;
+            const sel = ta.value.slice(start, end);
+            ta.value = ta.value.slice(0, start) + before + sel + after + ta.value.slice(end);
+            ta.selectionStart = start + before.length;
+            ta.selectionEnd = end + before.length;
+            ta.focus();
+        };
+        window.insertLine = function(prefix) {
+            const ta = document.getElementById('email-body');
+            const start = ta.selectionStart;
+            const lineStart = ta.value.lastIndexOf('\n', start - 1) + 1;
+            ta.value = ta.value.slice(0, lineStart) + prefix + ta.value.slice(lineStart);
+            ta.selectionStart = ta.selectionEnd = lineStart + prefix.length;
+            ta.focus();
+        };
+        window.insertDisplayName = function() {
+            const ta = document.getElementById('email-body');
+            const start = ta.selectionStart;
+            const placeholder = '{{DISPLAYNAME}}';
+            ta.value = ta.value.slice(0, start) + placeholder + ta.value.slice(start);
+            ta.selectionStart = ta.selectionEnd = start + placeholder.length;
+            ta.focus();
+        };
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            document.getElementById('tab-write').classList.toggle('active', tab === 'write');
+            document.getElementById('tab-preview').classList.toggle('active', tab === 'preview');
+            document.getElementById('email-body').style.display = tab === 'write' ? '' : 'none';
+            document.querySelector('.toolbar').style.display = tab === 'write' ? '' : 'none';
+            const preview = document.getElementById('email-preview');
+            preview.style.display = tab === 'preview' ? '' : 'none';
+            if (tab === 'preview') {
+                const body = document.getElementById('email-body').value;
+                const sampleName = selectedUids.size > 0
+                    ? allUsers.find(u => selectedUids.has(u.uid))?.displayName || 'User'
+                    : 'User';
+                preview.innerHTML = renderEmailBodyPreview(body, sampleName);
+            }
+        };
+        function renderEmailBodyPreview(body, displayName) {
+            return body
+                .replace(/\{\{DISPLAYNAME\}\}/g, `<strong style="color:var(--accent2)">${escHtml(displayName)}</strong>`)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+                .replace(/\n---\n/g, '<hr style="border:none;border-top:1px solid #232730;margin:12px 0;">')
+                .replace(/^# (.+)$/gm, '<h1 style="font-family:Syne,sans-serif;font-size:18px;margin:8px 0;">$1</h1>')
+                .replace(/^## (.+)$/gm, '<h2 style="font-family:Syne,sans-serif;font-size:14px;margin:8px 0;">$1</h2>')
+                .replace(/^- (.+)$/gm, '• $1')
+                .replace(/\n/g, '<br>');
+        }
+        function buildEmailHtml(body, displayName) {
+            const rendered = body
+                .replace(/\{\{DISPLAYNAME\}\}/g, escHtml(displayName))
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/<u>(.*?)<\/u>/g, '<u>$1</u>')
+                .replace(/\n---\n/g, '<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;">')
+                .replace(/^# (.+)$/gm, '<h1 style="font-size:22px;font-weight:700;margin:12px 0;">$1</h1>')
+                .replace(/^## (.+)$/gm, '<h2 style="font-size:16px;font-weight:600;margin:10px 0;">$1</h2>')
+                .replace(/^- (.+)$/gm, '• $1')
+                .replace(/\n/g, '<br>');
+            return `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                    </head>
+                    <body style="margin:0;padding:0;background:#f8fafc;font-family:'Helvetica Neue',Arial,sans-serif;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+                            <tr>
+                                <td align="center">
+                                    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">
+                                        <tr>
+                                            <td style="padding:0;background:#0a0b0d;height:4px;">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:28px 32px;font-size:15px;line-height:1.7;color:#1e293b;">
+                                                ${rendered}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:lime;text-decoration:underline;">
+                                                <a href="https://www.infinitecampus.xyz/InfiniteAccounts.html?unsub=true">
+                                                    Unsubscribe
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>
+            `;
+        }
+        function updateSendBtn() {
+            const btn = document.getElementById('send-btn');
+            const recipientsWithEmail = allUsers.filter(u => selectedUids.has(u.uid) && u.email && u.subbed).length;
+            const hasRecipients = selectedUids.size > 0;
+            btn.disabled = !hasRecipients || recipientsWithEmail === 0;
+            const info = document.getElementById('send-info');
+            if (!hasRecipients) {
+                info.innerHTML = 'Select Recipients To Send.';
+            } else {
+                const noEmail = allUsers.filter(u => selectedUids.has(u.uid) && !u.email).length;
+                const unsubbed = allUsers.filter(u => selectedUids.has(u.uid) && u.email && !u.subbed).length;
+                info.innerHTML = `
+                    <strong>
+                        ${recipientsWithEmail}
+                    </strong>
+                    Email${recipientsWithEmail !== 1 ? 's' : ''} To Send
+                ` +
+                (noEmail ? ` <span style="color:#fbbf24">(${noEmail} Skipped — No Email)</span>` : '') +
+                (unsubbed ? ` <span style="color:#f87171">(${unsubbed} Skipped — Unsubscribed)</span>` : '') +
+                (recipientsWithEmail > 1 ? ` · 5s Delay Between Each Send` : '');
+            }
+        }
+        window.sendEmails = async function() {
+            const subject = document.getElementById('email-subject').value.trim();
+            const body = document.getElementById('email-body').value.trim();
+            if (!subject) { showError('Subject Is Required'); return; }
+            if (!body) { showError('Body Is Required'); return; }
+            const recipients = allUsers.filter(u => selectedUids.has(u.uid) && u.email && u.subbed);
+            if (!recipients.length) { showError('No Recipients With Email Addresses'); return; }
+            const modal = document.getElementById('progress-modal');
+            const fill = document.getElementById('prog-fill');
+            const progText = document.getElementById('prog-text');
+            const progCount = document.getElementById('prog-count');
+            const progLog = document.getElementById('prog-log');
+            const progClose = document.getElementById('prog-close');
+            modal.classList.add('active');
+            progLog.innerHTML = '';
+            progClose.style.display = 'none';
+            fill.style.width = '0%';
+            let sent = 0, failed = 0;
+            for (let i = 0; i < recipients.length; i++) {
+                const user = recipients[i];
+                progText.textContent = `Sending To ${user.displayName}`;
+                progCount.textContent = `${i} / ${recipients.length}`;
+                fill.style.width = ((i / recipients.length) * 100) + '%';
+                const personalizedBody = body.replace(/\{\{DISPLAYNAME\}\}/g, user.displayName);
+                const htmlBody = buildEmailHtml(body, user.displayName);
+                const payload = { to: user.email, subject, html: htmlBody, text: personalizedBody };
+                if (ccEmails.length) payload.cc = ccEmails;
+                if (bccEmails.length) payload.bcc = bccEmails;
+                try {
+                    const token = await getAuthToken();
+                    const res = await fetch(`${a}/email`, {
+                        method: 'POST',
+                        headers:{"Content-Type": "application/json","Authorization": "Bearer " + token},
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) throw new Error(data.error || 'Send Failed');
+                    sent++;
+                    addLog(progLog, `✓ ${user.displayName} <${user.email}>`, 'ok');
+                } catch (e) {
+                    failed++;
+                    addLog(progLog, `✗ ${user.displayName}: ${e.message}`, 'err');
+                }
+                if (i < recipients.length - 1) {
+                    for (let s = 5; s > 0; s--) {
+                        progText.textContent = `Next Email In ${s}s...`;
+                        await sleep(1000);
+                    }
+                }
+            }
+            fill.style.width = '100%';
+            progText.textContent = `Done — ${sent} Sent, ${failed} Failed.`;
+            progCount.textContent = `${recipients.length} / ${recipients.length}`;
+            progClose.style.display = 'block';
+            if (sent > 0) showSuccess(`${sent} Email${sent !== 1 ? 's' : ''} Sent Successfully`);
+            if (failed > 0) showError(`${failed} Failed To Send`);
+        };
+        function addLog(container, msg, cls) {
+            const span = document.createElement('span');
+            span.className = cls;
+            span.textContent = msg;
+            container.appendChild(span);
+            container.scrollTop = container.scrollHeight;
+        }
+        window.closeProgress = function() {
+            document.getElementById('progress-modal').classList.remove('active');
+        };
+        window.clearComposer = function() {
+            document.getElementById('email-subject').value = '';
+            document.getElementById('email-body').value = '';
+            ccEmails = [];
+            bccEmails = [];
+            renderEmailTags('cc');
+            renderEmailTags('bcc');
+            showSuccess('Composer Cleared');
+        };
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        document.getElementById('email-body').addEventListener('input', () => {
+            if (currentTab === 'preview') window.switchTab('preview');
+            updateSendBtn();
+        });
+        document.getElementById('email-subject').addEventListener('input', updateSendBtn);
     } else {
         adminPages.style.display = 'block';
     }
-    
 }

@@ -66,6 +66,11 @@
                     </a>
                     <br>
                     <br>
+                    <a class="button apbtn" href="InfiniteAdmins.html?email=true">
+                        Email
+                    </a>
+                    <br>
+                    <br>
                     <br>
                     <button class="button" onclick="logout()">
                         Logout
@@ -360,6 +365,181 @@
                 <br>
             </center>
         </main>
+        <div id="adminEmail" style="display:none">
+            <div id="progress-modal">
+                <div class="progress-card">
+                    <h3>
+                        Sending Emails
+                    </h3>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="prog-fill">
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:white;">
+                        <span id="prog-text">
+                            Preparing
+                        </span>
+                        <span id="prog-count">
+                            0 / 0
+                        </span>
+                    </div>
+                    <div class="progress-log" id="prog-log">
+                    </div>
+                    <button class="button" id="prog-close" onclick="closeProgress()" style="display:none;">
+                        Done
+                    </button>
+                </div>
+            </div>
+            <main>
+                <div class="sidebar">
+                    <div class="sidebar-head">
+                        <span class="sidebar-title">
+                            Recipients
+                        </span>
+                        <span class="user-count" id="user-count">
+                            Loading
+                        </span>
+                    </div>
+                    <div class="search-wrap">
+                        <input type="text" id="user-search" class="button" placeholder="Search Name Or Email" oninput="filterUsers()">
+                    </div>
+                    <div class="select-all-row" onclick="toggleSelectAll()">
+                        <div class="user-checkbox" id="select-all-box">
+                        </div>
+                        <span id="select-all-label">
+                            Select All
+                        </span>
+                    </div>
+                    <div class="user-list" id="user-list">
+                        <div class="loading-users">
+                            Loading Users
+                        </div>
+                    </div>
+                </div>
+                <div class="composer">
+                    <div class="composer-head">
+                        <span class="composer-title">
+                            Compose
+                        </span>
+                        <div class="selected-tags" id="selected-tags">
+                            <span style="font-size:11px;color:white;">
+                                No Recipients Selected
+                            </span>
+                        </div>
+                    </div>
+                    <div class="composer-body">
+                        <div class="field-group">
+                            <div class="field-label">
+                                Subject
+                            </div>
+                            <input type="text" class="button" id="email-subject" placeholder="Subject">
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <div class="field-label">
+                                    CC
+                                    <span class="field-hint">
+                                        Comma Or Enter To Add
+                                    </span>
+                                </div>
+                                <div class="multi-email-input">
+                                    <div class="email-tags" id="cc-tags" onclick="focusCcInput()">
+                                        <input type="text" id="cc-input" class="button" placeholder="Enter CC Email Here" onkeydown="handleEmailInput(event,'cc')">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">
+                                    BCC
+                                    <span class="field-hint">
+                                        Comma Or Enter To Add
+                                    </span>
+                                </div>
+                                <div class="multi-email-input">
+                                    <div class="email-tags" id="bcc-tags" onclick="focusBccInput()">
+                                        <input type="text" id="bcc-input" placeholder="Bcc Email" class="button" onkeydown="handleEmailInput(event,'bcc')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-label">
+                                Body
+                                <div class="tabs" style="margin-left:auto;">
+                                    <button class="button active" id="tab-write" onclick="switchTab('write')">
+                                        Write
+                                    </button>
+                                    <button class="button" id="tab-preview" onclick="switchTab('preview')">
+                                        Preview
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="body-editor">
+                                <div class="toolbar">
+                                    <button class="button" onclick="wrapText('**','**')">
+                                        <b>
+                                            B
+                                        </b>
+                                    </button>
+                                    <button class="button" onclick="wrapText('*','*')">
+                                        <i>
+                                            I
+                                        </i>
+                                    </button>
+                                    <button class="button" onclick="wrapText('<u>','</u>')">
+                                        <u>
+                                            U
+                                        </u>
+                                    </button>
+                                    <div class="tb-sep">
+                                    </div>
+                                    <button class="button" onclick="insertLine('# ')">
+                                        H1
+                                    </button>
+                                    <button class="button" onclick="insertLine('## ')">
+                                        H2
+                                    </button>
+                                    <button class="button" onclick="insertLine('- ')">
+                                        List
+                                    </button>
+                                    <div class="tb-sep">
+                                    </div>
+                                    <button class="button" onclick="insertLine('---')">
+                                        HR
+                                    </button>
+                                    <button class="button" onclick="wrapText('<a href=\'#\'>', '</a>')">
+                                        Link
+                                    </button>
+                                    <button class="button" onclick="insertDisplayName()">
+                                        &#10022; Insert {{DISPLAYNAME}}
+                                    </button>
+                                </div>
+                                <textarea class="body-textarea button" id="email-body" placeholder="Enter Email Body Here"></textarea>
+                            </div>
+                            <div class="preview-box" id="email-preview" style="display:none;">
+                            </div>
+                            <div style="font-size:10px;color:white;margin-top:4px;">
+                                <span class="displayname-chip">
+                                    {{DISPLAYNAME}}
+                                </span>
+                                Is Replaced With Each Recipient's Display Name Automatically. Separate Emails Are Sent Per Recipient.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="composer-footer">
+                        <div class="send-info" id="send-info">
+                            Select Recipients To Send.
+                        </div>
+                        <button class="btn btn-danger" onclick="clearComposer()">
+                            Clear
+                        </button>
+                        <button class="send-btn" id="send-btn" onclick="sendEmails()" disabled>
+                            &#9993; Send Emails
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
         <script src="admin.js" type="module">
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
