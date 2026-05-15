@@ -4,6 +4,7 @@ const mode = urlParams.get('mode');
 const oobCode = urlParams.get('oobCode');
 const continueUrl = urlParams.get('continueUrl') || "/InfiniteAccounts.html";
 const uid = urlParams.get("user");
+const unsub = urlParams.get("unsub");
 const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
@@ -271,7 +272,12 @@ if (enableNotifBtn) {
     refreshNotifButtons();
     document.addEventListener("notificationsEnabled", refreshNotifButtons);
 })();
-if (mode) {
+if (unsub) {
+    await authReadyPromise;
+    await dbUpdate(`users/${currentUser.uid}/settings`, { subbed: false });
+    showSuccess("Unsubscribed");
+    window.location = "/InfiniteAccounts.html";
+} else if (mode) {
     authcontainer.style.display = 'block';
     settingsPage.style.display = 'none';
     const resetPasswordContainer = document.getElementById('resetPasswordContainer');

@@ -23,7 +23,6 @@ const MESSAGE_COOLDOWN = 3000;
 const PAGE_SIZE = 50;
 const BACKEND = a;
 const chatMsgFunctions = document.getElementById('chatMsgFunctions');
-let ADMIN_PASS = localStorage.getItem("a_pass") || null;
 const privateList = document.getElementById("privateList");
 const privateListeners = new Set();
 const reply = document.getElementById("reply");
@@ -1808,8 +1807,8 @@ function openChannelSettings(channel, data) {
     (async () => {
         try {
             const token = await getAuthToken();
-            const res = await fetch(`${BACKEND}/admin/discord-channel-map`, {
-                headers: { "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS }
+            const res = await fetch(`${BACKEND}/discord-channel-map`, {
+                headers: { "Authorization": "Bearer " + token }
             });
             if (res.ok) {
                 const json = await res.json();
@@ -1840,9 +1839,9 @@ function openChannelSettings(channel, data) {
                 await dbDelete(`messages/${channel}`);
                 try {
                     const token = await getAuthToken();
-                    await fetch(`${BACKEND}/admin/discord-channel-map`, {
+                    await fetch(`${BACKEND}/discord-channel-map`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS },
+                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
                         body: JSON.stringify({ channelName: channel, discordChannelId: "" })
                     });
                 } catch {}
@@ -1884,9 +1883,9 @@ function openChannelSettings(channel, data) {
             try {
                 const token = await getAuthToken();
                 const targetName = (newName && newName !== channel) ? newName : channel;
-                await fetch(`${BACKEND}/admin/discord-channel-map`, {
+                await fetch(`${BACKEND}/discord-channel-map`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "x-admin-password": ADMIN_PASS },
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
                     body: JSON.stringify({ channelName: targetName, discordChannelId: discordId })
                 });
             } catch (e) {
@@ -2656,7 +2655,7 @@ if ("serviceWorker" in navigator) {
                 try {
                     const token = await getAuthToken();
                     if (!token) { showError("Not Logged In"); return; }
-                    const res = await fetch(`${a}/admin/verify-user`, {
+                    const res = await fetch(`${a}/verify-user`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
