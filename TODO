@@ -1,13 +1,10 @@
 TODO
     General:
-        Add Reply Notifications:
-            Make It So When You Reply To Yourself It Doesnt Send A Notification
-            Make It So If Your Linked Discord Account Replies To Your Message, It Doesnt Send A Notification
         Combine The Music Streaming Page With MP3 Player Page
     Combine All Chat Pages Into One:
-        Allow Limited Use Of Website Chat While Logged Out
-        Add Message Limit While Logged Out To Reduce API Usage
-        Add File Upload Limit While Logged Out To Reduce API Usage
+        Allow Limited Use Of Website Chat While Logged Out           (in progress)
+        Add Message Limit While Logged Out To Reduce API Usage       (in progress)
+        Add File Upload Limit While Logged Out To Reduce API Usage   (in progress)
     Website Chat:
         Need To Do:
             Fix Replies From Discord:

@@ -221,6 +221,13 @@ if (enableNotifBtn) {
                 <span class="slider"></span>
             </label>
         </div>
+        <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <span style="color:#ccc;">Replies</span>
+            <label class="switch" style="margin:0">
+                <input type="checkbox" id="notifToggleReplies" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
         <small style="color:#666;display:block;margin-bottom:14px;">
             Note: Messages From Owners Will Always Notify You Regardless Of These Settings.
         </small>
@@ -240,6 +247,7 @@ if (enableNotifBtn) {
             document.getElementById("notifToggleDms").checked = settings.dms !== false;
             document.getElementById("notifToggleMentions").checked = settings.mentions !== false;
             document.getElementById("notifToggleReactions").checked = settings.reactions !== false;
+            document.getElementById("notifToggleReplies").checked = settings.replies !== false;
         } catch (e) {
             console.error("Failed to load notif settings:", e);
         }
@@ -251,8 +259,9 @@ if (enableNotifBtn) {
         const dms = document.getElementById("notifToggleDms").checked;
         const mentions = document.getElementById("notifToggleMentions").checked;
         const reactions = document.getElementById("notifToggleReactions").checked;
+        const replies = document.getElementById("notifToggleReplies").checked;
         try {
-            await dbSet(`notifications/${user.uid}/settings`, { dms, mentions, reactions });
+            await dbSet(`notifications/${user.uid}/settings`, { dms, mentions, reactions, replies });
             overlay.style.display = "none";
             showSuccess("Notification Settings Saved.");
         } catch (e) {
@@ -365,7 +374,6 @@ if (unsub) {
             font-weight:bold;
         }
     `;
-    let currentUser = null;
     document.head.appendChild(style);
     const displayNameEl = document.getElementById("displayName");
     const bioEl = document.getElementById("bio");
@@ -1112,7 +1120,17 @@ if (unsub) {
         const email = currentUser?.email;
         if (!email) return showError("No Email Found. Please Log In Again.");
         try {
-            await sendPasswordResetEmail(auth, email);
+            const token = await getAuthToken();
+            const res = await fetch(`${a}/auth/send-password-reset`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": "Bearer " + token } : {})
+                },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed To Send Reset Email");
             showSuccess("Password Reset Email Sent To " + email);
         } catch (e) {
             showError("Failed To Send Reset Email: " + e.message);
@@ -1127,7 +1145,16 @@ if (unsub) {
     verifyEmailBtn.addEventListener("click", async () => {
         if (!currentUser) return showError("No User Logged In.");
         try {
-            await sendEmailVerification(currentUser);
+            const token = await getAuthToken();
+            const res = await fetch(`${a}/auth/send-email-verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed To Send Verification Email");
             showSuccess("Verification Email Sent To " + currentUser.email + ". Please Check Your Inbox.");
         } catch (err) {
             console.error(err);
