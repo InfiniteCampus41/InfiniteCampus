@@ -386,6 +386,7 @@ setInterval(() => {
     initSettingsUI("apply");
 }, 1000);
 function initSettingsUI(apply) {
+    const weatherEl = document.getElementById("weather");
     const colorInput        = document.getElementById('colorInput');
     const themeSelector     = document.getElementById('themeSelector');
     const resetBtn          = document.getElementById('resetColors');
@@ -827,7 +828,12 @@ function initSettingsUI(apply) {
             const res = await fetch(
                 `${a}/weather?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`
             );
-            if (!res.ok) throw new Error("Weather Request Failed");
+            if (!res.ok) {
+                throw new Error("Weather Request Failed");
+                document.getElementById("weather").classList.add("show");
+                document.getElementById("weather").textContent = "Unable To Get Weather";
+                return;
+            }
             const data = await res.json();
             if (!data.temperature) {
                 console.error("Temperature Unavailable");
@@ -835,7 +841,6 @@ function initSettingsUI(apply) {
             }
             const temp = useFahrenheit ? `${data.temperature.fahrenheit}°F` : `${data.temperature.celsius}°C`;
             const display = `${data.location}: ${data.emoji} ${temp}`;
-            const weatherEl = document.getElementById("weather");
             const toggleEl = document.getElementById("toggle");
             weatherEl.textContent = display;
             weatherEl.classList.add("show");
@@ -843,7 +848,8 @@ function initSettingsUI(apply) {
             applyDarkModeClass();
         } catch (err) {
             console.error("Weather Error:", err);
-            weatherEl.textContent("Unable To Get Weather");
+            document.getElementById("weather").classList.add("show");
+            if (document.getElementById("weather")) document.getElementById("weather").textContent = "Unable To Get Weather";
         }
     }
     function removePlusSignsFromPage() {
