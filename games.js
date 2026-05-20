@@ -77,7 +77,7 @@ form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const reason = checkBlocked(address.value);
     if (reason) {
-        error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Website Chat, Padlet, Live Discord Chat, Contact Me page, Or The Report A Bug Form";
+        error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Chat, Email From The Contact Me page, Or The Report A Bug Form";
         errorCode.textContent = `Error Code: ${reason}`;
         return;
     }
@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
             requestDiv.style.maxHeight = "fit-content";
             const requestBtn = document.createElement("a");
             requestBtn.className = "discord";
-            requestBtn.href = "InfiniteContacts.html?suggest=true&game=true";
+            requestBtn.href = "InfiniteChatters.html?channel=Suggestions";
             requestBtn.innerText = "Request A Game";
             requestDiv.appendChild(requestBtn);
             container.appendChild(requestDiv);

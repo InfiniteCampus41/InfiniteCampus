@@ -1770,11 +1770,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
     const iframe = document.getElementById('embFrame');
     const tptxt = document.getElementById('rpbgtxt');
     const hr = document.getElementById('rphr');
-    const cEmbBtn = document.getElementById('cEmbBtn');
-    if (choice == 1) {
-        iframe.src = 'https://padlet.com/newsomr95/chat-room-br2tjbusbebezr2n';
-        cEmbBtn.style.display = 'block';
-    }else if (choice == 2) {
+    if (choice == 2) {
         iframe.src = 'https://nettleweb.com';
     } else if (choice == 3) {
         iframe.src = 'https://sigmasigmatoiletedge.github.io';

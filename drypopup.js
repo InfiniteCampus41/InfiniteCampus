@@ -216,7 +216,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     <a class="button" href="InfiniteApps.html?blank=true">
                         Open In About:Blank
                     </a>
-                    <a class="button" href="InfiniteContacts.html?suggest=true">
+                    <a class="button" href="InfiniteChatters.html?channel=Suggestions">
                         Suggest A Feature
                     </a>
                 </div>

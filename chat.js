@@ -49,6 +49,11 @@ let currentPath = null;
 let currentPrivateName = null;
 let currentPrivateUid = null;
 let currentUser = null;
+let isGuest = false;
+window.isGuest = isGuest;
+window.currentUser = currentUser;
+let anonSessionToken = localStorage.getItem("anonSessionToken") || null;
+let anonDisplayName = localStorage.getItem("anonDisplayName") || "Anonymous";
 let hasMoreMessages = true;
 let isAdmin = false;
 let isBlocksi = false;
@@ -332,7 +337,8 @@ function dbListen(path, callback, type = "others") {
     }
     return getAuthToken().then(token => {
         const pathArray = path.split("/");
-        const wsUrl = `${h}/?token=${token}&path=${encodeURIComponent(JSON.stringify(pathArray))}`;
+        const tokenParam = token ? `&token=${token}` : "";
+        const wsUrl = `${h}/?path=${encodeURIComponent(JSON.stringify(pathArray))}${tokenParam}`;
         const ws = new WebSocket(wsUrl);
         ws.onmessage = (event) => {
             if (!event.data) return;
@@ -749,6 +755,7 @@ async function renderMessageInstant(id, msg) {
     if (id === "sender" || id === "text" || id === "timestamp" || id === "s" || id === "t") return null;
     if (!msg) return null;
     const isDiscordMsg = !!(msg.u !== undefined && msg.a !== undefined);
+    const isAnonMsg = !!(msg.anon === true && !isDiscordMsg);
     const div = document.createElement("div");
     div.className = "msg" + (isDiscordMsg ? " msg-discord" : "");
     div.id = "msg-" + id;
@@ -924,7 +931,23 @@ async function renderMessageInstant(id, msg) {
     topRow.appendChild(timeSpan);
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
-    if (isDiscordMsg) {
+    if (isAnonMsg) {
+        profilePic.src = "/pfps/1.jpeg";
+        profilePic.onerror = () => { profilePic.src = ""; profilePic.style.display = "none"; };
+        nameSpan.textContent = msg.u || "Anonymous";
+        nameSpan.style.color = "#aaa";
+        nameSpan.style.cursor = "default";
+        const anonBadge = document.createElement("span");
+        anonBadge.title = "Guest message (Not Logged In)";
+        anonBadge.style.marginLeft = "4px";
+        anonBadge.style.fontSize = "0.75em";
+        anonBadge.style.color = "#888";
+        anonBadge.style.background = "rgba(255,255,255,0.07)";
+        anonBadge.style.borderRadius = "4px";
+        anonBadge.style.padding = "1px 4px";
+        anonBadge.textContent = "guest";
+        leftWrapper.appendChild(anonBadge);
+    } else if (isDiscordMsg) {
         profilePic.src = `${BACKEND}${msg.a}` || "/res/discord.png";
         profilePic.onerror = () => { profilePic.src = "/res/discord.png"; };
         nameSpan.textContent = msg.u || "This Message Is From The Discord";
@@ -995,6 +1018,60 @@ async function renderMessageInstant(id, msg) {
         discordReplyBtn.onclick = () => toggleReply(id, msg.u || "Discord User", rawText);
         msgBtns.appendChild(discordReplyBtn);
         msgBtns.appendChild(discordReactBtn);
+        div.insertBefore(msgBtns, topRow);
+        return div;
+    }
+    if (isAnonMsg) {
+        const rawText = msg.t || msg.text || "";
+        const textDiv = document.createElement("div");
+        textDiv.className = "msg-text";
+        textDiv.style.marginLeft = "40px";
+        textDiv.style.marginTop = "-11px";
+        textDiv.style.whiteSpace = "pre-wrap";
+        textDiv.style.overflowWrap = "anywhere";
+        textDiv.innerHTML = buildSafeText(rawText);
+        const replyId = msg.r || msg.reply;
+        if (replyId) {
+            (async () => {
+                try {
+                    const rData = await dbGet(`${currentPath}/${replyId}`);
+                    if (rData) {
+                        const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
+                        const rText = rData.t || rData.text || "(message)";
+                        const replyBar = document.createElement("div");
+                        replyBar.className = "reply-bar";
+                        replyBar.style.cssText = "border-left:3px solid #aaa;padding-left:6px;color:#aaa;font-size:0.82em;margin-bottom:3px;cursor:pointer;";
+                        replyBar.textContent = `↩ ${rName}: ${rText.slice(0, 80)}`;
+                        replyBar.onclick = () => scrollToMessage(String(replyId));
+                        textDiv.prepend(replyBar);
+                    }
+                } catch {}
+            })();
+        }
+        if (isOwner || isCoOwner || isTester || isHAdmin) {
+            const anonDelBtn = document.createElement("button");
+            anonDelBtn.innerHTML = "<i class='bi bi-trash'></i>";
+            anonDelBtn.title = "Delete Guest Message";
+            anonDelBtn.onclick = async (e) => {
+                if (e.shiftKey) {
+                    await dbDelete(`${currentPath}/${id}`);
+                    div.remove();
+                    return;
+                }
+                showConfirm("Delete This Guest Message?", async (ok) => {
+                    if (!ok) return;
+                    await dbDelete(`${currentPath}/${id}`);
+                    div.remove();
+                });
+            };
+            msgBtns.appendChild(anonDelBtn);
+        }
+        div.appendChild(topRow);
+        div.appendChild(textDiv);
+        const reactionsRow = document.createElement("div");
+        reactionsRow.className = "reactions-row";
+        reactionsRow.dataset.msgid = id;
+        div.appendChild(reactionsRow);
         div.insertBefore(msgBtns, topRow);
         return div;
     }
@@ -1226,8 +1303,10 @@ async function renderMessageInstant(id, msg) {
             replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
             replyBtn.title = "Reply";
             replyBtn.onclick = () => toggleReply(id, displayName, rawText);
-            msgBtns.insertBefore(replyBtn, reactBtn);
-            if (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester) {
+            if (!isGuest) {
+                msgBtns.insertBefore(replyBtn, reactBtn);
+            }
+            if (!isGuest && (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester)) {
                 let canDelete = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.coOwner && !meta.tester && !meta.hAdmin);
                 let canEdit   = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin);
                 if (canEdit) {
@@ -1771,6 +1850,23 @@ function openChannelSettings(channel, data) {
             <label style="color:#aaa;font-size:0.85em;">Discord Channel ID (Leave Empty To Unlink)</label>
             <input id="discordChannelIdInput" class="form-control" placeholder="Discord Channel ID" style="width:100%; padding:6px;margin-bottom:10px;">
             <div id="discordIdStatus" style="font-size:0.78em;color:#aaa;margin-bottom:10px;"></div>
+            <hr>
+            <center><h3>Guest Settings</h3></center>
+            <hr>
+            <div style="margin-bottom:14px;">
+                <label class="switch">
+                    <input type="checkbox" id="guestReadToggle">
+                    <span class="slider"></span>
+                </label>
+                Guest Read
+            </div>
+            <div style="margin-bottom:18px;">
+                <label class="switch">
+                    <input type="checkbox" id="guestWriteToggle">
+                    <span class="slider"></span>
+                </label>
+                Guest Write
+            </div>
             <center>
                 <h3>
                     Read
@@ -1830,7 +1926,16 @@ function openChannelSettings(channel, data) {
         const el = overlay.querySelector(`input[data-write="${key}"]`);
         if (el) el.checked = true;
     }
-    document.getElementById("cancelSettings").onclick = () => overlay.remove();
+    const guestReadToggle  = overlay.querySelector("#guestReadToggle");
+    const guestWriteToggle = overlay.querySelector("#guestWriteToggle");
+    if (guestReadToggle)  guestReadToggle.checked  = !!(data.guestRead);
+    if (guestWriteToggle) guestWriteToggle.checked = !!(data.guestWrite);
+    guestWriteToggle?.addEventListener("change", () => {
+        if (guestWriteToggle.checked) guestReadToggle.checked = true;
+    });
+    guestReadToggle?.addEventListener("change", () => {
+        if (!guestReadToggle.checked) guestWriteToggle.checked = false;
+    });
     document.getElementById("deleteChannel").onclick = async () => {
         showConfirm(`Delete "${channel}"? This Cannot Be Undone.`, async (result) => {
             if (!result) return;
@@ -1862,6 +1967,8 @@ function openChannelSettings(channel, data) {
         const write = getSelectedRoles("write");
         if (Object.keys(read).length === 0) read.verified = true;
         if (Object.keys(write).length === 0) write.verified = true;
+        const guestRead  = !!(overlay.querySelector("#guestReadToggle")?.checked);
+        const guestWrite = !!(overlay.querySelector("#guestWriteToggle")?.checked);
         if (discordId && !/^\d+$/.test(discordId)) {
             showError("Discord Channel ID Must Be A Number");
             return;
@@ -1869,7 +1976,7 @@ function openChannelSettings(channel, data) {
         try {
             if (newName && newName !== channel) {
                 const oldData = await dbGet(`channels/${channel}`) || {};
-                await dbSet(`channels/${newName}`, { ...oldData, read, write });
+                await dbSet(`channels/${newName}`, { ...oldData, read, write, guestRead, guestWrite });
                 await dbDelete(`channels/${channel}`);
                 const oldMsgs = await dbGet(`messages/${channel}`);
                 if (oldMsgs) {
@@ -1878,7 +1985,7 @@ function openChannelSettings(channel, data) {
                 }
                 switchChannel(newName);
             } else {
-                await dbUpdate(`channels/${channel}`, { read, write });
+                await dbUpdate(`channels/${channel}`, { read, write, guestRead, guestWrite });
             }
             try {
                 const token = await getAuthToken();
@@ -1889,7 +1996,7 @@ function openChannelSettings(channel, data) {
                     body: JSON.stringify({ channelName: targetName, discordChannelId: discordId })
                 });
             } catch (e) {
-                console.warn("Failed To Dave Discord Channel Mapping:", e);
+                console.warn("Failed To Save Discord Channel Mapping:", e);
             }
             overlay.remove();
             showSuccess("Channel Settings Saved!");
@@ -1900,7 +2007,11 @@ function openChannelSettings(channel, data) {
 }
 async function hasPermission(channelData, type) {
     if (!channelData) return true;
-    if (!currentUser) return false;
+    if (!currentUser) {
+        if (type === "read")  return !!(channelData.guestRead);
+        if (type === "write") return !!(channelData.guestWrite);
+        return false;
+    }
     const meta = await getUserMeta(currentUser.uid);
     if (meta.owner || meta.tester || meta.coOwner) {
         return true;
@@ -1973,7 +2084,7 @@ async function renderChannelsFromDB() {
         if (!currentPrivateUid && currentPath === `messages/${ch}`) {
             li.classList.add("active");
         }
-        if ((isOwner || isCoOwner || isTester) && ch !== "General") {
+        if (isOwner || isCoOwner || isTester) {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
@@ -2008,6 +2119,30 @@ async function switchChannel(ch) {
     currentPrivateName = null;
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
+    if (isGuest) {
+        const chData = await dbGet(`channels/${ch}`);
+        const canRead  = !!(chData?.guestRead  || !chData);
+        const canWrite = !!(chData?.guestWrite);
+        if (!canRead) {
+            showError("This channel is not available to guests.");
+            currentPath = null;
+            return;
+        }
+        sendBtn.disabled = !canWrite;
+        sendBtn.title = canWrite ? "Send Message" : "This Channel Does Not Allow Guest Messages";
+        let notice = document.getElementById("guestReadOnlyNotice");
+        if (!canWrite) {
+            if (!notice) {
+                notice = document.createElement("div");
+                notice.id = "guestReadOnlyNotice";
+                notice.style.cssText = "text-align:center;color:#aaa;font-size:0.8em;padding:4px;background:rgba(0,0,0,0.3);border-radius:4px;margin:2px 0;";
+                chatInput?.parentElement?.insertBefore(notice, chatInput);
+            }
+            notice.textContent = "Read-only — Log In To Send Messages In This Channel";
+        } else if (notice) {
+            notice.remove();
+        }
+    }
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         return;
     } else {
@@ -2051,7 +2186,53 @@ function startMetadataListener() {
     }, "privateChats");
 }
 sendBtn.onclick = async () => {
-    if (!currentPath || !currentUser) return;
+    if (!currentPath) return;
+    if (isGuest) {
+        let text = chatInput.value.trim();
+        if (!text) return;
+        if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
+            showError("@everyone And @here Mentions Are Not Allowed.");
+            chatInput.value = "";
+            return;
+        }
+        if (text.length > 500) {
+            showError("Guest Messages Are Limited To 500 Characters.");
+            chatInput.value = "";
+            return;
+        }
+        const ch = currentPath.split("/")[1];
+        const chData = await dbGet(`channels/${ch}`);
+        if (!(await hasPermission(chData, "write"))) {
+            showError("This Channel Does Not Allow Guest Messages.");
+            return;
+        }
+        const ts = Date.now();
+        const headers = { "Content-Type": "application/json" };
+        if (anonSessionToken) headers["x-anon-session"] = anonSessionToken;
+        try {
+            const res = await fetch(`${BACKEND}/write`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                    path: ["messages", ch, String(ts)],
+                    value: { u: anonDisplayName, t: text, anon: true, r: replyMsgId || undefined },
+                    anonSession: anonSessionToken
+                })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                showError(err.error || "Failed To Send");
+                return;
+            }
+        } catch (e) {
+            showError("Failed to send: " + e.message);
+            return;
+        }
+        chatInput.value = "";
+        toggleReply();
+        return;
+    }
+    if (!currentUser) return;
     let text = chatInput.value.trim();
     if (!text) return;
     const muted = await isUserMuted(currentUser.uid);
@@ -2126,10 +2307,28 @@ sendBtn.onclick = async () => {
     }
 };
 onAuthStateChanged(auth, async user => {
-    if (!user) { 
-        showError("Not Logged In!"); 
-        setTimeout(() => location.href = "InfiniteLogins.html?chat=true", 1000);
-        return; 
+    if (!user) {
+        isGuest = true;
+        currentUser = null;
+        if (usernameSpan) usernameSpan.textContent = anonDisplayName;
+        if (roleSpan) { roleSpan.textContent = "Guest"; roleSpan.style.color = "#aaa"; }
+        if (bioSpan) { bioSpan.textContent = "Browsing as guest"; bioSpan.style.color = "gray"; }
+        mentionToggleLabel.style.display = "none";
+        adminControls.style.display = "none";
+        addChannelBtn.style.display = "none";
+        _injectGuestNameButton();
+        sendBtn.disabled = true;
+        await loadAllUsernames();
+        startChannelListeners();
+        await renderChannelsFromDB();
+        const _urlParams = new URLSearchParams(window.location.search);
+        const _channel = _urlParams.get("channel");
+        if (_channel) {
+            switchChannel(decodeURIComponent(_channel));
+        } else {
+            switchChannel("General");
+        }
+        return;
     }
     currentUser = user;
     const [profile, settings] = await Promise.all([
@@ -2240,6 +2439,50 @@ onAuthStateChanged(auth, async user => {
         sidebarPfp.src = profilePics[safeIndex] + "?t=" + Date.now();    
     }
 });
+function _injectGuestNameButton() {
+    if (document.getElementById("guestNameBtn")) return;
+    const btn = document.createElement("button");
+    btn.id = "guestNameBtn";
+    btn.textContent = "Set Name";
+    btn.title = "Set Your Anonymous Display Name";
+    btn.style.cssText = "font-size:0.75em;padding:3px 8px;margin-top:4px;background:#333;color:#ccc;border:1px solid #555;border-radius:4px;cursor:pointer;";
+    btn.onclick = _promptGuestName;
+    const container = usernameSpan?.parentElement;
+    if (container) container.appendChild(btn);
+    else document.body.appendChild(btn);
+    const loginLink = document.createElement("a");
+    loginLink.id = "guestLoginLink";
+    loginLink.href = "InfiniteLogins.html?chat=true";
+    loginLink.textContent = "Login";
+    loginLink.style.cssText = "display:block;font-size:0.75em;margin-top:4px;color:#4fa3ff;text-decoration:underline;cursor:pointer;";
+    if (container) container.appendChild(loginLink);
+}
+async function _promptGuestName() {
+    window.location.href = window.location.href;
+    const name = window.prompt("Enter Your Anonymous Display Name (Max 32 Chars):", anonDisplayName);
+    if (!name || !name.trim()) return;
+    try {
+        const res = await fetch(`${BACKEND}/api/anon-name`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name.trim(), sessionToken: anonSessionToken })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            showError(err.error || "Failed To Set Name");
+            return;
+        }
+        const data = await res.json();
+        anonSessionToken = data.sessionToken;
+        anonDisplayName = data.name;
+        localStorage.setItem("anonSessionToken", anonSessionToken);
+        localStorage.setItem("anonDisplayName", anonDisplayName);
+        if (usernameSpan) usernameSpan.textContent = anonDisplayName;
+        showSuccess(`Display Name Set To "${anonDisplayName}"`);
+    } catch (e) {
+        showError("Failed To Set Name: " + e.message);
+    }
+}
 async function loadAllUsernames() {
     const data = await dbGet("users");
     allUsernames = [];
@@ -2266,6 +2509,22 @@ addChannelBtn.onclick = async () => {
             <br>
             <input id="channelNameInput" class="form-control" placeholder="Channel Name" />
             <br>
+            <center><h3>Guest Access</h3></center>
+            <hr>
+            <div style="margin-bottom:14px;">
+                <label class="switch">
+                    <input type="checkbox" id="guestReadToggle">
+                    <span class="slider"></span>
+                </label>
+                Guest Read
+            </div>
+            <div style="margin-bottom:18px;">
+                <label class="switch">
+                    <input type="checkbox" id="guestWriteToggle">
+                    <span class="slider"></span>
+                </label>
+                Guest Write
+            </div>
             <center>
                 <h3>
                     Read Permissions
@@ -2294,6 +2553,10 @@ addChannelBtn.onclick = async () => {
         </div>
     `;
     document.body.appendChild(overlay);
+    const gRT = overlay.querySelector("#guestReadToggle");
+    const gWT = overlay.querySelector("#guestWriteToggle");
+    gWT?.addEventListener("change", () => { if (gWT.checked) gRT.checked = true; });
+    gRT?.addEventListener("change", () => { if (!gRT.checked) gWT.checked = false; });
     document.getElementById("cancelCreate").onclick = () => overlay.remove();
     document.getElementById("createChannelConfirm").onclick = async () => {
         const name = document.getElementById("channelNameInput").value.trim();
@@ -2302,7 +2565,9 @@ addChannelBtn.onclick = async () => {
         const write = getSelectedRoles("write");
         if (Object.keys(read).length === 0) read.verified = true;
         if (Object.keys(write).length === 0) write.verified = true;
-        await dbSet(`channels/${name}`, { read, write });
+        const guestRead  = !!(overlay.querySelector("#guestReadToggle")?.checked);
+        const guestWrite = !!(overlay.querySelector("#guestWriteToggle")?.checked);
+        await dbSet(`channels/${name}`, { read, write, guestRead, guestWrite });
         overlay.remove();
     };
 };

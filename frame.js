@@ -82,22 +82,9 @@ const headerHTML = `
                 <a href="InfiniteApps.html">
                     Apps
                 </a>
-                <div class="dropdown-wrap">
-                    <button id="chatToggle" class="dropdown-toggle">
-                        Chat
-                    </button>
-                    <div class="dropdown themed" id="chatDropdown">
-                        <a href='InfiniteEmbeds.html?choice=1'>
-                            Padlet
-                        </a>
-                        <a href='InfiniteChatters.html'>
-                            Website Chat
-                        </a>
-                        <a href='InfiniteDiscords.html'>
-                            Live Discord Chat
-                        </a>
-                    </div>
-                </div>
+                <a href="InfiniteChatters.html">
+                    Chat
+                </a>
                 <div class="dropdown-wrap">
                     <button id="helpToggle" class="dropdown-toggle">
                         Help / Support
@@ -171,14 +158,8 @@ const headerHTML = `
         <a href="InfiniteApps.html" class="darkbuttons">
             Apps
         </a>
-        <a href="InfiniteEmbeds.html?choice=1" class="darkbuttons">
-            Padlet
-        </a>
         <a href="InfiniteChatters.html" class="darkbuttons">
-            Website Chat
-        </a>
-        <a href="InfiniteDiscords.html" class="darkbuttons">
-            Live Discord Chat
+            Chat
         </a>
         <a href="InfiniteApps.html?question=true" class="darkbuttons">
             FAQ
@@ -406,8 +387,6 @@ document.addEventListener("DOMContentLoaded", () => {
             snowflakes.forEach(flake => flake.start && flake.start());
         }
     });
-    const chatToggle = document.getElementById('chatToggle');
-    const chatDropdown = document.getElementById('chatDropdown');
     const downloadToggle = document.getElementById('downloadToggle');
     const downloadDropdown = document.getElementById('downloadDropdown');
     const helpToggle = document.getElementById('helpToggle');
@@ -416,19 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const abtDropdown = document.getElementById('abtDropdown');
     const updateToggle = document.getElementById('updateToggle');
     const updateDropdown = document.getElementById('updateDropdown');
-    chatToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        chatDropdown.style.display = chatDropdown.style.display === 'flex' ? 'none' : 'flex';
-        updateDropdown.style.display = 'none';
-        downloadDropdown.style.display = 'none';
-        helpDropdown.style.display = 'none';
-        abtDropdown.style.display = 'none';
-    });
     downloadToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         downloadDropdown.style.display = downloadDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
-        chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
     });
@@ -437,7 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
         helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
-        chatDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
     });
     abtToggle.addEventListener('click', (e) => {
@@ -445,7 +414,6 @@ document.addEventListener("DOMContentLoaded", () => {
         abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
-        chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     updateToggle.addEventListener('click', (e) => {
@@ -453,13 +421,9 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDropdown.style.display = updateDropdown.style.display === 'flex' ? 'none' : 'flex';
         abtDropdown.style.display = 'none';
         downloadDropdown.style.display = 'none';
-        chatDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     document.addEventListener('click', (e) => {
-        if (!chatDropdown.contains(e.target) && !chatToggle.contains(e.target)) {
-            chatDropdown.style.display = 'none';
-        }
         if (!downloadDropdown.contains(e.target) && !downloadToggle.contains(e.target)) {
             downloadDropdown.style.display = 'none';
         }
@@ -514,7 +478,6 @@ function appendToMain() {
     const excludedPages = [
         "/InfiniteChatters.html",
         "/InfiniteEmbeds.html",
-        "/InfiniteDiscords.html",
         "/InfiniteGamers.html",
         "/InfiniteBrowsers.html",
         "/InfiniteDonaters.html",
