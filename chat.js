@@ -755,7 +755,7 @@ async function renderMessageInstant(id, msg) {
     if (id === "sender" || id === "text" || id === "timestamp" || id === "s" || id === "t") return null;
     if (!msg) return null;
     const isDiscordMsg = !!(msg.u !== undefined && msg.a !== undefined);
-    const isAnonMsg = !!(msg.anon === true && !isDiscordMsg);
+    const isAnonMsg = !!(( msg.anon === true || msg.sender === "anon") && !isDiscordMsg);
     const div = document.createElement("div");
     div.className = "msg" + (isDiscordMsg ? " msg-discord" : "");
     div.id = "msg-" + id;
@@ -789,7 +789,7 @@ async function renderMessageInstant(id, msg) {
     textDiv.style.whiteSpace = "pre-wrap";
     textDiv.style.overflowWrap = "anywhere";
     textDiv.style.marginLeft = "40px";
-    textDiv.style.marginTop = "-11px";
+    textDiv.style.marginTop = "-5px";
     let editedSpan = null;
     if (msg.edited || msg.e) {
         editedSpan = document.createElement("span");
@@ -803,8 +803,7 @@ async function renderMessageInstant(id, msg) {
         let safe = buildSafeText(raw);
         safe = await processChannelMentions(safe);
         textDivEl.innerHTML = safe;
-        textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {
-            try {
+        textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {            try {
                 const b64 = el.getAttribute("data") || "";
                 const decoded = atob(b64);
                 const wrapper = document.createElement("div");
@@ -923,8 +922,11 @@ async function renderMessageInstant(id, msg) {
             link.addEventListener("touchmove", () => clearTimeout(pressTimer));
         });
     }
-    buildRichText(rawText, textDiv).catch(() => { 
-        textDiv.innerHTML = buildSafeText(rawText); 
+    buildRichText(rawText, textDiv).then(() => {
+        initAudioPlayers(textDiv);
+    }).catch(() => { 
+        textDiv.innerHTML = buildSafeText(rawText);
+        initAudioPlayers(textDiv);
     });
     if (msg.edited || msg.e) editedSpan.textContent = "(Edited)";
     topRow.appendChild(leftWrapper);
@@ -1026,7 +1028,7 @@ async function renderMessageInstant(id, msg) {
         const textDiv = document.createElement("div");
         textDiv.className = "msg-text";
         textDiv.style.marginLeft = "40px";
-        textDiv.style.marginTop = "-11px";
+        textDiv.style.marginTop = "-5px";
         textDiv.style.whiteSpace = "pre-wrap";
         textDiv.style.overflowWrap = "anywhere";
         textDiv.innerHTML = buildSafeText(rawText);
@@ -1112,7 +1114,7 @@ async function renderMessageInstant(id, msg) {
                     replySpan.style.fontSize = "0.8em";
                     reply.style.marginRight = "44px";
                     replySpan.style.color = "#aaa";
-                    reply.style.marginTop = "-11px";
+                    reply.style.marginTop = "-5px";
                     replySpan.style.whiteSpace = "nowrap";
                     replySpan.style.overflow = "hidden";
                     replySpan.style.textOverflow = "ellipsis";
@@ -1514,7 +1516,9 @@ function buildSafeText(raw) {
             }
             const altMatch = attrs.match(/\balt="([^"]*)"/i);
             const alt = altMatch ? altMatch[1] : "";
-            return `<audio src="${safeSrc}" alt="${alt}" class="chat-aud" onerror="this.style.display='none'">`;
+            const nameMatch = attrs.match(/\bdata-fname="([^"]*)"/i);
+            const fname = nameMatch ? nameMatch[1] : "audio";
+            return `<div class="discord-audio" data-fname="${fname}"><audio controls src="${safeSrc}" alt="${alt}" onerror="this.style.display='none'"></audio><div class="discordaudiocontrols"><button class="discordaudioplay"><i class='bi bi-play-fill'></i></button><input type="range" class="discordaudioseek" value="0" min="0" max="100"><div class="discordaudiotime"><span class="current">0:00</span> / <span class="duration">0:00</span></div></div></div>`;
         }
     );
     safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
@@ -1633,6 +1637,7 @@ async function attachMessageListeners(path) {
         if (div) fragment.appendChild(div);
     }
     chatLog.appendChild(fragment);
+    initAudioPlayers(chatLog);
     scrollToBottom(false);
     let lastSnapshot = { ...msgs };
     const renderedKeys = new Set(Object.keys(msgs));
@@ -1662,6 +1667,7 @@ async function attachMessageListeners(path) {
                     }
                 }
                 if (!inserted) chatLog.appendChild(newDiv);
+                initAudioPlayers(newDiv);
                 if (autoScrollEnabled) scrollToBottom(true);
             } else if (lastSnapshot[key] && JSON.stringify(lastSnapshot[key]) !== JSON.stringify(val)) {
                 const textDiv = existing.querySelector(".msg-text");
@@ -1685,6 +1691,44 @@ async function attachMessageListeners(path) {
         lastSnapshot = { ...newData };
     }, "messages");
     currentListeners.added = ws;
+}
+function initAudioPlayers(container) {
+    const scope = container || document;
+    scope.querySelectorAll(".discord-audio").forEach((player) => {
+        if (player.dataset.audioInit) return;
+        player.dataset.audioInit = "1";
+        const audio = player.querySelector("audio");
+        const playBtn = player.querySelector(".play");
+        const seek = player.querySelector(".seek");
+        const current = player.querySelector(".current");
+        const duration = player.querySelector(".duration");
+        if (!audio || !playBtn || !seek || !current || !duration) return;
+        function format(t) {
+            const m = Math.floor(t / 60);
+            const s = Math.floor(t % 60).toString().padStart(2, "0");
+            return `${m}:${s}`;
+        }
+        audio.addEventListener("loadedmetadata", () => {
+            seek.max = Math.floor(audio.duration);
+            duration.textContent = format(audio.duration);
+        });
+        audio.addEventListener("timeupdate", () => {
+            seek.value = audio.currentTime;
+            current.textContent = format(audio.currentTime);
+        });
+        playBtn.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerHTML = "<i class='bi bi-pause-fill'></i>";
+            } else {
+                audio.pause();
+                playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            }
+        });
+        seek.addEventListener("input", () => {
+            audio.currentTime = seek.value;
+        });
+    });
 }
 function playNotificationSound() {
     const audio = new Audio("/res/notif.mp3");
@@ -2189,7 +2233,7 @@ sendBtn.onclick = async () => {
     if (!currentPath) return;
     if (isGuest) {
         let text = chatInput.value.trim();
-        if (!text) return;
+        if (!text && !pendingAttachFile) return;
         if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
             showError("@everyone And @here Mentions Are Not Allowed.");
             chatInput.value = "";
@@ -2206,6 +2250,26 @@ sendBtn.onclick = async () => {
             showError("This Channel Does Not Allow Guest Messages.");
             return;
         }
+        if (pendingAttachFile) {
+            try {
+                const fileMsg = { 
+                    u: anonDisplayName, 
+                    t: text || "", 
+                    sender: "anon", 
+                    r: replyMsgId || undefined 
+                };
+                await dbPushWithFile(currentPath, fileMsg, pendingAttachFile);
+                pendingAttachFile = null;
+                const preview = document.getElementById("chatFilePreview");
+                if (preview) preview.remove();
+                chatInput.value = "";
+                toggleReply();
+                return;
+            } catch (err) {
+                showError("File Upload Failed: " + err.message);
+                return;
+            }
+        }
         const ts = Date.now();
         const headers = { "Content-Type": "application/json" };
         if (anonSessionToken) headers["x-anon-session"] = anonSessionToken;
@@ -2215,7 +2279,7 @@ sendBtn.onclick = async () => {
                 headers,
                 body: JSON.stringify({
                     path: ["messages", ch, String(ts)],
-                    value: { u: anonDisplayName, t: text, anon: true, r: replyMsgId || undefined },
+                    value: { u: anonDisplayName, t: text, sender: "anon", r: replyMsgId || undefined },
                     anonSession: anonSessionToken
                 })
             });
@@ -2705,9 +2769,14 @@ async function dbPushWithFile(path, value, file) {
     form.append("path", JSON.stringify([...path.split("/").filter(Boolean), key]));
     form.append("value", JSON.stringify(valueWithTs));
     form.append("file", file, file.name);
-    if (token) form.append("token", token);
     const headers = {};
-    if (token) headers["Authorization"] = "Bearer " + token;
+    if (token) {
+        form.append("token", token);
+        headers["Authorization"] = "Bearer " + token;
+    } else if (anonSessionToken) {
+        form.append("anonSession", anonSessionToken);
+        headers["x-anon-session"] = anonSessionToken;
+    }
     const res = await fetch(`${a}/write`, { method: "POST", headers, body: form });
     if (!res.ok) {
         let errMsg = "Upload failed";
@@ -2908,6 +2977,7 @@ setInterval(async () => {
             throw new Error("Online Indicator Post Failed");
         }
     }
+    initAudioPlayers(chatLog);
 }, 20000);
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.addEventListener("message", async (event) => {

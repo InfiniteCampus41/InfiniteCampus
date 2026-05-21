@@ -639,6 +639,55 @@ body {
     cursor:pointer;
     color:lightseagreen;
 }
+.discord-audio {
+    width: 360px;
+    flex-direction: column;
+    display: flex;
+    height: 75px;
+    padding: 6px;
+    background: #2b2d31;
+    border-radius: 10px;
+    color: #dbdee1;
+}
+.discord-audio audio {
+    display: none;
+}
+.discord-audio::before {
+    content: attr(data-fname);
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.discordaudiocontrols {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.discordaudioplay {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: #383a40;
+    color: #fff;
+    cursor: pointer;
+}
+.discordaudioseek {
+    flex: 1;
+    height: 4px;
+    cursor: pointer;
+}
+.discordaudiotime {
+    font-size: 12px;
+    color: #b5bac1;
+    min-width: 80px;
+    text-align: right;
+    white-space: nowrap;
+}
 #displayNameSection {
     display: none;
 }

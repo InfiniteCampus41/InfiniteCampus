@@ -4,7 +4,6 @@ TODO
     Combine All Chat Pages Into One:
         [x] Allow Limited Use Of Website Chat While Logged Out
         [x] Add Message Limit While Logged Out To Reduce API Usage
-        Add File Upload Limit While Logged Out To Reduce API Usage   (in progress)
         Fix Audio Attachments On Website Chat                        (in progress)
     Website Chat:
         Need To Do:
