@@ -1242,6 +1242,26 @@ main {
     #desktopNav {
         display:none;
     }
+    .discord-audio {
+        width: 200px;
+        height:auto;
+        border-radius:25px;
+    }
+    .discord-audio::before {
+        font-size: 9px;
+        margin-bottom:-8px !important;
+        margin-left:35px;
+    }
+    .discordaudiocontrols {
+        gap: 5px;
+        margin-bottom:4px;
+    }
+    .discordaudioplay {
+        border-radius: 50% !important;
+    }
+    .discordaudiotime {
+        text-align: center;
+    }
     #donateUI > br{
         display:none;
     }
