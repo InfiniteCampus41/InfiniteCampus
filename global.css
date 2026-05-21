@@ -349,8 +349,10 @@ body {
     background: #2a2a2a;
 }
 .chat-img{
-    width:100px;
-    height:100px;
+    max-height:500px;
+    max-width:500px;
+    width:fit-content;
+    height:fit-content;
     object-fit:cover;
     border-radius:15px;
     cursor:pointer;
@@ -389,8 +391,12 @@ body {
     align-items:flex-start;
 }
 .chat-vid {
-    width:50%;
-    height:200px;
+    width: 100%;
+    max-height: 300px;
+    border-radius: 0 0 6px 6px;
+    display: block;
+    background: #000;
+    cursor: pointer;
 }
 .chrome-newtab {
     padding: 1px 5px;
@@ -643,29 +649,41 @@ body {
     width: 360px;
     flex-direction: column;
     display: flex;
-    height: 75px;
-    padding: 6px;
+    padding: 8px 10px 6px;
     background: #2b2d31;
     border-radius: 10px;
     color: #dbdee1;
+    position: relative;
 }
 .discord-audio audio {
     display: none;
 }
-.discord-audio::before {
-    content: attr(data-fname);
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.discord-audio:hover .discordaudiodl {
+    opacity: 1;
 }
 .discordaudiocontrols {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+}
+.discordaudiodl {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #383a40;
+    color: #b5bac1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 13px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+}
+.discordaudiodl:hover {
+    background: #4e5058;
+    color: #fff;
 }
 .discordaudioplay {
     width: 28px;
@@ -675,18 +693,211 @@ body {
     background: #383a40;
     color: #fff;
     cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.discordaudioplay:hover {
+    background: #4e5058;
 }
 .discordaudioseek {
     flex: 1;
     height: 4px;
     cursor: pointer;
+    accent-color: green;
+}
+.discordaudiosize {
+    font-size: 10px;
+    color: #80848e;
 }
 .discordaudiotime {
-    font-size: 12px;
+    font-size: 11px;
     color: #b5bac1;
-    min-width: 80px;
-    text-align: right;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.discordaudiotop {
+    display: flex;
+    align-items:center;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 28px;
+}
+.discordaudiotop i {
+    color:green;
+    font-size:2.5em;
+    margin-right:6px;
+}
+.discord-file-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #2b2d31;
+    border: 1px solid #3f4147;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 6px;
+    max-width: 380px;
+    min-width: 200px;
+}
+.discord-file-dl {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #383a40;
+    color: #b5bac1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.discord-file-dl:hover {
+    background: green;
+    color: #fff;
+}
+.discord-file-icon {
+    font-size: 28px;
+    color: green;
+    flex-shrink: 0;
+}
+.discord-file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.discord-file-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: limegreen;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+}
+.discord-file-size {
+    font-size: 11px;
+    color: #80848e;
+}
+.discord-vid-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #2b2d31;
+}
+.discord-vid-dl {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: #383a40;
+    color: #b5bac1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.discord-vid-dl:hover {
+    background: green;
+    color: #fff;
+}
+.discord-vid-fname {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dbdee1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.discord-vid-mute {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    border: none;
+    background: transparent;
+    color: #b5bac1;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.discord-vid-mute:hover {
+    background: #383a40;
+    color: #fff;
+}
+.discord-vid-play {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: #383a40;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.discord-vid-play:hover {
+    background: #4e5058;
+}
+.discord-vid-seek {
+    flex: 1;
+    height: 4px;
+    cursor: pointer;
+    accent-color: green;
+}
+.discord-vid-size {
+    font-size: 10px;
+    color: #80848e;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+}
+.discord-vid-time {
+    font-size: 11px;
+    color: #b5bac1;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.discord-vid-topbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #2b2d31;
+    min-height: 32px;
+}
+.discord-vid-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    background: #1e1f22;
+    border: 1px solid #3f4147;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 6px;
+    max-width: 400px;
+    width: 100%;
 }
 #displayNameSection {
     display: none;
@@ -1243,24 +1454,39 @@ main {
         display:none;
     }
     .discord-audio {
-        width: 200px;
+        width: 220px;
         height:auto;
-        border-radius:25px;
-    }
-    .discord-audio::before {
-        font-size: 9px;
-        margin-bottom:-8px !important;
-        margin-left:35px;
+        border-radius:20px;
     }
     .discordaudiocontrols {
         gap: 5px;
         margin-bottom:4px;
+    }
+    .discordaudiodl {
+        opacity: 1 !important;
     }
     .discordaudioplay {
         border-radius: 50% !important;
     }
     .discordaudiotime {
         text-align: center;
+    }
+    .discordaudiotop {
+        font-size: 11px;
+        margin-left:30px;
+        margin-bottom:-7px;
+    }
+    .discordaudiotop .discordaudiosize {
+        display:none;
+    }
+    .discordaudiotop i {
+        display:none;
+    }
+    .discord-file-block {
+        max-width: 100%;
+    }
+    .discord-vid-wrapper {
+        max-width: 100%;
     }
     #donateUI > br{
         display:none;

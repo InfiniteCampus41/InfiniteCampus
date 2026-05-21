@@ -1,14 +1,17 @@
 TODO
     General:
         Combine The Music Streaming Page With MP3 Player Page
-    Combine All Chat Pages Into One:
-        [x] Allow Limited Use Of Website Chat While Logged Out
-        [x] Add Message Limit While Logged Out To Reduce API Usage
-        Fix Audio Attachments On Website Chat                        (in progress)
     Website Chat:
         Need To Do:
             Fix Replies From Discord:
                 Make It So When A Person From Discord Replies To A Website Chat Message It Will Show The Website Chat Message Instead Of The Linked Message
+            Add Group Chats:
+                Make It So Group Chats Can Have A Max Of 10 Members
+                Make It So Only People Inside Of Group Chats Can Be Mentioned Inside Of Them
+                Make It So Owners Of A Group Chat Can Add/Remove Members
+                Make It So Group Chats Have An Invite Code
+                Make It So The Owner Of The Group Chat Has A Special Icon
+            
         Might Do:
             Map Discord Roles To Website Roles To Allow Deleting Of Discord Messages From Website:
                 Allow Users With Owner Role To Delete All Discord Messages

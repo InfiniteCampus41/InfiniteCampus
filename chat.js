@@ -1472,7 +1472,7 @@ function buildSafeText(raw) {
                 if (hm) h = Math.min(parseInt(hm[1]), 300);
                 if (rm) r = parseInt(rm[1]);
             }
-            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;";
+            let st = "margin-top:6px;cursor:pointer;border-radius:6px;";
             if (w) st += `width:${w}px;`;
             if (h) st += `height:${h}px;`;
             if (r !== null) st += `border-radius:${r}px;`;
@@ -1488,23 +1488,16 @@ function buildSafeText(raw) {
                 safeSrc = BACKEND + safeSrc;
             }
             const altMatch = attrs.match(/\balt="([^"]*)"/i);
-            const styleMatch = attrs.match(/\bstyle="([^"]*)"/i);
             const alt = altMatch ? altMatch[1] : "";
-            const style = styleMatch ? styleMatch[1] : "";
-            let w = null, h = null;
-            if (style) {
-                const wm = style.match(/width\s*:\s*([0-9]+)px/i);
-                const hm = style.match(/height\s*:\s*([0-9]+)px/i);
-                if (wm) w = Math.min(parseInt(wm[1]), 300);
-                if (hm) h = Math.min(parseInt(hm[1]), 300);
-            }
-            let st = "margin-top:6px;cursor:pointer;max-width:fit-content;border-radius:6px;height:fit-content;";
-            if (w) st += `width:${w}px;`;
-            if (h) st += `height:${h}px;`;
-            return `<video src="${safeSrc}" alt="${alt}" class="chat-vid" style="${st}" onerror="this.style.display='none'" controls>`;
+            const nameMatch = attrs.match(/\bdata-fname="([^"]*)"/i);
+            const fname = nameMatch ? nameMatch[1] : (alt || "video");
+            const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
+            const fsize = fsizeMatch ? fsizeMatch[1] : "";
+            const fsizeHtml = fsize ? `<span class="discord-vid-size">${fsize}</span>` : "";
+            return `<div class="discord-vid-wrapper"><div class="discord-vid-topbar"><span class="discord-vid-fname">${fname}</span>${fsizeHtml}<a class="discord-vid-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div><video src="${safeSrc}" class="chat-vid discord-vid" onerror="this.parentElement.style.display='none'"></video><div class="discord-vid-controls"><button class="discord-vid-play"><i class="bi bi-play-fill"></i></button><input type="range" class="discord-vid-seek" value="0" min="0" max="100" step="0.1"><div class="discord-vid-time"><span class="discord-vid-cur">0:00</span> / <span class="discord-vid-dur">0:00</span></div><button class="discord-vid-mute" title="Mute"><i class="bi bi-volume-up-fill"></i></button></div></div>`;
         }
     );
-    safe = safe.replace(/&lt;\/video&gt;/gi, "</video>");
+    safe = safe.replace(/&lt;\/video&gt;/gi, "");
     safe = safe.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     safe = safe.replace(
         /&lt;audio\b([\s\S]*?)&gt;/gi,
@@ -1518,10 +1511,37 @@ function buildSafeText(raw) {
             const alt = altMatch ? altMatch[1] : "";
             const nameMatch = attrs.match(/\bdata-fname="([^"]*)"/i);
             const fname = nameMatch ? nameMatch[1] : "audio";
-            return `<div class="discord-audio" data-fname="${fname}"><audio controls src="${safeSrc}" alt="${alt}" onerror="this.style.display='none'"></audio><div class="discordaudiocontrols"><button class="discordaudioplay"><i class='bi bi-play-fill'></i></button><input type="range" class="discordaudioseek" value="0" min="0" max="100"><div class="discordaudiotime"><span class="current">0:00</span> / <span class="duration">0:00</span></div></div></div>`;
+            const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
+            const fsize = fsizeMatch ? fsizeMatch[1] : "";
+            const fsizeHtml = fsize ? `<span class="discordaudiosize">${fsize}</span>` : "";
+            const tophtml = `<span class="discordaudiotop"><i class="bi bi-file-earmark-music"></i><span style="display:flex;flex-direction:column;overflow:hidden;">${fname} ${fsizeHtml}</span></span>`
+            return `<div class="discord-audio" data-fname="${fname}" data-src="${safeSrc}" data-dl="${fname}">${tophtml}<audio controls src="${safeSrc}" alt="${alt}" onerror="this.style.display='none'"></audio><div class="discordaudiocontrols"><button class="discordaudioplay"><i class='bi bi-play-fill'></i></button><input type="range" class="discordaudioseek" value="0" min="0" max="100"><div class="discordaudiotime"><span class="current">--:--</span> / <span class="duration">--:--</span></div><a class="discordaudiodl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div></div>`;
         }
     );
     safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
+    safe = safe.replace(
+        /&lt;file\b([\s\S]*?)&gt;/gi,
+        (fullTag, attrs) => {
+            const srcMatch = attrs.match(/\bhref="([^"]*)"/i) || attrs.match(/\bsrc="([^"]*)"/i);
+            let safeSrc = srcMatch ? srcMatch[1].replace(/"/g, "") : "";
+            if (safeSrc.startsWith("/")) safeSrc = BACKEND + safeSrc;
+            const nameMatch = attrs.match(/\bdata-fname="([^"]*)"/i);
+            const fname = nameMatch ? nameMatch[1] : "file";
+            const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
+            const fsize = fsizeMatch ? fsizeMatch[1] : "";
+            const ext = fname.split(".").pop().toLowerCase();
+            let iconClass = "bi bi-file-earmark";
+            if (["pdf"].includes(ext)) iconClass = "bi bi-file-earmark-pdf";
+            else if (["zip","rar","7z","tar","gz"].includes(ext)) iconClass = "bi bi-file-earmark-zip";
+            else if (["doc","docx","txt","md"].includes(ext)) iconClass = "bi bi-file-earmark-text";
+            else if (["xls","xlsx","csv"].includes(ext)) iconClass = "bi bi-file-earmark-spreadsheet";
+            else if (["ppt","pptx"].includes(ext)) iconClass = "bi bi-file-earmark-slides";
+            else if (["js","ts","py","html","css","json","cpp","c","java"].includes(ext)) iconClass = "bi bi-file-earmark-code";
+            const fsizeHtml = fsize ? `<span class="discord-file-size">${fsize}</span>` : "";
+            return `<div class="discord-file-block"><i class="${iconClass} discord-file-icon"></i><div class="discord-file-info"><span class="discord-file-name" title="${fname}">${fname}</span>${fsizeHtml}</div><a class="discord-file-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div>`;
+        }
+    );
+    safe = safe.replace(/&lt;\/file&gt;/gi, "");
     safe = safe.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
     safe = safe.replace(mentionRegex, (match, name) => {
@@ -1711,10 +1731,16 @@ function initAudioPlayers(container) {
         audio.addEventListener("loadedmetadata", () => {
             seek.max = Math.floor(audio.duration);
             duration.textContent = format(audio.duration);
+            current.textContent = "0:00";
         });
         audio.addEventListener("timeupdate", () => {
-            seek.value = audio.currentTime;
+            if (!seek._seeking) seek.value = audio.currentTime;
             current.textContent = format(audio.currentTime);
+        });
+        audio.addEventListener("ended", () => {
+            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            seek.value = 0;
+            current.textContent = "0:00";
         });
         playBtn.addEventListener("click", () => {
             if (audio.paused) {
@@ -1725,9 +1751,79 @@ function initAudioPlayers(container) {
                 playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
             }
         });
-        seek.addEventListener("input", () => {
-            audio.currentTime = seek.value;
+        if (!isMobile) {
+            seek.addEventListener("mousedown", () => { seek._seeking = true; });
+            seek.addEventListener("mouseup", () => {
+                seek._seeking = false;
+                audio.currentTime = seek.value;
+            });
+            seek.addEventListener("input", () => {
+                current.textContent = format(Number(seek.value));
+            });
+        }
+    });
+    scope.querySelectorAll(".discord-vid-wrapper").forEach((wrapper) => {
+        if (wrapper.dataset.vidInit) return;
+        wrapper.dataset.vidInit = "1";
+        const video = wrapper.querySelector(".discord-vid");
+        const playBtn = wrapper.querySelector(".discord-vid-play");
+        const seek = wrapper.querySelector(".discord-vid-seek");
+        const curEl = wrapper.querySelector(".discord-vid-cur");
+        const durEl = wrapper.querySelector(".discord-vid-dur");
+        const muteBtn = wrapper.querySelector(".discord-vid-mute");
+        if (!video || !playBtn || !seek || !curEl || !durEl) return;
+        function fmt(t) {
+            const m = Math.floor(t / 60);
+            const s = Math.floor(t % 60).toString().padStart(2, "0");
+            return `${m}:${s}`;
+        }
+        video.addEventListener("loadedmetadata", () => {
+            seek.max = video.duration;
+            durEl.textContent = fmt(video.duration);
         });
+        video.addEventListener("timeupdate", () => {
+            if (!seek._seeking) seek.value = video.currentTime;
+            curEl.textContent = fmt(video.currentTime);
+        });
+        video.addEventListener("ended", () => {
+            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            seek.value = 0;
+            curEl.textContent = "0:00";
+        });
+        video.addEventListener("pause", () => {
+            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+        });
+        video.addEventListener("play", () => {
+            playBtn.innerHTML = "<i class='bi bi-pause-fill'></i>";
+        });
+        playBtn.addEventListener("click", () => {
+            if (video.paused) video.play();
+            else video.pause();
+        });
+        if (muteBtn) {
+            muteBtn.addEventListener("click", () => {
+                video.muted = !video.muted;
+                muteBtn.innerHTML = video.muted
+                    ? "<i class='bi bi-volume-mute-fill'></i>"
+                    : "<i class='bi bi-volume-up-fill'></i>";
+            });
+        }
+        if (!isMobile) {
+            seek.addEventListener("mousedown", () => { seek._seeking = true; });
+            seek.addEventListener("mouseup", () => {
+                seek._seeking = false;
+                video.currentTime = seek.value;
+            });
+            seek.addEventListener("input", () => {
+                curEl.textContent = fmt(Number(seek.value));
+            });
+            wrapper.addEventListener("dblclick", (e) => {
+                if (e.target === video) {
+                    if (video.paused) video.play();
+                    else video.pause();
+                }
+            });
+        }
     });
 }
 function playNotificationSound() {
