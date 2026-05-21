@@ -1698,8 +1698,8 @@ function initAudioPlayers(container) {
         if (player.dataset.audioInit) return;
         player.dataset.audioInit = "1";
         const audio = player.querySelector("audio");
-        const playBtn = player.querySelector(".play");
-        const seek = player.querySelector(".seek");
+        const playBtn = player.querySelector(".discordaudioplay");
+        const seek = player.querySelector(".discordaudioseek");
         const current = player.querySelector(".current");
         const duration = player.querySelector(".duration");
         if (!audio || !playBtn || !seek || !current || !duration) return;
