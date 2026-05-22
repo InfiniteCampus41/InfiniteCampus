@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "./imports.js";
+import { auth, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "./imports.js";
 const urlParams = new URLSearchParams(window.location.search);
 const chatparams = urlParams.get("chat");
 const donParams = urlParams.get("donate");
@@ -12,6 +12,15 @@ const displayNameInput = document.getElementById("displayNameInput");
 const saveDisplayNameBtn = document.getElementById("saveDisplayNameBtn");
 const statusEl = document.getElementById("status");
 displayNameInput.setAttribute("maxlength", "20");
+let authReady = false;
+let currentUser = null;
+const authReadyPromise = new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        authReady = true;
+        resolve(user);
+    });
+});
 async function getAuthToken() {
     await authReadyPromise;
     if (currentUser) {

@@ -103,7 +103,7 @@
             <div id="main" style="color:white">
                 <div id="sidebar">
                     <div id="profileSection">
-                        <div id="profileRow" onclick="if(typeof currentUser !== 'undefined' && currentUser && typeof isGuest !== 'undefined' && !isGuest){ window.location.href='InfiniteAccounts.html?chat=true'; }">
+                        <div id="profileRow" style="cursor:pointer">
                             <img id="sidebarPfp">
                             <div id="profileInfo" style="display: flex; flex-direction: column;">
                                 <span id="username" style="font-weight:bold;">
@@ -112,8 +112,8 @@
                                 </span>
                                 <span id="bio" style="margin-top:2px;">
                                 </span>
-                                <label id="mentionToggleLabel" class="switch" style="width:100%;display:flex;justify-content:space-around">
-                                    <input type="checkbox" id="mentionToggle" style="margin-right:5px">
+                                <label id="mentionToggleLabel" class="switch" style="width:100%;display:flex;justify-content:space-around" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="mentionToggle" style="margin-right:5px" onclick="event.stopPropagation()">
                                     <span class="slider">
                                     </span>
                                     <span style="margin-left:40px;">

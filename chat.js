@@ -52,6 +52,11 @@ let currentUser = null;
 let isGuest = false;
 window.isGuest = isGuest;
 window.currentUser = currentUser;
+document.getElementById("profileRow").addEventListener("click", () => {
+    if (currentUser && !isGuest) {
+        window.location.href = "InfiniteAccounts.html?chat=true";
+    }
+});
 let anonSessionToken = localStorage.getItem("anonSessionToken") || null;
 let anonDisplayName = localStorage.getItem("anonDisplayName") || "Anonymous";
 let hasMoreMessages = true;
