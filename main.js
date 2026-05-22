@@ -842,8 +842,11 @@ function initSettingsUI(apply) {
             const temp = useFahrenheit ? `${data.temperature.fahrenheit}°F` : `${data.temperature.celsius}°C`;
             const display = `${data.location}: ${data.emoji} ${temp}`;
             const toggleEl = document.getElementById("toggle");
-            weatherEl.textContent = display;
-            weatherEl.classList.add("show");
+            const weatherEl = document.getElementById("weather");
+            if (weatherEl) {
+                weatherEl.textContent = display;
+                weatherEl.classList.add("show");
+            }
             toggleEl.classList.add("show");
             applyDarkModeClass();
         } catch (err) {
