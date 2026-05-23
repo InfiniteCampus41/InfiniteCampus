@@ -2849,7 +2849,7 @@ function getSelectedRoles(type) {
     const attachBtn = document.createElement("button");
     attachBtn.id = "chatAttachBtn";
     attachBtn.innerHTML = `<i class="bi bi-file-earmark-plus" title="Attach File" style="display:block;padding:10px;font-size:1.5em;"></i>`;
-    attachBtn.style.cssText = "background:none;border:none;cursor:pointer;padding:0px;";
+    attachBtn.style.cssText = "background:none;border:none;cursor:pointer;padding:15px;font-size:2px;";
     attachBtn.onmouseenter = () => attachBtn.style.color = "#fff";
     attachBtn.onmouseleave = () => attachBtn.style.color = "#aaa";
     attachBtn.onclick = () => fileInput.click();

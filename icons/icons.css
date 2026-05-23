@@ -97,6 +97,10 @@
     mask-image: url('/icons/emoji-smile.svg');
     -webkit-mask-image: url('/icons/emoji-smile.svg');
 }
+.bi-file-earmark-code {
+    mask-image: url('/icons/file-earmark-code.svg');
+    -webkit-mask-image: url('/icons/file-earmark-code.svg');
+}
 .bi-file-earmark-music {
     mask-image: url('/icons/file-earmark-music.svg');
     -webkit-mask-image: url('/icons/file-earmark-music.svg');
@@ -104,6 +108,10 @@
 .bi-file-earmark-plus {
     mask-image: url('/icons/file-earmark-plus.svg');
     -webkit-mask-image: url('/icons/file-earmark-plus.svg');
+}
+.bi-file-earmark-text {
+    mask-image: url('/icons/file-earmark-text.svg');
+    -webkit-mask-image: url('/icons/file-earmark-text.svg');
 }
 .bi-film {
     mask-image: url('/icons/film.svg');
