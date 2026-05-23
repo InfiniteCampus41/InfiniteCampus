@@ -1391,7 +1391,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             return `${m}:${sec.toString().padStart(2, '0')}`;
         }
         function syncPlayIcon() {
-            document.getElementById('playIcon').className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+            document.getElementById('playIcon').className = isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill';
             document.querySelectorAll('.song-card, .track').forEach(el => {
                 el.classList.toggle('playing', el.dataset.trackId === String(currentTrack?.id));
             });
@@ -1399,7 +1399,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const ov = card.querySelector('.play-overlay i');
                 if (!ov) return;
                 const active = card.dataset.trackId === String(currentTrack?.id);
-                ov.className = (active && isPlaying) ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+                ov.className = (active && isPlaying) ? 'bi bi-pause-fill' : 'bi bi-play-fill';
             });
         }
         function togglePlay() {
@@ -1428,7 +1428,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             document.getElementById('playerTitle').textContent  = track.title;
             document.getElementById('playerArtist').textContent = track.artistName;
             const thumb = document.getElementById('playerThumb');
-            thumb.innerHTML = track.artUrl ? `<img src="${track.artUrl}" alt="">` : `<i class="fa-solid fa-music"></i>`;
+            thumb.innerHTML = track.artUrl ? `<img src="${track.artUrl}" alt="">` : `<i class="bi bi-music"></i>`;
             document.getElementById('player').classList.add('visible');
             syncPlayIcon();
         }
@@ -1511,7 +1511,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             card.innerHTML = `
                 <img class="cover" src="${t.album.cover_medium}" loading="lazy">
                 <div class="play-overlay">
-                    <i class="fa-solid ${currentTrack?.id === t.id && isPlaying ? 'fa-pause' : 'fa-play'}">
+                    <i class="bi ${currentTrack?.id === t.id && isPlaying ? 'bi-pause-fill' : 'bi-play-fill'}">
                     </i>
                 </div>
                 <div class="song-title">
@@ -1557,7 +1557,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const tracks = await trRes.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="fa-solid fa-arrow-left">
+                        <i class="bi bi-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1636,7 +1636,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const album = await res.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="fa-solid fa-arrow-left">
+                        <i class="bi bi-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1700,7 +1700,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const track = await res.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="fa-solid fa-arrow-left">
+                        <i class="bi bi-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1719,7 +1719,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                                     ${esc(track.album.title)}
                                 </a>
                                 <button class="play-song-btn" data-track-id="${track.id}" onclick="resolveAndPlay(${track.id},'${esc(track.artist.name).replace(/'/g,"\\'")}','${esc(track.title).replace(/'/g,"\\'")}','${track.album.cover_medium}',${track.artist.id},${track.album.id})">
-                                    <i class="fa-solid fa-play">
+                                    <i class="bi bi-play-fill">
                                     </i>
                                     Play
                                 </button>

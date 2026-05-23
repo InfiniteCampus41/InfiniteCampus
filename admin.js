@@ -818,13 +818,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
                         badgeContainer.style.color = "lime";
                     } else if (badgeText === "TSTR") {
-                        badgeContainer.innerHTML = '<i class="fa-solid fa-cogs"></i>';
+                        badgeContainer.innerHTML = '<i class="bi bi-cogs"></i>';
                         badgeContainer.style.color = "DarkGoldenRod";
                     } else if (badgeText === "COWNR") {
                         badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
                         badgeContainer.style.color = "lightblue";
                     } else if (badgeText === "HADMIN") {
-                        badgeContainer.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                        badgeContainer.innerHTML = '<i class="bi bi-shield-halved"></i>';
                         badgeContainer.style.color = "#00cc99";
                     } else if (badgeText === "ADMN") {
                         badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
@@ -840,7 +840,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     if (profile.premium2) badgeContainer.innerHTML += '<i class="bi bi-heart-fill" style="color:orange"></i>';
                     if (profile.premium1) badgeContainer.innerHTML += '<i class="bi bi-heart-half" style="color:yellow"></i>';
                     if (profile.isDonater) badgeContainer.innerHTML += '<i class="bi bi-balloon-heart" style="color:#00E5FF"></i>';
-                    if (profile.isPartner) badgeContainer.innerHTML += '<i class="fa fa-handshake" style="color:cornflowerblue"></i>';
+                    if (profile.isPartner) badgeContainer.innerHTML += '<i class="bi bi-handshake" style="color:cornflowerblue"></i>';
                     if (profile.isUploader) badgeContainer.innerHTML += '<i class="bi bi-film" style="color:grey"></i>';
                     if (profile.mileStone) badgeContainer.innerHTML += '<i class="bi bi-award" style="color:yellow"></i>';
                     if (profile.isGuesser) badgeContainer.innerHTML += '<i class="bi bi-stopwatch" style="color:red"></i>';
@@ -3089,6 +3089,76 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             .sidebar {
                 overflow:scroll;
             }
+            .template-picker-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 20px;
+                border-bottom: 1px solid #333;
+                background: #111;
+                flex-shrink: 0;
+            }
+            .template-picker-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: #888;
+                white-space: nowrap;
+            }
+            .template-picker-select {
+                flex: 1;
+                background: #1b1b1b !important;
+                border: 1px solid #444 !important;
+                color: #fff !important;
+                border-radius: 6px !important;
+                font-size: 11px;
+                padding: 5px 8px;
+                cursor: pointer;
+            }
+            .template-picker-select:focus {
+                outline: none;
+                border-color: #888 !important;
+            }
+            .template-vars-row {
+                display: none;
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 8px 20px;
+                border-bottom: 1px solid #333;
+                background: #0d0d0d;
+            }
+            .template-vars-row.visible {
+                display: flex;
+            }
+            .template-var-field {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .template-var-field label {
+                font-size: 9px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+            .template-var-field input {
+                background: #1b1b1b;
+                border: 1px solid #444;
+                color: #fff;
+                border-radius: 4px;
+                font-size: 11px;
+                padding: 4px 7px;
+                width: 130px;
+            }
+            .template-var-field input:focus {
+                outline: none;
+                border-color: #888;
+            }
+            .template-hint {
+                font-size: 10px;
+                color: #666;
+                font-style: italic;
+            }
         `;
         document.head.appendChild(style);
         adminPages.style.display = "none";
@@ -3137,6 +3207,80 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         let ccEmails = [];
         let bccEmails = [];
         let currentTab = 'write';
+        let availableTemplates = [];
+        let selectedTemplate = null;
+        async function loadTemplates() {
+            try {
+                const token = await getAuthToken();
+                const res = await fetch(`${a}/email/templates`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    availableTemplates = data.templates;
+                    renderTemplatePicker();
+                }
+            } catch (e) {
+                console.warn("Could not load email templates:", e.message);
+            }
+        }
+        function renderTemplatePicker() {
+            const sel = document.getElementById('template-select');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">— No Template (Custom) —</option>' +
+                availableTemplates.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
+        }
+        window.onTemplateChange = function() {
+            const sel = document.getElementById('template-select');
+            const varsRow = document.getElementById('template-vars-row');
+            const varsContainer = document.getElementById('template-vars-container');
+            const id = sel.value;
+            if (!id) {
+                selectedTemplate = null;
+                varsRow.classList.remove('visible');
+                return;
+            }
+            selectedTemplate = availableTemplates.find(t => t.id === id) || null;
+            if (!selectedTemplate) return;
+            document.getElementById('email-subject').value = selectedTemplate.defaultSubject;
+            const editableVars = selectedTemplate.vars.filter(v => v !== 'DISPLAYNAME');
+            if (editableVars.length) {
+                varsContainer.innerHTML = editableVars.map(v => `
+                    <div class="template-var-field">
+                        <label>{{${v}}}</label>
+                        <input type="text" id="tvar-${v}" placeholder="${v}" oninput="window.updateTemplatePreview()" />
+                    </div>
+                `).join('') + `<span class="template-hint">These Fill Template Variables. {{DISPLAYNAME}} Is Filled Automatically Per Recipient.</span>`;
+                varsRow.classList.add('visible');
+            } else {
+                varsContainer.innerHTML = `<span class="template-hint">No Extra Variables Needed. {{DISPLAYNAME}} Is Filled Automatically Per Recipient.</span>`;
+                varsRow.classList.add('visible');
+            }
+            document.getElementById('email-body').value = `[Using template: ${selectedTemplate.label}]\n\nThis email will use the "${selectedTemplate.id}" server-side template.\nEdit the fields above to customize variables.\n\nYou can still edit the subject line freely.`;
+            document.getElementById('email-body').disabled = true;
+            document.querySelector('.toolbar').style.pointerEvents = 'none';
+            document.querySelector('.toolbar').style.opacity = '0.3';
+            updateSendBtn();
+        };
+        window.clearTemplate = function() {
+            document.getElementById('template-select').value = '';
+            selectedTemplate = null;
+            document.getElementById('template-vars-row').classList.remove('visible');
+            document.getElementById('email-body').disabled = false;
+            document.getElementById('email-body').value = '';
+            document.querySelector('.toolbar').style.pointerEvents = '';
+            document.querySelector('.toolbar').style.opacity = '';
+            updateSendBtn();
+        };
+        function getTemplateVars() {
+            if (!selectedTemplate) return null;
+            const vars = {};
+            selectedTemplate.vars.filter(v => v !== 'DISPLAYNAME').forEach(v => {
+                const el = document.getElementById(`tvar-${v}`);
+                if (el) vars[v] = el.value;
+            });
+            return vars;
+        }
         async function init() {
             await authReady;
             const user = currentUser;
@@ -3152,9 +3296,34 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     return;
                 }
                 await loadUsers();
+                await loadTemplates();
+                injectTemplatePicker();
             } catch (e) {
                 window.location = "/InfiniteLogins.html";
             }
+        }
+        function injectTemplatePicker() {
+            const bodyEl = document.getElementById('email-body');
+            if (!bodyEl || document.getElementById('template-select')) return;
+            const pickerRow = document.createElement('div');
+            pickerRow.className = 'template-picker-row';
+            pickerRow.innerHTML = `
+                <span class="template-picker-label">Template</span>
+                <select id="template-select" class="template-picker-select" onchange="window.onTemplateChange()">
+                    <option value="">— No Template (Custom) —</option>
+                </select>
+                <button onclick="window.clearTemplate()" title="Clear template selection" style="background:transparent;border:1px solid #555;color:#aaa;border-radius:5px;padding:4px 9px;font-size:10px;cursor:pointer;">✕ Clear</button>
+            `;
+            const varsRow = document.createElement('div');
+            varsRow.className = 'template-vars-row';
+            varsRow.id = 'template-vars-row';
+            varsRow.innerHTML = `<div id="template-vars-container" style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;"></div>`;
+            const toolbar = document.querySelector('.toolbar');
+            const parent = toolbar ? toolbar.parentNode : bodyEl.parentNode;
+            const insertBefore = toolbar || bodyEl;
+            parent.insertBefore(varsRow, insertBefore);
+            parent.insertBefore(pickerRow, varsRow);
+            renderTemplatePicker();
         }
         async function loadUsers() {
             const res = await dbGet('users');
@@ -3436,11 +3605,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         window.sendEmails = async function() {
             const subject = document.getElementById('email-subject').value.trim();
-            const body = document.getElementById('email-body').value.trim();
+            const isTemplate = !!selectedTemplate;
+            const body = isTemplate ? '' : document.getElementById('email-body').value.trim();
             if (!subject) { showError('Subject Is Required'); return; }
-            if (!body) { showError('Body Is Required'); return; }
+            if (!isTemplate && !body) { showError('Body Is Required'); return; }
             const recipients = allUsers.filter(u => selectedUids.has(u.uid) && u.email && u.subbed);
             if (!recipients.length) { showError('No Recipients With Email Addresses'); return; }
+            const baseTemplateVars = isTemplate ? getTemplateVars() : null;
             const modal = document.getElementById('progress-modal');
             const fill = document.getElementById('prog-fill');
             const progText = document.getElementById('prog-text');
@@ -3457,9 +3628,15 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 progText.textContent = `Sending To ${user.displayName}`;
                 progCount.textContent = `${i} / ${recipients.length}`;
                 fill.style.width = ((i / recipients.length) * 100) + '%';
-                const personalizedBody = body.replace(/\{\{DISPLAYNAME\}\}/g, user.displayName);
-                const htmlBody = buildEmailHtml(body, user.displayName);
-                const payload = { to: user.email, subject, html: htmlBody, text: personalizedBody };
+                let payload;
+                if (isTemplate) {
+                    const vars = { ...baseTemplateVars, DISPLAYNAME: user.displayName, EMAIL: user.email, UID: user.uid };
+                    payload = { to: user.email, subject, templateName: selectedTemplate.id, templateVars: vars };
+                } else {
+                    const personalizedBody = body.replace(/\{\{DISPLAYNAME\}\}/g, user.displayName);
+                    const htmlBody = buildEmailHtml(body, user.displayName);
+                    payload = { to: user.email, subject, html: htmlBody, text: personalizedBody };
+                }
                 if (ccEmails.length) payload.cc = ccEmails;
                 if (bccEmails.length) payload.bcc = bccEmails;
                 try {
@@ -3504,6 +3681,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         window.clearComposer = function() {
             document.getElementById('email-subject').value = '';
             document.getElementById('email-body').value = '';
+            document.getElementById('email-body').disabled = false;
+            document.querySelector('.toolbar').style.pointerEvents = '';
+            document.querySelector('.toolbar').style.opacity = '';
+            document.getElementById('template-select').value = '';
+            document.getElementById('template-vars-row').classList.remove('visible');
+            selectedTemplate = null;
             ccEmails = [];
             bccEmails = [];
             renderEmailTags('cc');

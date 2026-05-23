@@ -1,4 +1,5 @@
-.ic {
+/* This File Makes The Icons Load So Much Faster While Still Techniclly Relying On Bootstrap's Icon */
+.bi {
     display: inline-block;
     background-color: currentColor;
     mask-repeat: no-repeat;
@@ -7,35 +8,271 @@
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
     -webkit-mask-size: contain;
+    font-family: bootstrap-icons !important;
 }
-.ic::before {
+.bi::before {
     content: "\f3c3";
 }
-.ic-blocksi {
+.bi-archive {
+    mask-image: url('/icons/archive.svg');
+    -webkit-mask-image: url('/icons/archive.svg');
+}
+.bi-arrow-90deg-left {
+    mask-image: url('/icons/arrow-90deg-left.svg');
+    -webkit-mask-image: url('/icons/arrow-90deg-left.svg');
+}
+.bi-arrow-clockwise {
+    mask-image: url('/icons/arrow-clockwise.svg');
+    -webkit-mask-image: url('/icons/arrow-clockwise.svg');
+}
+.bi-arrow-left {
+    mask-image: url('/icons/arrow-left.svg');
+    -webkit-mask-image: url('/icons/arrow-left.svg');
+}
+.bi-arrow-repeat {
+    mask-image: url('/icons/arrow-repeat.svg');
+    -webkit-mask-image: url('/icons/arrow-repeat.svg');
+}
+.bi-arrow-right {
+    mask-image: url('/icons/arrow-right.svg');
+    -webkit-mask-image: url('/icons/arrow-right.svg');
+}
+.bi-award {
+    mask-image: url('/icons/award.svg');
+    -webkit-mask-image: url('/icons/award.svg');
+}
+.bi-balloon-heart-fill {
+    mask-image: url('/icons/balloon-heart-fill.svg');
+    -webkit-mask-image: url('/icons/balloon-heart-fill.svg');
+}
+.bi-bell-fill {
+    mask-image: url('/icons/bell-fill.svg');
+    -webkit-mask-image: url('/icons/bell-fill.svg');
+}
+.bi-blocksi {
     mask-image: url('/icons/blocksi.png');
     -webkit-mask-image: url('/icons/blocksi.png');
 }
-.ic-goguardian {
+.bi-check2 {
+    mask-image: url('/icons/check2.svg');
+    -webkit-mask-image: url('/icons/check2.svg');
+}
+.bi-chevron-left {
+    mask-image: url('/icons/chevron-left.svg');
+    -webkit-mask-image: url('/icons/chevron-left.svg');
+}
+.bi-chevron-right {
+    mask-image: url('/icons/chevron-right.svg');
+    -webkit-mask-image: url('/icons/chevron-right.svg');
+}
+.bi-chevron-up {
+    mask-image: url('/icons/chevron-up.svg');
+    -webkit-mask-image: url('/icons/chevron-up.svg');
+}
+.bi-code-square {
+    mask-image: url('/icons/code-square.svg');
+    -webkit-mask-image: url('/icons/code-square.svg');
+}
+.bi-cogs {
+    mask-image: url('/icons/cogs.svg');
+    -webkit-mask-image: url('/icons/cogs.svg');
+}
+.bi-copy {
+    mask-image: url('/icons/copy.svg');
+    -webkit-mask-image: url('/icons/copy.svg');
+}
+.bi-dash {
+    mask-image: url('/icons/dash.svg');
+    -webkit-mask-image: url('/icons/dash.svg');
+}
+.bi-discord {
+    mask-image: url('/icons/discord.svg');
+    -webkit-mask-image: url('/icons/discord.svg');
+}
+.bi-download {
+    mask-image: url('/icons/download.svg');
+    -webkit-mask-image: url('/icons/download.svg');
+}
+.bi-emoji-smile {
+    mask-image: url('/icons/emoji-smile.svg');
+    -webkit-mask-image: url('/icons/emoji-smile.svg');
+}
+.bi-file-earmark-music {
+    mask-image: url('/icons/file-earmark-music.svg');
+    -webkit-mask-image: url('/icons/file-earmark-music.svg');
+}
+.bi-file-earmark-plus {
+    mask-image: url('/icons/file-earmark-plus.svg');
+    -webkit-mask-image: url('/icons/file-earmark-plus.svg');
+}
+.bi-film {
+    mask-image: url('/icons/film.svg');
+    -webkit-mask-image: url('/icons/film.svg');
+}
+.bi-fullscreen-exit {
+    mask-image: url('/icons/fullscreen-exit.svg');
+    -webkit-mask-image: url('/icons/fullscreen-exit.svg');
+}
+.bi-fullscreen {
+    mask-image: url('/icons/fullscreen.svg');
+    -webkit-mask-image: url('/icons/fullscreen.svg');
+}
+.bi-gear {
+    mask-image: url('/icons/gear.svg');
+    -webkit-mask-image: url('/icons/gear.svg');
+}
+.bi-goguardian {
     mask-image: url('/icons/goguardian.png');
     -webkit-mask-image: url('/icons/goguardian.png');
 }
-.ic-lanschool {
+.bi-grip-vertical {
+    mask-image: url('/icons/grip-vertical.svg');
+    -webkit-mask-image: url('/icons/grip-vertical.svg');
+}
+.bi-handshake {
+    mask-image: url('/icons/handshake.svg');
+    -webkit-mask-image: url('/icons/handshake.svg');
+}
+.bi-heart-fill {
+    mask-image: url('/icons/heart-fill.svg');
+    -webkit-mask-image: url('/icons/heart-fill.svg');
+}
+.bi-heart-half {
+    mask-image: url('/icons/heart-half.svg');
+    -webkit-mask-image: url('/icons/heart-half.svg');
+}
+.bi-hearts {
+    mask-image: url('/icons/hearts.svg');
+    -webkit-mask-image: url('/icons/hearts.svg');
+}
+.bi-lanschool {
     mask-image: url('/icons/lanschool.png');
     -webkit-mask-image: url('/icons/lanschool.png');
 }
-.ic-linewize {
+.bi-leaf-fill {
+    mask-image: url('/icons/leaf-fill.svg');
+    -webkit-mask-image: url('/icons/leaf-fill.svg');
+}
+.bi-linewize {
     mask-image: url('/icons/linewize.png');
     -webkit-mask-image: url('/icons/linewize.png');
 }
-.ic-offline {
+.bi-link {
+    mask-image: url('/icons/link.svg');
+    -webkit-mask-image: url('/icons/link.svg');
+}
+.bi-list {
+    mask-image: url('/icons/list.svg');
+    -webkit-mask-image: url('/icons/list.svg');
+}
+.bi-music {
+    mask-image: url('/icons/music.svg');
+    -webkit-mask-image: url('/icons/music.svg');
+}
+.bi-offline {
     mask-image: url('/icons/offline.png');
     -webkit-mask-image: url('/icons/offline.png');
 }
-.ic-online {
+.bi-online {
     mask-image: url('/icons/online.png');
     -webkit-mask-image: url('/icons/online.png');
 }
-.ic-securely {
+.bi-pause-fill {
+    mask-image: url('/icons/pause-fill.svg');
+    -webkit-mask-image: url('/icons/pause-fill.svg');
+}
+.bi-pencil-square {
+    mask-image: url('/icons/pencil-square.svg');
+    -webkit-mask-image: url('/icons/pencil-square.svg');
+}
+.bi-play-fill {
+    mask-image: url('/icons/play-fill.svg');
+    -webkit-mask-image: url('/icons/play-fill.svg');
+}
+.bi-plus-lg {
+    mask-image: url('/icons/plus-lg.svg');
+    -webkit-mask-image: url('/icons/plus-lg.svg');
+}
+.bi-plus {
+    mask-image: url('/icons/plus.svg');
+    -webkit-mask-image: url('/icons/plus.svg');
+}
+.bi-pumpkin {
+    mask-image: url('/icons/pumpkin.svg');
+    -webkit-mask-image: url('/icons/pumpkin.svg');
+}
+.bi-securely {
     mask-image: url('/icons/securely.png');
     -webkit-mask-image: url('/icons/securely.png');
+}
+.bi-send {
+    mask-image: url('/icons/send.svg');
+    -webkit-mask-image: url('/icons/send.svg');
+}
+.bi-shield-check {
+    mask-image: url('/icons/shield-check.svg');
+    -webkit-mask-image: url('/icons/shield-check.svg');
+}
+.bi-shield-exclamation {
+    mask-image: url('/icons/shield-exclamation.svg');
+    -webkit-mask-image: url('/icons/shield-exclamation.svg');
+}
+.bi-shield-fill {
+    mask-image: url('/icons/shield-fill.svg');
+    -webkit-mask-image: url('/icons/shield-fill.svg');
+}
+.bi-shield-plus {
+    mask-image: url('/icons/shield-plus.svg');
+    -webkit-mask-image: url('/icons/shield-plus.svg');
+}
+.bi-shield-plus::before {
+    content:icon-url('/icons/shield-plus.svg');
+}
+.bi-shield-shaded {
+    mask-image: url('/icons/shield-shaded.svg');
+    -webkit-mask-image: url('/icons/shield-shaded.svg');
+}
+.bi-shield {
+    mask-image: url('/icons/shield.svg');
+    -webkit-mask-image: url('/icons/shield.svg');
+}
+.bi-shield-halved {
+    mask-image: url('/icons/shield-halved.svg');
+    -webkit-mask-image: url('/icons/shield-halved.svg');
+}
+.bi-skip-end-fill {
+    mask-image: url('/icons/skip-end-fill.svg');
+    -webkit-mask-image: url('/icons/skip-end-fill.svg');
+}
+.bi-skip-start-fill {
+    mask-image: url('/icons/skip-start-fill.svg');
+    -webkit-mask-image: url('/icons/skip-start-fill.svg');
+}
+.bi-snow {
+    mask-image: url('/icons/snow.svg');
+    -webkit-mask-image: url('/icons/snow.svg');
+}
+.bi-stopwatch {
+    mask-image: url('/icons/stopwatch.svg');
+    -webkit-mask-image: url('/icons/stopwatch.svg');
+}
+.bi-trash {
+    mask-image: url('/icons/trash.svg');
+    -webkit-mask-image: url('/icons/trash.svg');
+}
+.bi-volume-mute-fill {
+    mask-image: url('/icons/volume-mute-fill.svg');
+    -webkit-mask-image: url('/icons/volume-mute-fill.svg');
+}
+.bi-volume-up-fill {
+    mask-image: url('/icons/volume-up-fill.svg');
+    -webkit-mask-image: url('/icons/volume-up-fill.svg');
+}
+.bi-x-circle {
+    mask-image: url('/icons/x-circle.svg');
+    -webkit-mask-image: url('/icons/x-circle.svg');
+}
+.bi-x-lg {
+    mask-image: url('/icons/x-lg.svg');
+    -webkit-mask-image: url('/icons/x-lg.svg');
 }

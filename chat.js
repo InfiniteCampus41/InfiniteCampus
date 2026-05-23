@@ -50,6 +50,7 @@ let currentPrivateName = null;
 let currentPrivateUid = null;
 let currentUser = null;
 let isGuest = false;
+const knownUserDisplayNames = new Set();
 window.isGuest = isGuest;
 window.currentUser = currentUser;
 document.getElementById("profileRow").addEventListener("click", () => {
@@ -974,9 +975,7 @@ async function renderMessageInstant(id, msg) {
                         if (rData.file || rData.fileUrl || rData.attachment) {
                             rText = '<span style="color:#4fa3ff;">Click To View Attachment</span>';
                         } else {
-                            rText = (rData.t || rData.text || "").substring(0, 80);
-                            rText = buildSafeText(rText);
-                            rText = rText.replace(/<br\s*\/?>/gi, " ").replace(/\s+/g, " ").trim();
+                            rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
                         }
                         const replyPreview = document.createElement("div");
                         replyPreview.style.display = "flex";
@@ -1044,11 +1043,11 @@ async function renderMessageInstant(id, msg) {
                     const rData = await dbGet(`${currentPath}/${replyId}`);
                     if (rData) {
                         const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
-                        const rText = rData.t || rData.text || "(message)";
+                        const rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
                         const replyBar = document.createElement("div");
                         replyBar.className = "reply-bar";
                         replyBar.style.cssText = "border-left:3px solid #aaa;padding-left:6px;color:#aaa;font-size:0.82em;margin-bottom:3px;cursor:pointer;";
-                        replyBar.textContent = `↩ ${rName}: ${rText.slice(0, 80)}`;
+                        replyBar.innerHTML = `↩ ${rName}: ${rText}`;
                         replyBar.onclick = () => scrollToMessage(String(replyId));
                         textDiv.prepend(replyBar);
                     }
@@ -1098,9 +1097,7 @@ async function renderMessageInstant(id, msg) {
                     if (rData.file || rData.fileUrl || rData.attachment) {
                         rText = '<span style="color:#4fa3ff;">Click To View Attachment</span>';
                     } else {
-                        rText = (rData.t || rData.text || "").substring(0, 80);
-                        rText = buildSafeText(rText);
-                        rText = rText.replace(/<br\s*\/?>/gi, " ").replace(/\s+/g, " ").trim();
+                        rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
                     }
                     const replyPreview = document.createElement("div");
                     replyPreview.style.display = "flex";
@@ -1228,26 +1225,26 @@ async function renderMessageInstant(id, msg) {
             const mkE = (cls, color, label, title) => extraBadges.push({ cls, color, label, title });
             if (meta.sus) mkP("bi bi-shield-exclamation","red","Under Investigation");
             if (meta.owner) mkP("bi bi-shield-plus","lime","Owner");
-            if (meta.tester) mkP("fa-solid fa-cogs","darkGoldenRod","Tester");
+            if (meta.tester) mkP("bi bi-cogs","darkGoldenRod","Tester");
             if (meta.coOwner) mkP("bi bi-shield-fill","lightblue","Co-Owner");
-            if (meta.hAdmin) mkP("fa-solid fa-shield-halved","#00cc99","Head Admin");
+            if (meta.hAdmin) mkP("bi bi-shield-halved","#00cc99","Head Admin");
             if (meta.admin) mkP("bi bi-shield","dodgerblue","Admin");
             if (meta.dev) mkP("bi bi-code-square","green","Developer");
             if (meta.premium3) mkP("bi bi-hearts","red","Premium T3");
             if (meta.premium2) mkP("bi bi-heart-fill","orange","Premium T2");
             if (meta.premium1) mkP("bi bi-heart-half","yellow","Premium T1");
             if (meta.donor) mkP("bi bi-balloon-heart","#00E5FF","Donated");
-            if (meta.partner) mkE("fa fa-handshake","cornflowerblue","Partner","Partner");
+            if (meta.partner) mkE("bi bi-handshake","cornflowerblue","Partner","Partner");
             if (meta.uploader) mkE("bi bi-film","grey","Uploader","Uploaded A Movie");
             if (meta.milestone) mkE("bi bi-award","yellow","Award","Award Badge");
             if (meta.guesser) mkE("bi bi-stopwatch","#ff0000","Guesser","Guesser");
             if (meta.discord && meta.discord.trim()) mkE("bi bi-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
             if (meta.linker) mkE("bi bi-link","#4fa3ff","Linker","Link Sharer");
-            if (meta.secure) mkE("bi ic ic-securely","dodgerblue","Securely","Has Securely");
-            if (meta.guardian) mkE("bi ic ic-goguardian","grey","GoGuardian","Has GoGuardian");
-            if (meta.lanschool) mkE("bi ic ic-lanschool","greenyellow","Lanschool","Has Lanschool");
-            if (meta.linewize) mkE("bi ic ic-linewize","lightskyblue","Linewize","Has Linewize");
-            if (meta.blocksi) mkE("bi ic ic-blocksi","cadetblue","Blocksi","Has Blocksi");
+            if (meta.secure) mkE("bi bi-securely","dodgerblue","Securely","Has Securely");
+            if (meta.guardian) mkE("bi bi-goguardian","grey","GoGuardian","Has GoGuardian");
+            if (meta.lanschool) mkE("bi bi-lanschool","greenyellow","Lanschool","Has Lanschool");
+            if (meta.linewize) mkE("bi bi-linewize","lightskyblue","Linewize","Has Linewize");
+            if (meta.blocksi) mkE("bi bi-blocksi","cadetblue","Blocksi","Has Blocksi");
             const totalRoles = allPrimaryBadges.length + extraBadges.length;
             let inlinePrimaries, overflowPrimaries, inlineExtras, popoverExtras;
             if (totalRoles <= 3) {
@@ -1260,7 +1257,7 @@ async function renderMessageInstant(id, msg) {
             }
             const onlineBadge = document.createElement("i");
             const setOnlineStatus = (isOnline) => {
-                onlineBadge.className = isOnline ? "bi ic ic-online" : "bi ic ic-offline";
+                onlineBadge.className = isOnline ? "bi bi-online" : "bi bi-offline";
                 onlineBadge.style.color = isOnline ? "#69a84f" : "#999999";
                 onlineBadge.title = isOnline ? "Online" : "Offline";
             };
@@ -1554,6 +1551,9 @@ function buildSafeText(raw) {
         if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
             return `<span class="mention-self">@support</span>`;
         }
+        const cleanLower = lower.replace(/ 💎/g, "");
+        const isKnownUser = knownUserDisplayNames.has(cleanLower) || knownUserDisplayNames.has(lower);
+        if (!isKnownUser) return match;
         const isSelfMention = currentName && (
             currentName.toLowerCase() === lower ||
             currentName.toLowerCase() === lower.replace(" 💎", "")
@@ -1603,6 +1603,39 @@ function buildSafeText(raw) {
         return `${prefix}<a href="${display}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;text-decoration:underline;">${display}</a>${trailing}`;
     });
     return safe;
+}
+function buildReplyPreviewText(raw) {
+    if (!raw) return "";
+    let text = raw.replace(/<discord-embed-b64[^>]*>[\s\S]*?<\/discord-embed-b64>/gi, "");
+    text = text.replace(/<discord-embed-b64[^>]*\/?>/gi, "");
+    text = text.replace(
+        /(^|[\s>])(https?:\/\/[^\s<]+)/gi,
+        (match, prefix, url) => {
+            let display = url;
+            while (/[.,!?;:)\]\\"']$/.test(display)) display = display.slice(0, -1);
+            const isTenor = display.includes("tenor.com");
+            const isGifUrl = /\.gif(\?|$)/i.test(display);
+            const isYouTube = /youtube\.com|youtu\.be/i.test(display);
+            const isTikTok = /tiktok\.com/i.test(display);
+            const isImage = /\.(png|jpg|jpeg|webp)(\?|$)/i.test(display);
+            if (isTenor || isGifUrl) return `${prefix}<gif-placeholder></gif-placeholder>`;
+            if (isYouTube || isTikTok || isImage) return `${prefix}<media-placeholder></media-placeholder>`;
+            return match;
+        }
+    );
+    text = text.replace(/<(?!gif-placeholder|\/gif-placeholder|media-placeholder|\/media-placeholder)[^>]+>/gi, "");
+    text = text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+    text = text.replace(/^(#{1,3} |-# )/gm, "");
+    text = text.replace(/@[^\s<]*/g, "");
+    text = text.replace(/(https?:\/\/[^\s<]+)/g, "");
+    text = text.replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>");
+    text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/\*(.*?)\*/g, "<em>$1</em>");
+    text = text.replace(/_(.*?)_/g, "<em>$1</em>");
+    text = text.replace(/<gif-placeholder><\/gif-placeholder>/g, `<i class="bi bi-image-fill"></i> Gif`);
+    text = text.replace(/<media-placeholder><\/media-placeholder>/g, `<i class="bi bi-image-fill"></i> Media`);
+    text = text.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+    return text;
 }
 dbListen("mutedUsers", async (allMutes) => {
     if (!allMutes) return;
@@ -2651,10 +2684,12 @@ async function _promptGuestName() {
 async function loadAllUsernames() {
     const data = await dbGet("users");
     allUsernames = [];
+    knownUserDisplayNames.clear();
     if (data) {
         for (const uid of Object.keys(data)) {
             if (data[uid].profile && data[uid].profile.displayName) {
                 allUsernames.push(data[uid].profile.displayName);
+                knownUserDisplayNames.add(data[uid].profile.displayName.replace(/ 💎/g, "").toLowerCase());
             }
         }
     }

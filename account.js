@@ -394,11 +394,11 @@ if (unsub) {
         const roles = [
             { key: "isSus", icon: "bi bi-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
             { key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
-            { key: "isTester", icon: "fa-solid fa-cogs", title: "Tester", color: "DarkGoldenRod" },
+            { key: "isTester", icon: "bi bi-cogs", title: "Tester", color: "DarkGoldenRod" },
             { key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
-            { key: "isHAdmin", icon: "fa-solid fa-shield-halved", title: "Head Admin", color: "#00cc99" },
+            { key: "isHAdmin", icon: "bi bi-shield-halved", title: "Head Admin", color: "#00cc99" },
             { key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
-            { key: "isPartner", icon: "fa fa-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
+            { key: "isPartner", icon: "bi bi-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
             { key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
             { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
             { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
@@ -408,11 +408,11 @@ if (unsub) {
             { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
             { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
             { key: "isLink", icon: "bi bi-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
-            { key: "secure", icon: "bi ic ic-securely", title: "This User Has Securely At School", color: "dodgerblue"},
-            { key: "guardian", icon: "bi ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
-            { key: "lanschool", icon: "bi ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
-            { key: "linewize", icon: "bi ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
-            { key: "blocksi", icon: "bi ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
+            { key: "secure", icon: "bi bi-securely", title: "This User Has Securely At School", color: "dodgerblue"},
+            { key: "guardian", icon: "bi bi-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
+            { key: "lanschool", icon: "bi bi-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
+            { key: "linewize", icon: "bi bi-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
+            { key: "blocksi", icon: "bi bi-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -1225,7 +1225,7 @@ if (unsub) {
                     badgeContainer.style.display = 'flex';
                     badgeContainer.style.flexDirection = 'column';
                     badge.style.color = color;
-                    badge.style.fontSize = '1.5em';
+                    badge.style.fontSize = '2em';
                     badge.style.fontWeight = "600";
                     badge.innerHTML = `
                         <i class="${icon}" style="margin-right:6px;" title="${name}"></i>
@@ -1243,7 +1243,7 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isTester) {
-                    addBadge("Tester", "DarkGoldenRod", "fa-solid fa-cogs");
+                    addBadge("Tester", "DarkGoldenRod", "bi bi-cogs");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
@@ -1253,7 +1253,7 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isHAdmin) {
-                    addBadge("Head Admin", "#00cc99", "fa-solid fa-shield-halved");
+                    addBadge("Head Admin", "#00cc99", "bi bi-shield-halved");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
@@ -1262,7 +1262,7 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isPartner) {
-                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "fa fa-handshake");
+                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "bi bi-handshake");
                     hasAnyRole = true;
                 }
                 if (profile.isDev) {
@@ -1308,23 +1308,23 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.secure) {
-                    addBadge("This User Has Securely At School", "dodgerblue", "bi ic ic-securely");
+                    addBadge("This User Has Securely At School", "dodgerblue", "bi bi-securely");
                     hasAnyRole = true;
                 }
                 if (profile.guardian) {
-                     addBadge("This User Has GoGuardian At School", "grey", "bi ic ic-goguardian");
+                     addBadge("This User Has GoGuardian At School", "grey", "bi bi-goguardian");
                     hasAnyRole = true;
                 }
                 if (profile.lanschool) {
-                    addBadge("This User Has Lanschool At School", "greenyellow", "bi ic ic-lanschool");
+                    addBadge("This User Has Lanschool At School", "greenyellow", "bi bi-lanschool");
                     hasAnyRole = true;
                 }
                 if (profile.linewize) {
-                    addBadge("This User Has Linewize At School", "lightskyblue", "bi ic ic-linewize");
+                    addBadge("This User Has Linewize At School", "lightskyblue", "bi bi-linewize");
                     hasAnyRole = true;
                 }
                 if (profile.blocksi) {
-                    addBadge("This User Has Blocksi At School", "cadetblue", "bi ic ic-blocksi");
+                    addBadge("This User Has Blocksi At School", "cadetblue", "bi bi-blocksi");
                     hasAnyRole = true;
                 }
                 if (profile.verified) {

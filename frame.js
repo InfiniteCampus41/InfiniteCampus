@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 iconColor = "white";
             } 
             else if (monthIndex === 1) {
-                iconClass = "bi bi-suit-heart-fill";
+                iconClass = "bi bi-heart-fill";
                 iconColor = "red";
             } 
             else if (monthIndex >= 2 && monthIndex <= 8) {
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             } 
             else if (monthIndex === 9) {
-                iconClass = "fa-solid fa-pumpkin";
+                iconClass = "bi-bi-pumpkin";
                 iconColor = "orange";
             } 
             else if (monthIndex === 10) {

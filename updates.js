@@ -177,7 +177,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 						${note.text}
 					</div>
 					<button class="delete-btn button" data-key="${key}" style="display:none">
-						<i class='bi bi-trash-fill'>
+						<i class='bi bi-trash'>
 						</i>
 					</button>
 					</div>
@@ -323,7 +323,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
                     </button>
                     ${index + 1}. ${update.content}
                     <button class="button" onclick="deleteUpdate('${update.key}')">
-                        <i class='bi bi-trash-fill'></i>
+                        <i class='bi bi-trash'></i>
                     </button>
                 `;
             } else {
@@ -431,12 +431,12 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 	}
 	const ROLE_CONFIG = [
 		{key: "isOwner",innerHTML: `<i class="bi bi-shield-plus" style="color:lime" title="Owner"></i>`},
-		{key: "isTester",innerHTML: `<i class="fa-solid fa-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
+		{key: "isTester",innerHTML: `<i class="bi bi-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
 		{key: "isCoOwner",innerHTML: `<i class="bi bi-shield-fill" style="color:lightblue" title="Co-Owner"></i>`},
-		{key: "isHAdmin",innerHTML: `<i class="fa-solid fa-shield-halved" style="color:#00cc99" title="Head Admin"></i>`},
+		{key: "isHAdmin",innerHTML: `<i class="bi bi-shield-halved" style="color:#00cc99" title="Head Admin"></i>`},
 		{key: "isAdmin",innerHTML: `<i class="bi bi-shield" style="color:dodgerblue" title="Admin"></i>`},
 		{key: "isDev",innerHTML: `<i class="bi bi-code-square" style="color:green" title="This User Is A Developer For Infinitecampus.xyz"></i>`},
-		{key: "isPartner",innerHTML: `<i class="fa fa-handshake" style="color:cornflowerblue" title="This User Is A Partner Of Infinite Campus"></i>`}
+		{key: "isPartner",innerHTML: `<i class="bi bi-handshake" style="color:cornflowerblue" title="This User Is A Partner Of Infinite Campus"></i>`}
 	];
 	async function loadUserRoles(uid) {
 		const roleSnap = await dbGet(`users/${uid}/profile`);
