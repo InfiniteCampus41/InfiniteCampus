@@ -1544,6 +1544,18 @@ function buildSafeText(raw) {
         }
     );
     safe = safe.replace(/&lt;\/file&gt;/gi, "");
+    safe = safe.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const langLabel = lang ? `<span class="codeblock-lang">${lang}</span>` : "";
+        const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return `<div class="codeblock">${langLabel}<pre style="margin:0;white-space:pre-wrap;word-break:break-all;">${escaped}</pre></div>`;
+    });
+    safe = safe.replace(/`([^`\n]+)`/g, (_, code) => {
+        const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return `<code class="inline-code">${escaped}</code>`;
+    });
+    safe = safe.replace(/\|\|(.+?)\|\|/g, (_, content) => {
+        return `<span class="spoiler" onclick="this.classList.toggle('reveal')" title="Click to reveal">${content}</span>`;
+    });
     safe = safe.replace(/\n/g, "<br>");
     const mentionRegex = /@([^\s<]+)/g;
     safe = safe.replace(mentionRegex, (match, name) => {
@@ -1626,6 +1638,9 @@ function buildReplyPreviewText(raw) {
     text = text.replace(/<(?!gif-placeholder|\/gif-placeholder|media-placeholder|\/media-placeholder)[^>]+>/gi, "");
     text = text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
     text = text.replace(/^(#{1,3} |-# )/gm, "");
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, "[code]");
+    text = text.replace(/`([^`\n]+)`/g, "$1");
+    text = text.replace(/\|\|(.+?)\|\|/g, "▋ spoiler");
     text = text.replace(/@[^\s<]*/g, "");
     text = text.replace(/(https?:\/\/[^\s<]+)/g, "");
     text = text.replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>");

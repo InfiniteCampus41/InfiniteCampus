@@ -41,9 +41,9 @@
     mask-image: url('/icons/award.svg');
     -webkit-mask-image: url('/icons/award.svg');
 }
-.bi-balloon-heart-fill {
-    mask-image: url('/icons/balloon-heart-fill.svg');
-    -webkit-mask-image: url('/icons/balloon-heart-fill.svg');
+.bi-balloon-heart {
+    mask-image: url('/icons/balloon-heart.svg');
+    -webkit-mask-image: url('/icons/balloon-heart.svg');
 }
 .bi-bell-fill {
     mask-image: url('/icons/bell-fill.svg');

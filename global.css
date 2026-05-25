@@ -508,9 +508,22 @@ body {
 }
 .codeblock{
     background:#1e1f22;
-    padding:8px;
+    padding:8px 10px;
     border-radius:6px;
     overflow:auto;
+    margin-top:4px;
+    max-width:100%;
+    font-size:0.88em;
+    font-family:monospace;
+    border: 1px solid #3a3b3e;
+}
+.codeblock-lang{
+    display:block;
+    font-size:0.78em;
+    color:#80848e;
+    margin-bottom:4px;
+    text-transform:lowercase;
+    font-family:monospace;
 }
 #confirmBtns {
     background:#333;
@@ -1234,6 +1247,14 @@ hr {
     margin-left:5%;
     margin-right:5%;
 }
+.inline-code{
+    background:#2b2d31;
+    color:#e3e5e8;
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:0.88em;
+    font-family:monospace;
+}
 input[type="range"] {
     width:100%;
     background:lime;
@@ -1908,6 +1929,14 @@ main {
 .msg { 
     margin: 6px 0; 
     transition:0.3s all;
+    overflow: hidden;
+}
+.msg-text {
+    overflow: hidden;
+    max-width: 100%;
+}
+.msg-text > * {
+    max-width: 100%;
 }
 .msg-header {
     color: #aaa;
@@ -3352,8 +3381,7 @@ th, td {
 }
 .yt-embed {
     position: relative;
-    height:200px;
-    margin-top:-90px;
+    margin-top: 6px;
     width: 100%;
     max-width: 420px;
     aspect-ratio: 16 / 9;
