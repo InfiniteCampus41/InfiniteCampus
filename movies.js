@@ -1,4 +1,4 @@
-import { auth } from "/imports.js";
+import { auth } from "./imports.js";
 let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];

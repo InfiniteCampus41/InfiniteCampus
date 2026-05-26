@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged } from "/imports.js";
+import { auth, onAuthStateChanged } from "./imports.js";
 const sidebar = document.getElementById("sidebar");
 const mobileToggle = document.getElementById("mobileToggle");
 mobileToggle.onclick = () => {
