@@ -276,6 +276,10 @@
     mask-image: url('/icons/volume-up-fill.svg');
     -webkit-mask-image: url('/icons/volume-up-fill.svg');
 }
+.bi-x {
+    mask-image: url('/icons/x.svg');
+    -webkit-mask-image: url('/icons/x.svg');
+}
 .bi-x-circle {
     mask-image: url('/icons/x-circle.svg');
     -webkit-mask-image: url('/icons/x-circle.svg');
