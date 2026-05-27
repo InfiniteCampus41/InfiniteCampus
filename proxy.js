@@ -93,7 +93,7 @@ let activeTabId = null;
 let tabCounter = 0;
 const newTabBtn = document.createElement("div");
 newTabBtn.className = "chrome-newtab";
-newTabBtn.innerHTML = `<i class="bi bi-plus" title="New Tab"></i>`;
+newTabBtn.innerHTML = `<i class="ic ic-plus" title="New Tab"></i>`;
 tabsContainer.appendChild(newTabBtn);
 newTabBtn.addEventListener("click", () => {
     createTab(true);
@@ -105,7 +105,7 @@ function createTab(isNTP = false) {
     tabBtn.innerHTML = `
         <img class="tab-favicon" src="" style="width:16px;height:16px;margin-right:6px;display:none;">
         <span class="tab-title">${isNTP ? "New Tab" : "Loading..."}</span>
-        <i class="bi bi-x close-tab" title="Close Tab"></i>
+        <i class="ic ic-x close-tab" title="Close Tab"></i>
     `;
     tabsContainer.insertBefore(tabBtn, newTabBtn);
     requestAnimationFrame(() => {
@@ -267,7 +267,7 @@ function closeTab(id) {
 function createFullscreenButton() {
     if (fullscreenBtn) return;
     fullscreenBtn = document.createElement("button");
-    fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
+    fullscreenBtn.innerHTML = `<i class="ic ic-fullscreen"></i>`;
     fullscreenBtn.style.position = "fixed";
     fullscreenBtn.style.bottom = "40px";
     fullscreenBtn.style.right = "20px";
@@ -292,12 +292,12 @@ document.addEventListener("fullscreenchange", () => {
     if (!tab) return;
     if (document.fullscreenElement) {
         isFullscreen = true;
-        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen-exit"></i>`;
+        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="ic ic-fullscreen-exit"></i>`;
         tab.frame.style.width = "100vw";
         tab.frame.style.height = "100vh";
     } else {
         isFullscreen = false;
-        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="bi bi-fullscreen"></i>`;
+        if (fullscreenBtn) fullscreenBtn.innerHTML = `<i class="ic ic-fullscreen"></i>`;
         tab.frame.style.width = "";
         tab.frame.style.height = "";
     }
@@ -486,8 +486,13 @@ function setRandomPhrase() {
         "https://discord.gg/4d9hJSVXca",
         "Kim Jong Un Is Master Of Goon",
         "Rest In Peace My Granny She Got Hit By A Bazooka",
+        "Yeah, I think about her every time I hit the hookah",
         "Kaboom, Kablow, Kaboom",
-        "justinjustin2008 Will Save Us All",
+        "I Was In My Room Trying To Teach My Little Sister",
+        "Then I Heard A Boom And It Sounded Like A Missle",
+        "Who That Is, What That Was",
+        "Oh That Granny, Oh She Done",
+        "I Was In The Matrix, But The Matrix Was Too Slow So I Had To Come Here",
         "What Is This Diddyblud Doin On The Calculator"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];

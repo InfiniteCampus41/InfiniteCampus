@@ -392,27 +392,27 @@ if (unsub) {
         badgeContainer.style.gap = "6px";
         badgeContainer.style.marginLeft = "6px";
         const roles = [
-            { key: "isSus", icon: "bi bi-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
-            { key: "isOwner", icon: "bi bi-shield-plus", title: "Owner", color: "lime" },
-            { key: "isTester", icon: "bi bi-cogs", title: "Tester", color: "DarkGoldenRod" },
-            { key: "isCoOwner", icon: "bi bi-shield-fill", title: "Co-Owner", color: "lightblue" },
-            { key: "isHAdmin", icon: "bi bi-shield-halved", title: "Head Admin", color: "#00cc99" },
-            { key: "isAdmin", icon: "bi bi-shield", title: "Admin", color: "dodgerblue" },
-            { key: "isPartner", icon: "bi bi-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
-            { key: "isDev", icon: "bi bi-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
-            { key: "premium3", icon: "bi bi-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
-            { key: "premium2", icon: "bi bi-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
-            { key: "premium1", icon: "bi bi-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
-            { key: "isDonater", icon: "bi bi-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"},
-            { key: "isUploader", icon: "bi bi-film", title: "This User Has Uploaded A Movie To Infinite Campus", color: "grey"},
-            { key: "mileStone", icon: "bi bi-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
-            { key: "isGuesser", icon: "bi bi-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
-            { key: "isLink", icon: "bi bi-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
-            { key: "secure", icon: "bi bi-securely", title: "This User Has Securely At School", color: "dodgerblue"},
-            { key: "guardian", icon: "bi bi-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
-            { key: "lanschool", icon: "bi bi-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
-            { key: "linewize", icon: "bi bi-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
-            { key: "blocksi", icon: "bi bi-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
+            { key: "isSus", icon: "ic ic-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
+            { key: "isOwner", icon: "ic ic-shield-plus", title: "Owner", color: "lime" },
+            { key: "isTester", icon: "ic ic-cogs", title: "Tester", color: "DarkGoldenRod" },
+            { key: "isCoOwner", icon: "ic ic-shield-fill", title: "Co-Owner", color: "lightblue" },
+            { key: "isHAdmin", icon: "ic ic-shield-halved", title: "Head Admin", color: "#00cc99" },
+            { key: "isAdmin", icon: "ic ic-shield", title: "Admin", color: "dodgerblue" },
+            { key: "isPartner", icon: "ic ic-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
+            { key: "isDev", icon: "ic ic-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
+            { key: "premium3", icon: "ic ic-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
+            { key: "premium2", icon: "ic ic-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
+            { key: "premium1", icon: "ic ic-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
+            { key: "isDonater", icon: "ic ic-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"},
+            { key: "isUploader", icon: "ic ic-film", title: "This User Has Uploaded A Movie To Infinite Campus", color: "grey"},
+            { key: "mileStone", icon: "ic ic-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
+            { key: "isGuesser", icon: "ic ic-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
+            { key: "isLink", icon: "ic ic-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
+            { key: "secure", icon: "ic ic-securely", title: "This User Has Securely At School", color: "dodgerblue"},
+            { key: "guardian", icon: "ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
+            { key: "lanschool", icon: "ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
+            { key: "linewize", icon: "ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
+            { key: "blocksi", icon: "ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -426,7 +426,7 @@ if (unsub) {
         });
         if (dUsername && dUsername.trim() !== "") {
             const discordBadge = document.createElement("i");
-            discordBadge.className = "bi bi-discord";
+            discordBadge.className = "ic ic-discord";
             discordBadge.title = `Known As @${dUsername} On The Infinite Campus Discord Server`;
             discordBadge.style.color = "#5865F2";
             badgeContainer.appendChild(discordBadge);
@@ -440,7 +440,7 @@ if (unsub) {
         }
         if (isVerified === true) {
             const verified = document.createElement("i");
-            verified.className = "bi bi-shield-check";
+            verified.className = "ic ic-shield-check";
             verified.title = "Verified User";
             verified.style.color = "white";
             verified.style.fontSize = "1.1em";
@@ -629,7 +629,7 @@ if (unsub) {
     hoverOverlay.style.opacity = "0";
     hoverOverlay.style.cursor = "pointer";
     hoverOverlay.style.transition = "0.2s";
-    hoverOverlay.innerHTML = `<i class="bi bi-pencil-fill" style="color:white;font-size:24px;"></i>`;
+    hoverOverlay.innerHTML = `<i class="ic ic-pencil-fill" style="color:white;font-size:24px;"></i>`;
     pfpWrapper.appendChild(hoverOverlay);
     pfpWrapper.addEventListener("mouseenter", () => {
         hoverOverlay.style.opacity = "1";
@@ -1234,101 +1234,101 @@ if (unsub) {
                 }
                 let hasAnyRole = false;
                 if (profile.isSus) {
-                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "bi bi-shield-exclamation");
+                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "ic ic-shield-exclamation");
                     hasAnyRole = true;
                 }
                 if (profile.isOwner) {
-                    addBadge("Owner", "lime", "bi bi-shield-plus");
+                    addBadge("Owner", "lime", "ic ic-shield-plus");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.isTester) {
-                    addBadge("Tester", "DarkGoldenRod", "bi bi-cogs");
+                    addBadge("Tester", "DarkGoldenRod", "ic ic-cogs");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.isCoOwner) {
-                    addBadge("Co-Owner", "lightblue", "bi bi-shield-fill");
+                    addBadge("Co-Owner", "lightblue", "ic ic-shield-fill");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.isHAdmin) {
-                    addBadge("Head Admin", "#00cc99", "bi bi-shield-halved");
+                    addBadge("Head Admin", "#00cc99", "ic ic-shield-halved");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.isAdmin) {
-                    addBadge("Admin", "dodgerblue", "bi bi-shield");
+                    addBadge("Admin", "dodgerblue", "ic ic-shield");
                     hasAnyRole = true;
                 }
                 if (profile.isPartner) {
-                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "bi bi-handshake");
+                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "ic ic-handshake");
                     hasAnyRole = true;
                 }
                 if (profile.isDev) {
-                    addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "bi bi-code-square");
+                    addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "ic ic-code-square");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.premium3) {
-                    addBadge("This User Has Infinite Campus Premium T3", "red", "bi bi-hearts");
+                    addBadge("This User Has Infinite Campus Premium T3", "red", "ic ic-hearts");
                     hasAnyRole = true;
                 }
                 if (profile.premium2) {
-                    addBadge("This User Has Infinite Campus Premium T2", "orange", "bi bi-heart-fill");
+                    addBadge("This User Has Infinite Campus Premium T2", "orange", "ic ic-heart-fill");
                     hasAnyRole = true;
                 }
                 if (profile.premium1) {
-                    addBadge("This User Has Infinite Campus Premium", "yellow", "bi bi-heart-half");
+                    addBadge("This User Has Infinite Campus Premium", "yellow", "ic ic-heart-half");
                     hasAnyRole = true;
                 }
                 if (profile.isDonater) {
-                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "bi bi-balloon-heart");
+                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "ic ic-balloon-heart");
                     hasAnyRole = true;
                 }
                 if (profile.isUploader) {
-                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "bi bi-film");
+                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "ic ic-film");
                     hasAnyRole = true
                 }
                 if (profile.mileStone) {
-                    addBadge("This User Is The 100th Signed Up User", "yellow", "bi bi-award");
+                    addBadge("This User Is The 100th Signed Up User", "yellow", "ic ic-award");
                     hasAnyRole = true;
                 }
                 if (profile.isGuesser) {
-                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "bi bi-stopwatch");
+                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "ic ic-stopwatch");
                     hasAnyRole = true;
                 }
                 if (profile.dUsername) {
                     const discordUser = profile.dUsername;
-                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "bi bi-discord");
+                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "ic ic-discord");
                     hasAnyRole = true;
                 }
                 if (profile.isLink) {
-                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "bi bi-link");
+                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "ic ic-link");
                     hasAnyRole = true;
                 }
                 if (profile.secure) {
-                    addBadge("This User Has Securely At School", "dodgerblue", "bi bi-securely");
+                    addBadge("This User Has Securely At School", "dodgerblue", "ic ic-securely");
                     hasAnyRole = true;
                 }
                 if (profile.guardian) {
-                     addBadge("This User Has GoGuardian At School", "grey", "bi bi-goguardian");
+                     addBadge("This User Has GoGuardian At School", "grey", "ic ic-goguardian");
                     hasAnyRole = true;
                 }
                 if (profile.lanschool) {
-                    addBadge("This User Has Lanschool At School", "greenyellow", "bi bi-lanschool");
+                    addBadge("This User Has Lanschool At School", "greenyellow", "ic ic-lanschool");
                     hasAnyRole = true;
                 }
                 if (profile.linewize) {
-                    addBadge("This User Has Linewize At School", "lightskyblue", "bi bi-linewize");
+                    addBadge("This User Has Linewize At School", "lightskyblue", "ic ic-linewize");
                     hasAnyRole = true;
                 }
                 if (profile.blocksi) {
-                    addBadge("This User Has Blocksi At School", "cadetblue", "bi bi-blocksi");
+                    addBadge("This User Has Blocksi At School", "cadetblue", "ic ic-blocksi");
                     hasAnyRole = true;
                 }
                 if (profile.verified) {
-                    addBadge("Verified User", "white", "bi bi-shield-check");
+                    addBadge("Verified User", "white", "ic ic-shield-check");
                     hasAnyRole = true;
                 }
             }

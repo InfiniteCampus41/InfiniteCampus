@@ -59,7 +59,7 @@ const headerHTML = `
         </div>
         <div id="header-right">
             <button id="mobileMenuBtn" class="mobile-menu-btn">
-                <i class="bi bi-list">
+                <i class="ic ic-list">
                 </i>
             </button>
             <div id="desktopNav">
@@ -149,7 +149,7 @@ const headerHTML = `
             <img src="/res/logo.svg" id="logo" style="width:fit-content; margin-bottom:-60px; display:block;">
         </a>
         <button id="closeMobilePanel" class="darkbuttons">
-            <i class="bi bi-x-lg">
+            <i class="ic ic-x-lg">
             </i>
         </button>
         <a href="InfiniteAbouts.html" class="darkbuttons">
@@ -325,11 +325,11 @@ document.addEventListener("DOMContentLoaded", () => {
             let iconClass = "";
             let iconColor = "";
             if (monthIndex === 11 || monthIndex === 0) {
-                iconClass = "bi bi-snow";
+                iconClass = "ic ic-snow";
                 iconColor = "white";
             } 
             else if (monthIndex === 1) {
-                iconClass = "bi bi-heart-fill";
+                iconClass = "ic ic-heart-fill";
                 iconColor = "red";
             } 
             else if (monthIndex >= 2 && monthIndex <= 8) {
@@ -337,11 +337,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             } 
             else if (monthIndex === 9) {
-                iconClass = "bi-bi-pumpkin";
+                iconClass = "ic ic-pumpkin";
                 iconColor = "orange";
             } 
             else if (monthIndex === 10) {
-                iconClass = "bi bi-leaf-fill";
+                iconClass = "ic ic-leaf-fill";
                 iconColor = "darkgoldenrod";
             }
             flake.innerHTML = `<i class="${iconClass}" style="color:${iconColor}"></i>`;

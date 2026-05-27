@@ -57,7 +57,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (window.innerWidth <= 900) {
                 rightPanel.classList.toggle("open");
                 toggleBtn.classList.toggle("open");
-                toggleBtn.innerHTML = rightPanel.classList.contains("open") ? "<i class='bi bi-chevron-right'></i>" : "<i class='bi bi-chevron-left'></i>";
+                toggleBtn.innerHTML = rightPanel.classList.contains("open") ? "<i class='ic ic-chevron-right'></i>" : "<i class='ic ic-chevron-left'></i>";
             }
         };
         const privateChatsDiv = document.getElementById("privateChats");
@@ -791,7 +791,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     mutedBadge.style.fontWeight = "bold";
                     mutedBadge.style.display = "none";
                     mutedBadge.title = "This User Is Muted";
-                    mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
+                    mutedBadge.innerHTML = '<i class="ic ic-volume-mute-fill"></i>';
                     dbListen(`mutedUsers/${senderUid}`, async (data) => {
                         if (!data) {
                             mutedBadge.style.display = "none";
@@ -811,41 +811,41 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     let dontShowOthers = false;
                     if (badgeText === "Sus") {
                         dontShowOthers = true;
-                        badgeContainer.innerHTML = '<i class="bi bi-shield-exclamation"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-shield-exclamation"></i>';
                         badgeContainer.style.color = 'red';
                         badgeContainer.title = 'This User Is Currently Under Investigation';
                     } else if (badgeText === "OWNR") {
-                        badgeContainer.innerHTML = '<i class="bi bi-shield-plus"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-shield-plus"></i>';
                         badgeContainer.style.color = "lime";
                     } else if (badgeText === "TSTR") {
-                        badgeContainer.innerHTML = '<i class="bi bi-cogs"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-cogs"></i>';
                         badgeContainer.style.color = "DarkGoldenRod";
                     } else if (badgeText === "COWNR") {
-                        badgeContainer.innerHTML = '<i class="bi bi-shield-fill"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-shield-fill"></i>';
                         badgeContainer.style.color = "lightblue";
                     } else if (badgeText === "HADMIN") {
-                        badgeContainer.innerHTML = '<i class="bi bi-shield-halved"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-shield-halved"></i>';
                         badgeContainer.style.color = "#00cc99";
                     } else if (badgeText === "ADMN") {
-                        badgeContainer.innerHTML = '<i class="bi bi-shield"></i>';
+                        badgeContainer.innerHTML = '<i class="ic ic-shield"></i>';
                         badgeContainer.style.color = "dodgerblue";
                     }
                     if (profile.isDev) {
                         const i = document.createElement("i");
-                        i.className = "bi bi-code-square";
+                        i.className = "ic ic-code-square";
                         i.style.color = "green";
                         badgeContainer.appendChild(i);
                     }
-                    if (profile.premuim3) badgeContainer.innerHTML += '<i class="bi bi-hearts" style="color:red"></i>';
-                    if (profile.premium2) badgeContainer.innerHTML += '<i class="bi bi-heart-fill" style="color:orange"></i>';
-                    if (profile.premium1) badgeContainer.innerHTML += '<i class="bi bi-heart-half" style="color:yellow"></i>';
-                    if (profile.isDonater) badgeContainer.innerHTML += '<i class="bi bi-balloon-heart" style="color:#00E5FF"></i>';
-                    if (profile.isPartner) badgeContainer.innerHTML += '<i class="bi bi-handshake" style="color:cornflowerblue"></i>';
-                    if (profile.isUploader) badgeContainer.innerHTML += '<i class="bi bi-film" style="color:grey"></i>';
-                    if (profile.mileStone) badgeContainer.innerHTML += '<i class="bi bi-award" style="color:yellow"></i>';
-                    if (profile.isGuesser) badgeContainer.innerHTML += '<i class="bi bi-stopwatch" style="color:red"></i>';
+                    if (profile.premuim3) badgeContainer.innerHTML += '<i class="ic ic-hearts" style="color:red"></i>';
+                    if (profile.premium2) badgeContainer.innerHTML += '<i class="ic ic-heart-fill" style="color:orange"></i>';
+                    if (profile.premium1) badgeContainer.innerHTML += '<i class="ic ic-heart-half" style="color:yellow"></i>';
+                    if (profile.isDonater) badgeContainer.innerHTML += '<i class="ic ic-balloon-heart" style="color:#00E5FF"></i>';
+                    if (profile.isPartner) badgeContainer.innerHTML += '<i class="ic ic-handshake" style="color:cornflowerblue"></i>';
+                    if (profile.isUploader) badgeContainer.innerHTML += '<i class="ic ic-film" style="color:grey"></i>';
+                    if (profile.mileStone) badgeContainer.innerHTML += '<i class="ic ic-award" style="color:yellow"></i>';
+                    if (profile.isGuesser) badgeContainer.innerHTML += '<i class="ic ic-stopwatch" style="color:red"></i>';
                     if (profile.dUsername && profile.dUsername.trim() !== "") {
-                        badgeContainer.innerHTML += '<i class="bi bi-discord" style="color:#5865F2"></i>';
+                        badgeContainer.innerHTML += '<i class="ic ic-discord" style="color:#5865F2"></i>';
                     }
                     badgeContainer.appendChild(mutedBadge);
                     let timestamp = "";
@@ -1193,13 +1193,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (isOpen) {
                 editOrderContainer.style.right = '-500px';
                 expandEdit.style.right = '-2px';
-                expandEdit.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                expandEdit.innerHTML = '<i class="ic ic-chevron-left"></i>';
                 isOpen = false;
                 editOrderContainer.style.display = 'none';
             } else {
                 editOrderContainer.style.right = '-2px';
                 expandEdit.style.right = '496px';
-                expandEdit.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                expandEdit.innerHTML = '<i class="ic ic-chevron-right"></i>';
                 isOpen = true;
                 loadMoviesOrder();
                 editOrderContainer.style.display = 'block';
@@ -1657,7 +1657,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 item.draggable = true;
                 item.dataset.index = index;
                 item.innerHTML = `
-                    <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+                    <span class="drag-handle"><i class="ic ic-grip-vertical"></i></span>
                     <span class="movie-name" data-index="${index}">${movie.filename}</span>
                 `;
                 addDragEvents(item);

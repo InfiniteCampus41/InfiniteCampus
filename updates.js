@@ -170,14 +170,14 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 				div.innerHTML = `
 					<div style="display:flex; align-items:center; justify-content:center;">
 					<button class="edit-btn button" data-key="${key}" style="display:none">
-						<i class='bi bi-pencil-square'>
+						<i class='ic ic-pencil-square'>
 						</i>
 					</button>
 					<div class="btxt" style="width:75%;" data-key="${key}">
 						${note.text}
 					</div>
 					<button class="delete-btn button" data-key="${key}" style="display:none">
-						<i class='bi bi-trash'>
+						<i class='ic ic-trash'>
 						</i>
 					</button>
 					</div>
@@ -319,11 +319,11 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
             if (isOwner || isTester || isDev) {
                 div.innerHTML = `
                     <button class="button" onclick="editUpdate('${update.key}', \`${update.content.replace(/`/g, "\\`")}\`)">
-                        <i class='bi bi-pencil-square'></i>
+                        <i class='ic ic-pencil-square'></i>
                     </button>
                     ${index + 1}. ${update.content}
                     <button class="button" onclick="deleteUpdate('${update.key}')">
-                        <i class='bi bi-trash'></i>
+                        <i class='ic ic-trash'></i>
                     </button>
                 `;
             } else {
@@ -430,13 +430,13 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 		pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
 	}
 	const ROLE_CONFIG = [
-		{key: "isOwner",innerHTML: `<i class="bi bi-shield-plus" style="color:lime" title="Owner"></i>`},
-		{key: "isTester",innerHTML: `<i class="bi bi-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
-		{key: "isCoOwner",innerHTML: `<i class="bi bi-shield-fill" style="color:lightblue" title="Co-Owner"></i>`},
-		{key: "isHAdmin",innerHTML: `<i class="bi bi-shield-halved" style="color:#00cc99" title="Head Admin"></i>`},
-		{key: "isAdmin",innerHTML: `<i class="bi bi-shield" style="color:dodgerblue" title="Admin"></i>`},
-		{key: "isDev",innerHTML: `<i class="bi bi-code-square" style="color:green" title="This User Is A Developer For Infinitecampus.xyz"></i>`},
-		{key: "isPartner",innerHTML: `<i class="bi bi-handshake" style="color:cornflowerblue" title="This User Is A Partner Of Infinite Campus"></i>`}
+		{key: "isOwner",innerHTML: `<i class="ic ic-shield-plus" style="color:lime" title="Owner"></i>`},
+		{key: "isTester",innerHTML: `<i class="ic ic-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
+		{key: "isCoOwner",innerHTML: `<i class="ic ic-shield-fill" style="color:lightblue" title="Co-Owner"></i>`},
+		{key: "isHAdmin",innerHTML: `<i class="ic ic-shield-halved" style="color:#00cc99" title="Head Admin"></i>`},
+		{key: "isAdmin",innerHTML: `<i class="ic ic-shield" style="color:dodgerblue" title="Admin"></i>`},
+		{key: "isDev",innerHTML: `<i class="ic ic-code-square" style="color:green" title="This User Is A Developer For Infinitecampus.xyz"></i>`},
+		{key: "isPartner",innerHTML: `<i class="ic ic-handshake" style="color:cornflowerblue" title="This User Is A Partner Of Infinite Campus"></i>`}
 	];
 	async function loadUserRoles(uid) {
 		const roleSnap = await dbGet(`users/${uid}/profile`);

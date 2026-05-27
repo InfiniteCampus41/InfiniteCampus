@@ -99,13 +99,13 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         container.querySelectorAll("pre").forEach(pre => {
             if (pre.querySelector(".aicopy-btn")) return;
             const button = document.createElement("button");
-            button.innerHTML = "<i class='bi bi-copy'></i>";
+            button.innerHTML = "<i class='ic ic-copy'></i>";
             button.className = "aicopy-btn";
             const code = pre.querySelector("code");
             button.onclick = () => {
                 navigator.clipboard.writeText(code.innerText).then(() => {
                     button.textContent = "Copied!";
-                    setTimeout(() => button.innerHTML = "<i class='bi bi-copy'></i>", 1200);
+                    setTimeout(() => button.innerHTML = "<i class='ic ic-copy'></i>", 1200);
                 });
             };
             pre.appendChild(button);
@@ -357,7 +357,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 li.dataset.id = t.id;
                 li.innerHTML = `
                     <span class="drag-handle" title="Drag">
-                        <i class="bi bi-grip-vertical">
+                        <i class="ic ic-grip-vertical">
                         </i>
                     </span>
                     <span class="index">
@@ -381,7 +381,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         function setNowPlayingUI() {
             const t = tracks[currentIndex];
             if (!t) {
-                els.nowTitle.innerHTML = '<i class="bi bi-dash"></i>';
+                els.nowTitle.innerHTML = '<i class="ic ic-dash"></i>';
                 els.artImg.src = FALLBACK_ART;
                 return;
             }
@@ -431,7 +431,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             saveAll();
         }
         function setPlayButtons(playing) {
-            els.btnPlay.innerHTML = playing ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
+            els.btnPlay.innerHTML = playing ? '<i class="ic ic-pause-fill"></i>' : '<i class="ic ic-play-fill"></i>';
         }
         function nextTrack(autoplay=true) {
             if (tracks.length === 0) return;
@@ -1391,7 +1391,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             return `${m}:${sec.toString().padStart(2, '0')}`;
         }
         function syncPlayIcon() {
-            document.getElementById('playIcon').className = isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill';
+            document.getElementById('playIcon').className = isPlaying ? 'ic ic-pause-fill' : 'ic ic-play-fill';
             document.querySelectorAll('.song-card, .track').forEach(el => {
                 el.classList.toggle('playing', el.dataset.trackId === String(currentTrack?.id));
             });
@@ -1399,7 +1399,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const ov = card.querySelector('.play-overlay i');
                 if (!ov) return;
                 const active = card.dataset.trackId === String(currentTrack?.id);
-                ov.className = (active && isPlaying) ? 'bi bi-pause-fill' : 'bi bi-play-fill';
+                ov.className = (active && isPlaying) ? 'ic ic-pause-fill' : 'ic ic-play-fill';
             });
         }
         function togglePlay() {
@@ -1428,7 +1428,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             document.getElementById('playerTitle').textContent  = track.title;
             document.getElementById('playerArtist').textContent = track.artistName;
             const thumb = document.getElementById('playerThumb');
-            thumb.innerHTML = track.artUrl ? `<img src="${track.artUrl}" alt="">` : `<i class="bi bi-music"></i>`;
+            thumb.innerHTML = track.artUrl ? `<img src="${track.artUrl}" alt="">` : `<i class="ic ic-music"></i>`;
             document.getElementById('player').classList.add('visible');
             syncPlayIcon();
         }
@@ -1511,7 +1511,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             card.innerHTML = `
                 <img class="cover" src="${t.album.cover_medium}" loading="lazy">
                 <div class="play-overlay">
-                    <i class="bi ${currentTrack?.id === t.id && isPlaying ? 'bi-pause-fill' : 'bi-play-fill'}">
+                    <i class="ic ${currentTrack?.id === t.id && isPlaying ? 'ic-pause-fill' : 'ic-play-fill'}">
                     </i>
                 </div>
                 <div class="song-title">
@@ -1557,7 +1557,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const tracks = await trRes.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="bi bi-arrow-left">
+                        <i class="ic ic-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1636,7 +1636,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const album = await res.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="bi bi-arrow-left">
+                        <i class="ic ic-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1700,7 +1700,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 const track = await res.json();
                 page.innerHTML = `
                     <button class="button" onclick="goBack()">
-                        <i class="bi bi-arrow-left">
+                        <i class="ic ic-arrow-left">
                         </i>
                         Back
                     </button>
@@ -1719,7 +1719,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                                     ${esc(track.album.title)}
                                 </a>
                                 <button class="play-song-btn" data-track-id="${track.id}" onclick="resolveAndPlay(${track.id},'${esc(track.artist.name).replace(/'/g,"\\'")}','${esc(track.title).replace(/'/g,"\\'")}','${track.album.cover_medium}',${track.artist.id},${track.album.id})">
-                                    <i class="bi bi-play-fill">
+                                    <i class="ic ic-play-fill">
                                     </i>
                                     Play
                                 </button>

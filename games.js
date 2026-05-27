@@ -103,7 +103,7 @@ form.addEventListener("submit", async (event) => {
     const frame = scramjet.createFrame();
     frame.frame.id = "sj-frame";
     const fullScreenBtn = document.createElement('button');
-    fullScreenBtn.innerHTML = '<i class="bi bi-fullscreen"></i>';
+    fullScreenBtn.innerHTML = '<i class="ic ic-fullscreen"></i>';
     fullScreenBtn.classList = 'button';
     fullScreenBtn.id = 'pxyFcrn';
     fullScreenBtn.style.position = 'fixed';
@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         container.style.display = "none";
                         showLoader();
                         const backButton = document.createElement("button");
-                        backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
+                        backButton.innerHTML = "<i class='ic ic-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
                         backButton.style.top = "calc(var(--headerHeight) + 5px)";
@@ -383,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.cursor = "pointer";
                         main.appendChild(backButton);
                         const fullscreen = document.createElement("button");
-                        fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
+                        fullscreen.innerHTML = "<i class='ic ic-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
                         fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";
@@ -465,7 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     button.onclick = function () {
                         container.style.display = "none";
                         const backButton = document.createElement("button");
-                        backButton.innerHTML = "<i class='bi bi-arrow-left'></i>";
+                        backButton.innerHTML = "<i class='ic ic-arrow-left'></i>";
                         backButton.className = "button";
                         backButton.style.position = "fixed";
                         backButton.style.top = "calc(var(--headerHeight) + 5px)";
@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         backButton.style.cursor = "pointer";
                         main.appendChild(backButton);
                         const fullscreen = document.createElement("button");
-                        fullscreen.innerHTML = "<i class='bi bi-fullscreen'></i>";
+                        fullscreen.innerHTML = "<i class='ic ic-fullscreen'></i>";
                         fullscreen.className = "button";
                         fullscreen.style.position = "fixed";
                         fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";

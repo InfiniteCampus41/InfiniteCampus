@@ -750,7 +750,7 @@ function toggleReply(id = null, name = null, text = null) {
     lReply.textContent = `Replying To: @${name}`;
     const rReply = document.createElement("button");
     rReply.id = "exitReply";
-    rReply.innerHTML = `<i class="bi bi-x-circle"></i>`;
+    rReply.innerHTML = `<i class="ic ic-x-circle"></i>`;
     rReply.onclick = () => toggleReply();
     reply.appendChild(lReply);
     reply.appendChild(rReply);
@@ -961,7 +961,7 @@ async function renderMessageInstant(id, msg) {
         nameSpan.textContent = msg.u || "This Message Is From The Discord";
         nameSpan.style.color = "#5865F2";
         const discordBadge = document.createElement("span");
-        discordBadge.innerHTML = `<i class="bi bi-discord" style="color:#5865F2" title="This Message Is From The Discord"></i>`;
+        discordBadge.innerHTML = `<i class="ic ic-discord" style="color:#5865F2" title="This Message Is From The Discord"></i>`;
         discordBadge.style.marginLeft = "4px";
         leftWrapper.appendChild(discordBadge);
         if (msg.r) {
@@ -1015,11 +1015,11 @@ async function renderMessageInstant(id, msg) {
         div.appendChild(reactionsRow);
         const discordReactBtn = document.createElement("button");
         discordReactBtn.className = "react-btn";
-        discordReactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
+        discordReactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
         discordReactBtn.title = "Add Reaction";
         discordReactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
         const discordReplyBtn = document.createElement("button");
-        discordReplyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
+        discordReplyBtn.innerHTML = `<i class="ic ic-arrow-90deg-left"></i>`;
         discordReplyBtn.title = "Reply to Discord message";
         discordReplyBtn.onclick = () => toggleReply(id, msg.u || "Discord User", rawText);
         msgBtns.appendChild(discordReplyBtn);
@@ -1056,7 +1056,7 @@ async function renderMessageInstant(id, msg) {
         }
         if (isOwner || isCoOwner || isTester || isHAdmin) {
             const anonDelBtn = document.createElement("button");
-            anonDelBtn.innerHTML = "<i class='bi bi-trash'></i>";
+            anonDelBtn.innerHTML = "<i class='ic ic-trash'></i>";
             anonDelBtn.title = "Delete Guest Message";
             anonDelBtn.onclick = async (e) => {
                 if (e.shiftKey) {
@@ -1131,7 +1131,7 @@ async function renderMessageInstant(id, msg) {
     }
     const reactBtn = document.createElement("button");
     reactBtn.className = "react-btn";
-    reactBtn.innerHTML = `<i class="bi bi-emoji-smile"></i>`;
+    reactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
     reactBtn.title = "Add Reaction";
     reactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
     msgBtns.appendChild(reactBtn);
@@ -1212,7 +1212,7 @@ async function renderMessageInstant(id, msg) {
             mutedBadge.style.color = "red";
             mutedBadge.style.display = "none";
             mutedBadge.title = "This User Is Muted";
-            mutedBadge.innerHTML = '<i class="bi bi-volume-mute-fill"></i>';
+            mutedBadge.innerHTML = '<i class="ic ic-volume-mute-fill"></i>';
             dbListen(`mutedUsers/${senderId}`, async (data) => {
                 if (!data) { mutedBadge.style.display = "none"; return; }
                 if (data.expires === "Never") { mutedBadge.style.display = "inline"; return; }
@@ -1223,28 +1223,28 @@ async function renderMessageInstant(id, msg) {
             const extraBadges = [];
             const mkP = (cls, color, title) => allPrimaryBadges.push({ cls, color, title });
             const mkE = (cls, color, label, title) => extraBadges.push({ cls, color, label, title });
-            if (meta.sus) mkP("bi bi-shield-exclamation","red","Under Investigation");
-            if (meta.owner) mkP("bi bi-shield-plus","lime","Owner");
-            if (meta.tester) mkP("bi bi-cogs","darkGoldenRod","Tester");
-            if (meta.coOwner) mkP("bi bi-shield-fill","lightblue","Co-Owner");
-            if (meta.hAdmin) mkP("bi bi-shield-halved","#00cc99","Head Admin");
-            if (meta.admin) mkP("bi bi-shield","dodgerblue","Admin");
-            if (meta.dev) mkP("bi bi-code-square","green","Developer");
-            if (meta.premium3) mkP("bi bi-hearts","red","Premium T3");
-            if (meta.premium2) mkP("bi bi-heart-fill","orange","Premium T2");
-            if (meta.premium1) mkP("bi bi-heart-half","yellow","Premium T1");
-            if (meta.donor) mkP("bi bi-balloon-heart","#00E5FF","Donated");
-            if (meta.partner) mkE("bi bi-handshake","cornflowerblue","Partner","Partner");
-            if (meta.uploader) mkE("bi bi-film","grey","Uploader","Uploaded A Movie");
-            if (meta.milestone) mkE("bi bi-award","yellow","Award","Award Badge");
-            if (meta.guesser) mkE("bi bi-stopwatch","#ff0000","Guesser","Guesser");
-            if (meta.discord && meta.discord.trim()) mkE("bi bi-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
-            if (meta.linker) mkE("bi bi-link","#4fa3ff","Linker","Link Sharer");
-            if (meta.secure) mkE("bi bi-securely","dodgerblue","Securely","Has Securely");
-            if (meta.guardian) mkE("bi bi-goguardian","grey","GoGuardian","Has GoGuardian");
-            if (meta.lanschool) mkE("bi bi-lanschool","greenyellow","Lanschool","Has Lanschool");
-            if (meta.linewize) mkE("bi bi-linewize","lightskyblue","Linewize","Has Linewize");
-            if (meta.blocksi) mkE("bi bi-blocksi","cadetblue","Blocksi","Has Blocksi");
+            if (meta.sus) mkP("ic ic-shield-exclamation","red","Under Investigation");
+            if (meta.owner) mkP("ic ic-shield-plus","lime","Owner");
+            if (meta.tester) mkP("ic ic-cogs","darkGoldenRod","Tester");
+            if (meta.coOwner) mkP("ic ic-shield-fill","lightblue","Co-Owner");
+            if (meta.hAdmin) mkP("ic ic-shield-halved","#00cc99","Head Admin");
+            if (meta.admin) mkP("ic ic-shield","dodgerblue","Admin");
+            if (meta.dev) mkP("ic ic-code-square","green","Developer");
+            if (meta.premium3) mkP("ic ic-hearts","red","Premium T3");
+            if (meta.premium2) mkP("ic ic-heart-fill","orange","Premium T2");
+            if (meta.premium1) mkP("ic ic-heart-half","yellow","Premium T1");
+            if (meta.donor) mkP("ic ic-balloon-heart","#00E5FF","Donated");
+            if (meta.partner) mkE("ic ic-handshake","cornflowerblue","Partner","Partner");
+            if (meta.uploader) mkE("ic ic-film","grey","Uploader","Uploaded A Movie");
+            if (meta.milestone) mkE("ic ic-award","yellow","Award","Award Badge");
+            if (meta.guesser) mkE("ic ic-stopwatch","#ff0000","Guesser","Guesser");
+            if (meta.discord && meta.discord.trim()) mkE("ic ic-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
+            if (meta.linker) mkE("ic ic-link","#4fa3ff","Linker","Link Sharer");
+            if (meta.secure) mkE("ic ic-securely","dodgerblue","Securely","Has Securely");
+            if (meta.guardian) mkE("ic ic-goguardian","grey","GoGuardian","Has GoGuardian");
+            if (meta.lanschool) mkE("ic ic-lanschool","greenyellow","Lanschool","Has Lanschool");
+            if (meta.linewize) mkE("ic ic-linewize","lightskyblue","Linewize","Has Linewize");
+            if (meta.blocksi) mkE("ic ic-blocksi","cadetblue","Blocksi","Has Blocksi");
             const totalRoles = allPrimaryBadges.length + extraBadges.length;
             let inlinePrimaries, overflowPrimaries, inlineExtras, popoverExtras;
             if (totalRoles <= 3) {
@@ -1257,7 +1257,7 @@ async function renderMessageInstant(id, msg) {
             }
             const onlineBadge = document.createElement("i");
             const setOnlineStatus = (isOnline) => {
-                onlineBadge.className = isOnline ? "bi bi-online" : "bi bi-offline";
+                onlineBadge.className = isOnline ? "ic ic-online" : "ic ic-offline";
                 onlineBadge.style.color = isOnline ? "#69a84f" : "#999999";
                 onlineBadge.title = isOnline ? "Online" : "Offline";
             };
@@ -1304,7 +1304,7 @@ async function renderMessageInstant(id, msg) {
             leftWrapper.appendChild(badgeContainer);
             const isSelf = senderId === currentUser?.uid;
             const replyBtn = document.createElement("button");
-            replyBtn.innerHTML = `<i class="bi bi-arrow-90deg-left"></i>`;
+            replyBtn.innerHTML = `<i class="ic ic-arrow-90deg-left"></i>`;
             replyBtn.title = "Reply";
             replyBtn.onclick = () => toggleReply(id, displayName, rawText);
             if (!isGuest) {
@@ -1315,7 +1315,7 @@ async function renderMessageInstant(id, msg) {
                 let canEdit   = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin);
                 if (canEdit) {
                     const editBtn = document.createElement("button");
-                    editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";
+                    editBtn.innerHTML = "<i class='ic ic-pencil-square'></i>";
                     editBtn.title = "Edit Message";
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
@@ -1355,7 +1355,7 @@ async function renderMessageInstant(id, msg) {
                 }
                 if (canDelete) {
                     const delBtn = document.createElement("button");
-                    delBtn.innerHTML = "<i class='bi bi-trash'></i>";
+                    delBtn.innerHTML = "<i class='ic ic-trash'></i>";
                     delBtn.title = "Delete Message";
                     delBtn.onclick = async (e) => {
                         if (e.shiftKey) {
@@ -1428,7 +1428,7 @@ function buildSafeText(raw) {
         safe = safe.replace(/\x00DISCORD_EMBED_(\d+)\x00/g, (_, i) => embedPlaceholders[Number(i)]);
     }
     safe = safe.replace(
-        /&lt;i\s+class="([^"]*(?:fa|bi)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
+        /&lt;i\s+class="([^"]*(?:fa|bi|ic)[^"]+)"(?:\s+style="([^"]*)")?(?:\s+title="([^"]*)")?\s*&gt;&lt;\/i&gt;/g,
         (_, cls, style, title) => {
             let attrs = `class="${cls}"`;
             if (style) attrs += ` style="${style}"`;
@@ -1496,7 +1496,7 @@ function buildSafeText(raw) {
             const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
             const fsize = fsizeMatch ? fsizeMatch[1] : "";
             const fsizeHtml = fsize ? `<span class="discord-vid-size">${fsize}</span>` : "";
-            return `<div class="discord-vid-wrapper"><div class="discord-vid-topbar"><span class="discord-vid-fname">${fname}</span>${fsizeHtml}<a class="discord-vid-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div><video src="${safeSrc}" class="chat-vid discord-vid" onerror="this.parentElement.style.display='none'"></video><div class="discord-vid-controls"><button class="discord-vid-play"><i class="bi bi-play-fill"></i></button><input type="range" class="discord-vid-seek" value="0" min="0" max="100" step="0.1"><div class="discord-vid-time"><span class="discord-vid-cur">0:00</span> / <span class="discord-vid-dur">0:00</span></div><button class="discord-vid-mute" title="Mute"><i class="bi bi-volume-up-fill"></i></button></div></div>`;
+            return `<div class="discord-vid-wrapper"><div class="discord-vid-topbar"><span class="discord-vid-fname">${fname}</span>${fsizeHtml}<a class="discord-vid-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="ic ic-download"></i></a></div><video src="${safeSrc}" class="chat-vid discord-vid" onerror="this.parentElement.style.display='none'"></video><div class="discord-vid-controls"><button class="discord-vid-play"><i class="ic ic-play-fill"></i></button><input type="range" class="discord-vid-seek" value="0" min="0" max="100" step="0.1"><div class="discord-vid-time"><span class="discord-vid-cur">0:00</span> / <span class="discord-vid-dur">0:00</span></div><button class="discord-vid-mute" title="Mute"><i class="ic ic-volume-up-fill"></i></button></div></div>`;
         }
     );
     safe = safe.replace(/&lt;\/video&gt;/gi, "");
@@ -1516,8 +1516,8 @@ function buildSafeText(raw) {
             const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
             const fsize = fsizeMatch ? fsizeMatch[1] : "";
             const fsizeHtml = fsize ? `<span class="discordaudiosize">${fsize}</span>` : "";
-            const tophtml = `<span class="discordaudiotop"><i class="bi bi-file-earmark-music"></i><span style="display:flex;flex-direction:column;overflow:hidden;">${fname} ${fsizeHtml}</span></span>`
-            return `<div class="discord-audio" data-fname="${fname}" data-src="${safeSrc}" data-dl="${fname}">${tophtml}<audio controls src="${safeSrc}" alt="${alt}" onerror="this.style.display='none'"></audio><div class="discordaudiocontrols"><button class="discordaudioplay"><i class='bi bi-play-fill'></i></button><input type="range" class="discordaudioseek" value="0" min="0" max="100"><div class="discordaudiotime"><span class="current">--:--</span> / <span class="duration">--:--</span></div><a class="discordaudiodl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div></div>`;
+            const tophtml = `<span class="discordaudiotop"><i class="ic ic-file-earmark-music"></i><span style="display:flex;flex-direction:column;overflow:hidden;">${fname} ${fsizeHtml}</span></span>`
+            return `<div class="discord-audio" data-fname="${fname}" data-src="${safeSrc}" data-dl="${fname}">${tophtml}<audio controls src="${safeSrc}" alt="${alt}" onerror="this.style.display='none'"></audio><div class="discordaudiocontrols"><button class="discordaudioplay"><i class='ic ic-play-fill'></i></button><input type="range" class="discordaudioseek" value="0" min="0" max="100"><div class="discordaudiotime"><span class="current">--:--</span> / <span class="duration">--:--</span></div><a class="discordaudiodl" href="${safeSrc}" download="${fname}" title="Download"><i class="ic ic-download"></i></a></div></div>`;
         }
     );
     safe = safe.replace(/&lt;\/audio&gt;/gi, "</audio>");
@@ -1532,15 +1532,15 @@ function buildSafeText(raw) {
             const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
             const fsize = fsizeMatch ? fsizeMatch[1] : "";
             const ext = fname.split(".").pop().toLowerCase();
-            let iconClass = "bi bi-file-earmark";
-            if (["pdf"].includes(ext)) iconClass = "bi bi-file-earmark-pdf";
-            else if (["zip","rar","7z","tar","gz"].includes(ext)) iconClass = "bi bi-file-earmark-zip";
-            else if (["doc","docx","txt","md"].includes(ext)) iconClass = "bi bi-file-earmark-text";
-            else if (["xls","xlsx","csv"].includes(ext)) iconClass = "bi bi-file-earmark-spreadsheet";
-            else if (["ppt","pptx"].includes(ext)) iconClass = "bi bi-file-earmark-slides";
-            else if (["js","ts","py","html","css","json","cpp","c","java"].includes(ext)) iconClass = "bi bi-file-earmark-code";
+            let iconClass = "ic ic-file-earmark";
+            if (["pdf"].includes(ext)) iconClass = "ic ic-file-earmark-pdf";
+            else if (["zip","rar","7z","tar","gz"].includes(ext)) iconClass = "ic ic-file-earmark-zip";
+            else if (["doc","docx","txt","md"].includes(ext)) iconClass = "ic ic-file-earmark-text";
+            else if (["xls","xlsx","csv"].includes(ext)) iconClass = "ic ic-file-earmark-spreadsheet";
+            else if (["ppt","pptx"].includes(ext)) iconClass = "ic ic-file-earmark-slides";
+            else if (["js","ts","py","html","css","json","cpp","c","java"].includes(ext)) iconClass = "ic ic-file-earmark-code";
             const fsizeHtml = fsize ? `<span class="discord-file-size">${fsize}</span>` : "";
-            return `<div class="discord-file-block"><i class="${iconClass} discord-file-icon"></i><div class="discord-file-info"><span class="discord-file-name" title="${fname}">${fname}</span>${fsizeHtml}</div><a class="discord-file-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="bi bi-download"></i></a></div>`;
+            return `<div class="discord-file-block"><i class="${iconClass} discord-file-icon"></i><div class="discord-file-info"><span class="discord-file-name" title="${fname}">${fname}</span>${fsizeHtml}</div><a class="discord-file-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="ic ic-download"></i></a></div>`;
         }
     );
     safe = safe.replace(/&lt;\/file&gt;/gi, "");
@@ -1647,8 +1647,8 @@ function buildReplyPreviewText(raw) {
     text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     text = text.replace(/\*(.*?)\*/g, "<em>$1</em>");
     text = text.replace(/_(.*?)_/g, "<em>$1</em>");
-    text = text.replace(/<gif-placeholder><\/gif-placeholder>/g, `<i class="bi bi-image-fill"></i> Gif`);
-    text = text.replace(/<media-placeholder><\/media-placeholder>/g, `<i class="bi bi-image-fill"></i> Media`);
+    text = text.replace(/<gif-placeholder><\/gif-placeholder>/g, `<i class="ic ic-image-fill"></i> Gif`);
+    text = text.replace(/<media-placeholder><\/media-placeholder>/g, `<i class="ic ic-image-fill"></i> Media`);
     text = text.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
     return text;
 }
@@ -1791,17 +1791,17 @@ function initAudioPlayers(container) {
             current.textContent = format(audio.currentTime);
         });
         audio.addEventListener("ended", () => {
-            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
             seek.value = 0;
             current.textContent = "0:00";
         });
         playBtn.addEventListener("click", () => {
             if (audio.paused) {
                 audio.play();
-                playBtn.innerHTML = "<i class='bi bi-pause-fill'></i>";
+                playBtn.innerHTML = "<i class='ic ic-pause-fill'></i>";
             } else {
                 audio.pause();
-                playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+                playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
             }
         });
         if (!isMobile) {
@@ -1839,15 +1839,15 @@ function initAudioPlayers(container) {
             curEl.textContent = fmt(video.currentTime);
         });
         video.addEventListener("ended", () => {
-            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
             seek.value = 0;
             curEl.textContent = "0:00";
         });
         video.addEventListener("pause", () => {
-            playBtn.innerHTML = "<i class='bi bi-play-fill'></i>";
+            playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
         });
         video.addEventListener("play", () => {
-            playBtn.innerHTML = "<i class='bi bi-pause-fill'></i>";
+            playBtn.innerHTML = "<i class='ic ic-pause-fill'></i>";
         });
         playBtn.addEventListener("click", () => {
             if (video.paused) video.play();
@@ -1857,8 +1857,8 @@ function initAudioPlayers(container) {
             muteBtn.addEventListener("click", () => {
                 video.muted = !video.muted;
                 muteBtn.innerHTML = video.muted
-                    ? "<i class='bi bi-volume-mute-fill'></i>"
-                    : "<i class='bi bi-volume-up-fill'></i>";
+                    ? "<i class='ic ic-volume-mute-fill'></i>"
+                    : "<i class='ic ic-volume-up-fill'></i>";
             });
         }
         if (!isMobile) {
@@ -1971,7 +1971,7 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             li.appendChild(left);
             const closeBtn = document.createElement("button");
             closeBtn.className = "closeBtn";
-            closeBtn.innerHTML = `<i class="bi bi-x-circle" title="Close PM"></i>`;
+            closeBtn.innerHTML = `<i class="ic ic-x-circle" title="Close PM"></i>`;
             closeBtn.onclick = async (e) => {
                 e.stopPropagation();
                 showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
@@ -2281,7 +2281,7 @@ async function renderChannelsFromDB() {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
-            settingsBtn.innerHTML = `<i class='bi bi-gear' title='Open Settings For #${ch}'></i>`;
+            settingsBtn.innerHTML = `<i class='ic ic-gear' title='Open Settings For #${ch}'></i>`;
             settingsBtn.style.background = "none";
             settingsBtn.style.border = "none";
             settingsBtn.style.padding = "0px";
@@ -2525,7 +2525,7 @@ onAuthStateChanged(auth, async user => {
         currentUser = null;
         if (usernameSpan) usernameSpan.textContent = anonDisplayName;
         if (roleSpan) { roleSpan.textContent = "Guest"; roleSpan.style.color = "#aaa"; }
-        if (bioSpan) { bioSpan.textContent = "Browsing as guest"; bioSpan.style.color = "gray"; }
+        if (bioSpan) { bioSpan.textContent = "Guest User"; bioSpan.style.color = "gray"; }
         mentionToggleLabel.style.display = "none";
         adminControls.style.display = "none";
         addChannelBtn.style.display = "none";
@@ -2863,7 +2863,7 @@ function getSelectedRoles(type) {
     document.body.appendChild(fileInput);
     const attachBtn = document.createElement("button");
     attachBtn.id = "chatAttachBtn";
-    attachBtn.innerHTML = `<i class="bi bi-file-earmark-plus" title="Attach File" style="display:block;padding:10px;font-size:1.5em;"></i>`;
+    attachBtn.innerHTML = `<i class="ic ic-file-earmark-plus" title="Attach File" style="display:block;padding:10px;font-size:1.5em;"></i>`;
     attachBtn.style.cssText = "background:none;border:none;cursor:pointer;padding:15px;font-size:2px;";
     attachBtn.onmouseenter = () => attachBtn.style.color = "#fff";
     attachBtn.onmouseleave = () => attachBtn.style.color = "#aaa";
