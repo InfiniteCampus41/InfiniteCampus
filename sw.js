@@ -54,7 +54,8 @@ self.addEventListener("notificationclick", function(event) {
         })
     );
 });
-importScripts("/scram/scramjet.all.js");
+importScripts("/urls.js");
+importScripts(`${y}`);
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
 self.addEventListener("install", (event) => {

@@ -98,6 +98,12 @@ window.addEventListener('storage', (e) => {
     }
 });
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
+let n = "www.infinitecampus.xyz";
+if (f === "infinitecampus.xyz") {
+    n = "infinitecampus.xyz";
+} else if (f === "instructure.space") {
+    n = "instructure.space";
+}
 const o = [
     "Dad", 
     "Default Bot", 

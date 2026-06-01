@@ -16,7 +16,6 @@ const reloadBtn = document.getElementById("nav-reload");
 const stockSW = "./sw.js";
 const working = document.getElementById("workingPxy");
 const broken = document.getElementById("brokenPxy");
-const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz", "instructure.space", "www.infinitecampus.xyz"];
 let fullscreenBtn = null;
 let isFullscreen = false;
 let scramjet = null;
@@ -24,9 +23,9 @@ if (typeof $scramjetLoadController !== "undefined") {
     const { ScramjetController } = $scramjetLoadController();
     scramjet = new ScramjetController({
         files: {
-            wasm: "/scram/scramjet.wasm.wasm",
-            all: "/scram/scramjet.all.js",
-            sync: "/scram/scramjet.sync.js",
+            wasm: `https://${n}/scram/scramjet.wasm.wasm`,
+            all: `https://${n}/scram/scramjet.all.js`,
+            sync: `https://${n}/scram/scramjet.sync.js`,
         },
     });
     scramjet.init();
@@ -35,7 +34,7 @@ const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
 async function loadBlockedUrls() {
     try {
-        const res = await fetch("/edit-urls");
+        const res = await fetch(`https://${n}/edit-urls`);
         if (!res.ok) throw new Error("Failed To Fetch URLs");
         const data = await res.json();
         blockedUrls = Object.entries(data).map(([url, reason]) => ({
@@ -48,10 +47,6 @@ async function loadBlockedUrls() {
 }
 async function registerSW() {
 	if (!navigator.serviceWorker) {
-		if (
-			location.protocol !== "https:" &&
-			!swAllowedHostnames.includes(location.hostname)
-		)
 		throw new Error("Service Workers Cannot Be Registered Without https.");
 		throw new Error("Your Browser Doesn't Support Service Workers.");
 	}
@@ -342,10 +337,12 @@ async function loadIntoActiveTab(input) {
         return;
     }
     let wispUrl =
-        (location.protocol === "https:" ? "wss" : "ws") +
+        (location.protocol === "http:" ? "wss" : "ws") +
         "://" +
-        location.host +
+        "www.infinitecampus.xyz" +
         "/wisp/";
+    console.log("connection", connection);
+    console.log("worker path", "/baremux/worker.js");
     if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
         await connection.setTransport("/libcurl/index.mjs", [
             { websocket: wispUrl },
