@@ -231,6 +231,9 @@
                     <span class="editor-tab" data-tab="data">
                         Data
                     </span>
+                    <span class="editor-tab" data-tab="words">
+                        Restricted Words
+                    </span>
                 </div>
                 <div id="rules-section" class="editor-section visible">
                     <div id="rules-toolbar">
@@ -279,6 +282,31 @@
                         <div id="data-gutter" style="min-width:2.8rem;padding:0.75rem 0.5rem;text-align:right;color:#555;background:#181825;border-right:1px solid #313145;user-select:none;line-height:1.6;font-size:0.78rem;">
                         </div>
                         <div id="data-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="words-section" class="editor-section">
+                    <div id="words-toolbar" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                        <button id="words-save-btn" class="button">
+                            Save
+                        </button>
+                        <button id="words-refresh-btn" class="button">
+                            Refresh
+                        </button>
+                        <button id="words-collapse-all-btn" class="button">
+                            Collapse All
+                        </button>
+                        <button id="words-expand-all-btn" class="button">
+                            Expand All
+                        </button>
+                        <span id="words-status" style="font-size:0.85rem;opacity:0.85;margin-left:auto;">
+                            Loading
+                        </span>
+                    </div>
+                    <div id="words-wrap" style="display:flex;border:1px solid #3e3e3e;border-radius:6px;overflow:auto;background:#1e1e2e;font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:0.82rem;line-height:1.6;min-height:420px;max-height:70vh;">
+                        <div id="words-gutter" style="min-width:2.8rem;padding:0.75rem 0.5rem;text-align:right;color:#555;background:#181825;border-right:1px solid #313145;user-select:none;line-height:1.6;font-size:0.78rem;">
+                        </div>
+                        <div id="words-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
                         </div>
                     </div>
                 </div>
@@ -338,6 +366,9 @@
                 </button>
                 <button class="button" id="lockdowndisc">
                     Lockdown Discord
+                </button>
+                <button class="button" id="restartServerBtn" style="background:#c0392b;">
+                    Restart Server
                 </button>
                 <table id="fileTable">
                     <thead>

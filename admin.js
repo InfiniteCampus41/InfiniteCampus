@@ -2274,7 +2274,44 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
             });
         }
+        async function fetchWords() {
+            document.getElementById("words-status").textContent = "Loading...";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/modify-restricted-words", { method: "GET" });
+                if (!res.ok) throw new Error(await res.text());
+                const { words } = await res.json();
+                const pretty = JSON.stringify(words, null, 2);
+                document.getElementById("words-editor").textContent = pretty;
+                updateLineNumbers("words-editor");
+                document.getElementById("words-status").textContent = "Loaded ✓";
+            } catch (err) {
+                document.getElementById("words-status").textContent = "Error: " + err.message;
+            }
+        }
+        async function saveWords() {
+            document.getElementById("words-status").textContent = "Saving...";
+            const raw = document.getElementById("words-editor").innerText || document.getElementById("words-editor").textContent;
+            let parsed;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (e) {
+                document.getElementById("words-status").textContent = "Invalid JSON: " + e.message;
+                return;
+            }
+            try {
+                const res = await adminFetch(BACKEND + "/admin/modify-restricted-words", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ words: parsed })
+                });
+                if (!res.ok) throw new Error(await res.text());
+                document.getElementById("words-status").textContent = "Saved ✓";
+            } catch (err) {
+                document.getElementById("words-status").textContent = "Error: " + err.message;
+            }
+        }
         let _dataLoaded = false;
+        let _wordsLoaded = false;
         document.querySelectorAll(".editor-tab").forEach(tab => {
             tab.addEventListener("click", () => {
                 document.querySelectorAll(".editor-tab").forEach(t => t.classList.remove("active"));
@@ -2282,9 +2319,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const target = tab.dataset.tab;
                 document.getElementById("rules-section").classList.toggle("visible", target === "rules");
                 document.getElementById("data-section").classList.toggle("visible", target === "data");
+                document.getElementById("words-section").classList.toggle("visible", target === "words");
                 if (target === "data" && !_dataLoaded) {
                     _dataLoaded = true;
                     fetchData();
+                }
+                if (target === "words" && !_wordsLoaded) {
+                    _wordsLoaded = true;
+                    fetchWords();
                 }
             });
         });
@@ -2341,6 +2383,23 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 saveData();
             }
         });
+        document.getElementById("words-save-btn").onclick = saveWords;
+        document.getElementById("words-refresh-btn").onclick = fetchWords;
+        document.getElementById("words-editor").addEventListener("input", () => {
+            updateLineNumbers("words-editor");
+        });
+        document.getElementById("words-editor").addEventListener("keydown", (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                document.execCommand("insertText", false, "  ");
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                saveWords();
+            }
+        });
+        document.getElementById("words-collapse-all-btn").onclick = () => collapseAll("words-editor");
+        document.getElementById("words-expand-all-btn").onclick = () => expandAll("words-editor");
         (async () => {
             await verifyAdminPassword();
         })();
@@ -2550,6 +2609,37 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             } else {
                 showError("Failed To Toggle Discord Lockdown");
             }
+        });
+        document.getElementById("restartServerBtn").addEventListener("click", async () => {
+            if (!await checkPermissions()) return;
+            showConfirm("Restart the server? Active accepts will be waited on first.", async function(result) {
+                if (!result) return;
+                try {
+                    const token = await (async () => {
+                        await authReadyPromise;
+                        return currentUser ? await currentUser.getIdToken() : null;
+                    })();
+                    const headers = { ...NGROK_HEADERS };
+                    if (token) headers["Authorization"] = "Bearer " + token;
+                    headers["x-admin-password"] = ADMIN_PASS;
+                    const res = await fetch(`${a}/admin/restart`, {
+                        method: "POST",
+                        headers
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        if (data.status === "pending") {
+                            showSuccess("Restart queued: " + data.message);
+                        } else {
+                            showSuccess("Server restarting... you may need to refresh in a moment.");
+                        }
+                    } else {
+                        showError(data.error || "Failed to restart server");
+                    }
+                } catch (e) {
+                    showError("Restart request failed: " + e.message);
+                }
+            });
         });
         async function fetchLogs() {
             if (!await checkPermissions()) return;

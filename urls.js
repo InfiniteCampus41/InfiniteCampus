@@ -1,5 +1,5 @@
 let z = "www.infinitecampus.xyz";
-let fn = window.location.hostname;
+let fn = location.hostname;
 if (fn === "infinitecampus.xyz") {
     z = "infinitecampus.xyz";
 } else if (fn === "instructure.space") {
