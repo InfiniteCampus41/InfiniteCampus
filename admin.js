@@ -2076,7 +2076,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             return syntaxHighlightCollapsible(json, "rules-editor");
         }
         function updateLineNumbers(editorId) {
-            const gutterMap = { "rules-editor": "rules-gutter", "data-editor": "data-gutter" };
+            const gutterMap = { "rules-editor": "rules-gutter", "data-editor": "data-gutter", "words-editor": "words-gutter", "users-editor": "users-gutter" };
             const editor = document.getElementById(editorId);
             const gutter = document.getElementById(gutterMap[editorId]);
             if (!editor || !gutter) return;
@@ -2312,6 +2312,95 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         let _dataLoaded = false;
         let _wordsLoaded = false;
+        let _usersLoaded = false;
+        let _usersOriginal = "";
+        let _isUsersOwner = false;
+        async function fetchUsers() {
+            const user = auth.currentUser;
+            if (!user) return;
+            const statusEl = document.getElementById("users-status");
+            statusEl.textContent = "Checking permissions...";
+            _isUsersOwner = await checkOwnerPermissions(user);
+            if (!_isUsersOwner) {
+                statusEl.textContent = "Owner access required.";
+                document.getElementById("users-editor").contentEditable = "false";
+                document.getElementById("users-editor").style.opacity = "0.5";
+                document.getElementById("users-save-btn").disabled = true;
+                return;
+            }
+            statusEl.textContent = "Loading...";
+            statusEl.style.color = "";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/modify-users", {
+                    method: "GET",
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const result = await res.json();
+                if (!res.ok) {
+                    statusEl.textContent = result.error || "Failed to load users.";
+                    return;
+                }
+                const pretty = JSON.stringify(result.users, null, 2);
+                _usersOriginal = pretty;
+                document.getElementById("users-editor").innerHTML = syntaxHighlightCollapsible(pretty, "users-editor");
+                updateLineNumbers("users-editor");
+                statusEl.textContent = "Loaded.";
+            } catch (err) {
+                statusEl.textContent = "Error: " + err.message;
+            }
+        }
+        async function saveUsers() {
+            const user = auth.currentUser;
+            if (!user) { showError("Not Logged In."); return; }
+            if (!_isUsersOwner) { showError("Owner Access Required."); return; }
+            const raw = document.getElementById("users-editor").innerText;
+            const statusEl = document.getElementById("users-status");
+            let parsed;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (e) {
+                showError(`Invalid JSON: ${e.message}`);
+                return;
+            }
+            let oldParsed;
+            try {
+                oldParsed = _usersOriginal ? JSON.parse(_usersOriginal) : {};
+            } catch {
+                oldParsed = {};
+            }
+            const patches = diffJSON(oldParsed, parsed);
+            if (patches.length === 0) {
+                showSuccess("No Changes Detected.");
+                statusEl.textContent = "No Changes.";
+                return;
+            }
+            showConfirm(`This Will Apply ${patches.length} Change(s) To users.json. Are You Sure?`, async (confirmed) => {
+                if (!confirmed) return;
+                statusEl.textContent = "Saving...";
+                statusEl.style.color = "";
+                try {
+                    const res = await adminFetch(BACKEND + "/admin/modify-users", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                        body: JSON.stringify({ patches })
+                    });
+                    const result = await res.json();
+                    if (!res.ok) {
+                        showError(result.error || "Save Failed");
+                        statusEl.textContent = "Save failed.";
+                        return;
+                    }
+                    _usersOriginal = JSON.stringify(parsed, null, 2);
+                    showSuccess(`users.json saved (${patches.length} change(s) applied).`);
+                    document.getElementById("users-editor").innerHTML = syntaxHighlightCollapsible(_usersOriginal, "users-editor");
+                    updateLineNumbers("users-editor");
+                    statusEl.textContent = "Saved.";
+                } catch (err) {
+                    showError(err.message);
+                    statusEl.textContent = "Error.";
+                }
+            });
+        }
         document.querySelectorAll(".editor-tab").forEach(tab => {
             tab.addEventListener("click", () => {
                 document.querySelectorAll(".editor-tab").forEach(t => t.classList.remove("active"));
@@ -2320,6 +2409,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 document.getElementById("rules-section").classList.toggle("visible", target === "rules");
                 document.getElementById("data-section").classList.toggle("visible", target === "data");
                 document.getElementById("words-section").classList.toggle("visible", target === "words");
+                document.getElementById("users-section").classList.toggle("visible", target === "users");
                 if (target === "data" && !_dataLoaded) {
                     _dataLoaded = true;
                     fetchData();
@@ -2327,6 +2417,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 if (target === "words" && !_wordsLoaded) {
                     _wordsLoaded = true;
                     fetchWords();
+                }
+                if (target === "users" && !_usersLoaded) {
+                    _usersLoaded = true;
+                    fetchUsers();
                 }
             });
         });
@@ -2398,8 +2492,25 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 saveWords();
             }
         });
+        document.getElementById("users-save-btn").onclick = saveUsers;
+        document.getElementById("users-refresh-btn").onclick = fetchUsers;
+        document.getElementById("users-editor").addEventListener("input", () => {
+            updateLineNumbers("users-editor");
+        });
+        document.getElementById("users-editor").addEventListener("keydown", (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                document.execCommand("insertText", false, "  ");
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                saveUsers();
+            }
+        });
         document.getElementById("words-collapse-all-btn").onclick = () => collapseAll("words-editor");
         document.getElementById("words-expand-all-btn").onclick = () => expandAll("words-editor");
+        document.getElementById("users-collapse-all-btn").onclick = () => collapseAll("users-editor");
+        document.getElementById("users-expand-all-btn").onclick = () => expandAll("users-editor");
         (async () => {
             await verifyAdminPassword();
         })();
