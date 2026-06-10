@@ -82,6 +82,10 @@ i {
     mask-image: url('/icons/cogs.svg');
     -webkit-mask-image: url('/icons/cogs.svg');
 }
+.ic-compass {
+    mask-image: url('/icons/compass.svg');
+    -webkit-mask-image: url('/icons/compass.svg');
+}
 .ic-copy {
     mask-image: url('/icons/copy.svg');
     -webkit-mask-image: url('/icons/copy.svg');
@@ -219,6 +223,10 @@ i {
     mask-image: url('/icons/pumpkin.svg');
     -webkit-mask-image: url('/icons/pumpkin.svg');
 }
+.ic-search {
+    mask-image: url('/icons/search.svg');
+    -webkit-mask-image: url('/icons/search.svg');
+}
 .ic-securely {
     mask-image: url('/icons/securely.png');
     -webkit-mask-image: url('/icons/securely.png');
@@ -269,6 +277,10 @@ i {
 .ic-snow {
     mask-image: url('/icons/snow.svg');
     -webkit-mask-image: url('/icons/snow.svg');
+}
+.ic-spotify {
+    mask-image: url('/icons/spotify.svg');
+    -webkit-mask-image: url('/icons/spotify.svg');
 }
 .ic-stopwatch {
     mask-image: url('/icons/stopwatch.svg');

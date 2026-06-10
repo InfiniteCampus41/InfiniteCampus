@@ -482,15 +482,17 @@ function appendToMain() {
         "/InfiniteBrowsers.html",
         "/InfiniteDonaters.html",
         "/InfiniteProxies.html",
-        "InfiniteOldProxies.html",
-        "InfiniteAccounts.html",
-        "InfiniteAdmins.html",
-        "InfiniteArchives.html",
-        "InfinitePolicies.html",
-        "InfiniteTerms.html",
-        "InfiniteAis.html"
+        "/InfiniteOldProxies.html",
+        "/InfiniteAccounts.html",
+        "/InfiniteAdmins.html",
+        "/InfiniteArchives.html",
+        "/InfinitePolicies.html",
+        "/InfiniteTerms.html",
+        "/InfiniteAis.html",
+        "/InfiniteApps.html?listen=true",
+        "/InfiniteApps.html?player=true",
     ];
-    const currentPage = window.location.pathname;
+    const currentPage = window.location.pathname + window.location.search;
     if (excludedPages.some(page => currentPage.includes(page))) {
         return;
     }
