@@ -1,6 +1,7 @@
 TODO
     General:
-        Combine The Music Streaming Page With MP3 Player Page
+        Combine The Music Streaming Page With MP3 Player Page (In Progress):
+            Fix Styling Issues With Songs Currently Playing, Play/Pause Buttons For Playlists,
     Header Stuff:
         Replace Contact Me Button With My Account Button
 
@@ -11,6 +12,7 @@ TODO
 
     Website Chat:
         Need To Do:
+            Fix Images
             Add Group Chats:
                 Make It So Group Chats Can Have A Max Of 10 Members
                 Make It So Only People Inside Of Group Chats Can Be Mentioned Inside Of Them

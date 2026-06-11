@@ -58,6 +58,10 @@ i {
     mask-image: url('/icons/blocksi.png');
     -webkit-mask-image: url('/icons/blocksi.png');
 }
+.ic-broadcast {
+    mask-image: url('/icons/broadcast.svg');
+    -webkit-mask-image: url('/icons/broadcast.svg');
+}
 .ic-check2 {
     mask-image: url('/icons/check2.svg');
     -webkit-mask-image: url('/icons/check2.svg');
@@ -74,6 +78,14 @@ i {
     mask-image: url('/icons/chevron-up.svg');
     -webkit-mask-image: url('/icons/chevron-up.svg');
 }
+.ic-cloud-arrow-down {
+    mask-image: url('/icons/cloud-arrow-down.svg');
+    -webkit-mask-image: url('/icons/cloud-arrow-down.svg');
+}
+.ic-cloud-check {
+    mask-image: url('/icons/cloud-check.svg');
+    -webkit-mask-image: url('/icons/cloud-check.svg');
+}
 .ic-code-square {
     mask-image: url('/icons/code-square.svg');
     -webkit-mask-image: url('/icons/code-square.svg');
@@ -81,6 +93,10 @@ i {
 .ic-cogs {
     mask-image: url('/icons/cogs.svg');
     -webkit-mask-image: url('/icons/cogs.svg');
+}
+.ic-collection {
+    mask-image: url('/icons/collection.svg');
+    -webkit-mask-image: url('/icons/collection.svg');
 }
 .ic-compass {
     mask-image: url('/icons/compass.svg');
@@ -150,6 +166,10 @@ i {
     mask-image: url('/icons/handshake.svg');
     -webkit-mask-image: url('/icons/handshake.svg');
 }
+.ic-hdd {
+    mask-image: url('/icons/hdd.svg');
+    -webkit-mask-image: url('/icons/hdd.svg');
+}
 .ic-heart-fill {
     mask-image: url('/icons/heart-fill.svg');
     -webkit-mask-image: url('/icons/heart-fill.svg');
@@ -161,6 +181,10 @@ i {
 .ic-hearts {
     mask-image: url('/icons/hearts.svg');
     -webkit-mask-image: url('/icons/hearts.svg');
+}
+.ic-hourglass-split {
+    mask-image: url('/icons/hourglass-split.svg');
+    -webkit-mask-image: url('/icons/hourglass-split.svg');
 }
 .ic-image-fill {
     mask-image: url('/icons/image-fill.svg');
@@ -189,6 +213,10 @@ i {
 .ic-music {
     mask-image: url('/icons/music.svg');
     -webkit-mask-image: url('/icons/music.svg');
+}
+.ic-music-note-list {
+    mask-image: url('/icons/music-note-list.svg');
+    -webkit-mask-image: url('/icons/music-note-list.svg');
 }
 .ic-offline {
     mask-image: url('/icons/offline.png');
@@ -265,6 +293,10 @@ i {
 .ic-shield-halved {
     mask-image: url('/icons/shield-halved.svg');
     -webkit-mask-image: url('/icons/shield-halved.svg');
+}
+.ic-shuffle {
+    mask-image: url('/icons/shuffle.svg');
+    -webkit-mask-image: url('/icons/shuffle.svg');  
 }
 .ic-skip-end-fill {
     mask-image: url('/icons/skip-end-fill.svg');

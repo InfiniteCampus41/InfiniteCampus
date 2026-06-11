@@ -71,145 +71,286 @@
                     <a class="button apbtn" href="InfiniteApps.html?qr=true">
                         Qr Code Generator
                     </a>
-                    <a class="button apbtn" href="InfiniteApps.html?player=true">
-                        Mp3 Player
-                    </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="InfiniteApps.html?listen=true">
                         Music
                     </a>
+                    <br>
+                    <br>
                     <a class="button apbtn" href="InfiniteEmbeds.html?choice=4">
                         R/Place
                     </a>
                     <a class="button apbtn" href="InfiniteApps.html?timer=true">
                         Time Until Calculator
                     </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="InfiniteEmbeds.html?choice=6">
                         Algebra Calculator
                     </a>
+                    <br>
+                    <br>
                     <a class="button apbtn" href="https://codehs.com/uploads/449e4f5106c5691fbc739ce9679fb2c3">
                         Watch The Shrek Movie
                     </a>
                     <a class="button themed darkbuttons apbtn" href="InfiniteApps.html?theme=true">
                         Change Site Theme
                     </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="InfiniteApps.html?data=true">
                         Data URL Generator
                     </a>
+                    <br>
+                    <br>
                     <a class="button apbtn" href="InfiniteApps.html?stats=true">
                         Device Stats
                     </a>
                     <a class="button apbtn" href="InfiniteApps.html?chrome=true">
                         Cool URLs For Chrome
                     </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="https://docs.google.com/document/d/1JqRbzN7JgpXqpUb6u6XvE9ZnfLe4b_MWH3-TLjJxD2o/edit?pli=1&tab=t.0">
                         Project Scratch Google Doc
                     </a>
+                    <br>
+                    <br>
                     <a class="button apbtn" href="InfiniteUploaders.html">
                         File Upload/Downloader 5 Min Link
                     </a>
                     <a class="button apbtn" href="InfiniteMovies.html">
                         Movie Streaming Service
                     </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="InfiniteEmbeds.html?choice=7">
                         Extension Freezer
                     </a>
                     <br>
                 </div>
             </center>
-            <div class="wrap" id="playerPage" style="display:none">
-                <center>
-                    <h1 class="tptxt">
-                        MP3 Player
-                    </h1>
-                    <hr>
-                    <br>
-                    <div id="mbBtns">
-                        <label for="fileInput" class="button apbtn">
-                            Choose MP3 File(s)
-                        </label>
-                        <br>
-                        <br>
-                        <a class="button apbtn" href="https://spotidownloader.com/en">
-                            Convert Spotify Songs To Mp3
-                        </a>
-                        <br>
-                        <br>
-                        <a class="button apbtn" href="https://tagmp3.net/">
-                            Add Thumbnails To Your Files
-                        </a>
-                    </div>
-                    <br>
-                    <input id="fileInput" style="display:none;" type="file" accept="audio/*" multiple />
-                    <section class="player">
-                        <div class="now">
-                            <div class="art">
-                                <img id="artImg" alt="Artwork" src="/res/icon.png"/>
-                            </div>
-                            <div class="nowtext">
-                                <h2>
-                                    Now Playing:
-                                </h2>
-                                <h3 id="nowTitle">
-                                    <i class="ic ic-dash">
-                                    </i>
-                                </h3>
-                                <div class="controls">
-                                    <div class="progress">
-                                        <input id="seek" type="range" min="0" max="1000" value="0" step="1" />
-                                        <div class="time">
-                                            <span id="curTime">0:00</span>/<span id="durTime">0:00</span>
-                                        </div>
-                                    </div>
-                                    <button class="button" id="btnPrev" title="Previous (or restart)">
-                                        <i class="ic ic-skip-start-fill">
-                                        </i>                                
-                                    </button>
-                                    <button class="button" id="btnPlay">
-                                        <i class="ic ic-play-fill">
-                                        </i>
-                                    </button>
-                                    <button class="button" id="btnNext" title="Next">
-                                        <i class="ic ic-skip-end-fill">
-                                        </i>                               
-                                    </button>
-                                    <button class="button" id="btnLoop" title="Loop playlist">
-                                        <i class="ic ic-arrow-repeat">
-                                        </i>                          
-                                    </button>
-                                    <button class="button" id="btnClear" title="Clear Playlist">
-                                        Clear Playlist
-                                    </button>
+            <div id="musicPage" style="display:none">
+                <input id="spFileInput" style="display:none" type="file" accept="audio/*" multiple />
+                <div class="sp-layout">
+                    <aside class="sp-sidebar">
+                        <div class="sp-logo">
+                            <i class="ic ic-music">
+                            </i>
+                            <span>
+                                Music Player
+                            </span>
+                        </div>
+                        <nav class="sp-nav">
+                            <button class="sp-nav-btn active" data-tab="streaming" id="navStreaming">
+                                <i class="ic ic-compass">
+                                </i> Discover
+                            </button>
+                            <button class="sp-nav-btn" data-tab="library" id="navLibrary">
+                                <i class="ic ic-collection">
+                                </i> My Library
+                            </button>
+                            <button class="sp-nav-btn" data-tab="playlists" id="navPlaylists">
+                                <i class="ic ic-music-note-list">
+                                </i> Playlists
+                            </button>
+                        </nav>
+                        <div class="sp-sidebar-art" id="spSideArt" style="display:none">
+                            <img id="spSideArtImg" src="/res/icon.png" alt="">
+                            <div class="sp-sidebar-meta">
+                                <div class="sp-sidebar-title" id="spSideTitle">
+                                    Nothing Playing
+                                </div>
+                                <div class="sp-sidebar-artist" id="spSideArtist">
+                                    -
                                 </div>
                             </div>
                         </div>
-                    </section>
-                    <div class="listwrap">
-                        <div class="headerline btxt">
-                            <div>
-                                <strong>
-                                    Playlist
-                                </strong>
+                    </aside>
+                    <div class="sp-main">
+                        <div class="sp-tab" id="tabStreaming">
+                            <div class="sp-search-row">
+                                <div class="sp-search-wrap">
+                                    <i class="ic ic-search sp-search-icon">
+                                    </i>
+                                    <input id="spSearchInput" class="sp-search-input" placeholder="Search Songs, Artists, Albums" />
+                                </div>
+                                <button class="sp-search-btn" id="spSearchBtn">
+                                    Search
+                                </button>
                             </div>
-                            <div id="countInfo">
-                                0 Tracks
+                            <div id="spStreamMain">
+                                <div id="spResults">
+                                </div>
+                            </div>
+                            <div id="spDetailPage" style="display:none">
                             </div>
                         </div>
-                        <ul id="playlist" class="playlist btxt" aria-label="Playlist (draggable)"></ul>
+                        <div class="sp-tab" id="tabLibrary" style="display:none">
+                            <div class="sp-lib-header">
+                                <h2 class="sp-section-title">
+                                    My Library
+                                </h2>
+                                <div class="sp-lib-actions">
+                                    <label for="spFileInput" class="sp-lib-btn">
+                                        <i class="ic ic-plus">
+                                        </i> Add Files
+                                    </label>
+                                    <button class="sp-lib-btn" id="spDownloadLibBtn" title="Download All Library Tracks As Zip">
+                                        <i class="ic ic-download">
+                                        </i> Download All
+                                    </button>
+                                    <a class="sp-lib-btn" href="https://spotidownloader.com/en" target="_blank">
+                                        <i class="ic ic-spotify">
+                                        </i> Spotify → MP3
+                                    </a>
+                                    <a class="sp-lib-btn" href="https://tagmp3.net/" target="_blank">
+                                        <i class="ic ic-image-fill">
+                                        </i> Add Artwork
+                                    </a>
+                                    <button class="sp-lib-btn sp-lib-btn-danger" id="spClearBtn">
+                                        <i class="ic ic-trash">
+                                        </i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="sp-now-card" id="spNowCard">
+                                <img id="spNowArt" src="/res/icon.png" alt="Artwork" />
+                                <div class="sp-now-meta">
+                                    <div class="sp-now-title" id="spNowTitle">
+                                        Nothing Playing
+                                    </div>
+                                    <div class="sp-now-sub" id="spSaveStatus">
+                                    </div>
+                                </div>
+                                <div class="sp-track-count" id="spCountInfo">
+                                    0 Tracks
+                                </div>
+                            </div>
+                            <ul id="spPlaylist" class="sp-playlist" aria-label="Playlist">
+                            </ul>
+                        </div>
+                        <div class="sp-tab" id="tabPlaylists" style="display:none">
+                            <div id="spPlaylistsHome">
+                                <div class="sp-lib-header">
+                                    <h2 class="sp-section-title">
+                                        Playlists
+                                    </h2>
+                                    <div class="sp-lib-actions">
+                                        <button class="sp-lib-btn" id="spNewPlaylistBtn">
+                                            <i class="ic ic-plus">
+                                            </i> New Playlist
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="spPlaylistGrid" class="sp-pl-grid">
+                                </div>
+                            </div>
+                            <div id="spPlaylistDetail" style="display:none">
+                                <div class="sp-lib-header">
+                                    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+                                        <button class="sp-lib-btn" id="spPlBackBtn">
+                                            <i class="ic ic-arrow-left">
+                                            </i> Back
+                                        </button>
+                                        <h2 class="sp-section-title" id="spPlName" style="margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                                        </h2>
+                                    </div>
+                                    <div class="sp-lib-actions">
+                                        <button class="sp-lib-btn sp-ctrl-play" id="spPlPlayBtn">
+                                            <i class="ic ic-play-fill">
+                                            </i>
+                                        </button>
+                                        <button class="sp-lib-btn" id="spPlShuffleBtn">
+                                            <i class="ic ic-shuffle">
+                                            </i> Shuffle
+                                        </button>
+                                        <button class="sp-lib-btn" id="spPlDownloadBtn">
+                                            <i class="ic ic-download">
+                                            </i> Download
+                                        </button>
+                                        <button class="sp-lib-btn" id="spPlCacheOfflineBtn" title="Download all stream tracks to IndexedDB for offline listening">
+                                            <i class="ic ic-cloud-arrow-down">
+                                            </i> Save Offline
+                                        </button>
+                                        <button class="sp-lib-btn sp-lib-btn-danger" id="spPlDeleteBtn">
+                                            <i class="ic ic-trash">
+                                            </i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="sp-track-count" id="spPlCount" style="margin:6px 0 12px 4px">
+                                </div>
+                                <ul id="spPlTrackList" class="sp-playlist">
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div id="saveStatus">
-                        Not Saved
+                    <div id="spPlModal" class="sp-pl-modal" style="display:none">
+                        <div class="sp-pl-modal-box">
+                            <div class="sp-pl-modal-header">
+                                <span>
+                                    Add To Playlist
+                                </span>
+                                <button id="spPlModalClose" class="sp-pl-modal-close">
+                                    <i class="ic ic-x-circle">
+                                    </i>
+                                </button>
+                            </div>
+                            <div id="spPlModalList" class="sp-pl-modal-list">
+                            </div>
+                            <button id="spPlModalNew" class="button sp-lib-btn" style="margin-top:10px;width:100%">
+                                <i class="ic ic-plus">
+                                </i> New Playlist
+                            </button>
+                        </div>
                     </div>
-                </center>
+                </div>
+                <div class="sp-player" id="spPlayer">
+                    <div class="sp-player-left">
+                        <div class="sp-player-thumb" id="spPlayerThumb">
+                            <i class="ic ic-music">
+                            </i>
+                        </div>
+                        <div class="sp-player-meta">
+                            <div class="sp-player-title" id="spPlayerTitle">
+                                No Track Selected
+                            </div>
+                            <div class="sp-player-artist" id="spPlayerArtist" style="cursor:pointer">
+                                -
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sp-player-center">
+                        <div class="sp-player-btns">
+                            <button class="sp-ctrl" id="spLoopBtn" title="Loop">
+                                <i class="ic ic-arrow-repeat">
+                                </i>
+                            </button>
+                            <button class="sp-ctrl" id="spPrevBtn" title="Previous">
+                                <i class="ic ic-skip-start-fill">
+                                </i>
+                            </button>
+                            <button class="sp-ctrl sp-ctrl-play" id="spPlayBtn">
+                                <i class="ic ic-play-fill" id="spPlayIcon">
+                                </i>
+                            </button>
+                            <button class="sp-ctrl" id="spNextBtn" title="Next">
+                                <i class="ic ic-skip-end-fill">
+                                </i>
+                            </button>
+                            <button class="sp-ctrl" id="spDownloadBtn" title="Download / Source">
+                                <i class="ic ic-download">
+                                </i>
+                            </button>
+                        </div>
+                        <div class="sp-seek-row">
+                            <span class="sp-time" id="spTimeCur">
+                                0:00
+                            </span>
+                            <input type="range" id="spSeekBar" min="0" max="1000" value="0" step="1" class="sp-seek" />
+                            <span class="sp-time" id="spTimeDur">
+                                0:00
+                            </span>
+                        </div>
+                    </div>
+                    <div class="sp-player-right">
+                        <i class="ic ic-volume-up-fill" style="color:#8888aa;font-size:13px">
+                        </i>
+                        <input type="range" id="spVolBar" min="0" max="100" value="100" class="sp-vol" />
+                    </div>
+                </div>
             </div>
             <center id="themePage" style="display:none">
                 <h1 class="tptxt">
@@ -2808,79 +2949,6 @@
                 <button class="button" id="copyBtn">
                     Copy To Clipboard
                 </button>
-            </center>
-            <center id="listenPage" style="display:none">
-                <div class="musicContainer">
-                    <h1 class="tptxt">
-                        Music
-                    </h1>
-                    <div id="mainPage">
-                        <div class="search-box">
-                            <input id="searchInput" class="button" placeholder="Search Songs">
-                            <button class="button" onclick="searchSongs()">
-                                Search
-                            </button>
-                        </div>
-                        <div id="results">
-                        </div>
-                    </div>
-                    <div id="detailPage" style="display:none;">
-                    </div>
-                </div>
-                <div id="player">
-                    <div class="player-info">
-                        <div id="playerThumb">
-                            <i class="ic ic-music">
-                            </i>
-                        </div>
-                        <div class="player-text">
-                            <div id="playerTitle" class="btxt">
-                                No Track Selected
-                            </div>
-                            <div id="playerArtist" onclick="goToCurrentArtist()">
-                                —
-                            </div>
-                        </div>
-                    </div>
-                    <div class="player-controls">
-                        <div class="player-btns">
-                            <button class="ctrl-btn" id="loopBtn" onclick="toggleLoop()" title="Loop">
-                                <i class="ic ic-arrow-repeat">
-                                </i>
-                            </button>
-                            <button class="ctrl-btn" onclick="seekRelative(-10)" title="-10s">
-                                <i class="ic ic-skip-start-fill">
-                                </i>
-                            </button>
-                            <button class="ctrl-btn" id="playPauseBtn" onclick="togglePlay()">
-                                <i class="ic ic-play-fill" id="playIcon">
-                                </i>
-                            </button>
-                            <button class="ctrl-btn" onclick="seekRelative(10)" title="+10s">
-                                <i class="ic ic-skip-end-fill">
-                                </i>
-                            </button>
-                            <button class="ctrl-btn" onclick="downloadCurrent()" title="Download / Open Source">
-                                <i class="ic ic-download">
-                                </i>
-                            </button>
-                        </div>
-                        <div class="progress-row">
-                            <span class="time-label" id="timeCurrent">
-                                0:00
-                            </span>
-                            <input type="range" id="seekBar" min="0" max="100" value="0">
-                            <span class="time-label right" id="timeDuration">
-                                0:00
-                            </span>
-                        </div>
-                    </div>
-                    <div class="player-right">
-                        <i class="ic ic-volume-up-fill" style="color:#8888aa;font-size:14px;">
-                        </i>
-                        <input type="range" id="volumeBar" min="0" max="100" value="100">
-                    </div>
-                </div>
             </center>
         </main>
         <audio id="audio" preload="metadata" crossorigin="anonymous">
