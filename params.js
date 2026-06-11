@@ -839,6 +839,8 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         let openPlaylistId = null;
         let pendingAddTrack = null;
         let playlistQueue = null;
+        let lastSavedPlaylistId = null;
+        let lastSavedTrackIdx = 0;
         const audio = document.getElementById('audio');
         const $ = id => document.getElementById(id);
         const el = {
@@ -948,7 +950,9 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     let pending = localTracks.length;
                     const finish = () => {
                         stateStore.put({ key:'currentIndex', value: localIndex });
-                        stateStore.put({ key:'isLooping',    value: isLooping });
+                        stateStore.put({ key:'isLooping', value: isLooping });
+                        stateStore.put({ key:'lastPlaylistId', value: playerMode === 'playlist' && playlistQueue ? playlistQueue.plId : null });
+                        stateStore.put({ key:'lastTrackIdx', value: playerMode === 'playlist' && playlistQueue ? playlistQueue.idx : 0 });
                         resolve();
                     };
                     if (pending === 0) { finish(); return; }
@@ -977,12 +981,16 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                         cursor.continue();
                     } else {
                         const ss = tx.objectStore('state');
-                        const gC = ss.get('currentIndex');
-                        const gL = ss.get('isLooping');
-                        gC.onsuccess = () => gL.onsuccess = () => resolve({
+                        const gC  = ss.get('currentIndex');
+                        const gL  = ss.get('isLooping');
+                        const gPL = ss.get('lastPlaylistId');
+                        const gTI = ss.get('lastTrackIdx');
+                        gC.onsuccess = () => gL.onsuccess = () => gPL.onsuccess = () => gTI.onsuccess = () => resolve({
                             tracks: out,
                             currentIndex: gC.result?.value ?? 0,
-                            isLooping:    !!(gL.result?.value)
+                            isLooping: !!(gL.result?.value),
+                            lastPlaylistId: gPL.result?.value ?? null,
+                            lastTrackIdx: gTI.result?.value ?? 0
                         });
                     }
                 };
@@ -1090,17 +1098,24 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 li.dataset.id = t.id;
                 const art = t.artworkDataUrl && t.artworkDataUrl !== FALLBACK_ART
                     ? t.artworkDataUrl : FALLBACK_ART;
+                const isActive = i === localIndex && playerMode === 'local';
+                const playIconClass = isActive && isPlaying ? 'ic-pause-fill' : 'ic-play-fill';
                 li.innerHTML = `
                     <span class="sp-li-drag" title="Drag"><i class="ic ic-grip-vertical"></i></span>
                     <img class="sp-li-art" src="${art}" alt="">
                     <span class="sp-li-num">${i+1}</span>
                     <span class="sp-li-title" title="${esc(t.title)}">${esc(t.title)}</span>
                     <button class="sp-pl-add-btn" title="Add to playlist"><i class="ic ic-plus"></i></button>
-                    <span class="sp-li-play"><i class="ic ${i===localIndex&&playerMode==='local'?'ic-pause-fill':'ic-play-fill'}"></i></span>
+                    <button class="sp-pl-remove-lib-btn" title="Remove from library"><i class="ic ic-trash"></i></button>
+                    <span class="sp-li-play"><i class="ic ${playIconClass}"></i></span>
                 `;
                 li.querySelector('.sp-pl-add-btn').addEventListener('click', e => {
                     e.stopPropagation();
                     openAddToPlaylistModal({ title: t.title||'Untitled', artUrl: t.artworkDataUrl||FALLBACK_ART, source: 'local', localId: t.id });
+                });
+                li.querySelector('.sp-pl-remove-lib-btn').addEventListener('click', e => {
+                    e.stopPropagation();
+                    removeTrackFromLibrary(t.id);
                 });
                 li.addEventListener('click', () => {
                     localIndex = i;
@@ -1111,6 +1126,29 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 el.playlist.appendChild(li);
             });
             el.countInfo.textContent = `${localTracks.length} track${localTracks.length===1?'':'s'}`;
+        }
+        async function removeTrackFromLibrary(trackId) {
+            const idx = localTracks.findIndex(t => t.id === trackId);
+            if (idx === -1) return;
+            const wasActive = idx === localIndex && playerMode === 'local';
+            if (objectUrlCache.has(trackId)) {
+                URL.revokeObjectURL(objectUrlCache.get(trackId));
+                objectUrlCache.delete(trackId);
+            }
+            localTracks.splice(idx, 1);
+            localTracks.forEach((t, i) => t.position = i);
+            if (wasActive) {
+                audio.pause();
+                audio.src = '';
+                localIndex = Math.min(localIndex, localTracks.length - 1);
+                if (localTracks.length > 0) loadLocalTrack(false);
+                else { el.nowTitle.textContent = 'Nothing Playing'; el.nowArt.src = FALLBACK_ART; }
+            } else if (idx < localIndex) {
+                localIndex--;
+            }
+            refreshLibraryUI();
+            await saveAll();
+            showSaved('Track removed');
         }
         function setLocalNowPlayingUI() {
             const t = localTracks[localIndex];
@@ -1268,6 +1306,10 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 card.querySelector('.sp-pl-card-play-btn').addEventListener('click', e => {
                     e.stopPropagation();
                     if (!pl.tracks.length) { showError('Playlist is empty'); return; }
+                    if (playerMode === 'playlist' && playlistQueue?.plId === pl.id) {
+                        togglePlay();
+                        return;
+                    }
                     playlistQueue = { plId: pl.id, tracks: pl.tracks.slice(), idx: 0 };
                     playerMode = 'playlist';
                     _loadPlaylistQueueEntry(true);
@@ -1289,9 +1331,12 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         function renderPlaylistTracks(pl) {
             el.plCount.textContent = `${pl.tracks.length} track${pl.tracks.length===1?'':'s'}`;
             el.plTrackList.innerHTML = '';
+            const activePlId = playlistQueue?.plId;
+            const activeIdx  = playlistQueue?.idx;
             pl.tracks.forEach((t, i) => {
                 const li = document.createElement('li');
-                li.className = 'sp-playlist-item';
+                const isThisActive = playerMode === 'playlist' && activePlId === pl.id && i === activeIdx;
+                li.className = 'sp-playlist-item' + (isThisActive ? ' active' : '');
                 li.draggable = true;
                 li.dataset.idx = i;
                 const isCached = t.source === 'stream' && t.streamData
@@ -1302,6 +1347,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     : isCached
                         ? '<i class="ic ic-cloud-check" title="Cached offline" style="color:#6c6"></i>'
                         : '<i class="ic ic-broadcast" title="Stream only"></i>';
+                const playIconClass = isThisActive && isPlaying ? 'ic-pause-fill' : 'ic-play-fill';
                 li.innerHTML = `
                     <span class="sp-li-drag" title="Drag"><i class="ic ic-grip-vertical"></i></span>
                     <img class="sp-li-art" src="${t.artUrl||FALLBACK_ART}" alt="">
@@ -1309,7 +1355,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     <span class="sp-li-title" title="${esc(t.title)}">${esc(t.title)}</span>
                     <span class="sp-li-source" style="font-size:11px;color:#8888aa;margin-left:auto;margin-right:6px">${sourceIcon}</span>
                     <button class="sp-pl-remove-btn" title="Remove"><i class="ic ic-x-circle"></i></button>
-                    <span class="sp-li-play"><i class="ic ic-play-fill"></i></span>
+                    <span class="sp-li-play"><i class="ic ${playIconClass}"></i></span>
                 `;
                 li.querySelector('.sp-pl-remove-btn').onclick = e => {
                     e.stopPropagation();
@@ -1324,14 +1370,31 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 addPlaylistDrag(li, pl);
                 el.plTrackList.appendChild(li);
             });
+            syncPlaylistPlayBtn();
+        }
+        function syncPlaylistPlayBtn() {
+            if (!el.plPlayBtn) return;
+            const isThisPlaying = playerMode === 'playlist' && playlistQueue?.plId === openPlaylistId && isPlaying;
+            el.plPlayBtn.innerHTML = isThisPlaying
+                ? '<i class="ic ic-pause-fill"></i>'
+                : '<i class="ic ic-play-fill"></i>';
+        }
+        function syncPlaylistRows() {
+            const rows = el.plTrackList.querySelectorAll('.sp-playlist-item');
+            rows.forEach((li, i) => {
+                const isActive = playerMode === 'playlist' && playlistQueue?.plId === openPlaylistId && i === playlistQueue?.idx;
+                li.classList.toggle('active', isActive);
+                const icon = li.querySelector('.sp-li-play i');
+                if (icon) icon.className = 'ic ' + (isActive && isPlaying ? 'ic-pause-fill' : 'ic-play-fill');
+            });
+            syncPlaylistPlayBtn();
         }
         async function playPlaylistTrack(pl, idx) {
             playlistQueue = { plId: pl.id, tracks: pl.tracks.slice(), idx };
             playerMode = 'playlist';
             await _loadPlaylistQueueEntry(true);
-            el.plTrackList.querySelectorAll('.sp-playlist-item').forEach((li,i) => {
-                li.classList.toggle('active', i === idx);
-            });
+            syncPlaylistRows();
+            saveAll();
         }
         async function _loadPlaylistQueueEntry(autoplay = true) {
             if (!playlistQueue) return;
@@ -1370,6 +1433,8 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     }
                 }
             }
+            syncPlaylistRows();
+            saveAll();
         }
         function nextPlaylistTrack() {
             if (!playlistQueue) return;
@@ -1519,6 +1584,10 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         el.plPlayBtn.addEventListener('click', () => {
             const pl = playlists.find(p => p.id === openPlaylistId);
             if (!pl || !pl.tracks.length) return;
+            if (playerMode === 'playlist' && playlistQueue?.plId === pl.id) {
+                togglePlay();
+                return;
+            }
             playlistQueue = { plId: pl.id, tracks: pl.tracks.slice(), idx: 0 };
             playerMode = 'playlist';
             _loadPlaylistQueueEntry(true);
@@ -1898,8 +1967,8 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             if (!audio.src) return;
             isPlaying ? audio.pause() : audio.play();
         }
-        audio.addEventListener('play',  () => { isPlaying = true;  syncPlayIcon(); });
-        audio.addEventListener('pause', () => { isPlaying = false; syncPlayIcon(); });
+        audio.addEventListener('play',  () => { isPlaying = true;  syncPlayIcon(); syncPlaylistRows(); });
+        audio.addEventListener('pause', () => { isPlaying = false; syncPlayIcon(); syncPlaylistRows(); });
         audio.addEventListener('timeupdate', () => {
             const cur = audio.currentTime || 0;
             const dur = isFinite(audio.duration) ? (audio.duration || 0) : 0;
@@ -1974,7 +2043,13 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 if (navEl) navEl.classList.toggle('active', t === tab);
             });
             if (tab === 'playlists') refreshPlaylistsHome();
+            const mobileMap = { streaming: 'mNavDiscover', library: 'mNavLibrary', playlists: 'mNavPlaylists' };
+            Object.entries(mobileMap).forEach(([t, id]) => {
+                const btn = $(id);
+                if (btn) btn.classList.toggle('active', t === tab);
+            });
         }
+        window.switchTab = (tab) => switchTab(tab);
         document.querySelectorAll('.sp-nav-btn').forEach(btn => {
             btn.addEventListener('click', () => switchTab(btn.dataset.tab));
         });
@@ -2017,6 +2092,26 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             playlists = await loadPlaylists();
             refreshLibraryUI();
             el.loopBtn.classList.toggle('sp-ctrl-active', isLooping);
+            const savedPlId = data.lastPlaylistId;
+            const savedTIdx = data.lastTrackIdx ?? 0;
+            if (savedPlId) {
+                const savedPl = playlists.find(p => p.id === savedPlId);
+                if (savedPl && savedPl.tracks.length > 0) {
+                    const clampedIdx = Math.min(Math.max(0, savedTIdx), savedPl.tracks.length - 1);
+                    playlistQueue = { plId: savedPl.id, tracks: savedPl.tracks.slice(), idx: clampedIdx };
+                    playerMode = 'playlist';
+                    await _loadPlaylistQueueEntry(false);
+                    if (listenParams && !playerParams) {
+                        switchTab('streaming');
+                    } else {
+                        switchTab('playlists');
+                        openPlaylist(savedPl.id);
+                    }
+                    el.searchInput.value = 'trending';
+                    searchSongs();
+                    return;
+                }
+            }
             if (localTracks.length > 0) {
                 loadLocalTrack(false);
             }

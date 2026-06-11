@@ -1468,25 +1468,126 @@ main {
     }
 }
 @media (max-width: 700px) {
-    .sp-sidebar { 
-        display: none; 
+    .sp-ctrl {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
     }
-    .sp-main { 
-        padding: 16px 12px 0; 
+    .sp-ctrl-play {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
     }
-    .sp-player { 
-        padding: 0 10px; 
-        gap: 8px; 
+    .sp-detail-avatar {
+        width: 70px;
+        height: 70px;
     }
-    .sp-player-left { 
-        width: auto; 
-        min-width: 0; 
+    .sp-detail-banner {
+        height: 130px;
     }
-    .sp-player-right { 
-        display: none; 
+    .sp-layout {
+        flex-direction: column;
+        max-height: calc(100vh - calc(var(--headerHeight) + var(--footerHeight) + 48px + 72px));
     }
-    #spResults { 
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+    .sp-li-art {
+        width: 32px;
+        height: 32px;
+    }
+    .sp-lib-actions {
+        margin-left: 0;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .sp-lib-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    .sp-lib-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .sp-li-drag {
+        display: none;
+    }
+    .sp-li-num {
+        display: none;
+    }
+    .sp-main {
+        padding: 12px 10px 160px;
+    }
+    .sp-mobile-nav {
+        display: flex !important;
+    }
+    .sp-now-card {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+    .sp-now-card img {
+        width: 44px;
+        height: 44px;
+    }
+    .sp-player {
+        height: auto;
+        min-height: 72px;
+        padding: 8px 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        bottom: calc(var(--footerHeight) + 48px) !important;
+    }
+    .sp-player-artist {
+        font-size: 11px;
+    }
+    .sp-player-btns {
+        gap: 10px;
+    }
+    .sp-player-center {
+        order: 3;
+        width: 100%;
+        flex: none;
+        gap: 4px;
+    }
+    .sp-player-left {
+        width: auto;
+        min-width: 0;
+        flex: 1;
+        gap: 8px;
+    }
+    .sp-player-right {
+        display: none;
+    }
+    .sp-player-thumb {
+        width: 40px;
+        height: 40px;
+    }
+    .sp-player-title {
+        font-size: 12px;
+    }
+    .sp-playlist-item {
+        padding: 8px 8px;
+        gap: 8px;
+    }
+    .sp-pl-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    #spResults {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    .sp-section-title {
+        font-size: 16px;
+    }
+    .sp-seek {
+        height: 3px;
+    }
+    .sp-sidebar {
+        display:none !important;
+    }
+    .sp-song-card {
+        font-size: 12px;
     }
 }
 @media (max-width: 900px) {
@@ -3394,6 +3495,44 @@ select {
     padding: 24px 28px 80px;
     background: linear-gradient(to bottom, #16161e 0%, #0a0a0c 300px);
 }
+.sp-mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: var(--footerHeight);
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: #0e0e12;
+    border-top: 1px solid #1e1e28;
+    z-index: 900;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-around;
+}
+.sp-mobile-nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #8888aa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: color .15s;
+    padding: 0;
+}
+.sp-mobile-nav-btn:hover {
+    color: #fff;
+}
+.sp-mobile-nav-btn.active {
+    color: #1db954;
+}
+.sp-mobile-nav-btn i {
+    font-size: 18px;
+}
 .sp-nav {
     display: flex;
     flex-direction: column;
@@ -3480,6 +3619,26 @@ select {
 .sp-pl-add-btn:hover { 
     color: var(--accent, #8cbe37); 
     background: rgba(255,255,255,.06); 
+}
+.sp-pl-remove-lib-btn {
+    background: transparent;
+    border: none;
+    color: #8888aa;
+    padding: 4px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color .15s, background .15s;
+    opacity: 0;
+}
+.sp-playlist-item:hover .sp-pl-remove-lib-btn {
+    opacity: 1;
+}
+.sp-pl-remove-lib-btn:hover {
+    color: #f55;
+    background: rgba(255,80,80,.12);
 }
 .sp-player {
     height: 80px;
