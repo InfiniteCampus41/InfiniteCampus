@@ -8,6 +8,7 @@ let MOVIE_LOAD_ID = 0;
 let lastUploadTime = Date.now();
 let currentlyOpenActions = null;
 let finishingWatcher = null;
+let currentSubtitleBlobUrl = null;
 const currentfile = document.getElementById("currentFile");
 const movies = document.getElementById("movies");
 const section = document.getElementById("section");
@@ -187,6 +188,10 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                 FIREBASE_AVAILABLE = false;
             }
         }
+        const ccBadge = v.subtitleUrl
+            ? `<i class="ic ic-badge-cc-fill" title="Subtitles Available" style="width:100%;color:white;position:absolute;right:-45%;transform:translateY(-20%);"></i>`
+            : "";
+
         const movieDiv = document.createElement("div");
         movieDiv.className = "movie-card";
         movieDiv.style.width = "200px";
@@ -203,15 +208,18 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
             <img src="${v.cover || ""}" alt="${v.name} Cover" style="height:300px;width:200px;border-radius:12px;position:absolute;z-index:3;display:flex;" />
             <div class="movie-actions" style="height:100%;width:100%;opacity:0;pointer-events:none;position:absolute;z-index:4;display:flex;flex-direction:column;transition:opacity 0.3s ease;">
                 <div style="top:0px;position:absolute;width:100%;justify-content:center;align-items:center;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;flex-direction:column;border-top-left-radius:12px;border-top-right-radius:12px;">
-                    <span class="movie-title" style="display:block;width:100%;white-space:nowrap;">
-                        ${v.name}
+                    <span style="display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;">
+                        <span class="movie-title" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${v.name}</span>
                     </span>
-                    <small style=font-size:0.7em;">
-                        ${v.humanSize}
-                    </small>
+                    <div style="width:100%;position:relative;display:flex;justify-content:center;align-items:center;">
+                        <small style="font-size:0.7em;">
+                            ${v.humanSize}
+                        </small>
+                        ${ccBadge}
+                    </div>
                 </div>
                 <div style="bottom:0px;position:absolute;width:100%;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;align-items:center;flex-direction:column;height:60px;border-bottom-left-radius:12px;border-bottom-right-radius:12px;">
-                    <div style=padding:3px;display:flex;justify-content:space-between;width:100%;">
+                    <div style="padding:3px;display:flex;justify-content:space-between;width:100%;">
                         <button class="button watch-btn">
                             Watch
                         </button>
@@ -248,7 +256,7 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
         });
         movieDiv.querySelector(".watch-btn").addEventListener("click", (e) => {
             e.stopPropagation();
-            openWatchPanel(v.name);
+            openWatchPanel(v.name, v.subtitleUrl || null);
         });
         box.appendChild(movieDiv);
         const titleEl = movieDiv.querySelector(".movie-title");
@@ -262,7 +270,7 @@ function filterMovies() {
     );
     renderMovies(filtered);
 }
-function openWatchPanel(name) {
+async function openWatchPanel(name, subtitleUrl = null) {
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
     const before = document.getElementById("before");
@@ -270,8 +278,29 @@ function openWatchPanel(name) {
     section.style.display = "none";
     movies.style.display = "none";
     before.style.display = "none";
-    currentfile.textContent = `Currently Watching: ${name}`
+    currentfile.textContent = `Currently Watching: ${name}`;
     currentfile.style.display = "block";
+    while (player.firstChild) {
+        player.removeChild(player.firstChild);
+    }
+    if (subtitleUrl) {
+        try {
+            const vttRes = await fetch(BACKEND + subtitleUrl);
+            const vttText = await vttRes.text();
+            const blob = new Blob([vttText], { type: "text/vtt" });
+            const blobUrl = URL.createObjectURL(blob);
+            const track = document.createElement("track");
+            currentSubtitleBlobUrl = blobUrl;
+            track.kind = "subtitles";
+            track.label = "English";
+            track.srclang = "en";
+            track.src = blobUrl;
+            track.default = true;
+            player.appendChild(track);
+        } catch (err) {
+            console.warn("Could not load subtitles:", err);
+        }
+    }
     player.src = streamURL;
     player.play();
     panel.style.display = "flex";
@@ -282,6 +311,13 @@ function closeWatchPanel() {
     const before = document.getElementById("before");
     player.pause();
     player.src = "";
+    if (currentSubtitleBlobUrl) {
+        URL.revokeObjectURL(currentSubtitleBlobUrl);
+        currentSubtitleBlobUrl = null;
+    }
+    while (player.firstChild) {
+        player.removeChild(player.firstChild);
+    }
     panel.style.display = "none";
     before.style.display = "block";
     currentfile.style.display = "none";
