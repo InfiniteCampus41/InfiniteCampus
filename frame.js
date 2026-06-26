@@ -534,6 +534,8 @@ if (!isChattersPage) {
     const LOADER_CONFIG = {
         mode: "auto",
     };
+    let loadingScreensDisabled = false;
+    loadingScreensDisabled = localStorage.getItem("loadingScreensDisabled") === "true";
     const loader = document.createElement("div");
     loader.id = "planet-loader";
     loader.innerHTML = `
@@ -547,13 +549,55 @@ if (!isChattersPage) {
             <div id="loader-maint-message" style="margin-bottom:15px; font-size:18px; text-align:center;"></div>
             <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check Statuses</a>
         </div>
+        <div id="loader-slow-msg">
+            <div id="loader-slow-second-msg">Taking Longer Than Usual<br><small>The Site May Be Under Heavy Load.</small></div>
+            <a href="https://status.infinitecampus.xyz" class="discord" style="font-size:13px; margin-top:8px;">Check Statuses</a>
+            <div id="loader-disable-row">
+                <span id="loader-disable-label">Disable Loading Screens</span>
+                <label class="switch" id="loader-disable-switch">
+                    <input type="checkbox" id="loader-disable-checkbox" ${loadingScreensDisabled ? "checked" : ""}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
     `;
-    document.body.prepend(loader);
+    if (!loadingScreensDisabled) {
+        document.body.prepend(loader);
+    }
     const maintContent = loader.querySelector("#loader-maint-content");
     const maintMessage = loader.querySelector("#loader-maint-message");
     const maintBtn = loader.querySelector("#loader-maint-btn");
+    const slowMsg = loader.querySelector("#loader-slow-msg");
+    const disableCheckbox = loader.querySelector("#loader-disable-checkbox");
+    disableCheckbox.addEventListener("change", () => {
+        loadingScreensDisabled = disableCheckbox.checked;
+        localStorage.setItem("loadingScreensDisabled", loadingScreensDisabled.toString());
+        if (loadingScreensDisabled) {
+            hideLoader();
+        }
+    });
     let isLoaded = false;
+    let slowTimer = null;
+    function showSlowMsg() {
+        slowMsg.classList.add("visible");
+    }
+    function hideSlowMsg() {
+        slowMsg.classList.remove("visible");
+    }
+    function startSlowTimer() {
+        clearTimeout(slowTimer);
+        slowTimer = setTimeout(() => {
+            if (!isLoaded) {
+                showSlowMsg();
+            }
+        }, 5000);
+    }
+    function cancelSlowTimer() {
+        clearTimeout(slowTimer);
+        hideSlowMsg();
+    }
     function showLoader() {
+        if (loadingScreensDisabled) return;
         loader.style.display = "flex";
         loader.style.flexDirection = "column";
         loader.style.opacity = "1";
@@ -561,6 +605,7 @@ if (!isChattersPage) {
         loader.style.top = "60px";
     }
     function hideLoader() {
+        cancelSlowTimer();
         loader.style.opacity = "0";
         loader.style.top = "60px";
         setTimeout(() => {
@@ -585,7 +630,7 @@ if (!isChattersPage) {
     let bypassLoader = false;
     function applyLoaderMode(mode, message = "") {
         LOADER_CONFIG.mode = mode || "auto";
-        if (bypassLoader && (mode === "maint" || mode === "infinite" || mode === "time")) {
+        if ((loadingScreensDisabled || bypassLoader) && (mode === "maint" || mode === "infinite" || mode === "time")) {
             hideLoader();
             return;
         }
@@ -608,7 +653,10 @@ if (!isChattersPage) {
                 hideLoader();
             } else {
                 maintContent.style.display = "none";
-                showLoader();
+                if (!loadingScreensDisabled) {
+                    showLoader();
+                    startSlowTimer();
+                }
             }
         }
     }
