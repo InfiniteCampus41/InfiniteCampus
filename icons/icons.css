@@ -238,6 +238,10 @@ i {
     mask-image: url('/icons/pencil-square.svg');
     -webkit-mask-image: url('/icons/pencil-square.svg');
 }
+.ic-pip {
+    mask-image: url('/icons/pip.svg');
+    -webkit-mask-image: url('/icons/pip.svg');
+}
 .ic-play-fill {
     mask-image: url('/icons/play-fill.svg');
     -webkit-mask-image: url('/icons/play-fill.svg');
@@ -314,6 +318,10 @@ i {
     mask-image: url('/icons/snow.svg');
     -webkit-mask-image: url('/icons/snow.svg');
 }
+.ic-speedometer {
+    mask-image: url('/icons/speedometer.svg');
+    -webkit-mask-image: url('/icons/speedometer.svg');
+}
 .ic-spotify {
     mask-image: url('/icons/spotify.svg');
     -webkit-mask-image: url('/icons/spotify.svg');
@@ -321,6 +329,10 @@ i {
 .ic-stopwatch {
     mask-image: url('/icons/stopwatch.svg');
     -webkit-mask-image: url('/icons/stopwatch.svg');
+}
+.ic-three-dots-vertical {
+    mask-image: url('/icons/three-dots-vertical.svg');
+    -webkit-mask-image: url('/icons/three-dots-vertical.svg');
 }
 .ic-trash {
     mask-image: url('/icons/trash.svg');

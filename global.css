@@ -1474,6 +1474,18 @@ main {
 .mdtxt {
     color:darkcyan;
 }
+@media (hover: hover) {
+    #vp-center-btn {
+        display: none !important;
+    }
+    #vp-play-btn-desktop {
+        display: flex;
+    }
+    #vp-vol-wrap:hover #vp-vol-slider-wrap {
+        height: 90px;
+        padding: 6px 0;
+    }
+}
 @media (max-width: 640px) {
     .controls { 
         grid-template-columns: 1fr 1fr 1fr 1fr; 
@@ -4429,21 +4441,261 @@ th, td {
     color:#9fb7c7; 
     margin-left:8px; 
 }
+.vp-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 5px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    transition: background 0.15s;
+    line-height: 1;
+}
+.vp-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+#vp-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+#vp-center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.55);
+    border: none;
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 26px;
+    pointer-events: auto;
+}
+#vp-controls {
+    padding: 0 10px 8px;
+}
+#vp-dropup {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 160px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+    z-index: 50;
+}
+#vp-dropup.open {
+    display: flex;
+}
+.vp-menu-back {
+    border-bottom: 1px solid #333;
+    color: #aaa;
+    font-size: 12px;
+}
+.vp-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #eee;
+    cursor: pointer;
+    transition: background 0.12s;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+}
+.vp-menu-item:hover {
+    background: #2a2a2a;
+}
+.vp-menu-item.selected .vp-menu-check {
+    display: block;
+}
+.vp-menu-item .vp-menu-check {
+    margin-left: auto;
+    color: lime;
+    font-size: 13px;
+    display: none;
+}
+#vp-menu-wrap {
+    position: relative;
+}
+#vp-play-btn-desktop {
+    display: none;
+}
+#vp-progress-dot {
+    width: 12px;
+    height: 12px;
+    background: #00c800;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px rgba(0,200,0,0.6);
+}
+#vp-progress-fill {
+    height: 100%;
+    background: lime;
+    border-radius: 2px;
+    position: relative;
+    pointer-events: none;
+    text-align:left;
+}
+#vp-progress-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    transition: height 0.15s;
+    text-align:left;
+}
+#vp-progress-track:hover {
+    height: 6px;
+}
+.vp-spacer {
+    flex: 1;
+}
+#vp-time {
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    font-family: monospace;
+    letter-spacing: 0.03em;
+    min-width: 120px;
+}
+#vp-top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+#vp-ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    border-radius:50%;
+}
+#vp-ui.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+#vp-vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 4px;
+    height: 78px;
+    border-radius: 2px;
+    background: linear-gradient(to top, lime var(--vol-pct, 100%), rgba(255,255,255,0.25) var(--vol-pct, 100%));
+    outline: none;
+    cursor: pointer;
+}
+#vp-vol-slider::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #00c800;
+    cursor: pointer;
+    border: none;
+}
+#vp-vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #00c800;
+    cursor: pointer;
+}
+#vp-vol-slider-wrap {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(20,20,20,0.85);
+    border-radius: 8px;
+    padding: 0;
+}
+#vp-vol-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+#vp-wrapper {
+    position: relative;
+    width: 75vw;
+    max-height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
+    margin-top: 50px;
+    border-radius: 12px;
+    background: #000;
+    user-select: none;
+}
+#vp-wrapper:fullscreen video, #vp-wrapper:-webkit-full-screen video {
+    border-radius: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+}
+#vp-wrapper:fullscreen, #vp-wrapper:-webkit-full-screen {
+    width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+}
+#vp-wrapper video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 12px;
+}
 #watchPanel {
     position: relative;
-    display:none;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-start;
-    margin-top:-50px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: -50px;
 }
 #watchVideo {
     width: 75vw;
     height: auto;
-    max-height: calc(100vh - (var(--headerHeight) + var(--footerHeight)));
     border-radius: 12px;
-    margin-top: 50px;
     background: black;
+    display: block;
 }
 .weather-section {
     margin-top: 10px;
