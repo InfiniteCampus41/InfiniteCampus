@@ -554,16 +554,20 @@ function vpCloseDropup() {
     wrapper.addEventListener("mouseleave", () => {
         if (video && !video.paused) vpHideUI();
     });
-    wrapper.addEventListener("touchstart", (e) => {
-        if (e.target.closest("#vp-controls") || e.target.closest("#vp-center-btn")) return;
-        vpShowUI();
-    }, { passive: true });
-    wrapper.addEventListener("click", (e) => {
+    video.addEventListener("click", (e) => {
         if (e.target.closest("#vp-controls") || e.target.closest("#vp-center-btn")) return;
         const isDesktop = window.matchMedia("(hover: hover)").matches;
         if (isDesktop) {
             vpTogglePlay();
             vpShowUI();
+        } else {
+            const ui = document.getElementById("vp-ui");
+            if (ui && ui.classList.contains("visible")) {
+                vpTogglePlay();
+                vpShowUI();
+            } else {
+                vpShowUI();
+            }
         }
     });
     document.getElementById("vp-center-btn")?.addEventListener("click", (e) => {
