@@ -1621,6 +1621,20 @@ main {
         font-size: 12px;
     }
 }
+@media (active: active) {
+    @media (max-width: 900px) {
+        #vp-center-btn {
+            display: block !important;
+        }
+    }
+}
+@media (hover: hover) {
+    @media (max-width: 900px) {
+        #vp-center-btn {
+            display: block !important;
+        }
+    }
+}
 @media (max-width: 900px) {
     .apbtn {
         display: block !important;
@@ -1852,6 +1866,9 @@ main {
     }
     #upByTxt {
         display:block !important;
+    }
+    #vp-play-btn-desktop {
+        display: none;
     }
     #watchVideo {
         width: 75%;
@@ -4535,9 +4552,6 @@ th, td {
 }
 #vp-menu-wrap {
     position: relative;
-}
-#vp-play-btn-desktop {
-    display: none;
 }
 #vp-progress-dot {
     width: 12px;
