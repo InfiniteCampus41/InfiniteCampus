@@ -4613,7 +4613,8 @@ th, td {
     opacity: 0;
     transition: opacity 0.25s ease;
     pointer-events: none;
-    border-radius:50%;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 #vp-ui.visible {
     opacity: 1;
