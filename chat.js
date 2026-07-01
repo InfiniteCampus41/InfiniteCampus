@@ -34,6 +34,31 @@ const usernameSpan = document.getElementById("username");
 const verifiedMessage = document.createElement("div");
 const verifiedOverlay = document.createElement("div");
 const viewerImg = document.createElement("img");
+const tabGlobalBtn = document.getElementById("tabGlobalBtn");
+const tabPrivateBtn = document.getElementById("tabPrivateBtn");
+const globalSection = document.getElementById("globalSection");
+const privateSection = document.getElementById("privateSection");
+const privateMenu = document.getElementById("privateMenu");
+const dmUsernameInput = document.getElementById("dmUsernameInput");
+const dmStartBtn = document.getElementById("dmStartBtn");
+const groupNameInput = document.getElementById("groupNameInput");
+const groupCreateBtn = document.getElementById("groupCreateBtn");
+const groupInviteInput = document.getElementById("groupInviteInput");
+const groupJoinBtn = document.getElementById("groupJoinBtn");
+const groupInfoBtn = document.getElementById("groupInfoBtn");
+const groupInfoPanel = document.getElementById("groupInfoPanel");
+const groupInfoCloseBtn = document.getElementById("groupInfoCloseBtn");
+const groupInfoName = document.getElementById("groupInfoName");
+const groupInfoInviteLink = document.getElementById("groupInfoInviteLink");
+const groupInfoInviteCode = document.getElementById("groupInfoInviteCode");
+const groupInfoOwnerActions = document.getElementById("groupInfoOwnerActions");
+const groupInfoLeaveActions = document.getElementById("groupInfoLeaveActions");
+const groupInfoMembers = document.getElementById("groupInfoMembers");
+const groupRenameBtn = document.getElementById("groupRenameBtn");
+const groupResetInviteBtn = document.getElementById("groupResetInviteBtn");
+const groupTransferBtn = document.getElementById("groupTransferBtn");
+const groupDeleteBtn = document.getElementById("groupDeleteBtn");
+const groupLeaveBtn = document.getElementById("groupLeaveBtn");
 let activeListenersCount = 0;
 let allUsernames = [];
 let authReady = false;
@@ -49,6 +74,13 @@ let currentPath = null;
 let currentPrivateName = null;
 let currentPrivateUid = null;
 let currentUser = null;
+let currentGroupId = null;
+let currentGroupOwnerUid = null;
+let currentGroupName = null;
+let groupPollTimer = null;
+let myGroupsCache = [];
+let renderedGroupMsgIds = new Set();
+let currentSidebarTab = "global";
 let isGuest = false;
 const knownUserDisplayNames = new Set();
 window.isGuest = isGuest;
@@ -448,7 +480,7 @@ chatLog.addEventListener("scroll", () => {
     }
 });
 async function loadOlderMessages() {
-    if (loadingOlderMessages || !hasMoreMessages || !oldestLoadedTimestamp) return;
+    if (loadingOlderMessages || !hasMoreMessages || !oldestLoadedTimestamp || !currentPath) return;
     loadingOlderMessages = true;
     let loadingBar = document.getElementById("__loadMoreIndicator");
     if (!loadingBar) {
@@ -805,11 +837,13 @@ async function renderMessageInstant(id, msg) {
         editedSpan.style.marginLeft = "40px";
     }
     const rawText = isDiscordMsg ? (msg.t || "") : (msg.t || msg.text || "");
+    textDiv.dataset.rawText = rawText;
     async function buildRichText(raw, textDivEl) {
         let safe = buildSafeText(raw);
         safe = await processChannelMentions(safe);
         textDivEl.innerHTML = safe;
-        textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {            try {
+        textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {            
+            try {
                 const b64 = el.getAttribute("data") || "";
                 const decoded = atob(b64);
                 const wrapper = document.createElement("div");
@@ -1134,6 +1168,7 @@ async function renderMessageInstant(id, msg) {
     reactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
     reactBtn.title = "Add Reaction";
     reactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
+    if (currentGroupId) reactBtn.style.display = "none";
     msgBtns.appendChild(reactBtn);
     div.appendChild(topRow);
     div.appendChild(textDiv);
@@ -1307,12 +1342,16 @@ async function renderMessageInstant(id, msg) {
             replyBtn.innerHTML = `<i class="ic ic-arrow-90deg-left"></i>`;
             replyBtn.title = "Reply";
             replyBtn.onclick = () => toggleReply(id, displayName, rawText);
-            if (!isGuest) {
+            if (!isGuest && !currentGroupId) {
                 msgBtns.insertBefore(replyBtn, reactBtn);
             }
-            if (!isGuest && (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester)) {
-                let canDelete = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.coOwner && !meta.tester && !meta.hAdmin);
-                let canEdit   = isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin);
+            if (!isGuest && (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester || (currentGroupId && currentGroupOwnerUid === currentUser?.uid))) {
+                let canDelete = currentGroupId
+                    ? (isSelf || currentGroupOwnerUid === currentUser?.uid)
+                    : (isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.coOwner && !meta.tester && !meta.hAdmin));
+                let canEdit = currentGroupId
+                    ? isSelf
+                    : (isSelf || isOwner || isTester || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin));
                 if (canEdit) {
                     const editBtn = document.createElement("button");
                     editBtn.innerHTML = "<i class='ic ic-pencil-square'></i>";
@@ -1333,8 +1372,12 @@ async function renderMessageInstant(id, msg) {
                         saveBtn.onclick = async () => {
                             const newText = textarea.value.trim();
                             if (!newText) return;
-                            await dbSet(`${currentPath}/${id}/t`, newText);
-                            await dbSet(`${currentPath}/${id}/e`, "edited");
+                            if (currentGroupId) {
+                                await fetchAPI(`groups/${currentGroupId}/edit-message`, { msgId: id, text: newText });
+                            } else {
+                                await dbSet(`${currentPath}/${id}/t`, newText);
+                                await dbSet(`${currentPath}/${id}/e`, "edited");
+                            }
                             textarea.remove(); 
                             saveBtn.remove(); 
                             cancelBtn.remove();
@@ -1358,15 +1401,18 @@ async function renderMessageInstant(id, msg) {
                     delBtn.innerHTML = "<i class='ic ic-trash'></i>";
                     delBtn.title = "Delete Message";
                     delBtn.onclick = async (e) => {
-                        if (e.shiftKey) {
-                            await dbDelete(`${currentPath}/${id}`);
+                        const doDelete = async () => {
+                            if (currentGroupId) {
+                                await fetchAPI(`groups/${currentGroupId}/delete-message`, { msgId: id });
+                            } else {
+                                await dbDelete(`${currentPath}/${id}`);
+                            }
                             div.remove();
-                            return;
-                        }
+                        };
+                        if (e.shiftKey) { await doDelete(); return; }
                         showConfirm("Delete This Message?", async (ok) => {
                             if (!ok) return;
-                            await dbDelete(`${currentPath}/${id}`);
-                            div.remove();
+                            await doDelete();
                         });
                     };
                     msgBtns.appendChild(delBtn);
@@ -1939,6 +1985,16 @@ async function openPrivateChat(uid, name) {
         showError("You Cannot Open A Private Chat With Yourself!");
         return;
     }
+    stopGroupPolling();
+    currentGroupId = null;
+    currentGroupOwnerUid = null;
+    currentGroupName = null;
+    if (groupInfoBtn) groupInfoBtn.style.display = "none";
+    if (groupInfoPanel) groupInfoPanel.style.display = "none";
+    if (privateMenu) privateMenu.style.display = "none";
+    chatLog.style.display = "";
+    chatMsgFunctions.style.display = "";
+    sendBtn.style.display = "";
     currentPrivateUid = uid;
     currentPrivateName = name || null;
     chatLog.innerHTML = "";
@@ -2304,6 +2360,16 @@ async function renderChannelsFromDB() {
     renderingChannels = false;
 }
 async function switchChannel(ch) {
+    stopGroupPolling();
+    currentGroupId = null;
+    currentGroupOwnerUid = null;
+    currentGroupName = null;
+    if (groupInfoBtn) groupInfoBtn.style.display = "none";
+    if (groupInfoPanel) groupInfoPanel.style.display = "none";
+    if (privateMenu) privateMenu.style.display = "none";
+    chatLog.style.display = "";
+    chatMsgFunctions.style.display = "";
+    sendBtn.style.display = "";
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
@@ -2379,6 +2445,29 @@ function startMetadataListener() {
     }, "privateChats");
 }
 sendBtn.onclick = async () => {
+    if (currentGroupId) {
+        if (!currentUser || isGuest) { showError("You Must Be Logged In To Use Group Chats."); return; }
+        const text = chatInput.value.trim();
+        if (!text && !pendingAttachFile) return;
+        if (!isAdmin && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
+            const now = Date.now();
+            if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
+                showError("You Can Only Send A Message Every 3 Seconds.");
+                return;
+            }
+            lastMessageTimestamp = now;
+        }
+        if (pendingAttachFile) {
+            await uploadGroupAttachment(pendingAttachFile);
+            pendingAttachFile = null;
+            const preview = document.getElementById("chatFilePreview");
+            if (preview) preview.remove();
+        }
+        if (text) await sendGroupTextMessage(text);
+        chatInput.value = "";
+        if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
+        return;
+    }
     if (!currentPath) return;
     if (isGuest) {
         let text = chatInput.value.trim();
@@ -2583,8 +2672,12 @@ onAuthStateChanged(auth, async user => {
         const _urlParams = new URLSearchParams(window.location.search);
         const _dmUid = _urlParams.get("dm");
         const _channel = _urlParams.get("channel");
+        const _joinCode = _urlParams.get("joinCode");
         const _msgId = window.location.hash.replace("#msg-", "").trim() || null;
-        if (_dmUid) {
+        if (_joinCode) {
+            switchChannel("General");
+            handleJoinCodeFromUrl();
+        } else if (_dmUid) {
             getDisplayName(_dmUid).then(name => {
                 openPrivateChat(_dmUid, name).then(() => {
                     if (_msgId) scrollToMessage(_msgId);
@@ -2605,7 +2698,7 @@ onAuthStateChanged(auth, async user => {
         } else {
             switchChannel("General");
         }
-        if (_dmUid || _channel || _msgId) {
+        if (_dmUid || _channel || _msgId || _joinCode) {
             history.replaceState(null, "", window.location.pathname);
         }
     }
@@ -2672,7 +2765,7 @@ function _injectGuestNameButton() {
 }
 async function _promptGuestName() {
     window.location.href = window.location.href;
-    const name = window.prompt("Enter Your Anonymous Display Name (Max 32 Chars):", anonDisplayName);
+    const name = await customPrompt("Enter Your Anonymous Display Name (Max 32 Chars):", false, anonDisplayName);
     if (!name || !name.trim()) return;
     try {
         const res = await fetch(`${BACKEND}/api/anon-name`, {
@@ -3174,4 +3267,395 @@ if ("serviceWorker" in navigator) {
             registration.active.postMessage({ type: "chatReady" });
         }
     }).catch(() => {});
+}
+function stopGroupPolling() {
+    if (groupPollTimer) {
+        clearInterval(groupPollTimer);
+        groupPollTimer = null;
+    }
+    renderedGroupMsgIds = new Set();
+}
+function switchSidebarTab(tab) {
+    currentSidebarTab = tab;
+    if (tab === "global") {
+        tabGlobalBtn.classList.add("active");
+        tabPrivateBtn.classList.remove("active");
+        globalSection.style.display = "";
+        privateSection.style.display = "none";
+        if (privateMenu) privateMenu.style.display = "none";
+        switchChannel("General");
+        adminControls.style.display = "flex";
+    } else {
+        tabPrivateBtn.classList.add("active");
+        tabGlobalBtn.classList.remove("active");
+        globalSection.style.display = "none";
+        privateSection.style.display = "";
+        stopGroupPolling();
+        currentGroupId = null;
+        currentPath = null;
+        currentPrivateUid = null;
+        detachCurrentMessageListeners();
+        showPrivateMenu();
+        renderGroupList();
+    }
+    if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
+}
+function showPrivateMenu() {
+    chatLog.innerHTML = "";
+    chatLog.style.display = "";
+    if (privateMenu) privateMenu.style.display = "flex";
+    if (groupInfoPanel) groupInfoPanel.style.display = "none";
+    if (groupInfoBtn) groupInfoBtn.style.display = "none";
+    chatMsgFunctions.style.display = "none";
+    sendBtn.style.display = "none";
+    adminControls.style.display = "none";
+}
+function hidePrivateMenu() {
+    if (privateMenu) privateMenu.style.display = "none";
+    chatMsgFunctions.style.display = "";
+    sendBtn.style.display = "";
+}
+if (tabGlobalBtn) tabGlobalBtn.onclick = () => switchSidebarTab("global");
+if (tabPrivateBtn) tabPrivateBtn.onclick = () => switchSidebarTab("private");
+if (dmStartBtn) dmStartBtn.onclick = async () => {
+    const name = (dmUsernameInput?.value || "").trim();
+    if (!name) { showError("Enter A Username First."); return; }
+    const uid = await getUidByDisplayName(name);
+    if (!uid) { showError("User Not Found."); return; }
+    hidePrivateMenu();
+    await openPrivateChat(uid, name);
+    dmUsernameInput.value = "";
+};
+if (groupCreateBtn) groupCreateBtn.onclick = async () => {
+    const name = (groupNameInput?.value || "").trim();
+    if (!name) { showError("Enter A Group Name First."); return; }
+    try {
+        const res = await fetchAPI("groups/create", { name });
+        groupNameInput.value = "";
+        showSuccess?.("Group Created!") ?? null;
+        await renderGroupList();
+        hidePrivateMenu();
+        await openGroupChat(res.group.id);
+    } catch (e) {
+        showError(e?.message || "Could Not Create Group.");
+    }
+};
+if (groupJoinBtn) groupJoinBtn.onclick = async () => {
+    const code = (groupInviteInput?.value || "").trim();
+    if (!code) { showError("Enter An Invite Code First."); return; }
+    try {
+        const res = await fetchAPI("groups/join", { inviteCode: code });
+        groupInviteInput.value = "";
+        await renderGroupList();
+        hidePrivateMenu();
+        await openGroupChat(res.group.id);
+    } catch (e) {
+        showError(e?.message || "Could Not Join Group.");
+    }
+};
+async function renderGroupList() {
+    if (!currentUser || isGuest) return;
+    try {
+        const res = await fetchAPI("groups/mine", {});
+        myGroupsCache = res.groups || [];
+    } catch (e) {
+        return;
+    }
+    privateList.querySelectorAll("li.group-item").forEach(li => li.remove());
+    for (const group of myGroupsCache) {
+        const li = document.createElement("li");
+        li.className = "group-item";
+        li.dataset.groupId = group.id;
+        const left = document.createElement("div");
+        left.className = "left";
+        left.style.display = "flex";
+        left.style.alignItems = "center";
+        left.style.gap = "8px";
+        const icon = document.createElement("span");
+        icon.className = "private-icon";
+        icon.innerHTML = `<i class="ic ic-group"></i>`;
+        const usernameSpan = document.createElement("span");
+        usernameSpan.className = "username";
+        usernameSpan.textContent = group.name;
+        left.appendChild(icon);
+        left.appendChild(usernameSpan);
+        li.appendChild(left);
+        li.onclick = () => { hidePrivateMenu(); openGroupChat(group.id); };
+        li.classList.toggle("active", currentGroupId === group.id);
+        privateList.appendChild(li);
+    }
+}
+async function openGroupChat(groupId) {
+    if (!currentUser) return;
+    detachCurrentMessageListeners();
+    currentPath = null;
+    currentPrivateUid = null;
+    currentPrivateName = null;
+    stopGroupPolling();
+    currentGroupId = groupId;
+    hidePrivateMenu();
+    if (groupInfoPanel) groupInfoPanel.style.display = "none";
+    if (groupInfoBtn) groupInfoBtn.style.display = "";
+    chatLog.style.display = "";
+    chatLog.innerHTML = "";
+    if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
+    let attachBtn = document.getElementById("chatAttachBtn");
+    if (attachBtn) attachBtn.style.display = "";
+    await pollGroupOnce(groupId, true);
+    groupPollTimer = setInterval(() => pollGroupOnce(groupId, false), 3000);
+    Array.from(privateList.querySelectorAll("li.group-item")).forEach(li => {
+        li.classList.toggle("active", li.dataset.groupId === String(groupId));
+    });
+}
+async function pollGroupOnce(groupId, isInitialLoad) {
+    if (currentGroupId !== groupId) return;
+    let group;
+    try {
+        const res = await fetchAPI(`groups/${groupId}`, {});
+        group = res.group;
+    } catch (e) {
+        if (isInitialLoad) {
+            showError(e?.message || "Could Not Load Group.");
+            stopGroupPolling();
+        }
+        return;
+    }
+    if (currentGroupId !== groupId) return;
+    currentGroupOwnerUid = group.ownerUid;
+    currentGroupName = group.name;
+    const entries = Object.entries(group.messages || {}).sort((x, y) => {
+        return Number(x[1].timestamp || x[0]) - Number(y[1].timestamp || y[0]);
+    });
+    const fragment = document.createDocumentFragment();
+    let addedAny = false;
+    for (const [id, msg] of entries) {
+        if (renderedGroupMsgIds.has(id)) {
+            const existing = document.getElementById("msg-" + id);
+            if (existing) {
+                const textDiv = existing.querySelector(".msg-text");
+                if (textDiv && msg.t !== undefined) {
+                    const currentSafe = buildSafeText(msg.t);
+                    if (textDiv.dataset.rawText !== msg.t) {
+                        textDiv.innerHTML = currentSafe;
+                        textDiv.dataset.rawText = msg.t;
+                        initAudioPlayers(textDiv);
+                    }
+                }
+            }
+            continue;
+        }
+        renderedGroupMsgIds.add(id);
+        const div = await renderMessageInstant(id, msg.system ? { ...msg, s: "system" } : msg);
+        if (div) {
+            if (msg.system) {
+                const nameEl = div.querySelector("#msgName");
+                if (nameEl) nameEl.textContent = "System";
+            }
+            fragment.appendChild(div);
+            addedAny = true;
+        }
+    }
+    if (addedAny) {
+        chatLog.appendChild(fragment);
+        initAudioPlayers(chatLog);
+        scrollToBottom(false);
+    }
+}
+if (groupInfoBtn) groupInfoBtn.onclick = async () => {
+    if (!currentGroupId) return;
+    await openGroupInfoPanel(currentGroupId);
+};
+if (groupInfoCloseBtn) groupInfoCloseBtn.onclick = () => {
+    if (groupInfoPanel) groupInfoPanel.style.display = "none";
+    chatLog.style.display = "";
+    chatMsgFunctions.style.display = "flex";
+    sendBtn.style.display = "block";
+};
+async function openGroupInfoPanel(groupId) {
+    let data;
+    chatMsgFunctions.style.display = "none";
+    sendBtn.style.display = "none";
+    try {
+        data = await fetchAPI(`groups/${groupId}/members`, {});
+    } catch (e) {
+        showError(e?.message || "Could Not Load Group Info.");
+        return;
+    }
+    groupInfoName.textContent = data.name;
+    groupInfoInviteLink.textContent = data.inviteLink || "";
+    groupInfoInviteCode.textContent = data.inviteCode || "";
+    const amOwner = data.ownerUid === currentUser?.uid;
+    groupInfoOwnerActions.style.display = amOwner ? "flex" : "none";
+    groupInfoLeaveActions.style.display = amOwner ? "none" : "flex";
+    groupInfoMembers.innerHTML = "";
+    let profilePics = [];
+    try {
+        const res = await fetch(`${pfpDomain}/index.json?t=${Date.now()}`);
+        const files = await res.json();
+        profilePics = files.map(file => `${pfpDomain}/${file}`);
+    } catch {
+        profilePics = [`${pfpDomain}/1.jpeg`];
+    }
+    for (const member of data.members) {
+        const li = document.createElement("li");
+        const img = document.createElement("img");
+        const picIndex = (member.pic >= 0 && member.pic < profilePics.length) ? member.pic : 0;
+        img.src = profilePics[picIndex] || `${pfpDomain}/1.jpeg`;
+        const nameWrap = document.createElement("div");
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = member.displayName;
+        nameWrap.appendChild(nameSpan);
+        if (member.isOwner) {
+            const ownerLabel = document.createElement("span");
+            ownerLabel.className = "owner-label";
+            ownerLabel.textContent = "Owner";
+            nameWrap.appendChild(ownerLabel);
+        }
+        li.appendChild(img);
+        li.appendChild(nameWrap);
+        if (amOwner && !member.isOwner) {
+            const kickBtn = document.createElement("button");
+            kickBtn.className = "kickMemberBtn";
+            kickBtn.textContent = "Kick";
+            kickBtn.onclick = () => {
+                showConfirm(`Kick ${member.displayName} From The Group?`, async (ok) => {
+                    if (!ok) return;
+                    try {
+                        await fetchAPI(`groups/${groupId}/kick`, { targetUid: member.uid });
+                        await openGroupInfoPanel(groupId);
+                    } catch (e) {
+                        showError(e?.message || "Could Not Kick Member.");
+                    }
+                });
+            };
+            li.appendChild(kickBtn);
+        }
+        groupInfoMembers.appendChild(li);
+    }
+    if (groupInfoPanel) groupInfoPanel.style.display = "block";
+    chatLog.style.display = "none";
+    setTimeout(() => {
+        if (groupInfoPanel && groupInfoPanel.style.display === "none") chatLog.style.display = "";
+    }, 0);
+}
+if (groupRenameBtn) groupRenameBtn.onclick = async () => {
+    if (!currentGroupId) return;
+    const newName = await customPrompt("New Group Name:", false, currentGroupName || "");
+    if (!newName || !newName.trim()) return;
+    fetchAPI(`groups/${currentGroupId}/rename`, { name: newName.trim() })
+        .then(() => { renderGroupList(); openGroupInfoPanel(currentGroupId); })
+        .catch(e => showError(e?.message || "Could Not Rename Group."));
+};
+if (groupResetInviteBtn) groupResetInviteBtn.onclick = () => {
+    if (!currentGroupId) return;
+    showConfirm("Reset The Invite Link? The Old Link Will Stop Working.", async (ok) => {
+        if (!ok) return;
+        try {
+            await fetchAPI(`groups/${currentGroupId}/reset-invite`, {});
+            await openGroupInfoPanel(currentGroupId);
+        } catch (e) {
+            showError(e?.message || "Could Not Reset Invite.");
+        }
+    });
+};
+if (groupTransferBtn) groupTransferBtn.onclick = async () => {
+    if (!currentGroupId) return;
+    const username = await customPrompt("Transfer Ownership To (Username):", false);
+    if (!username || !username.trim()) return;
+    const targetUid = await getUidByDisplayName(username.trim());
+    if (!targetUid) { showError("User Not Found."); return; }
+    showConfirm(`Transfer Ownership Of This Group To ${username}?`, async (ok) => {
+        if (!ok) return;
+        try {
+            await fetchAPI(`groups/${currentGroupId}/transfer`, { targetUid });
+            await openGroupInfoPanel(currentGroupId);
+        } catch (e) {
+            showError(e?.message || "Could Not Transfer Ownership.");
+        }
+    });
+};
+if (groupDeleteBtn) groupDeleteBtn.onclick = () => {
+    if (!currentGroupId) return;
+    showConfirm("Delete This Group? This Cannot Be Undone.", async (ok) => {
+        if (!ok) return;
+        try {
+            const token = await getAuthToken();
+            const delRes = await fetch(`${a}/groups/${currentGroupId}`, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if (!delRes.ok) {
+                const err = await delRes.json().catch(() => ({}));
+                throw new Error(err.error || "Delete Failed");
+            }
+            stopGroupPolling();
+            currentGroupId = null;
+            groupInfoPanel.style.display = "none";
+            chatLog.style.display = "";
+            showPrivateMenu();
+            renderGroupList();
+        } catch (e) {
+            showError(e?.message || "Could Not Delete Group.");
+        }
+    });
+};
+if (groupLeaveBtn) groupLeaveBtn.onclick = () => {
+    if (!currentGroupId) return;
+    showConfirm("Leave This Group?", async (ok) => {
+        if (!ok) return;
+        try {
+            await fetchAPI(`groups/${currentGroupId}/leave`, {});
+            stopGroupPolling();
+            currentGroupId = null;
+            groupInfoPanel.style.display = "none";
+            chatLog.style.display = "";
+            showPrivateMenu();
+            renderGroupList();
+        } catch (e) {
+            showError(e?.message || "Could Not Leave Group.");
+        }
+    });
+};
+async function sendGroupTextMessage(text) {
+    if (!currentGroupId) return;
+    try {
+        await fetchAPI(`groups/${currentGroupId}/message`, { text });
+    } catch (e) {
+        showError(e?.message || "Could Not Send Message.");
+    }
+}
+async function uploadGroupAttachment(file) {
+    if (!currentGroupId || !file) return;
+    try {
+        const token = await getAuthToken();
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch(`${a}/groups/${currentGroupId}/upload`, {
+            method: "POST",
+            headers: token ? { "Authorization": "Bearer " + token } : {},
+            body: form
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || "Upload Failed");
+    } catch (e) {
+        showError("File Upload Failed: " + (e?.message || e));
+    }
+}
+async function handleJoinCodeFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const joinCode = params.get("joinCode");
+    if (!joinCode || !currentUser || isGuest) return;
+    try {
+        const res = await fetchAPI("groups/join", { inviteCode: joinCode });
+        switchSidebarTab("private");
+        await renderGroupList();
+        await openGroupChat(res.group.id);
+        showSuccess?.(`Joined "${res.group.name}"!`);
+    } catch (e) {
+        showError(e?.message || "Could Not Join Group From Invite Link.");
+    } finally {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("joinCode");
+        window.history.replaceState({}, "", url.toString());
+    }
 }

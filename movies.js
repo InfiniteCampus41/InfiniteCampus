@@ -229,9 +229,9 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                             </button>
                         </a>
                     </div>
-                    <small style="font-size:0.7em;color:#ccc;margin-top:-3px;">
-                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}" style="text-decoration:none;">
-                            Uploaded By: ${uploaderName}
+                    <small style="font-size:0.7em;color:#ccc;margin-top:-3px;display:block;width:100%;">
+                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}" style="text-decoration:none;display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;justify-content:center;">
+                            <span style="flex-shrink:0;">Uploaded By:&nbsp;</span><span class="movie-uploader" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${uploaderName}</span>
                         </a>
                     </small>
                 </div>
@@ -261,6 +261,8 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
         box.appendChild(movieDiv);
         const titleEl = movieDiv.querySelector(".movie-title");
         fitTextToWidth(titleEl);
+        const uploaderEl = movieDiv.querySelector(".movie-uploader");
+        if (uploaderEl) fitTextToWidth(uploaderEl, 10, 6);
     }
 }
 function filterMovies() {
@@ -418,6 +420,24 @@ function filterMovies() {
     const wrapper = document.getElementById("vp-wrapper");
     wrapper.insertBefore(video, wrapper.firstChild);
 })();
+(function buildWatchHeader() {
+    if (!currentfile || !currentfile.parentNode) return;
+    const header = document.createElement("div");
+    header.id = "watch-header";
+    header.style.display = "none";
+    const backBtn = document.createElement("button");
+    backBtn.id = "vp-back-btn";
+    backBtn.classList = "button";
+    backBtn.type = "button";
+    backBtn.setAttribute("aria-label", "Back To Movies");
+    backBtn.innerHTML = `<i class="ic ic-chevron-left"></i> Back`;
+    backBtn.addEventListener("click", () => closeWatchPanel());
+    const div = document.createElement('div');
+    currentfile.parentNode.insertBefore(header, currentfile);
+    header.appendChild(backBtn);
+    div.appendChild(currentfile);
+    header.appendChild(div);
+})();
 let _vpCurrentSrc = "";
 let _vpHideTimer = null;
 let _vpCCOn = false;
@@ -568,6 +588,14 @@ function vpCloseDropup() {
             } else {
                 vpShowUI();
             }
+        }
+    });
+    ui?.addEventListener("click", (e) => {
+        if (e.target.closest("#vp-controls") || e.target.closest("#vp-center-btn")) return;
+        const isDesktop = window.matchMedia("(hover: hover)").matches;
+        if (isDesktop) {
+            vpTogglePlay();
+            vpShowUI();
         }
     });
     document.getElementById("vp-center-btn")?.addEventListener("click", (e) => {
@@ -757,7 +785,9 @@ async function openWatchPanel(name, subtitleUrl = null) {
     movies.style.display = "none";
     before.style.display = "none";
     currentfile.textContent = `Currently Watching: ${name}`;
-    currentfile.style.display = "block";
+    currentfile.style.display = "flex";
+    const watchHeader = document.getElementById("watch-header");
+    if (watchHeader) watchHeader.style.display = "flex";
     while (player.firstChild) player.removeChild(player.firstChild);
     _vpCCOn = false;
     vpUpdateCCIcon();
@@ -812,7 +842,8 @@ function closeWatchPanel() {
     vpHideUI();
     vpCancelHide();
     before.style.display = "block";
-    currentfile.style.display = "none";
+    const watchHeader = document.getElementById("watch-header");
+    if (watchHeader) watchHeader.style.display = "none";
     currentfile.textContent = "";
     section.style.display = "block";
     movies.style.display = "flex";

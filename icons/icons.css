@@ -158,6 +158,10 @@ i {
     mask-image: url('/icons/gear.svg');
     -webkit-mask-image: url('/icons/gear.svg');
 }
+.ic-globe2 {
+    mask-image: url('/icons/globe2.svg');
+    -webkit-mask-image: url('/icons/globe2.svg');
+}
 .ic-goguardian {
     mask-image: url('/icons/goguardian.png');
     -webkit-mask-image: url('/icons/goguardian.png');
@@ -165,6 +169,10 @@ i {
 .ic-grip-vertical {
     mask-image: url('/icons/grip-vertical.svg');
     -webkit-mask-image: url('/icons/grip-vertical.svg');
+}
+.ic-group {
+    mask-image: url('/icons/group.svg');
+    -webkit-mask-image: url('/icons/group.svg');
 }
 .ic-handshake {
     mask-image: url('/icons/handshake.svg');
@@ -193,6 +201,10 @@ i {
 .ic-image-fill {
     mask-image: url('/icons/image-fill.svg');
     -webkit-mask-image: url('/icons/image-fill.svg');
+}
+.ic-info-circle {
+    mask-image: url('/icons/info-circle.svg');
+    -webkit-mask-image: url('/icons/info-circle.svg');
 }
 .ic-lanschool {
     mask-image: url('/icons/lanschool.png');
@@ -237,6 +249,10 @@ i {
 .ic-pencil-square {
     mask-image: url('/icons/pencil-square.svg');
     -webkit-mask-image: url('/icons/pencil-square.svg');
+}
+.ic-people-fill {
+    mask-image: url('/icons/people-fill.svg');
+    -webkit-mask-image: url('/icons/people-fill.svg');
 }
 .ic-pip {
     mask-image: url('/icons/pip.svg');

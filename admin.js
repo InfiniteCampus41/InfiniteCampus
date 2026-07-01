@@ -1,4 +1,4 @@
-import { auth, onAuthStateChanged, forceWebSockets, io, getToken } from "./imports.js";
+import { auth, onAuthStateChanged, forceWebSockets, io, getToken, signOut, signInWithCustomToken } from "./imports.js";
 const kdsuhPage = window.location.pathname;
 const kdsuhParams = new URLSearchParams(window.location.search);
 if (kdsuhPage == "/InfiniteAdmins.html") {
@@ -61,6 +61,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             }
         };
         const privateChatsDiv = document.getElementById("privateChats");
+        const groupChatsDiv = document.getElementById("groupChats");
+        const groupChatView = document.getElementById("groupChatView");
+        const groupChatTitle = document.getElementById("groupChatTitle");
+        const groupChatMeta = document.getElementById("groupChatMeta");
+        const groupChatMessages = document.getElementById("groupChatMessages");
+        const groupChatBackButton = document.getElementById("groupChatBackButton");
+        const deleteGroupChatBtn = document.getElementById("deleteGroupChatBtn");
         const chatView = document.getElementById("chatView");
         const chatTitle = document.getElementById("chatTitle");
         const chatMessages = document.getElementById("chatMessages");
@@ -673,6 +680,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             listenForUnverifiedUsers();
             await loadUserList();
             await loadPrivateChats();
+            await loadGroupChats();
             const usersRefRealtime = "users";
             dbGet(usersRefRealtime).then(() => listenForUnverifiedUsers());
         });
@@ -723,6 +731,92 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
             }
         }
+        async function loadGroupChats() {
+            if (!groupChatsDiv) return;
+            groupChatsDiv.innerHTML = "Loading...";
+            try {
+                const token = await getAuthToken();
+                const res = await adminFetch(`${BACKEND}/admin/groups`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json?.error || "Failed To Load Groups");
+                const groups = json.groups || [];
+                if (!groups.length) {
+                    groupChatsDiv.innerHTML = "No Groups";
+                    return;
+                }
+                groupChatsDiv.innerHTML = "";
+                for (const group of groups) {
+                    const ownerName = userProfiles[group.ownerUid]?.displayName || group.ownerUid;
+                    const div = document.createElement("div");
+                    div.className = "user-item";
+                    div.textContent = `#${group.id} ${group.name} (Owner: ${ownerName}, ${group.members.length} Members)`;
+                    div.onclick = () => viewGroupChat(group.id);
+                    groupChatsDiv.appendChild(div);
+                }
+            } catch (e) {
+                groupChatsDiv.innerHTML = "Failed To Load Groups";
+            }
+        }
+        async function viewGroupChat(groupId) {
+            groupChatsDiv.style.display = "none";
+            privateChatsDiv.style.display = "none";
+            groupChatView.style.display = "block";
+            groupChatMessages.innerHTML = "Loading...";
+            try {
+                const token = await getAuthToken();
+                const res = await adminFetch(`${BACKEND}/admin/groups/${groupId}`, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json?.error || "Failed To Load Group");
+                const group = json.group;
+                const ownerName = userProfiles[group.ownerUid]?.displayName || group.ownerUid;
+                groupChatTitle.textContent = `Group: ${group.name} (#${group.id})`;
+                groupChatMeta.innerHTML = `Owner: ${ownerName}<br>Invite Code: ${group.inviteCode}<br>Members: ${group.members.map(m => userProfiles[m]?.displayName || m).join(", ")}`;
+                const entries = Object.entries(group.messages || {}).sort((x, y) => Number(x[1].timestamp || x[0]) - Number(y[1].timestamp || y[0]));
+                groupChatMessages.innerHTML = "";
+                for (const [id, msg] of entries) {
+                    const senderName = msg.system ? "System" : (userProfiles[msg.s]?.displayName || msg.s);
+                    const line = document.createElement("div");
+                    line.style.padding = "4px 0";
+                    line.style.borderBottom = "1px solid #333";
+                    const time = new Date(msg.timestamp || Number(id)).toLocaleString();
+                    line.innerHTML = `<strong>${senderName}</strong> <span style="color:#888;font-size:0.8em;">${time}</span><br><span style="white-space:pre-wrap;">${(msg.t || "").replace(/</g, "&lt;")}</span>`;
+                    groupChatMessages.appendChild(line);
+                }
+                deleteGroupChatBtn.onclick = () => {
+                    showConfirm(`Delete Group "${group.name}"? This Cannot Be Undone.`, async (ok) => {
+                        if (!ok) return;
+                        try {
+                            const delToken = await getAuthToken();
+                            const delRes = await fetch(`${BACKEND}/groups/${groupId}`, {
+                                method: "DELETE",
+                                headers: { "Authorization": "Bearer " + delToken }
+                            });
+                            if (!delRes.ok) {
+                                const err = await delRes.json().catch(() => ({}));
+                                throw new Error(err.error || "Delete Failed");
+                            }
+                            groupChatView.style.display = "none";
+                            groupChatsDiv.style.display = "block";
+                            privateChatsDiv.style.display = "block";
+                            loadGroupChats();
+                        } catch (e) {
+                            showError(e?.message || "Could Not Delete Group.");
+                        }
+                    });
+                };
+            } catch (e) {
+                groupChatMessages.innerHTML = "Failed To Load Group";
+            }
+        }
+        if (groupChatBackButton) groupChatBackButton.onclick = () => {
+            groupChatView.style.display = "none";
+            groupChatsDiv.style.display = "block";
+            privateChatsDiv.style.display = "block";
+        };
         async function viewPrivateChat(uid, secondUid) {
             const sorted = [uid, secondUid].sort();
             const userDisplayName = userProfiles[uid]?.displayName || uid;

@@ -130,26 +130,82 @@
                             </div>
                         </div>
                     </div>
+                    <div id="sidebarTabs">
+                        <button id="tabGlobalBtn" class="sidebarTabBtn active" type="button">
+                            <i class="ic ic-globe2"></i> Global Chat
+                        </button>
+                        <button id="tabPrivateBtn" class="sidebarTabBtn" type="button">
+                            <i class="ic ic-people-fill"></i> Private Chats
+                        </button>
+                    </div>
                     <div id="adminControls" style="display:none;height:0px;justify-content:flex-end;">
                         <button id="addChannelBtn" style="color:white;background:none;border:none;height:fit-content;">
                             <i class="ic ic-plus-lg" title="Add Channel">
                             </i>
                         </button>
                     </div>
-                    <h4 class="text-center mt-3">
-                        Channels
-                    </h4>
-                    <hr>
-                    <ul id="channels" class="p-0">
-                    </ul>
-                    <h4 class="text-center mt-4">
-                        Private
-                    </h4>
-                    <hr>
-                    <ul id="privateList" class="p-0">
-                    </ul>
+                    <div id="globalSection">
+                        <div id="adminControlsHolder"></div>
+                        <h4 class="text-center mt-3">
+                            Channels
+                        </h4>
+                        <hr>
+                        <ul id="channels" class="p-0">
+                        </ul>
+                    </div>
+                    <div id="privateSection" style="display:none;">
+                        <h4 class="text-center mt-3">
+                            Private Chats
+                        </h4>
+                        <hr>
+                        <ul id="privateList" class="p-0">
+                        </ul>
+                    </div>
                 </div>
                 <div id="messages">
+                    <div id="messagesTopBar">
+                        <button id="groupInfoBtn" style="display:none;" type="button" title="Group Info">
+                            <i class="ic ic-info-circle"></i>
+                        </button>
+                    </div>
+                    <div id="privateMenu" style="display:none;">
+                        <fieldset>
+                            <legend>Direct Messages</legend>
+                            <input type="text" id="dmUsernameInput" placeholder="Enter A Username">
+                            <button id="dmStartBtn" type="button">Start Chat</button>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Create Group</legend>
+                            <input type="text" id="groupNameInput" placeholder="Group Name">
+                            <button id="groupCreateBtn" type="button">Create</button>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Join Group</legend>
+                            <input type="text" id="groupInviteInput" placeholder="Invite Code">
+                            <button id="groupJoinBtn" type="button">Join</button>
+                        </fieldset>
+                    </div>
+                    <div id="groupInfoPanel" style="display:none;">
+                        <div id="groupInfoHeader">
+                            <h3 id="groupInfoName"></h3>
+                            <button id="groupInfoCloseBtn" class="closeBtn" type="button"><i class="ic ic-x-lg"></i></button>
+                        </div>
+                        <div id="groupInfoInvite">
+                            <div><strong>Invite Link:</strong> <span id="groupInfoInviteLink"></span></div>
+                            <div><strong>Invite Code:</strong> <span id="groupInfoInviteCode"></span></div>
+                        </div>
+                        <div id="groupInfoOwnerActions" style="display:none;">
+                            <button id="groupRenameBtn" type="button">Rename Group</button>
+                            <button id="groupResetInviteBtn" type="button">Reset Invite</button>
+                            <button id="groupTransferBtn" type="button">Transfer Ownership</button>
+                            <button id="groupDeleteBtn" type="button">Delete Group</button>
+                        </div>
+                        <div id="groupInfoLeaveActions" style="display:none;">
+                            <button id="groupLeaveBtn" type="button">Leave Group</button>
+                        </div>
+                        <h4>Members</h4>
+                        <ul id="groupInfoMembers" class="p-0"></ul>
+                    </div>
                     <div id="chatLog">
                     </div>
                     <div class="p-3">

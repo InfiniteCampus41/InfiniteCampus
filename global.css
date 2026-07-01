@@ -597,6 +597,16 @@ body {
 #cuPromptBtns:hover {
     background:#444;
 }
+#currentFile {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .custom-section { 
     margin-top:22px; 
     padding:12px; 
@@ -910,7 +920,7 @@ body {
     overflow: hidden;
     margin-top: 6px;
     max-width: 400px;
-    width: 100%;
+    width: fit-content;
 }
 #displayNameSection {
     display: none;
@@ -1125,6 +1135,59 @@ footer {
 #gamesContainer .button {
     padding:10px;
     margin:10px;
+}
+#groupInfoBtn {
+    background: none !important;
+    border: none !important;
+    color: #ccc !important;
+    font-size: 1.3em;
+    padding: 2px 6px !important;
+}
+#groupInfoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#groupInfoInvite {
+    margin: 10px 0;
+    font-size: 0.9em;
+    color: #ccc;
+    word-break: break-all;
+}
+#groupInfoMembers img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+#groupInfoMembers .kickMemberBtn {
+    margin-left: auto;
+    padding: 4px 8px !important;
+    font-size: 0.8em;
+}
+#groupInfoMembers li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90%;
+    padding: 6px 10px;
+}
+#groupInfoMembers .owner-label {
+    font-size: 0.75em;
+    color: #aaa;
+    display: block;
+}
+#groupInfoOwnerActions, #groupInfoLeaveActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+#groupInfoPanel {
+    padding: 20px;
+    margin: 0 auto;
+    overflow-y: auto;
+    color: #eee;
 }
 .hand {
     position: absolute;
@@ -2008,6 +2071,13 @@ main {
     color: white;
     border: 1px solid white;
 }
+#messagesTopBar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+    min-height: 0;
+    background: #222;
+}
 .meta {
     display: flex;
     align-items:center;
@@ -2590,6 +2660,47 @@ main {
 pre code {
     font-size:.75em !important;
 }
+#privateList li.group-item .private-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #555;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #eee;
+    font-size: 1.1em;
+}
+#privateMenu {
+    padding: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+}
+#privateMenu fieldset {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    gap: 8px;
+}
+#privateMenu fieldset input {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #eee;
+    padding: 8px 10px;
+}
+#privateMenu fieldset legend {
+    padding: 0 6px;
+    font-size: 0.95em;
+    color: #ccc;
+    width: auto;
+}
 #profileCard {
     padding:20px 30px;
     max-width:80%;
@@ -3032,6 +3143,24 @@ select {
     border: 2px solid white;
     margin-right: 12px;
     object-fit: cover;
+}
+.sidebarTabBtn {
+    flex: 1;
+    background: #222 !important;
+    border: 1px solid #444 !important;
+    color: #ccc !important;
+    font-size: 0.85em;
+    padding: 8px 6px !important;
+}
+.sidebarTabBtn.active {
+    background: #2a2a2a !important;
+    border-color: #2a2a2a !important;
+    color: white !important;
+}
+#sidebarTabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 10px 0 10px;
 }
 #sidebar::-webkit-scrollbar { 
     display: none; 
@@ -4458,6 +4587,17 @@ th, td {
     color:#9fb7c7; 
     margin-left:8px; 
 }
+#vp-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+#vp-back-btn .ic {
+    font-size: 16px;
+}
 .vp-btn {
     background: none;
     border: none;
@@ -4696,6 +4836,16 @@ th, td {
     height: 100%;
     display: block;
     border-radius: 12px;
+}
+#watch-header {
+    display: none;
+    position: relative;
+    align-items: center;
+    gap: 12px;
+    width: 75vw;
+    margin-bottom: 8px;
+    flex-direction: row;
+    justify-content: flex-start;
 }
 #watchPanel {
     position: relative;
