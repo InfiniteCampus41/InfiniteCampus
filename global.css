@@ -1188,6 +1188,7 @@ footer {
     margin: 0 auto;
     overflow-y: auto;
     color: #eee;
+    max-width:90%;
 }
 .hand {
     position: absolute;
@@ -2659,6 +2660,13 @@ main {
 }
 pre code {
     font-size:.75em !important;
+}
+#privateList li .dm-pfp {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 #privateList li.group-item .private-icon {
     width: 32px;

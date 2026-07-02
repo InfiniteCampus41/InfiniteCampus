@@ -80,6 +80,7 @@ let currentGroupName = null;
 let groupPollTimer = null;
 let myGroupsCache = [];
 let renderedGroupMsgIds = new Set();
+let currentGroupMessagesCache = {};
 let currentSidebarTab = "global";
 let isGuest = false;
 const knownUserDisplayNames = new Set();
@@ -284,7 +285,22 @@ function showEmojiPicker(event, msgId) {
     }, 0);
 }
 async function toggleReaction(msgId, emoji) {
-    if (!currentUser || !currentPath) return;
+    if (!currentUser) return;
+    if (currentGroupId) {
+        try {
+            const json = await fetchAPI(`groups/${currentGroupId}/react`, { msgId, emoji });
+            if (currentGroupMessagesCache[msgId]) currentGroupMessagesCache[msgId].reactions = json.reactions;
+            const row = document.querySelector(`.reactions-row[data-msgid="${msgId}"]`);
+            if (row) {
+                row.dataset.reactionsKey = JSON.stringify(json.reactions || {});
+                renderReactionsInRow(row, json.reactions);
+            }
+        } catch (e) {
+            showError(e?.message || "Could Not React To Message");
+        }
+        return;
+    }
+    if (!currentPath) return;
     const pathParts = pathToArray(currentPath + "/" + msgId);
     try {
         const token = await getAuthToken();
@@ -618,6 +634,37 @@ async function getUserMeta(uid) {
     };
     userMetaCache[uid] = data;
     return data;
+}
+let _profilePicsListCache = null;
+async function getProfilePicsList() {
+    if (_profilePicsListCache) return _profilePicsListCache;
+    try {
+        const res = await fetch(`${pfpDomain}/index.json?t=${Date.now()}`);
+        const files = await res.json();
+        _profilePicsListCache = files.map(file => `${pfpDomain}/${file}`);
+    } catch {
+        _profilePicsListCache = [`${pfpDomain}/1.jpeg`];
+    }
+    return _profilePicsListCache;
+}
+async function getProfilePicUrl(uid) {
+    try {
+        const meta = await getUserMeta(uid);
+        const pics = await getProfilePicsList();
+        const idx = (meta.pic >= 0 && meta.pic < pics.length) ? meta.pic : 0;
+        return (pics[idx] || `${pfpDomain}/1.jpeg`) + "?t=" + Date.now();
+    } catch {
+        return `${pfpDomain}/1.jpeg`;
+    }
+}
+function resortPrivateList() {
+    const items = Array.from(privateList.children);
+    items.sort((a, b) => {
+        const ta = Number(a.dataset.lastActivity || 0);
+        const tb = Number(b.dataset.lastActivity || 0);
+        return tb - ta;
+    });
+    for (const item of items) privateList.appendChild(item);
 }
 async function isUserMuted(uid) {
     const data = dbGet(`mutedUsers/${uid}`);
@@ -1124,7 +1171,9 @@ async function renderMessageInstant(id, msg) {
     if (replyId) {
         (async () => {
             try {
-                const rData = await dbGet(`${currentPath}/${replyId}`);
+                const rData = currentGroupId
+                    ? currentGroupMessagesCache[replyId]
+                    : await dbGet(`${currentPath}/${replyId}`);
                 if (rData) {
                     const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : (rData.sender ? await getDisplayName(rData.sender) : "Unknown"));
                     let rText;
@@ -1168,7 +1217,6 @@ async function renderMessageInstant(id, msg) {
     reactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
     reactBtn.title = "Add Reaction";
     reactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
-    if (currentGroupId) reactBtn.style.display = "none";
     msgBtns.appendChild(reactBtn);
     div.appendChild(topRow);
     div.appendChild(textDiv);
@@ -1342,7 +1390,7 @@ async function renderMessageInstant(id, msg) {
             replyBtn.innerHTML = `<i class="ic ic-arrow-90deg-left"></i>`;
             replyBtn.title = "Reply";
             replyBtn.onclick = () => toggleReply(id, displayName, rawText);
-            if (!isGuest && !currentGroupId) {
+            if (!isGuest) {
                 msgBtns.insertBefore(replyBtn, reactBtn);
             }
             if (!isGuest && (isSelf || isOwner || isAdmin || isCoOwner || isHAdmin || isTester || (currentGroupId && currentGroupOwnerUid === currentUser?.uid))) {
@@ -1970,13 +2018,15 @@ async function sendPrivateMessage(otherUid, text) {
     await dbPush(path, msg);
     await dbUpdate(`metadata/${currentUser.uid}/privateChats/${otherUid}`, {
         lastRead: Date.now(),
-        unreadCount: 0
+        unreadCount: 0,
+        lastMessageTime: msg.timestamp
     });
     const recipientMeta = await dbGet(`metadata/${otherUid}/privateChats/${currentUser.uid}`) || {};
     await dbSet(`metadata/${otherUid}/privateChats/${currentUser.uid}`, {
         ...recipientMeta,
         lastRead: recipientMeta.lastRead || 0,
-        unreadCount: (recipientMeta.unreadCount || 0) + 1
+        unreadCount: (recipientMeta.unreadCount || 0) + 1,
+        lastMessageTime: msg.timestamp
     });
 }
 async function openPrivateChat(uid, name) {
@@ -1999,7 +2049,7 @@ async function openPrivateChat(uid, name) {
     currentPrivateName = name || null;
     chatLog.innerHTML = "";
     let attachBtn = document.getElementById("chatAttachBtn");
-    if (attachBtn) attachBtn.style.display = "none";
+    if (attachBtn) attachBtn.style.display = "";
     if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
     const [a, b] = [currentUser.uid, uid].sort();
     currentPath = `private/${a}/${b}`;
@@ -2021,6 +2071,10 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             li.dataset.uid = otherUid;
             const left = document.createElement("div");
             left.className = "left";
+            const pfpImg = document.createElement("img");
+            pfpImg.className = "dm-pfp";
+            pfpImg.style.cssText = "width:32px;height:32px;border-radius:50%;object-fit:cover;";
+            left.appendChild(pfpImg);
             const usernameSpan = document.createElement("span");
             usernameSpan.className = "username";
             left.appendChild(usernameSpan);
@@ -2043,6 +2097,7 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             li.onclick = () => openPrivateChat(otherUid, name);
             privateList.appendChild(li);
             attachPrivateMessageListener(otherUid);
+            getProfilePicUrl(otherUid).then(url => { pfpImg.src = url; }).catch(() => {});
         }
         const left = li.querySelector(".left");
         const usernameSpan = left.querySelector(".username");
@@ -2056,11 +2111,13 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             dot.textContent = "•";
             left.prepend(dot);
         }
+        li.dataset.lastActivity = String(meta.lastMessageTime || meta.lastRead || 0);
         if (channelList.querySelector(".active")) {
             channelList.querySelector(".active").classList.toggle("active");
         }
         li.classList.toggle("active", currentPrivateUid === otherUid);
     }
+    resortPrivateList();
 }
 function startChannelListeners() {
     dbListen("channels", () => {
@@ -2370,6 +2427,10 @@ async function switchChannel(ch) {
     chatLog.style.display = "";
     chatMsgFunctions.style.display = "";
     sendBtn.style.display = "";
+    {
+        const attachBtn = document.getElementById("chatAttachBtn");
+        if (attachBtn) attachBtn.style.display = "";
+    }
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
         showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
@@ -2465,6 +2526,7 @@ sendBtn.onclick = async () => {
         }
         if (text) await sendGroupTextMessage(text);
         chatInput.value = "";
+        toggleReply();
         if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
         return;
     }
@@ -2703,6 +2765,10 @@ onAuthStateChanged(auth, async user => {
         }
     }
     startMetadataListener();
+    if (!isGuest) {
+        renderGroupList();
+        setInterval(() => { if (!isGuest) renderGroupList(); }, 15000);
+    }
     dbListen(`mentions/${currentUser.uid}`, (data) => {
         if (data) console.log("Mention: ", data);
     });
@@ -3274,6 +3340,7 @@ function stopGroupPolling() {
         groupPollTimer = null;
     }
     renderedGroupMsgIds = new Set();
+    currentGroupMessagesCache = {};
 }
 function switchSidebarTab(tab) {
     currentSidebarTab = tab;
@@ -3380,10 +3447,18 @@ async function renderGroupList() {
         left.appendChild(icon);
         left.appendChild(usernameSpan);
         li.appendChild(left);
+        if (group.unread && currentGroupId !== group.id) {
+            const dot = document.createElement("span");
+            dot.className = "notifDot";
+            dot.textContent = "•";
+            left.prepend(dot);
+        }
+        li.dataset.lastActivity = String((group.lastMessage && group.lastMessage.ts) || group.createdAt || 0);
         li.onclick = () => { hidePrivateMenu(); openGroupChat(group.id); };
         li.classList.toggle("active", currentGroupId === group.id);
         privateList.appendChild(li);
     }
+    resortPrivateList();
 }
 async function openGroupChat(groupId) {
     if (!currentUser) return;
@@ -3426,6 +3501,7 @@ async function pollGroupOnce(groupId, isInitialLoad) {
     const entries = Object.entries(group.messages || {}).sort((x, y) => {
         return Number(x[1].timestamp || x[0]) - Number(y[1].timestamp || y[0]);
     });
+    currentGroupMessagesCache = Object.fromEntries(entries);
     const fragment = document.createDocumentFragment();
     let addedAny = false;
     for (const [id, msg] of entries) {
@@ -3441,6 +3517,14 @@ async function pollGroupOnce(groupId, isInitialLoad) {
                         initAudioPlayers(textDiv);
                     }
                 }
+                const reactionsRow = existing.querySelector(".reactions-row");
+                if (reactionsRow) {
+                    const newKey = JSON.stringify(msg.reactions || {});
+                    if (reactionsRow.dataset.reactionsKey !== newKey) {
+                        reactionsRow.dataset.reactionsKey = newKey;
+                        renderReactionsInRow(reactionsRow, msg.reactions);
+                    }
+                }
             }
             continue;
         }
@@ -3451,6 +3535,8 @@ async function pollGroupOnce(groupId, isInitialLoad) {
                 const nameEl = div.querySelector("#msgName");
                 if (nameEl) nameEl.textContent = "System";
             }
+            const reactionsRow = div.querySelector(".reactions-row");
+            if (reactionsRow) reactionsRow.dataset.reactionsKey = JSON.stringify(msg.reactions || {});
             fragment.appendChild(div);
             addedAny = true;
         }
@@ -3459,6 +3545,15 @@ async function pollGroupOnce(groupId, isInitialLoad) {
         chatLog.appendChild(fragment);
         initAudioPlayers(chatLog);
         scrollToBottom(false);
+    }
+    if (isInitialLoad || addedAny) {
+        fetchAPI(`groups/${groupId}/read`, {}).then(() => {
+            const li = privateList.querySelector(`li.group-item[data-group-id="${groupId}"]`);
+            if (li) {
+                const dot = li.querySelector(".notifDot");
+                if (dot) dot.remove();
+            }
+        }).catch(() => {});
     }
 }
 if (groupInfoBtn) groupInfoBtn.onclick = async () => {
@@ -3619,7 +3714,7 @@ if (groupLeaveBtn) groupLeaveBtn.onclick = () => {
 async function sendGroupTextMessage(text) {
     if (!currentGroupId) return;
     try {
-        await fetchAPI(`groups/${currentGroupId}/message`, { text });
+        await fetchAPI(`groups/${currentGroupId}/message`, { text, replyTo: replyMsgId || undefined });
     } catch (e) {
         showError(e?.message || "Could Not Send Message.");
     }
@@ -3630,6 +3725,7 @@ async function uploadGroupAttachment(file) {
         const token = await getAuthToken();
         const form = new FormData();
         form.append("file", file);
+        if (replyMsgId) form.append("replyTo", replyMsgId);
         const res = await fetch(`${a}/groups/${currentGroupId}/upload`, {
             method: "POST",
             headers: token ? { "Authorization": "Bearer " + token } : {},
