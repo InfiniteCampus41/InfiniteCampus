@@ -1723,12 +1723,9 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     moviesData = Object.entries(rawData)
                         .map(([filename, data]) => ({
                             filename,
-                            order: data.order,
-                            uploadedBy: data.uploadedBy,
-                            db_id: data.db_id,
-                            cover: data.cover
+                            ...data
                         }))
-                        .sort((a, b) => a.order - b.order);
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 } else {
                     moviesData = rawData;
                 }
@@ -1878,11 +1875,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             try {
                 const formatted = {};
                 moviesData.forEach((movie, index) => {
-                    formatted[movie.filename] = {
+                    const { filename, ...rest } = movie;
+                    formatted[filename] = {
+                        ...rest,
                         order: (index + 1) * 10,
-                        uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1",
-                        db_id: movie.db_id,
-                        cover: movie.cover
+                        uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1"
                     };
                 });
                 const res = await adminFetch(BACKEND + "/api/movies-json", {
