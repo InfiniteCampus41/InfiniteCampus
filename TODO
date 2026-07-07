@@ -9,7 +9,6 @@ TODO
 
     Website Chat:
         Need To Do:
-            Fix Images
             Add Group Chats:
                 Make It So Only People Inside Of Group Chats Can Be Mentioned Inside Of Them
             
@@ -20,7 +19,6 @@ TODO
             Allow Deleting Of Your Discord Messages If Your Account And Discord Are Connected
             Fix Discord Username Mentions In Chat
             Fix Discord Channel Mentions In Chat
-            Add Codeblocks
     The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
         Here Are The Steps To Do So:
             Make Games List Come From Server Instead Of Locally

@@ -1742,20 +1742,21 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 container.innerHTML = "Movies Must Be In An Array.";
                 return;
             }
-            moviesData.forEach((movie, index) => {
+            moviesData.forEach((movie) => {
                 const item = document.createElement("div");
                 item.className = "movie-item";
                 item.draggable = true;
-                item.dataset.index = index;
+                item.dataset.filename = movie.filename;
                 item.innerHTML = `
                     <span class="drag-handle"><i class="ic ic-grip-vertical"></i></span>
-                    <span class="movie-name" data-index="${index}">${movie.filename}</span>
+                    <span class="movie-name">${movie.filename}</span>
                 `;
                 addDragEvents(item);
                 const nameEl = item.querySelector(".movie-name");
                 nameEl.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    openMovieEditor(index);
+                    const currentIndex = moviesData.findIndex(m => m.filename === item.dataset.filename);
+                    openMovieEditor(currentIndex);
                 });
                 container.appendChild(item);
             });
@@ -1850,10 +1851,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         function updateMoviesFromDOM() {
             const items = document.querySelectorAll("#moviesOrder .movie-item");
+            const moviesByFilename = new Map(moviesData.map(m => [m.filename, m]));
             const newOrder = [];
             items.forEach(item => {
-                const index = parseInt(item.dataset.index);
-                newOrder.push(moviesData[index]);
+                const movie = moviesByFilename.get(item.dataset.filename);
+                if (movie) newOrder.push(movie);
             });
             moviesData = newOrder;
         }
