@@ -221,6 +221,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (width < 800) return 15;
         return 40;
     }
+    function applyDiscordLink() {
+        let discordLink = document.getElementById("discordLink");
+        let discordBtn = document.getElementById("discordBtn");
+        if (discordLink) {
+            discordLink.innerText = i;
+        }
+        if (discordBtn) {
+            discordBtn.href = i;
+        }
+    }
+    applyDiscordLink();
     function createSnowflakes() {
         snowContainer.innerHTML = "";
         const count = calculateFlakeCount();
@@ -515,10 +526,10 @@ function appendToMain() {
                 All New Updates Are On The Updates Page
                 <br>
                 Also Join The
-                <a href="https://discord.gg/4d9hJSVXca" class="discord" target="_blank">
+                <a href="${i}" class="discord" target="_blank">
                     Discord
                 </a>
-                discord.gg/4d9hJSVXca
+                ${i}
             </p>
             <br>
             <br>

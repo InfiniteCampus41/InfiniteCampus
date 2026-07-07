@@ -390,14 +390,6 @@ body {
     border-radius:8px;
     align-items:flex-start;
 }
-.chat-vid {
-    width: 100%;
-    max-height: 300px;
-    border-radius: 0 0 6px 6px;
-    display: block;
-    background: #000;
-    cursor: pointer;
-}
 .chrome-newtab {
     padding: 1px 5px;
     cursor: pointer;
@@ -613,6 +605,129 @@ body {
     border-radius:10px; 
     background:#081424; 
 }
+.cvp-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px 5px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: background 0.15s;
+    line-height: 1;
+}
+.cvp-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+.cvp-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.cvp-center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.55);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 20px;
+    pointer-events: auto;
+}
+.cvp-controls {
+    padding: 0 8px 6px;
+}
+.cvp-player {
+    position: relative;
+    background: #000;
+    user-select: none;
+}
+.cvp-player:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+}
+.cvp-player:fullscreen video {
+    max-height: 100vh;
+    height: 100%;
+}
+.cvp-player video {
+    width: 100%;
+    max-height: 300px;
+    display: block;
+    background: #000;
+    object-fit: contain;
+}
+.cvp-progress-dot {
+    width: 10px;
+    height: 10px;
+    background: #00c800;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    right: -5px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 4px rgba(0,200,0,0.6);
+}
+.cvp-progress-fill {
+    height: 100%;
+    background: lime;
+    border-radius: 2px;
+    position: relative;
+    pointer-events: none;
+}
+.cvp-progress-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    transition: height 0.15s;
+    margin-bottom: 6px;
+}
+.cvp-progress-track:hover {
+    height: 6px;
+}
+.cvp-spacer {
+    flex: 1;
+}
+.cvp-time {
+    color: #fff;
+    font-size: 11px;
+    white-space: nowrap;
+    font-family: monospace;
+    letter-spacing: 0.03em;
+    margin: 0 6px;
+}
+.cvp-ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+.cvp-ui.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
 #dateText {
     font-size: 1.3rem;
     opacity: 0.85;
@@ -813,13 +928,6 @@ body {
     font-size: 11px;
     color: #80848e;
 }
-.discord-vid-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: #2b2d31;
-}
 .discord-vid-dl {
     width: 24px;
     height: 24px;
@@ -847,60 +955,12 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.discord-vid-mute {
-    width: 26px;
-    height: 26px;
-    border-radius: 5px;
-    border: none;
-    background: transparent;
-    color: #b5bac1;
-    cursor: pointer;
-    flex-shrink: 0;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, color 0.15s;
-}
-.discord-vid-mute:hover {
-    background: #383a40;
-    color: #fff;
-}
-.discord-vid-play {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: none;
-    background: #383a40;
-    color: #fff;
-    cursor: pointer;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
-}
-.discord-vid-play:hover {
-    background: #4e5058;
-}
-.discord-vid-seek {
-    flex: 1;
-    height: 4px;
-    cursor: pointer;
-    accent-color: green;
-}
 .discord-vid-size {
     font-size: 10px;
     color: #80848e;
     background: rgba(255,255,255,0.06);
     border-radius: 4px;
     padding: 1px 5px;
-    flex-shrink: 0;
-}
-.discord-vid-time {
-    font-size: 11px;
-    color: #b5bac1;
-    white-space: nowrap;
     flex-shrink: 0;
 }
 .discord-vid-topbar {
@@ -1815,6 +1875,9 @@ main {
     }
     #playerTitle { 
         max-width: 110px; 
+    }
+    #privateMenu fieldset {
+        flex-direction:column;
     }
     #profileCard {
         display:flex;

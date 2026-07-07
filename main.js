@@ -97,6 +97,7 @@ window.addEventListener('storage', (e) => {
         a = e.newValue || DEFAULT_BACKEND_URL;
     }
 });
+const i = "https://discord.gg/Fq2gUZvRr3";
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 let n = "www.infinitecampus.xyz";
 if (f === "infinitecampus.xyz") {

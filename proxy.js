@@ -480,7 +480,7 @@ function setRandomPhrase() {
         "Life Is A Highway",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         `${btMsg}`,
-        "https://discord.gg/4d9hJSVXca",
+        `${i}`,
         "Kim Jong Un Is Master Of Goon",
         "Rest In Peace My Granny She Got Hit By A Bazooka",
         "Yeah, I think about her every time I hit the hookah",
@@ -490,7 +490,8 @@ function setRandomPhrase() {
         "Who That Is, What That Was",
         "Oh That Granny, Oh She Done",
         "I Was In The Matrix, But The Matrix Was Too Slow So I Had To Come Here",
-        "What Is This Diddyblud Doin On The Calculator"
+        "What Is This Diddyblud Doin On The Calculator",
+        "EXCUSE ME SIR"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").textContent = random; 

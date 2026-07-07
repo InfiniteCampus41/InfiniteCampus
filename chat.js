@@ -1590,7 +1590,7 @@ function buildSafeText(raw) {
             const fsizeMatch = attrs.match(/\bdata-fsize="([^"]*)"/i);
             const fsize = fsizeMatch ? fsizeMatch[1] : "";
             const fsizeHtml = fsize ? `<span class="discord-vid-size">${fsize}</span>` : "";
-            return `<div class="discord-vid-wrapper"><div class="discord-vid-topbar"><span class="discord-vid-fname">${fname}</span>${fsizeHtml}<a class="discord-vid-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="ic ic-download"></i></a></div><video src="${safeSrc}" class="chat-vid discord-vid" onerror="this.parentElement.style.display='none'"></video><div class="discord-vid-controls"><button class="discord-vid-play"><i class="ic ic-play-fill"></i></button><input type="range" class="discord-vid-seek" value="0" min="0" max="100" step="0.1"><div class="discord-vid-time"><span class="discord-vid-cur">0:00</span> / <span class="discord-vid-dur">0:00</span></div><button class="discord-vid-mute" title="Mute"><i class="ic ic-volume-up-fill"></i></button></div></div>`;
+            return `<div class="discord-vid-wrapper"><div class="discord-vid-topbar"><span class="discord-vid-fname">${fname}</span>${fsizeHtml}<a class="discord-vid-dl" href="${safeSrc}" download="${fname}" title="Download"><i class="ic ic-download"></i></a></div><div class="cvp-player"><video src="${safeSrc}" class="discord-vid" playsinline onerror="this.closest('.discord-vid-wrapper').style.display='none'"></video><div class="cvp-ui"><button class="cvp-center-btn" aria-label="Play/Pause"><i class="ic ic-play-fill"></i></button><div class="cvp-controls"><div class="cvp-progress-track"><div class="cvp-progress-fill"><div class="cvp-progress-dot"></div></div></div><div class="cvp-btn-row"><button class="cvp-btn cvp-play-btn" aria-label="Play/Pause"><i class="ic ic-play-fill"></i></button><div class="cvp-time"><span class="discord-vid-cur">0:00</span> / <span class="discord-vid-dur">0:00</span></div><div class="cvp-spacer"></div><button class="cvp-btn cvp-mute-btn" title="Mute"><i class="ic ic-volume-up-fill"></i></button><button class="cvp-btn cvp-fs-btn" title="Fullscreen"><i class="ic ic-fullscreen"></i></button></div></div></div></div></div>`;
         }
     );
     safe = safe.replace(/&lt;\/video&gt;/gi, "");
@@ -1912,65 +1912,169 @@ function initAudioPlayers(container) {
     scope.querySelectorAll(".discord-vid-wrapper").forEach((wrapper) => {
         if (wrapper.dataset.vidInit) return;
         wrapper.dataset.vidInit = "1";
+        const player = wrapper.querySelector(".cvp-player");
         const video = wrapper.querySelector(".discord-vid");
-        const playBtn = wrapper.querySelector(".discord-vid-play");
-        const seek = wrapper.querySelector(".discord-vid-seek");
+        const ui = wrapper.querySelector(".cvp-ui");
+        const centerBtn = wrapper.querySelector(".cvp-center-btn");
+        const playBtn = wrapper.querySelector(".cvp-play-btn");
+        const muteBtn = wrapper.querySelector(".cvp-mute-btn");
+        const fsBtn = wrapper.querySelector(".cvp-fs-btn");
+        const track = wrapper.querySelector(".cvp-progress-track");
+        const fill = wrapper.querySelector(".cvp-progress-fill");
         const curEl = wrapper.querySelector(".discord-vid-cur");
         const durEl = wrapper.querySelector(".discord-vid-dur");
-        const muteBtn = wrapper.querySelector(".discord-vid-mute");
-        if (!video || !playBtn || !seek || !curEl || !durEl) return;
+        if (!player || !video || !ui || !track || !fill || !curEl || !durEl) return;
+        let hideTimer = null;
+        let dragging = false;
         function fmt(t) {
-            const m = Math.floor(t / 60);
+            if (isNaN(t) || t < 0) t = 0;
+            const h = Math.floor(t / 3600);
+            const m = Math.floor((t % 3600) / 60);
             const s = Math.floor(t % 60).toString().padStart(2, "0");
+            if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s}`;
             return `${m}:${s}`;
         }
+        function updatePlayIcon() {
+            const icon = video.paused
+                ? "<i class='ic ic-play-fill'></i>"
+                : "<i class='ic ic-pause-fill'></i>";
+            if (centerBtn) centerBtn.innerHTML = icon;
+            if (playBtn) playBtn.innerHTML = icon;
+        }
+        function updateMuteIcon() {
+            if (!muteBtn) return;
+            const muted = video.muted || video.volume === 0;
+            muteBtn.innerHTML = muted
+                ? "<i class='ic ic-volume-mute-fill'></i>"
+                : "<i class='ic ic-volume-up-fill'></i>";
+        }
+        function updateFsIcon() {
+            if (!fsBtn) return;
+            const isFs = document.fullscreenElement === player;
+            fsBtn.innerHTML = isFs
+                ? "<i class='ic ic-fullscreen-exit'></i>"
+                : "<i class='ic ic-fullscreen'></i>";
+        }
+        function updateProgress() {
+            const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+            fill.style.width = pct + "%";
+            curEl.textContent = fmt(video.currentTime);
+        }
+        function showUI(autoHide = true) {
+            ui.classList.add("visible");
+            clearTimeout(hideTimer);
+            if (autoHide) {
+                hideTimer = setTimeout(() => {
+                    if (!video.paused) ui.classList.remove("visible");
+                }, 2500);
+            }
+        }
+        function togglePlay() {
+            if (video.paused) video.play();
+            else video.pause();
+        }
+        function toggleFullscreen() {
+            if (document.fullscreenElement === player) {
+                document.exitFullscreen();
+            } else {
+                player.requestFullscreen().catch(() => {});
+            }
+        }
+        function seekTo(clientX) {
+            const rect = track.getBoundingClientRect();
+            let pct = (clientX - rect.left) / rect.width;
+            pct = Math.min(1, Math.max(0, pct));
+            if (video.duration) video.currentTime = pct * video.duration;
+            fill.style.width = (pct * 100) + "%";
+            curEl.textContent = fmt(pct * (video.duration || 0));
+        }
         video.addEventListener("loadedmetadata", () => {
-            seek.max = video.duration;
+            durEl.textContent = fmt(video.duration);
+        });
+        video.addEventListener("durationchange", () => {
             durEl.textContent = fmt(video.duration);
         });
         video.addEventListener("timeupdate", () => {
-            if (!seek._seeking) seek.value = video.currentTime;
-            curEl.textContent = fmt(video.currentTime);
+            if (!dragging) updateProgress();
         });
         video.addEventListener("ended", () => {
-            playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
-            seek.value = 0;
+            updatePlayIcon();
+            fill.style.width = "0%";
             curEl.textContent = "0:00";
-        });
-        video.addEventListener("pause", () => {
-            playBtn.innerHTML = "<i class='ic ic-play-fill'></i>";
+            showUI(false);
         });
         video.addEventListener("play", () => {
-            playBtn.innerHTML = "<i class='ic ic-pause-fill'></i>";
+            updatePlayIcon();
+            showUI();
         });
-        playBtn.addEventListener("click", () => {
-            if (video.paused) video.play();
-            else video.pause();
+        video.addEventListener("pause", () => {
+            updatePlayIcon();
+            showUI(false);
+        });
+        centerBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            togglePlay();
+            showUI();
+        });
+        playBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            togglePlay();
+            showUI();
         });
         if (muteBtn) {
-            muteBtn.addEventListener("click", () => {
+            muteBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
                 video.muted = !video.muted;
-                muteBtn.innerHTML = video.muted
-                    ? "<i class='ic ic-volume-mute-fill'></i>"
-                    : "<i class='ic ic-volume-up-fill'></i>";
+                updateMuteIcon();
+                showUI();
             });
         }
+        if (fsBtn) {
+            fsBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleFullscreen();
+                showUI();
+            });
+        }
+        player.addEventListener("fullscreenchange", updateFsIcon);
+        track.addEventListener("mousedown", (e) => {
+            dragging = true;
+            seekTo(e.clientX);
+        });
+        track.addEventListener("touchstart", (e) => {
+            dragging = true;
+            seekTo(e.touches[0].clientX);
+        }, { passive: true });
+        document.addEventListener("mousemove", (e) => {
+            if (dragging) seekTo(e.clientX);
+        });
+        document.addEventListener("touchmove", (e) => {
+            if (dragging) seekTo(e.touches[0].clientX);
+        }, { passive: true });
+        document.addEventListener("mouseup", () => { dragging = false; });
+        document.addEventListener("touchend", () => { dragging = false; });
         if (!isMobile) {
-            seek.addEventListener("mousedown", () => { seek._seeking = true; });
-            seek.addEventListener("mouseup", () => {
-                seek._seeking = false;
-                video.currentTime = seek.value;
+            player.addEventListener("mouseenter", () => showUI());
+            player.addEventListener("mousemove", () => showUI());
+            player.addEventListener("mouseleave", () => {
+                if (!video.paused) ui.classList.remove("visible");
             });
-            seek.addEventListener("input", () => {
-                curEl.textContent = fmt(Number(seek.value));
+            video.addEventListener("click", () => {
+                togglePlay();
+                showUI();
             });
-            wrapper.addEventListener("dblclick", (e) => {
-                if (e.target === video) {
-                    if (video.paused) video.play();
-                    else video.pause();
+        } else {
+            video.addEventListener("click", () => {
+                if (ui.classList.contains("visible")) {
+                    togglePlay();
+                    showUI();
+                } else {
+                    showUI();
                 }
             });
         }
+        updateMuteIcon();
+        updateFsIcon();
     });
 }
 function playNotificationSound() {

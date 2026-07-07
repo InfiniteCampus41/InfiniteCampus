@@ -225,7 +225,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </a>
                 <br>
                 <br>
-                <a class="discord" style="display:contents;" href="https://discord.gg/4d9hJSVXca" target="_blank">
+                <a class="discord" style="display:contents;" href="${i}" target="_blank">
                     Join The Discord
                 </a>
             </div>
