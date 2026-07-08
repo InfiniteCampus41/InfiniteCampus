@@ -540,6 +540,13 @@ window.addEventListener('DOMContentLoaded', () => {
     let bgPendingDataUrl = null;
     function updateBackground(url) {
         document.body.style.backgroundImage = url ? `url('${url}')` : '';
+        if (url) {
+            document.body.style.backgroundRepeat = "no-repeat";
+            document.body.style.backgroundSize = "cover";
+        } else {
+            document.body.style.backgroundRepeat = "repeat";
+            document.body.style.backgroundSize = "unset";
+        }
         bgLabel.style.display = url ? 'none' : 'block';
         applyBrightnessTheme(url || DEFAULT_BG);
     }
