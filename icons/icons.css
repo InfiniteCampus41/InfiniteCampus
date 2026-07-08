@@ -246,6 +246,10 @@ i {
     mask-image: url('/icons/pause-fill.svg');
     -webkit-mask-image: url('/icons/pause-fill.svg');
 }
+.ic-pencil-fill {
+    mask-image: url('/icons/pencil-fill.svg');
+    -webkit-mask-image: url('/icons/pencil-fill.svg');
+}
 .ic-pencil-square {
     mask-image: url('/icons/pencil-square.svg');
     -webkit-mask-image: url('/icons/pencil-square.svg');

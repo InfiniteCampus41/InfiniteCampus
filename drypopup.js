@@ -75,9 +75,17 @@ function applySettingsToUI() {
     const panicUrlInput = document.getElementById('panicUrlInput');
     const titleInput = document.getElementById('titleInput');
     const betterWeatherToggle = document.getElementById('betterWeatherToggle');
+    const clockBarToggle = document.getElementById('clockBarToggle');
+    const clockBar = document.getElementById('clockBar');
+    const faviconPreview = document.getElementById('faviconPreview');
+    const bgPreview = document.getElementById('bgPreview');
     const savedTitle = localStorage.getItem('pageTitle') || '';
     const savedFavicon = localStorage.getItem('customFavicon') || '';
+    const savedBackground = localStorage.getItem('customBackground') || '';
     const betterWeatherState = localStorage.getItem('betterWeather') === 'true';
+    const showClockBarState = localStorage.getItem('showClockBar') === null
+        ? true
+        : localStorage.getItem('showClockBar') === 'true';
     const panicKey = localStorage.getItem('panicKey') || '';
     const panicUrl = localStorage.getItem('panicUrl') || '';
     const popuplogin = document.getElementById('popuplogin');
@@ -98,6 +106,12 @@ function applySettingsToUI() {
     if (betterWeatherToggle) {
         betterWeatherToggle.checked = betterWeatherState;
     }
+    if (clockBarToggle) {
+        clockBarToggle.checked = showClockBarState;
+    }
+    if (clockBar) {
+        clockBar.style.display = showClockBarState ? '' : 'none';
+    }
     if (savedFavicon) {
         let link = document.querySelector("link[rel~='icon']");
         if (!link) {
@@ -106,24 +120,39 @@ function applySettingsToUI() {
             document.head.appendChild(link);
         }
         link.href = savedFavicon;
+        if (faviconPreview) {
+            faviconPreview.src = savedFavicon;
+            faviconPreview.classList.add('show');
+        }
+    }
+    if (savedBackground && bgPreview) {
+        bgPreview.style.backgroundImage = `url('${savedBackground}')`;
+        bgPreview.classList.add('show');
     }
 }
+const DEFAULT_BG = '/res/bg.png';
 window.addEventListener('DOMContentLoaded', () => {
     let savedTitle = '';
     let savedFavicon = '';
+    let savedBackground = '';
     let betterWeatherState = false;
+    let showClockBarState = true;
     let panicKey = localStorage.getItem('panicKey') || null;
     let panicUrl = localStorage.getItem('panicUrl') || '';
     try {
         savedTitle = localStorage.getItem('pageTitle') || '';
         savedFavicon = localStorage.getItem('customFavicon') || '';
+        savedBackground = localStorage.getItem('customBackground') || '';
         betterWeatherState = localStorage.getItem('betterWeather') === 'true';
+        showClockBarState = localStorage.getItem('showClockBar') === null
+            ? true
+            : localStorage.getItem('showClockBar') === 'true';
     } catch (e) {
         console.warn('LocalStorage Not Available, Using Defaults:', e);
     }
     const popupHTML = `
         <div class="popup2" id="popup">
-            <div class="bar themed">
+            <div class="bar themed" id="clockBar" style="${showClockBarState ? '' : 'display:none;'}">
                 <div id="clocks">
                     --:--:-- --
                 </div>
@@ -133,13 +162,12 @@ window.addEventListener('DOMContentLoaded', () => {
                     Settings
                 </h3>
                 <hr>
-                <br>
                 <a class="button" id="popuplogin" href="${isLoggedInLink}">
                     ${isLoggedInMsg}
                 </a>
-                <div class="section weather-section">
+                <div class="setting-row">
                     <label>
-                        Enable More Accurate Weather?
+                        More Accurate Weather
                     </label>
                     <label class="switch">
                         <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
@@ -147,66 +175,88 @@ window.addEventListener('DOMContentLoaded', () => {
                         </span>
                     </label>
                 </div>
-                <button class="button" id="toggleSnowBtn" class="button">
+                <div class="setting-row">
+                    <label>
+                        Show Clock Bar
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="clockBarToggle" ${showClockBarState ? 'checked' : ''}>
+                        <span class="slider">
+                        </span>
+                    </label>
+                </div>
+                <button class="button" id="toggleSnowBtn">
                     Toggle Snow
                 </button>
                 <hr>
                 <div class="section">
-                    <div style="display:flex;flex-direction:row;justify-self:center;gap:10px;flex-wrap:wrap;justify-content:center;">
-                        <div>
-                            <input class="button" type="text" id="titleInput" placeholder="Enter Page Title" value="${savedTitle}">
-                            <div style="display:flex;justify-content:space-between;">
-                                <button id="saveTitleBtn" class="button">
-                                    Save
-                                </button>
-                                <button id="resetTitleBtn" class="button">
-                                    Reset
-                                </button>
-                            </div>
+                    <div class="field-group">
+                        <input class="button" type="text" id="titleInput" placeholder="Page Title" value="${savedTitle}">
+                        <div class="row-actions">
+                            <button id="saveTitleBtn" class="button">
+                                Save
+                            </button>
+                            <button id="resetTitleBtn" class="button">
+                                Reset
+                            </button>
                         </div>
-                        <div>
-                            <label style="margin:5px 3px;" id="fLabel" for="faviconInput" class="button">
-                                Choose Favicon Image
-                            </label>
-                            <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
-                            <div style="display:flex;justify-content:space-between">
-                                <button class="button" id="setFaviconBtn">
-                                    Save
-                                </button>
-                                <button class="button" id="resetFaviconBtn">
-                                    Reset
-                                </button>
-                            </div>
+                    </div>
+                    <div class="field-group">
+                        <label id="fLabel" for="faviconInput" class="button">
+                            Favicon Image
+                        </label>
+                        <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
+                        <img id="faviconPreview" class="preview-img ${savedFavicon ? 'show' : ''}" src="${savedFavicon}">
+                        <div class="row-actions">
+                            <button class="button" id="setFaviconBtn">
+                                Save
+                            </button>
+                            <button class="button" id="resetFaviconBtn">
+                                Reset
+                            </button>
                         </div>
-                        <div>
-                            <div style="display:flex;flex-direction: column;">
-                                <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
-                                <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
-                            </div>
-                            <div style="display:flex;justify-content:space-between">
-                                <button id="savePanicBtn" class="button">
-                                    Save
-                                </button>
-                                <button id="clearPanicBtn" class="button">
-                                    Reset
-                                </button>
-                            </div>
+                    </div>
+                    <div class="field-group">
+                        <label id="bgLabel" for="bgInput" class="button">
+                            Background Image
+                        </label>
+                        <input type="file" class="button" id="bgInput" accept="image/*" hidden>
+                        <div id="bgPreview" class="preview-img-bg ${savedBackground ? 'show' : ''}" style="${savedBackground ? `background-image:url('${savedBackground}')` : ''}"></div>
+                        <div class="row-actions">
+                            <button class="button" id="setBgBtn">
+                                Save
+                            </button>
+                            <button class="button" id="resetBgBtn">
+                                Reset
+                            </button>
                         </div>
-                        <div>
-                            <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
-                            <div style="display:flex;justify-content:space-between">
-                                <button id="saveBackendBtn" class="button">
-                                    Save
-                                </button>
-                                <button id="resetBackendBtn" class="button">
-                                    Reset
-                                </button>
-                            </div>
+                    </div>
+                    <div class="field-group" style="display:flex; flex-direction:column; align-items:center;">
+                        <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
+                        <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
+                        <div class="row-actions">
+                            <button id="savePanicBtn" class="button">
+                                Save
+                            </button>
+                            <button id="clearPanicBtn" class="button">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
+                        <div class="row-actions">
+                            <button id="saveBackendBtn" class="button">
+                                Save
+                            </button>
+                            <button id="resetBackendBtn" class="button">
+                                Reset
+                            </button>
                         </div>
                     </div>
                 </div>
                 <hr>
-                <div class="section" style="max-width:410px;justify-content:center">
+                <div class="section" style="justify-content:center">
                     <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
                         Change Site Theme
                     </a>
@@ -223,7 +273,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 <a class="button" id="resetAllBtn">
                     Clear Data
                 </a>
-                <br>
                 <br>
                 <a class="discord" style="display:contents;" href="${i}" target="_blank">
                     Join The Discord
@@ -366,6 +415,17 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+    const clockBarToggle = document.getElementById('clockBarToggle');
+    const clockBar = document.getElementById('clockBar');
+    if (clockBarToggle) {
+        clockBarToggle.addEventListener('change', function () {
+            const isEnabled = this.checked;
+            localStorage.setItem('showClockBar', isEnabled ? 'true' : 'false');
+            if (clockBar) {
+                clockBar.style.display = isEnabled ? '' : 'none';
+            }
+        });
+    }
     const button = document.getElementById('trigger');
     const popup = document.getElementById('popup');
     if (button && popup) {
@@ -432,27 +492,132 @@ window.addEventListener('DOMContentLoaded', () => {
         link.href = url;
     }
     if (savedFavicon) updateFavicon(savedFavicon);
-    setFaviconBtn.addEventListener('click', () => {
+    const faviconPreview = document.getElementById('faviconPreview');
+    let faviconPendingDataUrl = null;
+    faviconInput.addEventListener('change', () => {
         const file = faviconInput.files[0];
-        if (!file) return showError('Select An Image First');
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
-            const dataUrl = e.target.result;
-            localStorage.setItem('customFavicon', dataUrl);
-            updateFavicon(dataUrl);
-            // if (currentUser) {
-            //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, dataUrl);
-            // }
+            faviconPendingDataUrl = e.target.result;
+            if (faviconPreview) {
+                faviconPreview.src = faviconPendingDataUrl;
+                faviconPreview.classList.add('show');
+            }
         };
         reader.readAsDataURL(file);
+    });
+    const fLabel = document.getElementById('fLabel');
+    setFaviconBtn.addEventListener('click', () => {
+        if (!faviconPendingDataUrl) return showError('Select An Image First');
+        localStorage.setItem('customFavicon', faviconPendingDataUrl);
+        updateFavicon(faviconPendingDataUrl);
+        // if (currentUser) {
+        //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, faviconPendingDataUrl);
+        // }
+        showSuccess('Favicon Saved');
+        fLabel.style.display='none';
     });
     resetFaviconBtn.addEventListener('click', () => {
         localStorage.removeItem('customFavicon');
         updateFavicon('/res/icon.png');
+        faviconPendingDataUrl = null;
+        faviconInput.value = '';
+        if (faviconPreview) {
+            faviconPreview.src = '';
+            faviconPreview.classList.remove('show');
+        }
         // if (currentUser) {
         //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, null);
         // }
+        fLabel.style.display='block';
     });
+    const bgLabel = document.getElementById('bgLabel');
+    const bgInput = document.getElementById('bgInput');
+    const setBgBtn = document.getElementById('setBgBtn');
+    const resetBgBtn = document.getElementById('resetBgBtn');
+    const bgPreview = document.getElementById('bgPreview');
+    let bgPendingDataUrl = null;
+    function updateBackground(url) {
+        document.body.style.backgroundImage = url ? `url('${url}')` : '';
+        bgLabel.style.display = url ? 'none' : 'block';
+        applyBrightnessTheme(url || DEFAULT_BG);
+    }
+    function applyBrightnessTheme(imgSrc) {
+        if (!imgSrc) {
+            document.body.classList.remove('light-bg');
+            return;
+        }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+            try {
+                const size = 32;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, size, size);
+                const data = ctx.getImageData(0, 0, size, size).data;
+                let total = 0;
+                let count = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i], g = data[i + 1], b = data[i + 2];
+                    total += (0.299 * r + 0.587 * g + 0.114 * b);
+                    count++;
+                }
+                const avgBrightness = total / count;
+                document.body.classList.toggle('light-bg', avgBrightness > 175);
+            } catch (e) {
+                console.warn('Could Not Analyze Background Brightness:', e);
+            }
+        };
+        img.onerror = function () {
+            console.warn('Could Not Load Background Image For Brightness Check');
+        };
+        img.src = imgSrc;
+    }
+    if (savedBackground) updateBackground(savedBackground);
+    applyBrightnessTheme(savedBackground || DEFAULT_BG);
+    if (bgInput) {
+        bgInput.addEventListener('change', () => {
+            const file = bgInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                bgPendingDataUrl = e.target.result;
+                if (bgPreview) {
+                    bgPreview.style.backgroundImage = `url('${bgPendingDataUrl}')`;
+                    bgPreview.style.height = '30%';
+                    bgPreview.classList.add('show');
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    if (setBgBtn) {
+        setBgBtn.addEventListener('click', () => {
+            if (!bgPendingDataUrl) return showError('Select An Image First');
+            localStorage.setItem('customBackground', bgPendingDataUrl);
+            updateBackground(bgPendingDataUrl);
+            showSuccess('Background Image Saved');
+            bgLabel.style.display='none';
+            bgPreview.style.height = '70%';
+        });
+    }
+    if (resetBgBtn) {
+        resetBgBtn.addEventListener('click', () => {
+            localStorage.removeItem('customBackground');
+            bgPendingDataUrl = null;
+            if (bgInput) bgInput.value = '';
+            if (bgPreview) {
+                bgPreview.style.backgroundImage = '';
+                bgPreview.classList.remove('show');
+            }
+            updateBackground('');
+            bgLabel.style.display='block';
+        });
+    }
     function updateTime() {
         const now = new Date();
         let hours = now.getHours();

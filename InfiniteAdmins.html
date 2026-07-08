@@ -29,8 +29,15 @@
         <meta content="/res/icon.png" property="og:image">
         <script src="./main.js">
         </script>
+        <script src="./drypopup.js" type="module">
+        </script>
         <script type="module" src="./login.js">
         </script>
+        <style>
+            .popup2, .settings-button {
+                display:none;
+            }
+        </style>
     </head>
     <body>
         <main>
@@ -596,7 +603,7 @@
                             </div>
                             <div class="preview-box" id="email-preview" style="display:none;">
                             </div>
-                            <div style="font-size:10px;color:white;margin-top:4px;">
+                            <div style="font-size:10px;margin-top:4px;">
                                 <span class="displayname-chip">
                                     {{DISPLAYNAME}}
                                 </span>

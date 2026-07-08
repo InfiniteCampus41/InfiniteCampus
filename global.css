@@ -154,7 +154,11 @@ a {
 #article-content {
     text-align:center;
     margin: 50px 0px;
-    padding:0px 40px;
+    padding:40px 0px;
+    background:#333;
+    width:90%;
+    border:1px solid black;
+    border-radius:40px;
 }
 .article h2 {
     color:white;
@@ -255,6 +259,49 @@ blockquote{
 }
 body {
     background-image:url('/res/bg.png');
+}
+body.light-bg #badges {
+    background:#333;
+    width:fit-content;
+    align-self:center;
+    padding:0px 10px 10px;
+    border-radius:10px;
+    border:1px solid white;
+}
+body.light-bg .btxt:not(.text .btxt):not(.note div .btxt):not(.donate .btxt):not(#extensionSection .btxt), body.light-bg #clock, body.light-bg #dateText, body.light-bg #digitalClock, body.light-bg #adminEmail .field-label, body.light-bg #adminEmail .composer-title, body.light-bg #adminEmail .field-hint {
+    color: black;
+}
+body.light-bg .cdot, body.light-bg .hand, body.light-bg .mark  {
+    background-color: #000
+}
+body.light-bg .discord {
+    color: blue;
+}
+body.light-bg .displayName {
+    background:#333;
+    padding:10px 10px 10px;
+    border-radius:10px;
+    border:1px solid white;
+}
+body.light-bg hr:not(.text hr):not(.donate hr) {
+    border-color: #000;
+}
+body.light-bg #stats div {
+    color: #000;
+    background:#333;
+    border-radius:10px;
+}
+body.light-bg .showpopup {
+    filter:invert(1);
+}
+body.light-bg textarea {
+    background-color: #333
+}
+body.light-bg .tptxt {
+    color: green;
+}
+body.light-bg .y {
+    color: orange;
 }
 #browsers {
     height:calc(100vh - calc(var(--headerHeight) + var(--footerHeight)));
@@ -2681,27 +2728,34 @@ main {
     flex-direction: column;
 }
 .popup2 .bar:first-child {
-    height: 45px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
+    flex-shrink: 0;
 }
 .popup2 .bar:last-child {
-    height: 40px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+}
+.popup2 hr {
+    margin-top:10px;
+    margin-bottom:10px;
 }
 .popup2 input, .popup2 button, .popup2 a.button {
-    margin: 5px 3px;
+    margin: 3px 2px;
     transition:0.3s all;
+    font-size: 0.82em;
 }
 .popup2 input, .popup2 .section button, .popup2 .section a:not(.discord), #fLabel {
     background:black;
     width:fit-content;
-    padding:5px;
+    padding:4px 6px;
     border-radius:4px;
     border:1px solid white;
     color:white;
@@ -2711,6 +2765,7 @@ main {
     display:flex;
     flex-wrap:wrap;
     justify-self:center;
+    gap:5px;
 }
 .popup2.shows {
     transform: translateX(0);
@@ -2723,6 +2778,31 @@ main {
 }
 pre code {
     font-size:.75em !important;
+}
+.preview-img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid white;
+    margin: 4px auto;
+    display: none;
+}
+.preview-img-bg {
+    width: 100%;
+    height: 70%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 5px;
+    border: 1px solid white;
+    margin: 4px auto;
+    display: none;
+}
+.preview-img-bg.show {
+    display: block;
+}
+.preview-img.show {
+    display: block;
 }
 #privateList li .dm-pfp {
     width: 32px;
@@ -3145,6 +3225,9 @@ select {
 }
 #sendBtn:hover {
     background: #666;
+}
+#serverLogs {
+    background:#333;
 }
 #settings {
     display:flex;
@@ -4447,6 +4530,7 @@ table {
     border-collapse: collapse; 
     margin-top: 20px; 
     color:white;
+    background:#333;
 }
 .tab-frame {
     transition: opacity 0.25s ease;
