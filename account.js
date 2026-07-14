@@ -412,7 +412,8 @@ if (unsub) {
             { key: "guardian", icon: "ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
             { key: "lanschool", icon: "ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
             { key: "linewize", icon: "ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
-            { key: "blocksi", icon: "ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
+            { key: "blocksi", icon: "ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"},
+            { key: "gameUploader", icon: "ic ic-controller", title: "This User Has Uploaded A Game To Infinite Campus", color: "orange" }
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -449,9 +450,9 @@ if (unsub) {
         return badgeContainer;
     }
     if (!uid) {
-      	showError("Invalid URL");
+        showError("Invalid URL");
     } else {
-      	loadUserProfile(uid);
+        loadUserProfile(uid);
     }
     async function loadUserProfile(uid) {
         await authReadyPromise;
@@ -521,6 +522,11 @@ if (unsub) {
                 emailEl.style.marginTop = "5px";
                 emailEl.textContent = `Email: ${email}`;
                 uidEl.appendChild(emailEl);
+            }
+            const gamesSectionEl = document.getElementById("uploadedGamesSection");
+            if (gamesSectionEl) {
+                const gamesToken = (viewerIsOwner && currentUser) ? await currentUser.getIdToken() : null;
+                renderUploadedGamesSection(uid, gamesSectionEl, gamesToken);
             }
             if (messageBtn) {
                 messageBtn.style.display = "inline-block";
@@ -1190,6 +1196,10 @@ if (unsub) {
             currentUser = user;
             userIdDisplay.textContent = user.uid;
             userEmailDisplay.textContent = user.email;
+            const ownGamesSectionEl = document.getElementById("uploadedGamesSectionOwn");
+            if (ownGamesSectionEl) {
+                user.getIdToken().then(token => renderUploadedGamesSection(user.uid, ownGamesSectionEl, token));
+            }
             let verifiedDisplay = document.getElementById("verifiedDisplay");
             if (!verifiedDisplay) {
                 verifiedDisplay = document.createElement("div");
@@ -1290,6 +1300,10 @@ if (unsub) {
                     addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "ic ic-film");
                     hasAnyRole = true
                 }
+                if (profile.gameUploader) {
+                    addBadge("This User Has Uploaded A Game To Infinite Campus", "orange", "ic ic-controller");
+                    hasAnyRole = true;
+                }
                 if (profile.mileStone) {
                     addBadge("This User Is The 100th Signed Up User", "yellow", "ic ic-award");
                     hasAnyRole = true;
@@ -1385,4 +1399,77 @@ if (unsub) {
         displayNameInput.style.color = nameColor;
         displayNameInput.style.fontSize = '2em';
     });
+}
+function escGamesHtml(str) {
+    return String(str ?? "").replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+async function fetchUserGames(uid, token) {
+    const headers = {};
+    if (token) headers.Authorization = "Bearer " + token;
+    const res = await fetch(`${a}/api/games/by-user/${uid}`, { headers });
+    const data = await res.json();
+    return data.games || [];
+}
+function renderGamesList(container, games, defaultVisible = 10) {
+    container.innerHTML = "";
+    if (!games.length) return;
+    const heading = document.createElement("h4");
+    heading.className = "tptxt";
+    heading.style.fontSize = "1em";
+    heading.style.marginBottom = "10px";
+    heading.textContent = "Uploaded Games";
+    container.appendChild(heading);
+    const list = document.createElement("div");
+    list.style.display = "grid";
+    list.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))";
+    list.style.gap = "12px";
+    container.appendChild(list);
+    function renderItems(items) {
+        list.innerHTML = "";
+        for (const g of items) {
+            const card = document.createElement("div");
+            card.style.position = "relative";
+            card.style.cursor = g.pending ? "default" : "pointer";
+            const badgeHtml = g.pending
+                ? `<span style="position:absolute;top:6px;right:-4px;background:#f08c00;color:white;font-size:0.65em;padding:2px 8px;border-radius:4px 0 0 4px;white-space:nowrap;">PENDING</span>`
+                : `<span style="position:absolute;top:6px;right:-4px;background:#444;color:white;font-size:0.65em;padding:2px 8px;border-radius:4px 0 0 4px;white-space:nowrap;">${escGamesHtml((g.type || '').toUpperCase())}</span>`;
+            const thumbSrc = (!g.pending && g.hasThumbnail) ? `${a}/gamefiles/${encodeURIComponent(g.id)}/thumbnail` : null;
+            const thumbInnerHtml = thumbSrc
+                ? `<img src="${escGamesHtml(thumbSrc)}" alt="${escGamesHtml(g.name)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();">`
+                : `<i class="ic ic-controller"></i>`;
+            card.innerHTML = `
+                <div style="aspect-ratio:4/3;background:#1a1a1a;border:1px solid #333;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;font-size:1.6em;overflow:hidden;">
+                    ${thumbInnerHtml}
+                    ${badgeHtml}
+                </div>
+                <div style="text-align:center;font-size:0.8em;color:#ccc;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escGamesHtml(g.name)}</div>
+            `;
+            if (!g.pending) {
+                card.addEventListener("click", () => { window.location.href = `InfiniteGamers.html?play=${encodeURIComponent(g.id)}`; });
+            }
+            list.appendChild(card);
+        }
+    }
+    renderItems(games.slice(0, defaultVisible));
+    if (games.length > defaultVisible) {
+        const toggleBtn = document.createElement("button");
+        toggleBtn.className = "button";
+        toggleBtn.style.marginTop = "10px";
+        toggleBtn.textContent = `Show All (${games.length})`;
+        let expanded = false;
+        toggleBtn.addEventListener("click", () => {
+            expanded = !expanded;
+            renderItems(expanded ? games : games.slice(0, defaultVisible));
+            toggleBtn.textContent = expanded ? "Show Less" : `Show All (${games.length})`;
+        });
+        container.appendChild(toggleBtn);
+    }
+}
+async function renderUploadedGamesSection(uid, container, token) {
+    try {
+        const games = await fetchUserGames(uid, token);
+        renderGamesList(container, games);
+    } catch (e) {
+        console.error("Failed To Load Uploaded Games:", e);
+    }
 }

@@ -119,6 +119,107 @@
                 </div>
             </center>
         </main>
+        <section id="gameLibrary">
+            <center>
+                <h1 class="tptxt">
+                    Games
+                </h1>
+                <hr>
+                <br>
+                <a class="button apbtn" href="/InfiniteGameUploads.html">
+                    Upload A Game
+                </a>
+                <br>
+                <br>
+                <div id="glSearchWrap">
+                    <input type="text" id="glSearch" placeholder="Search Games">
+                    <i class="ic ic-search">
+                    </i>
+                </div>
+                <div id="glFilters">
+                    <button class="glFilterBtn active" data-type="all">
+                        All
+                    </button>
+                    <button class="glFilterBtn" data-type="html5">
+                        HTML5
+                    </button>
+                    <button class="glFilterBtn" data-type="flash">
+                        Flash
+                    </button>
+                    <button class="glFilterBtn" data-type="url">
+                        Web
+                    </button>
+                </div>
+                <div id="glSortWrap">
+                    <span>
+                        Sort by:
+                    </span>
+                    <select id="glSort">
+                        <option value="popularity">
+                            Popularity
+                        </option>
+                        <option value="name">
+                            Name
+                        </option>
+                        <option value="date">
+                            Date Added
+                        </option>
+                    </select>
+                </div>
+                <div id="glGrid">
+                </div>
+                <div id="glPagination">
+                    <button id="glPrevPage" class="button" style="display:none;">
+                        Previous Page
+                    </button>
+                    <button id="glNextPage" class="button" style="display:none;">
+                        Next Page
+                    </button>
+                </div>
+                <br>
+                <br>
+            </center>
+        </section>
+        <div id="glPlayerOverlay" style="display:none;">
+            <iframe id="glPlayerFrame" sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"></iframe>
+            <div id="glPlayerBar">
+                <button id="glCloseBtn" title="Close">
+                    <i class="ic ic-x">
+                    </i>
+                </button>
+                <span style="flex:1">
+                </span>
+                <button id="glScrollLockBtn" title="Toggle Scroll Lock">
+                    <i class="ic ic-lock">
+                    </i>
+                </button>
+                <button id="glNewTabBtn" title="Open In New Tab">
+                    <i class="ic ic-box-arrow-up-right">
+                    </i>
+                </button>
+                <button id="glFullscreenBtn" title="Fullscreen">
+                    <i class="ic ic-fullscreen">
+                    </i>
+                </button>
+            </div>
+            <div id="glPlayerMeta">
+                <span id="glMetaType">
+                </span> 
+                &middot;
+                <span id="glMetaId">
+                </span> 
+                &middot;
+                Added 
+                <span id="glMetaDate">
+                </span> 
+                &middot;
+                By 
+                <span id="glMetaUploader">
+                </span>
+                <p id="glMetaDesc">
+                </p>
+            </div>
+        </div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
         <script src="./frame.js">

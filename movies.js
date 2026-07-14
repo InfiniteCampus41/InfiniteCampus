@@ -799,7 +799,7 @@ async function openWatchPanel(name, subtitleUrl = null) {
     });
     if (subtitleUrl) {
         try {
-            const vttRes = await fetch(BACKEND + subtitleUrl);
+            const vttRes = await fetch(BACKEND + "/subtitles/x9a7b2/" + subtitleUrl);
             const vttText = await vttRes.text();
             const blob = new Blob([vttText], { type: "text/vtt" });
             const blobUrl = URL.createObjectURL(blob);

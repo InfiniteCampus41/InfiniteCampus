@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7SV03ZXJ9R">
+        </script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-7SV03ZXJ9R');
+        </script>
+        <title>
+            Infinite Campus
+        </title>
+        <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
+        <link rel="stylesheet" href="./global.css">
+        <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
+        <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
+        <meta property="og:title" content="Infinite Campus">
+        <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
+        <meta property="og:url" content="https://www.infinitecampus.xyz">
+        <meta name="theme-color" content="#8cbe37">
+        <link rel="manifest" href="./manifest.json">
+        <meta content="/res/icon.png" property="og:image">
+        <script src="./main.js">
+        </script>
+        <script src="./drypopup.js" type="module">
+        </script>
+        <style>
+            .popup2, .settings-button {
+                display:none;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <center>
+                <h1 class="tptxt">
+                    Upload A Game
+                </h1>
+                <hr>
+            </center>
+            <div id="loginGate" style="display:none;">
+                <p class="btxt">
+                    You Must Be Logged In To Upload A Game.
+                </p>
+                <a class="button apbtn" href="/InfiniteAccounts.html">
+                    Log In
+                </a>
+            </div>
+            <div id="gameUploadCard" style="display:none;">
+                <label for="gameName">
+                    Game Name 
+                    <span class="charcount">
+                        <span id="nameCount">
+                            0
+                        </span>
+                        /100
+                    </span>
+                </label>
+                <input type="text" id="gameName" class="form-control" maxlength="100" placeholder="e.g. Slope, or Update: Slope/slope_game_id">
+                <label for="gameType">
+                    Game Type
+                </label>
+                <select id="gameType" class="form-select">
+                    <option value="html5">
+                        HTML5 (.zip)
+                    </option>
+                    <option value="flash">
+                        Flash (.swf)
+                    </option>
+                    <option value="url">
+                        Web URL
+                    </option>
+                </select>
+                <div id="fileRow" class="upload-row">
+                    <label for="gameFile">
+                        Game File
+                    </label>
+                    <div id="fileRowInner">
+                        <input type="file" id="gameFile" class="form-control" accept=".zip">
+                        <span id="fileNameLabel">
+                            No File Chosen
+                        </span>
+                    </div>
+                </div>
+                <div id="urlRow" class="upload-row" style="display:none;">
+                    <label for="gameUrl">
+                        Game URL
+                    </label>
+                    <input type="text" id="gameUrl" class="form-control" placeholder="https://example.com/game/index.html">
+                </div>
+                <div id="thumbRow" class="upload-row">
+                    <label for="gameThumb">
+                        Thumbnail Image 
+                        <span id="thumbOptionalTag" style="color:#777;">
+                            (Optional)
+                        </span>
+                    </label>
+                    <div id="thumbRowInner">
+                        <input type="file" id="gameThumb" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp">
+                        <span id="thumbNameLabel">
+                            No File Chosen
+                        </span>
+                    </div>
+                    <img id="thumbPreview" style="display:none; max-width:160px; margin-top:8px; border-radius:6px; border:1px solid #333;">
+                </div>
+                <label for="gameDesc">
+                    Description (Optional) 
+                    <span class="charcount">
+                        <span id="descCount">
+                            0
+                        </span>
+                        /2000
+                    </span>
+                </label>
+                <textarea id="gameDesc" class="form-control" maxlength="2000" rows="4" placeholder="Tell players what this game is about"></textarea>
+                <button id="submitGameBtn" class="button" style="margin-top:18px;">
+                    Upload Game
+                </button>
+                <div id="uploadStatus">
+                </div>
+                <p class="btxt" style="margin-top:18px; font-size:0.8em; color:#888;">
+                    Max File Size: 50MB. Max Thumbnail Size: 5MB. One File Per Upload. Games Are Reviewed By An Admin Before They Go Live.
+                    To Update An Existing Game, Start The Name With "Update: GameName/GameID".
+                </p>
+            </div>
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+        </script>
+        <script type="module" src="./gameupload.js">
+        </script>
+        <script src="./frame.js">
+        </script>
+    </body>
+</html>

@@ -113,6 +113,7 @@ let isSecure = false;
 let isSus = false;
 let isTester = false;
 let isVerified = false;
+let gameUploader = false;
 let lastMessageTimestamp = 0;
 let loadingOlderMessages = false;
 let mentionActive = false;
@@ -630,7 +631,8 @@ async function getUserMeta(uid) {
         lanschool: !!p.lanschool,
         linewize: !!p.linewize,
         blocksi: !!p.blocksi,
-        online: !!p.online
+        online: !!p.online,
+        gameUploader: !!p.gameUploader,
     };
     userMetaCache[uid] = data;
     return data;
@@ -1319,6 +1321,7 @@ async function renderMessageInstant(id, msg) {
             if (meta.donor) mkP("ic ic-balloon-heart","#00E5FF","Donated");
             if (meta.partner) mkE("ic ic-handshake","cornflowerblue","Partner","Partner");
             if (meta.uploader) mkE("ic ic-film","grey","Uploader","Uploaded A Movie");
+            if (meta.gameUploader) mkE("ic ic-controller","orange","Game Uploader","Uploaded A Game");
             if (meta.milestone) mkE("ic ic-award","yellow","Award","Award Badge");
             if (meta.guesser) mkE("ic ic-stopwatch","#ff0000","Guesser","Guesser");
             if (meta.discord && meta.discord.trim()) mkE("ic ic-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
@@ -2444,6 +2447,7 @@ async function hasPermission(channelData, type) {
         mileStone: meta.milestone,
         isGuesser: meta.guesser,
         isUploader: meta.uploader,
+        gameUploader: meta.gameUploader,
         isLink: meta.linker,
         secure: meta.secure,
         guardian: meta.guardian,
@@ -3066,6 +3070,7 @@ function renderRoleCheckboxes(type) {
         "mileStone",
         "isGuesser",
         "isUploader",
+        "gameUploader",
         "isLink",
         "secure",
         "guardian",
@@ -3089,7 +3094,8 @@ function renderRoleCheckboxes(type) {
         isSus: "Suspicious User",
         mileStone: "Award Badge",
         isGuesser: "Guesser",
-        isUploader: "Uploader",
+        isUploader: "Movie Uploader",
+        gameUploader: "Game Uploader",
         isLink: "Link Sharer",
         secure: "Securely",
         guardian: "GoGuardian",

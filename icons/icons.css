@@ -62,6 +62,10 @@ i {
     mask-image: url('/icons/blocksi.png');
     -webkit-mask-image: url('/icons/blocksi.png');
 }
+.ic-box-arrow-up-right {
+    mask-image: url('/icons/box-arrow-up-right.svg');
+    -webkit-mask-image: url('/icons/box-arrow-up-right.svg');
+}
 .ic-broadcast {
     mask-image: url('/icons/broadcast.svg');
     -webkit-mask-image: url('/icons/broadcast.svg');
@@ -105,6 +109,10 @@ i {
 .ic-compass {
     mask-image: url('/icons/compass.svg');
     -webkit-mask-image: url('/icons/compass.svg');
+}
+.ic-controller {
+    mask-image: url('/icons/controller.svg');
+    -webkit-mask-image: url('/icons/controller.svg');
 }
 .ic-copy {
     mask-image: url('/icons/copy.svg');
@@ -225,6 +233,10 @@ i {
 .ic-list {
     mask-image: url('/icons/list.svg');
     -webkit-mask-image: url('/icons/list.svg');
+}
+.ic-lock {
+    mask-image: url('/icons/lock.svg');
+    -webkit-mask-image: url('/icons/lock.svg');
 }
 .ic-music {
     mask-image: url('/icons/music.svg');

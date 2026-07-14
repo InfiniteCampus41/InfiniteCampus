@@ -260,6 +260,9 @@ blockquote{
 body {
     background-image:url('/res/bg.png');
 }
+body.gl-scroll-locked {
+    overflow: hidden;
+}
 body.light-bg #badges {
     background:#333;
     width:fit-content;
@@ -1222,6 +1225,18 @@ body.light-bg .y {
     transition: width 0.4s linear;
     white-space: nowrap;
 }
+#fileRowInner span, #thumbRowInner span {
+    color: #aaa;
+    font-size: 0.85em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#fileRowInner, #thumbRowInner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 #fLabel {
     transition:0.3s all;
 }
@@ -1242,6 +1257,190 @@ footer {
 #gamesContainer .button {
     padding:10px;
     margin:10px;
+}
+#gameLibrary {
+    color: white;
+    padding: 20px 0 40px;
+}
+#gameUploadCard {
+    max-width: 560px;
+    margin: 40px auto;
+    text-align: left;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 24px;
+}
+#gameUploadCard .charcount {
+    float: right;
+    color: #777;
+    font-size: 0.8em;
+}
+#gameUploadCard label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    color: #ccc;
+    font-size: 0.9em;
+}
+.glCard {
+    position: relative;
+    cursor: pointer;
+    text-align: left;
+}
+.glCardBadge {
+    position: absolute;
+    top: 8px;
+    right: -6px;
+    padding: 3px 10px;
+    border-radius: 4px 0 0 4px;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    width: max-content;
+}
+.glCardBadge.flash { 
+    background: #2f9e44; 
+}
+.glCardBadge.html5 { 
+    background: #e8590c; 
+}
+.glCardBadge.pending { 
+    background: #f08c00; 
+}
+.glCardBadge.url { 
+    background: #1971c2; 
+}
+.glCardThumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 2em;
+}
+.glCardThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.glCardTitle {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #eee;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.glFilterBtn {
+    background: none;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.glFilterBtn.active {
+    border-color: #8cbe37;
+    color: #8cbe37;
+}
+#glFilters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+#glGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 24px 18px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+#glPagination {
+    margin-top: 30px;
+}
+#glPlayerBar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: #111;
+    border-top: 1px solid #333;
+}
+#glPlayerBar button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 4px 10px;
+}
+#glPlayerFrame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #000;
+}
+#glPlayerMeta {
+    padding: 10px 16px;
+    background: #0a0a0a;
+    color: #aaa;
+    font-size: 0.85em;
+}
+#glPlayerMeta p {
+    margin-top: 6px;
+    color: #ccc;
+}
+#glPlayerOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+}
+#glSearch {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #111;
+    color: white;
+}
+#glSearchWrap {
+    position: relative;
+    width: min(500px, 90vw);
+    margin: 0 auto 20px;
+}
+#glSearchWrap .ic-search {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+#glSortWrap {
+    margin-bottom: 20px;
+    color: #aaa;
+    font-size: 0.9em;
+}
+#glSortWrap select {
+    background: #111;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-left: 6px;
 }
 #groupInfoBtn {
     background: none !important;
@@ -1602,6 +1801,11 @@ input[type="range"]::-webkit-slider-thumb {
     background: #18181e; 
     border-color: #108028; 
 }
+#loginGate {
+    max-width: 480px;
+    margin: 60px auto;
+    text-align: center;
+}
 #logo {
     height: calc(var(--headerHeight) - 1px);
     transition:0.3s all;
@@ -1730,7 +1934,7 @@ main {
         height: 44px;
     }
     .sp-player {
-        height: auto;
+        height: auto !important;
         min-height: 72px;
         padding: 8px 10px;
         flex-direction: row;
@@ -4695,6 +4899,14 @@ th, td {
     margin-bottom:7px;
     border:1px solid white;
     border-radius:15px;
+}
+.upload-row {
+    margin-top: 16px;
+}
+#uploadStatus {
+    margin-top: 14px;
+    min-height: 20px;
+    font-size: 0.9em;
 }
 #url-table {
     width: 100%;

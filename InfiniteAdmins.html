@@ -63,6 +63,11 @@
                     </a>
                     <br>
                     <br>
+                    <a class="button apbtn" href="InfiniteAdmins.html?games=true">
+                        Admin Game Panel
+                    </a>
+                    <br>
+                    <br>
                     <a class="button apbtn" href="InfiniteAdmins.html?chat=true">
                         Admin Chat Panel
                     </a>
@@ -239,6 +244,75 @@
                             </button>
                         </div>
                         <div id="jsonEditorError" style="color:red; margin-top:5px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="adminGames" style="display:none">
+                <center>
+                    <h1 class="tptxt">
+                        Manage Games
+                    </h1>
+                    <hr>
+                    <br>
+                    <button id="gamesTabPending" class="button" onclick="showGamesTab('pending')">
+                        Pending Review
+                    </button>
+                    <button id="gamesTabManage" class="button" onclick="showGamesTab('manage')">
+                        Manage Games
+                    </button>
+                    <br>
+                    <br>
+                    <div id="gamesBefore">
+                        <button class="button" onclick="loadPendingGames()">
+                            Reload List
+                        </button>
+                        <br>
+                        <div id="pendingGamesList" style="color:white; max-width:50vw;">
+                        </div>
+                    </div>
+                    <div id="manageGamesSection" style="display:none;">
+                        <button class="button" onclick="loadManageGames()">
+                            Reload List
+                        </button>
+                        <br>
+                        <div id="manageGamesList" style="color:white; max-width:60vw;">
+                        </div>
+                    </div>
+                    <div id="gamePlayPanel" style="display:none;">
+                        <button id="gamePlayBackBtn" class="button" onclick="closeGamePlay()">
+                            Back
+                        </button>
+                        <br>
+                        <br>
+                        <iframe id="gamePlayFrame" style="width:80vw; height:70vh; border:1px solid #333; background:#000;" sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"></iframe>
+                    </div>
+                    <br>
+                    <br>
+                </center>
+                <div id="gameJsonEditorModal" class="json-editor-modal" style="display:none;">
+                    <div class="json-editor-box">
+                        <div class="json-editor-header">
+                            <span id="gameJsonEditorTitle">
+                                Edit Game JSON
+                            </span>
+                            <button id="closeGameJsonEditor" class="button" onclick="closeGameJsonEditor()">
+                                ✕
+                            </button>
+                        </div>
+                        <textarea id="gameJsonEditorTextarea"></textarea>
+                        <div class="json-editor-actions">
+                            <button id="formatGameJsonBtn" class="button" onclick="formatGameJson()">
+                                Format
+                            </button>
+                            <button id="saveGameJsonBtn" class="button" onclick="saveGameJson()">
+                                Save
+                            </button>
+                            <button id="cancelGameJsonBtn" class="button" onclick="closeGameJsonEditor()">
+                                Cancel
+                            </button>
+                        </div>
+                        <div id="gameJsonEditorError" style="color:red; margin-top:5px;">
                         </div>
                     </div>
                 </div>

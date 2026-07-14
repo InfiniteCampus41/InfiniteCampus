@@ -1,11 +1,15 @@
 TODO
+    add ability to upload subtitles for movie from site in admin panel
+    add ability to delete movies from site in admin movie panel
+    fix private chat media uploads
+    fix group chat media uploads
+    make game thumbnails smaller
+    
     Header Stuff:
         Replace Contact Me Button With My Account Button
 
     Settings:
         Have One Settings Page Like Nettleweb With Customization Options
-            Customizable Background Image
-                Changable Body Text Based On Darkness Of Image
 
     Website Chat:
         Need To Do:
@@ -22,7 +26,7 @@ TODO
     The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
         Here Are The Steps To Do So:
             Make Games List Come From Server Instead Of Locally
-            Allow Editing And Deleting Games From Site
+        [x]    Allow Editing And Deleting Games From Site
             Allow Deleting Movies From Site
             Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
             Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
