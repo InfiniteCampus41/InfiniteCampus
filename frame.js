@@ -1,5 +1,5 @@
-let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
-let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
+let rightFtMsg = `Pissing off your teachers since 2024`;
+let leftFtMsg = `Made with all the love we are legally allowed to give!`;
 const frameToday = new Date();
 const month = frameToday.getMonth() + 1;
 const day = frameToday.getDate();
@@ -14,30 +14,30 @@ const isThirdSundayOfJune =
     day >= 15 &&
     day <= 21;
 if (isSecondSundayOfMay) {
-    leftFtMsg = `Made With Motherly Love`;
+    leftFtMsg = `Made with motherly love`;
 } else if (isThirdSundayOfJune) {
-    leftFtMsg = `Made With Fatherly Love`;
+    leftFtMsg = `Made with fatherly love`;
 } else if (month === 1 && day === 1) {
-    rightFtMsg = `New Year, Same Chaos Since 2024`;
-    leftFtMsg = `Starting The Year Questionably!`;
+    rightFtMsg = `New year, same chaos since 2024`;
+    leftFtMsg = `Starting the year questionably!`;
 } else if (month === 2 && day === 14) {
-    rightFtMsg = `Spreading Love (And Mild Annoyance) Since 2024`;
-    leftFtMsg = `Made With Slightly Extra Love Today`;
+    rightFtMsg = `Spreading love (And mild annoyance) since 2024`;
+    leftFtMsg = `Made with slightly extra love today`;
 } else if (month === 4 && day === 1) {
-    rightFtMsg = `April Fools!`;
-    leftFtMsg = `This Website Will Shut Down For Good In A Month`;
+    rightFtMsg = `April fools!`;
+    leftFtMsg = `This website will shut down for good in a month`;
 } else if (month === 7 && day === 4) {
-    rightFtMsg = `Independently Annoying Since 2024`;
-    leftFtMsg = `Red, White, And Playing Games At School`;
+    rightFtMsg = `Independently annoying since 2024`;
+    leftFtMsg = `Red, white, and playing games at school`;
 } else if (month === 10 && day === 31) {
-    rightFtMsg = `Scaring Teachers Since 2024`;
-    leftFtMsg = `Powered By Sugar And Bad Decisions`;
+    rightFtMsg = `Scaring teachers since 2024`;
+    leftFtMsg = `Powered by sugar and bad decisions`;
 } else if (month === 11 && day >= 22 && day <= 28 && frameToday.getDay() === 4) {
-    rightFtMsg = `Thankful For Chaos Since 2024`;
-    leftFtMsg = `Stuffed With Code And Regret`;
+    rightFtMsg = `Thankful for chaos since 2024`;
+    leftFtMsg = `Stuffed with code and regret`;
 } else if (month === 12 && day === 25) {
-    rightFtMsg = `Sleighing Teachers Since 2024`;
-    leftFtMsg = `Made With Festive Mischief`;
+    rightFtMsg = `Sleighing teachers since 2024`;
+    leftFtMsg = `Made with festive mischief`;
 }
 const headerHTML = `
     <header id="site-header" class="themed">
@@ -69,10 +69,10 @@ const headerHTML = `
                     </button>
                     <div class="dropdown themed" id="abtDropdown">
                         <a href='InfiniteAbouts.html'>
-                            About Us
+                            About us
                         </a>
                         <a href='InfinitePolicies.html'>
-                            Privacy Policy
+                            Privacy policy
                         </a>
                         <a href='InfiniteTerms.html'>
                             Terms
@@ -94,10 +94,10 @@ const headerHTML = `
                             FAQ
                         </a>
                         <a href='InfiniteEmbeds.html?choice=5'>
-                            Report A Bug
+                            Report a bug
                         </a>
                         <a href='InfiniteApps.html?mirror=true'>
-                            Mirror Links
+                            Mirror links
                         </a>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ const headerHTML = `
                             Updates
                         </a>
                         <a href="InfiniteUpdaters.html?future=true">
-                            Future Updates
+                            Future updates
                         </a>
                     </div>
                 </div>
@@ -129,15 +129,15 @@ const headerHTML = `
                     </button>
                     <div class="dropdown themed" id="downloadDropdown">
                         <a href='InfiniteApps.html?website=true'>
-                            Download This Website
+                            Download this website
                         </a>
                         <a href='InfiniteApps.html?games=true'>
-                            Download Games
+                            Download games
                         </a>
                     </div>
                 </div>
                 <a class="contactme" href="InfiniteContacts.html">
-                    Contact Me
+                    Contact me
                 </a>
             </div>
         </div>
@@ -165,10 +165,10 @@ const headerHTML = `
             FAQ
         </a>
         <a href="InfiniteEmbeds.html?choice=5" class="darkbuttons">
-            Report A Bug
+            Report a bug
         </a>
         <a href="InfiniteApps.html?mirror=true" class="darkbuttons">
-            Mirror Links
+            Mirror links
         </a>
         <a href="InfiniteGamers.html" class="darkbuttons">
             Games
@@ -183,19 +183,19 @@ const headerHTML = `
             Updates
         </a>
         <a href="InfiniteUpdaters.html?future=true" class="darkbuttons">
-            Future Updates
+            Future updates
         </a>
         <a href="InfiniteApps.html?website=true" class="darkbuttons">
-            Download This Website
+            Download this website
         </a>
         <a href="InfiniteApps.html?games=true" class="darkbuttons">
-            Download Games
+            Download games
         </a>
         <a href="InfiniteContacts.html" class="darkbuttons">
-            Contact Me
+            Contact me
         </a>
         <a href="InfinitePolicies.html" class="darkbuttons">
-            Privacy Policy
+            Privacy policy
         </a>
         <a href="InfiniteTerms.html" class="darkbuttons">
             Terms
@@ -313,15 +313,15 @@ document.addEventListener("DOMContentLoaded", () => {
     waitForToggleSnowBtn((toggleBtn) => {
         const monthIndex = new Date().getMonth();
         if (monthIndex === 11 || monthIndex === 0) {
-            toggleBtn.textContent = "Toggle Snow";
+            toggleBtn.textContent = "Toggle snow";
         } else if (monthIndex === 1) {
-            toggleBtn.textContent = 'Toggle Hearts';
+            toggleBtn.textContent = 'Toggle hearts';
         } else if (monthIndex >= 2 && monthIndex <= 8) {
             toggleBtn.style.display = 'none';
         } else if (monthIndex === 9) {
-            toggleBtn.textContent = 'Toggle Pumpkins';
+            toggleBtn.textContent = 'Toggle pumpkins';
         } else if (monthIndex === 10) {
-            toggleBtn.textContent = 'Toggle Leaves';
+            toggleBtn.textContent = 'Toggle leaves';
         }
         toggleBtn.addEventListener("click", () => {
             snowEnabled = !snowEnabled;
@@ -516,7 +516,7 @@ function appendToMain() {
         <center>
             <div id="donation-auto-msg">
                 <p class="btxt">
-                    Infinite Campus Is A Free Service, But It Isn't Free To Run. If You Would Like To Support Us, Consider Donating
+                    Infinite Campus is a free service, but it isn't free to run. If you would like to support us, consider donating
                 </p>
                 <a class="button apbtn" href="/InfiniteDonaters.html">
                     Donate
@@ -524,9 +524,9 @@ function appendToMain() {
             </div>
             <br>
             <p class="btxt">
-                All New Updates Are On The Updates Page
+                All new updates are on the updates page
                 <br>
-                Also Join The
+                Also join the
                 <a href="${i}" class="discord" target="_blank">
                     Discord
                 </a>
@@ -559,13 +559,13 @@ if (!isChattersPage) {
         </div>
         <div id="loader-maint-content" style="display:none; flex-direction:column; align-items:center; margin-top:20px;">
             <div id="loader-maint-message" style="margin-bottom:15px; font-size:18px; text-align:center;"></div>
-            <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check Statuses</a>
+            <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check statuses</a>
         </div>
         <div id="loader-slow-msg">
-            <div id="loader-slow-second-msg">Taking Longer Than Usual<br><small>The Site May Be Under Heavy Load.</small></div>
-            <a href="https://status.infinitecampus.xyz" class="discord" style="font-size:13px; margin-top:8px;">Check Statuses</a>
+            <div id="loader-slow-second-msg">Taking longer than usual<br><small>The site may be under heavy load.</small></div>
+            <a href="https://status.infinitecampus.xyz" class="discord" style="font-size:13px; margin-top:8px;">Check statuses</a>
             <div id="loader-disable-row">
-                <span id="loader-disable-label">Disable Loading Screens</span>
+                <span id="loader-disable-label">Disable loading screens</span>
                 <label class="switch" id="loader-disable-switch">
                     <input type="checkbox" id="loader-disable-checkbox" ${loadingScreensDisabled ? "checked" : ""}>
                     <span class="slider"></span>
@@ -649,7 +649,7 @@ if (!isChattersPage) {
         if (mode === "maint") {
             showLoader();
             maintContent.style.display = "flex";
-            maintMessage.textContent = message || "Maintenance Mode Enabled";
+            maintMessage.textContent = message || "Maintenance mode enabled";
         }
         else if (mode === "infinite") {
             maintContent.style.display = "none";

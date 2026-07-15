@@ -195,7 +195,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         viewerImg.style.cursor = "zoom-in";
         viewerImg.style.transition = "transform 0.2s";
         const downloadBtn = document.createElement("a");
-        downloadBtn.textContent = "Download Image";
+        downloadBtn.textContent = "Download image";
         downloadBtn.style.marginTop = "15px";
         downloadBtn.style.color = "white";
         downloadBtn.style.textDecoration = "underline";
@@ -235,7 +235,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     localStorage.removeItem("a_pass");
                     ADMIN_PASS = null;
                 }
-                const entered = await customPrompt("Enter Admin Password:", true);
+                const entered = await customPrompt("Enter admin password:", true);
                 if (!entered) continue;
                 ADMIN_PASS = entered.trim();
                 try {
@@ -253,7 +253,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         return true;
                     }
                 } catch (e) {}
-                showError("Incorrect Password.");
+                showError("Incorrect password.");
                 ADMIN_PASS = null;
             }
         }
@@ -269,9 +269,9 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const res = await fetch(`${pfpDomain}/index.json?${Date.now()}`);
                 const files = await res.json();
                 profilePics = files.map(f => `${pfpDomain}/${f}?t=${Date.now()}`);
-                console.log("Loaded Profile Pics:", profilePics);
+                console.log("Loaded profile pics:", profilePics);
             } catch (err) {
-                console.error("Failed To Load Profile Pics:", err);
+                console.error("Failed to load profile pics:", err);
                 profilePics = [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
             }
         }
@@ -306,7 +306,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const picVal = userData.profile?.pic || "0";
                     const nameVal = userData.profile?.displayName || "User";
                     const colorVal = userData.settings?.color || "white";
-                    const emailVal = userData.settings?.userEmail || "No Email";
+                    const emailVal = userData.settings?.userEmail || "No email";
                     const userDiv = document.createElement('div');
                     let picIndex = parseInt(picVal);
                     let picSrc = profilePics[picIndex] || profilePics[0];
@@ -333,7 +333,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         let unverifiedContainer;
         function createTypingAndUnverifiedUI() {
             if (!typingSection) {
-                console.warn("Typing Element Not Found");
+                console.warn("Typing element not found");
                 return;
             }
             typingSection.style.display = "flex";
@@ -351,7 +351,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 deleteTypingBtn.style.cursor = "pointer";
                 typingContainer.appendChild(deleteTypingBtn);
             } else {
-                console.warn("Typing Btn Not Found");
+                console.warn("Typing button not found");
             }
             typingListDiv = document.createElement("div");
             typingListDiv.id = "typingListDiv";
@@ -369,7 +369,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             unverifiedContainer.style.background = "#0f0f0f";
             unverifiedContainer.style.color = "#ddd";
             const title = document.createElement("h3");
-            title.textContent = "Unverified Users";
+            title.textContent = "Unverified users";
             title.style.margin = "0 0 8px 0";
             title.style.fontSize = "16px";
             unverifiedContainer.appendChild(title);
@@ -389,7 +389,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const typingVal = snapshot !== null && snapshot !== undefined ? snapshot : null;
             typingListDiv.innerHTML = "";
             if (!typingVal) {
-                typingListDiv.textContent = "No Typing Data";
+                typingListDiv.textContent = "No typing data";
                 return;
             }
             for (const channel in typingVal) {
@@ -441,7 +441,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             viewer.innerHTML = "";
             if (!unverifiedUsers || unverifiedUsers.length === 0) {
                 const none = document.createElement("div");
-                none.textContent = "No Unverified Users Found.";
+                none.textContent = "No unverified users found.";
                 viewer.appendChild(none);
                 return;
             }
@@ -482,15 +482,15 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             fields.style.marginTop = "8px";
             fields.style.fontSize = "13px";
             fields.style.lineHeight = "1.4";
-            const bio = profile.bio || settings.bio || "(No Bio Set)";
+            const bio = profile.bio || settings.bio || "(No bio set)";
             const bioEl = document.createElement("div");
             bioEl.textContent = `Bio: ${bio}`;
             fields.appendChild(bioEl);
-            const color = settings.color || "(No Color Set)";
+            const color = settings.color || "(No color set)";
             const colorEl = document.createElement("div");
             colorEl.textContent = `Color: ${color}`;
             fields.appendChild(colorEl);
-            const email = settings.userEmail || "(No Email Set)";
+            const email = settings.userEmail || "(No email set)";
             const emailEl = document.createElement("div");
             emailEl.textContent = `Email: ${email}`;
             fields.appendChild(emailEl);
@@ -498,7 +498,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const shownSettings = new Set(["color", "userEmail", "displayName", "bio"]);
             const otherEl = document.createElement("div");
             otherEl.style.marginTop = "8px";
-            otherEl.textContent = "Other Settings";
+            otherEl.textContent = "Other settings";
             otherEl.style.fontWeight = "600";
             fields.appendChild(otherEl);
             const otherList = document.createElement("div");
@@ -523,7 +523,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             }
             if (!foundOther) {
                 const noOther = document.createElement("div");
-                noOther.textContent = "No Other Settings";
+                noOther.textContent = "No other settings";
                 noOther.style.opacity = "0.8";
                 otherList.appendChild(noOther);
             }
@@ -542,16 +542,16 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             verifyBtn.style.cursor = "pointer";
             verifyBtn.onclick = async () => {
                 if (hasSettingsDisplayName || missingEmail) {
-                    showConfirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`, function(result) {
+                    showConfirm(`User ${displayNameToShow} appears to be a spam account, verify anyway?`, function(result) {
                         if (result) {
                             try {
                                 dbSet(`users/${uid}/profile/verified`, true);
-                                showSuccess("User Verified.");
+                                showSuccess("User verified.");
                                 unverifiedUsers.splice(unverifiedIndex, 1);
                                 if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
                                 renderUnverifiedViewer();
                             } catch (err) {
-                                showError("Failed To Verify User: " + err.message);
+                                showError("Failed to verify user: " + err.message);
                             }
                         } else {
                             showSuccess("Canceled");
@@ -560,12 +560,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 } else {
                     try {
                         await dbSet(`users/${uid}/profile/verified`, true);
-                        showSuccess("User Verified");
+                        showSuccess("User verified");
                         unverifiedUsers.splice(unverifiedIndex, 1);
                         if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
                         renderUnverifiedViewer();
                     } catch (err) {
-                        showError("Failed To Verify User: " + err.message);
+                        showError("Failed to verify user: " + err.message);
                     }
                 }
             };
@@ -574,7 +574,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             deleteBtn.textContent = "Delete";
             deleteBtn.classList = "btn btn-secondary";
             deleteBtn.onclick = async () => {
-                showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+                showConfirm(`Delete user "${uid}" and all their data?`, function(result) {
                     if (result) {
                         try {
                             deleteEntireUser(uid);
@@ -582,7 +582,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                             if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
                             renderUnverifiedViewer();
                         } catch (err) {
-                            showError("Delete Failed: " + err.message);
+                            showError("Delete failed: " + err.message);
                         }  
                     } else {
                         showSuccess("Canceled");
@@ -598,12 +598,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             btnArea.appendChild(nextBtn);
             if (hasSettingsDisplayName || missingEmail) {
                 const extraDelete = document.createElement("button");
-                extraDelete.textContent = "Delete User";
+                extraDelete.textContent = "Delete user";
                 extraDelete.classList = "btn btn-secondary";
                 extraDelete.style.cursor = "pointer";
                 extraDelete.onclick = async () => {
                     if (
-                        showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+                        showConfirm(`Delete user "${uid}" and all their data?`, function(result) {
                             if (result) {
                                 try {
                                     deleteEntireUser(uid);
@@ -611,7 +611,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                                     if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
                                     renderUnverifiedViewer();
                                 } catch (err) {
-                                    showError("Delete Failed: " + err.message);
+                                    showError("Delete failed: " + err.message);
                                 }  
                             } else {
                                 showSuccess("Canceled");
@@ -625,13 +625,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         if (deleteTypingBtn) {
             deleteTypingBtn.onclick = async () => {
-                showConfirm("Delete Typing Data?", function(result) {
+                showConfirm("Delete typing data?", function(result) {
                     if (result) {
                         try {
                             fetchAPI("delete", { path: pathToArray("typing") });
                             showSuccess("Done");
                         } catch (err) {
-                            showError("Failed To Delete: " + err.message);
+                            showError("Failed to delete: " + err.message);
                         }            
                     } else {
                         showSuccess("Canceled");
@@ -642,7 +642,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         onAuthStateChanged(auth, async (user) => {
             await loadProfilePics();
             if (!user) {
-                showError("You Must Be Logged In To View This Page.");
+                showError("You must be logged in to view this page.");
                 return;
             }
             const uid = user.uid;
@@ -658,7 +658,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             let isHAdmin = hAdminSnap !== null && hAdminSnap !== undefined && hAdminSnap === true;
             let isDev = devSnap !== null && devSnap !== undefined && devSnap === true; 
             if (!isOwner && !isCoOwner && !isTester && !isHAdmin && !isDev) {
-                showError("Access Denied. You Are Not An Approved User.");
+                showError("Access denied. You are not an approved user.");
                 window.location.href = "InfiniteChatters.html";
                 return;
             }
@@ -715,7 +715,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             privateChatsDiv.innerHTML = "Loading...";
             const data = await dbGet("private");
             if (!data) {
-                privateChatsDiv.innerHTML = "No Messages";
+                privateChatsDiv.innerHTML = "No messages";
                 return;
             }
             privateChatsDiv.innerHTML = "";
@@ -725,7 +725,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const partnerName = userProfiles[partner]?.displayName || partner;
                     const div = document.createElement("div");
                     div.className = "user-item";
-                    div.textContent = `Chat Between ${name} & ${partnerName}`;
+                    div.textContent = `Chat between ${name} & ${partnerName}`;
                     div.onclick = () => viewPrivateChat(uid, partner);
                     privateChatsDiv.appendChild(div);
                 }
@@ -740,10 +740,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     headers: { "Authorization": "Bearer " + token }
                 });
                 const json = await res.json();
-                if (!res.ok) throw new Error(json?.error || "Failed To Load Groups");
+                if (!res.ok) throw new Error(json?.error || "Failed to load groups");
                 const groups = json.groups || [];
                 if (!groups.length) {
-                    groupChatsDiv.innerHTML = "No Groups";
+                    groupChatsDiv.innerHTML = "No groups";
                     return;
                 }
                 groupChatsDiv.innerHTML = "";
@@ -751,12 +751,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const ownerName = userProfiles[group.ownerUid]?.displayName || group.ownerUid;
                     const div = document.createElement("div");
                     div.className = "user-item";
-                    div.textContent = `#${group.id} ${group.name} (Owner: ${ownerName}, ${group.members.length} Members)`;
+                    div.textContent = `#${group.id} ${group.name} (Owner: ${ownerName}, ${group.members.length} members)`;
                     div.onclick = () => viewGroupChat(group.id);
                     groupChatsDiv.appendChild(div);
                 }
             } catch (e) {
-                groupChatsDiv.innerHTML = "Failed To Load Groups";
+                groupChatsDiv.innerHTML = "Failed to load groups";
             }
         }
         async function viewGroupChat(groupId) {
@@ -770,11 +770,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     headers: { "Authorization": "Bearer " + token }
                 });
                 const json = await res.json();
-                if (!res.ok) throw new Error(json?.error || "Failed To Load Group");
+                if (!res.ok) throw new Error(json?.error || "Failed to load group");
                 const group = json.group;
                 const ownerName = userProfiles[group.ownerUid]?.displayName || group.ownerUid;
                 groupChatTitle.textContent = `Group: ${group.name} (#${group.id})`;
-                groupChatMeta.innerHTML = `Owner: ${ownerName}<br>Invite Code: ${group.inviteCode}<br>Members: ${group.members.map(m => userProfiles[m]?.displayName || m).join(", ")}`;
+                groupChatMeta.innerHTML = `Owner: ${ownerName}<br>Invite code: ${group.inviteCode}<br>Members: ${group.members.map(m => userProfiles[m]?.displayName || m).join(", ")}`;
                 const entries = Object.entries(group.messages || {}).sort((x, y) => Number(x[1].timestamp || x[0]) - Number(y[1].timestamp || y[0]));
                 groupChatMessages.innerHTML = "";
                 for (const [id, msg] of entries) {
@@ -787,7 +787,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     groupChatMessages.appendChild(line);
                 }
                 deleteGroupChatBtn.onclick = () => {
-                    showConfirm(`Delete Group "${group.name}"? This Cannot Be Undone.`, async (ok) => {
+                    showConfirm(`Delete group "${group.name}"? This cannot be undone.`, async (ok) => {
                         if (!ok) return;
                         try {
                             const delToken = await getAuthToken();
@@ -797,19 +797,19 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                             });
                             if (!delRes.ok) {
                                 const err = await delRes.json().catch(() => ({}));
-                                throw new Error(err.error || "Delete Failed");
+                                throw new Error(err.error || "Delete failed");
                             }
                             groupChatView.style.display = "none";
                             groupChatsDiv.style.display = "block";
                             privateChatsDiv.style.display = "block";
                             loadGroupChats();
                         } catch (e) {
-                            showError(e?.message || "Could Not Delete Group.");
+                            showError(e?.message || "Could not delete group.");
                         }
                     });
                 };
             } catch (e) {
-                groupChatMessages.innerHTML = "Failed To Load Group";
+                groupChatMessages.innerHTML = "Failed to load group";
             }
         }
         if (groupChatBackButton) groupChatBackButton.onclick = () => {
@@ -824,14 +824,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             currentChatPath = `private/${sorted[0]}`;
             privateChatsDiv.style.display = "none";
             chatView.style.display = "block";
-            chatTitle.textContent = `Private Chat: ${userDisplayName} & ${partnerDisplayName}`;
+            chatTitle.textContent = `Private chat: ${userDisplayName} & ${partnerDisplayName}`;
             chatMessages.innerHTML = "Loading...";
             populateSendAsOptions();
             const res = await dbGet(`${currentChatPath}`);
             const rootData = res?.data ?? res;
             const data = rootData?.[secondUid];
                 if (!data) {
-                    chatMessages.innerHTML = "<p>No Messages Found.</p>";
+                    chatMessages.innerHTML = "<p>No messages found.</p>";
                     return;
                 }
                 const messages = data;
@@ -884,7 +884,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     mutedBadge.style.color = "red";
                     mutedBadge.style.fontWeight = "bold";
                     mutedBadge.style.display = "none";
-                    mutedBadge.title = "This User Is Muted";
+                    mutedBadge.title = "This user is muted";
                     mutedBadge.innerHTML = '<i class="ic ic-volume-mute-fill"></i>';
                     dbListen(`mutedUsers/${senderUid}`, async (data) => {
                         if (!data) {
@@ -907,7 +907,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         dontShowOthers = true;
                         badgeContainer.innerHTML = '<i class="ic ic-shield-exclamation"></i>';
                         badgeContainer.style.color = 'red';
-                        badgeContainer.title = 'This User Is Currently Under Investigation';
+                        badgeContainer.title = 'This user is currently under investigation';
                     } else if (badgeText === "OWNR") {
                         badgeContainer.innerHTML = '<i class="ic ic-shield-plus"></i>';
                         badgeContainer.style.color = "lime";
@@ -977,7 +977,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         deleteChatBtn.onclick = async () => {
             if (!currentChatPath) return;
             if (
-                showConfirm("Delete This Entire Private Chat And Metadata?", function(result) {
+                showConfirm("Delete this entire private chat and metadata?", function(result) {
                     if (result) {
                         const parts = currentChatPath.split("/");
                         const uid = parts[1];
@@ -987,12 +987,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                             fetchAPI("delete", { path: pathToArray(`private/${secondUid}/${uid}`) });
                             fetchAPI("delete", { path: pathToArray(`metadata/${uid}/privateChats/${secondUid}`) });
                             fetchAPI("delete", { path: pathToArray(`metadata/${secondUid}/privateChats/${uid}`) });
-                            showSuccess("Chat And Metadata Deleted.");
+                            showSuccess("Chat and metadata deleted.");
                             chatView.style.display = "none";
                             privateChatsDiv.style.display = "block";
                             loadPrivateChats();
                         } catch (err) {
-                            showError("Error Deleting Chat: " + err.message);
+                            showError("Error deleting chat: " + err.message);
                         }            
                     } else {
                         showSuccess("Canceled");
@@ -1013,7 +1013,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const userCountH = document.getElementById('userCount');
             userCountH.textContent = `Users: ${userCount}`;
             if (snapshot == null && snapshot == undefined) {
-                userListDiv.innerHTML = "No Users Found.";
+                userListDiv.innerHTML = "No users found.";
                 return;
             }
             function populateSendAsOptions() {
@@ -1059,7 +1059,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 div.className = "user-item";
                 div.style.color = `${x3FColor}`;
                 div.innerHTML = `
-                    <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
+                    <img src="${pic}" alt="${name}'s pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
                     ${name}
                 `;
                 div.onclick = () => editUser(uid, info);
@@ -1071,7 +1071,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             currentUserEditUID = uid;
             userListDiv.style.display = "none";
             userEditDiv.style.display = "block";
-            editTitle.textContent = `User Actions: ${uid}`;
+            editTitle.textContent = `User actions: ${uid}`;
             userDataTextarea.style.display = "none";
             saveUserBtn.style.display = "none";
             userEditDiv.querySelectorAll(".action-btn").forEach(el => el.remove());
@@ -1081,7 +1081,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             btnContainer.style.marginTop = "12px";
             btnContainer.style.gap = "10px";
             const editBtn = document.createElement("button");
-            editBtn.textContent = "Edit User Data";
+            editBtn.textContent = "Edit user data";
             editBtn.className = "button action-btn";
             editBtn.onclick = () => {
                 userDataTextarea.style.display = "block";
@@ -1102,14 +1102,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             btnContainer.appendChild(editBtn);
             if (currentIsOwner) {
                 const loginBtn = document.createElement("button");
-                loginBtn.textContent = "Login As User";
+                loginBtn.textContent = "Login as user";
                 loginBtn.className = "button action-btn";
                 loginBtn.onclick = async () => {
                     try {
                         const idToken = await auth.currentUser.getIdToken();
                         verifyAdminPassword().then(async (isValid) => {
                             if (!isValid) {
-                                showError("Invalid Admin Password");
+                                showError("Invalid admin password");
                                 return;
                             } else {
                                 const res = await adminFetch(BACKEND + "/admin/createCustomToken", {
@@ -1132,24 +1132,24 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ uid })
                                 });
-                                showSuccess("Switched Account");
+                                showSuccess("Switched accounts");
                                 window.location.href = "/InfiniteChatters.html";
                             }
                         });
                     } catch (err) {
                         console.error(err);
-                        showError("Error Occurred");
+                        showError("An error occurred");
                     }
                 };
                 btnContainer.appendChild(loginBtn);
             }
             const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Delete User";
+            deleteBtn.textContent = "Delete user";
             deleteBtn.className = "button action-btn";
             deleteBtn.style.background = "#7a0000";
             deleteBtn.style.color = "white";
             deleteBtn.onclick = () => {
-                showConfirm(`Delete User "${uid}" And All Their Data?`, function(result) {
+                showConfirm(`Delete user "${uid}" and all their data?`, function(result) {
                     if (result) {
                         deleteEntireUser(uid);
                         userEditDiv.style.display = "none";
@@ -1204,17 +1204,17 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             try {
                 const newData = JSON.parse(userDataTextarea.value);
                 await dbSet(`users/${currentUserEditUID}`, newData);
-                showSuccess("User Data Saved!");
+                showSuccess("User data saved!");
                 userEditDiv.style.display = "none";
                 userListDiv.style.display = "block";
                 loadUserList();
             } catch (err) {
-                showError("Invalid JSON Or Save Failed: " + err.message);
+                showError("Invalid JSON or save dailed: " + err.message);
             }
         };
         sendAdminMessageBtn.onclick = async () => {
             if (!currentChatPath) {
-                showError("Open A Private Chat First.");
+                showError("Open a private chat first.");
                 return;
             }
             const text = adminMsgInput.value.trim();
@@ -1233,7 +1233,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 await dbSet(`${currentChatPath}/${key}`, newMsg);
                 adminMsgInput.value = "";
             } catch (err) {
-                showError("Send Failed: " + err.message);
+                showError("Send failed: " + err.message);
             }
         };
     } else if (adminMovieParams) {
@@ -1328,7 +1328,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     localStorage.removeItem("a_pass");
                     ADMIN_PASS = null;
                 }
-                const entered = await customPrompt("Enter Admin Password:", true);
+                const entered = await customPrompt("Enter admin password:", true);
                 if (!entered) continue;
                 ADMIN_PASS = entered.trim();
                 try {
@@ -1346,7 +1346,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         return true;
                     }
                 } catch (e) {}
-                showError("Incorrect Password.");
+                showError("Incorrect password.");
                 ADMIN_PASS = null;
             }
         }
@@ -1357,13 +1357,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             return fetch(url, options);
         }
-        socket.on("connect", () => console.log("Server Connected:", socket.id));
+        socket.on("connect", () => console.log("Server connected:", socket.id));
         const progressIntervals = new Map();
         async function checkUserAuthentication() {
             return new Promise((resolve, reject) => {
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) {
-                        showError('You Must Be Logged In To View This Content.');
+                        showError('You must be logged in to view this content.');
                         resolve(false);
                         return;
                     }
@@ -1371,7 +1371,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const userProfileRef = `/users/${uid}/profile`
                     const profile = await dbGet(userProfileRef);
                     if (!profile || !(profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev)) {
-                        showError('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
+                        showError('You do not have the necessary permissions to view or interact with this content.');
                         resolve(false);
                         return;
                     }
@@ -1432,7 +1432,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
             }
             if (!data.ok) {
-                box.innerHTML = "Failed To Load Applicants";
+                box.innerHTML = "Failed to load applicants";
                 return;
             }
             const seenFiles = new Set();
@@ -1481,7 +1481,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                             uploaderName = displayName;
                         }
                     } catch (e) {
-                        console.error("Failed Loading Display Name", e);
+                        console.error("Failed loading display name", e);
                     }
                 }
                 const div = document.createElement("div");
@@ -1536,7 +1536,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     span.innerText = displaySize;
                 }
             } catch (err) {
-                console.error("Size Update Error:", err);
+                console.error("Size update error:", err);
             }
         }
         async function deleteApply(filename) {
@@ -1567,7 +1567,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         async function acceptFile(filename) {
             const isAuthenticated = await checkUserAuthentication();
             if (!isAuthenticated) return;
-            const newName = await customPrompt("Enter Name:", false, filename.replace(".mp4", ""));
+            const newName = await customPrompt("Enter name:", false, filename.replace(".mp4", ""));
             if (!newName) return;
             const lg = document.getElementById("logs");
             document.getElementById("before").style.display = "none";
@@ -1592,7 +1592,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     if (statusEl && cached.status) {
                         let txt = cached.status;
                         if (cached.eta !== undefined) {
-                            txt += ` — ${formatTime(cached.eta)} Left`;
+                            txt += ` — ${formatTime(cached.eta)} left`;
                         }
                         statusEl.innerText = txt;
                     }
@@ -1601,7 +1601,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 bar.style.width = data.percent + "%";
                 let label = `${Math.floor(data.percent)}%`;
                 if (data.remainingSec !== undefined) {
-                    label += ` — ${formatTime(data.remainingSec)} Left`;
+                    label += ` — ${formatTime(data.remainingSec)} left`;
                 }
                 bar.innerText = label;
             }
@@ -1649,12 +1649,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             logs.style.display = "none";
         }
         function handleJobStarted(data) {
-            appendLog(`Accept Started: ${data.filename}`);
+            appendLog(`Accept started: ${data.filename}`);
             showAcceptProgress();
         }
         function handleJobDone(data) {
-            showSuccess(`File Accepted: ${data.finalName}`);
-            appendLog(`Accept Completed: ${data.finalName}`);
+            showSuccess(`File accepted: ${data.finalName}`);
+            appendLog(`Accept completed: ${data.finalName}`);
             hideAcceptProgress();
         }
         function isCopyFile(name) {
@@ -1713,7 +1713,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (!isAuthenticated) return;
             const container = document.getElementById("moviesOrder");
             if (!container) return;
-            container.innerHTML = "Loading Movies...";
+            container.innerHTML = "Loading movies...";
             try {
                 const res = await adminFetch(BACKEND + "/api/movies-json", {
                     headers: { "ngrok-skip-browser-warning": "true" }
@@ -1731,7 +1731,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
                 renderMoviesList();
             } catch (err) {
-                container.innerHTML = "Failed To Load Movies";
+                container.innerHTML = "Failed to load movies";
                 console.error(err);
             }
         }
@@ -1739,7 +1739,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const container = document.getElementById("moviesOrder");
             container.innerHTML = "";
             if (!moviesData || !Array.isArray(moviesData)) {
-                container.innerHTML = "Movies Must Be In An Array.";
+                container.innerHTML = "Movies must be in an array.";
                 return;
             }
             moviesData.forEach((movie) => {
@@ -1826,7 +1826,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
                 parsed.filename = moviesData[currentEditIndex].filename;
                 moviesData[currentEditIndex] = parsed;
-                showSuccess("Movie Updated (Not Saved Yet)");
+                showSuccess("Movie updated (Not saved yet)");
                 closeJsonEditor();
                 renderMoviesList();
             } catch (err) {
@@ -1867,7 +1867,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             btn.id = "saveMoviesOrderBtn";
             btn.className = "button";
             btn.style.marginTop = "10px";
-            btn.innerText = "Save Order";
+            btn.innerText = "Save order";
             btn.onclick = saveMoviesOrder;
             container.parentNode.appendChild(btn);
         }
@@ -1894,14 +1894,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showSuccess("Movies Order Saved.");
+                    showSuccess("Movies order saved.");
                     loadMoviesOrder();
                 } else {
-                    showError("Failed To Save Movies.");
+                    showError("Failed to save movies.");
                 }
             } catch (err) {
                 console.error(err);
-                showError("Failed To Save Movies.");
+                showError("Failed to save movies.");
             }
         }
         (async () => {
@@ -1979,7 +1979,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     localStorage.removeItem("a_pass");
                     ADMIN_PASS = null;
                 }
-                const entered = await customPrompt("Enter Admin Password:", true);
+                const entered = await customPrompt("Enter admin password:", true);
                 if (!entered) continue;
                 ADMIN_PASS = entered.trim();
                 try {
@@ -1997,7 +1997,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         return true;
                     }
                 } catch (e) {}
-                showError("Incorrect Password.");
+                showError("Incorrect password.");
                 ADMIN_PASS = null;
             }
         }
@@ -2012,19 +2012,19 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         async function checkUserPermissions(user) {
             if (!user) {
-                showError("You Must Be Logged In To Access This Page.");
+                showError("You must be logged in to access this page.");
                 window.location.href = "/InfiniteLogins.html";
                 return false;
             }
             const snapshot = await dbGet(`users/${user.uid}/profile`);
             if (snapshot == null || snapshot == undefined) {
-                showError("User Profile Not Found.");
+                showError("User profile not found.");
                 return false;
             }
             if (snapshot.isOwner || snapshot.isTester || snapshot.isCoOwner || snapshot.isHAdmin || snapshot.isDev) {
                 return true;
             } else {
-                showError("You Do Not Have The Required Permissions To Access This Page.");
+                showError("You do not have the required permissions to access this page.");
                 return false;
             }
         }
@@ -2036,7 +2036,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         async function fetchUrls() {
             const user = auth.currentUser;
             if (!user) {
-                showError("You Must Be Logged In To Fetch URLs.");
+                showError("You must be logged in to fetch URLs.");
                 return;
             }
             const hasPermission = await checkUserPermissions(user);
@@ -2070,7 +2070,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         async function addUrl() {
             const user = auth.currentUser;
             if (!user) {
-                showError("You Must Be Logged In To Add URLs.");
+                showError("You must be logged in to add URLs.");
                 return;
             }
             const hasPermission = await checkUserPermissions(user);
@@ -2079,7 +2079,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const reason = document.getElementById("add-reason-input").value.trim();
             const error = document.getElementById("add-error");
             if (!url || !reason) {
-                error.textContent = "URL And Reason Required.";
+                error.textContent = "URL and reason required.";
                 return;
             }
             const res = await adminFetch(BACKEND + "/edit-urls/add", {
@@ -2089,7 +2089,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             const data = await res.json();
             if (!res.ok) {
-                error.textContent = data.error || "Failed To Add URL.";
+                error.textContent = data.error || "Failed to add URL.";
                 return;
             }
             document.getElementById("add-url-input").value = "";
@@ -2100,12 +2100,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         async function deleteUrl(url) {
             const user = auth.currentUser;
             if (!user) {
-                showError("You Must Be Logged In To Delete URLs.");
+                showError("You must be logged in to delete URLs.");
                 return;
             }
             const hasPermission = await checkUserPermissions(user);
             if (!hasPermission) return;
-            showConfirm("Delete This URL?", function(result) {
+            showConfirm("Delete this URL?", function(result) {
                 if (result) {
                     adminFetch(BACKEND + "/edit-urls/delete", {
                         method: "POST",
@@ -2235,7 +2235,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 const data = await res.json();
                 if (!res.ok) {
-                    showError(data.error || "Save Failed");
+                    showError(data.error || "Save failed");
                     return;
                 }
                 _rulesOriginal = JSON.stringify(parsed, null, 2);
@@ -2317,8 +2317,8 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         async function saveData() {
             const user = auth.currentUser;
-            if (!user) { showError("Not Logged In."); return; }
-            if (!_isOwner) { showError("Owner Access Required."); return; }
+            if (!user) { showError("Not logged in."); return; }
+            if (!_isOwner) { showError("Owner access required."); return; }
             const raw = document.getElementById("data-editor").innerText;
             const statusEl = document.getElementById("data-status");
             let parsed;
@@ -2336,11 +2336,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             }
             const patches = diffJSON(oldParsed, parsed);
             if (patches.length === 0) {
-                showSuccess("No Changes Detected.");
-                statusEl.textContent = "No Changes.";
+                showSuccess("No changes detected.");
+                statusEl.textContent = "No changes.";
                 return;
             }
-            showConfirm(`This Will Apply ${patches.length} Change(s) To data.json. Are You Sure?`, async (confirmed) => {
+            showConfirm(`This will apply ${patches.length} change(s) to data.json. Are you sure?`, async (confirmed) => {
                 if (!confirmed) return;
                 statusEl.textContent = "Saving...";
                 statusEl.style.color = "";
@@ -2352,7 +2352,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     });
                     const result = await res.json();
                     if (!res.ok) {
-                        showError(result.error || "Save Failed");
+                        showError(result.error || "Save failed");
                         statusEl.textContent = "Save failed.";
                         return;
                     }
@@ -2376,7 +2376,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const pretty = JSON.stringify(words, null, 2);
                 document.getElementById("words-editor").textContent = pretty;
                 updateLineNumbers("words-editor");
-                document.getElementById("words-status").textContent = "Loaded ✓";
+                document.getElementById("words-status").textContent = "Loaded";
             } catch (err) {
                 document.getElementById("words-status").textContent = "Error: " + err.message;
             }
@@ -2398,7 +2398,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     body: JSON.stringify({ words: parsed })
                 });
                 if (!res.ok) throw new Error(await res.text());
-                document.getElementById("words-status").textContent = "Saved ✓";
+                document.getElementById("words-status").textContent = "Saved";
             } catch (err) {
                 document.getElementById("words-status").textContent = "Error: " + err.message;
             }
@@ -2444,8 +2444,8 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         async function saveUsers() {
             const user = auth.currentUser;
-            if (!user) { showError("Not Logged In."); return; }
-            if (!_isUsersOwner) { showError("Owner Access Required."); return; }
+            if (!user) { showError("Not logged in."); return; }
+            if (!_isUsersOwner) { showError("Owner access required."); return; }
             const raw = document.getElementById("users-editor").innerText;
             const statusEl = document.getElementById("users-status");
             let parsed;
@@ -2463,11 +2463,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             }
             const patches = diffJSON(oldParsed, parsed);
             if (patches.length === 0) {
-                showSuccess("No Changes Detected.");
-                statusEl.textContent = "No Changes.";
+                showSuccess("No changes detected.");
+                statusEl.textContent = "No changes.";
                 return;
             }
-            showConfirm(`This Will Apply ${patches.length} Change(s) To users.json. Are You Sure?`, async (confirmed) => {
+            showConfirm(`This will apply ${patches.length} change(s) to users.json. Are you sure?`, async (confirmed) => {
                 if (!confirmed) return;
                 statusEl.textContent = "Saving...";
                 statusEl.style.color = "";
@@ -2479,7 +2479,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     });
                     const result = await res.json();
                     if (!res.ok) {
-                        showError(result.error || "Save Failed");
+                        showError(result.error || "Save failed");
                         statusEl.textContent = "Save failed.";
                         return;
                     }
@@ -2529,7 +2529,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 showError(`Invalid JSON: ${e.message}`);
                 return;
             }
-            showConfirm(`This Will Overwrite games.json. Are You Sure?`, async (confirmed) => {
+            showConfirm(`This will overwrite games.json. Are you sure?`, async (confirmed) => {
                 if (!confirmed) return;
                 statusEl.textContent = "Saving...";
                 statusEl.style.color = "";
@@ -2541,12 +2541,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     });
                     const result = await res.json();
                     if (!res.ok) {
-                        showError(result.error || "Save Failed");
+                        showError(result.error || "Save failed");
                         statusEl.textContent = "Save failed.";
                         return;
                     }
                     _gamesJsonOriginal = JSON.stringify(parsed, null, 2);
-                    showSuccess("games.json Saved.");
+                    showSuccess("games.json saved.");
                     document.getElementById("gamesjson-editor").innerHTML = syntaxHighlightCollapsible(_gamesJsonOriginal, "gamesjson-editor");
                     updateLineNumbers("gamesjson-editor");
                     statusEl.textContent = "Saved.";
@@ -2591,11 +2591,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 const result = await res.json();
                 if (!res.ok) {
-                    showError(result.error || "Save Failed");
+                    showError(result.error || "Save failed");
                     statusEl.textContent = "Save failed.";
                     return;
                 }
-                showSuccess(`Hidden Games Saved (${(result.hidden || hidden).length} id(s)).`);
+                showSuccess(`Hidden games saved (${(result.hidden || hidden).length} id(s)).`);
                 statusEl.textContent = "Saved.";
             } catch (err) {
                 showError(err.message);
@@ -2812,14 +2812,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
             }
             if (!currentUser) {
-                showError("You Must Be Logged In To Access This Page.");
+                showError("You must be logged in to access this page.");
                 return false;
             }
             const uid = currentUser.uid;
             const userRef = `users/${uid}/profile`;
             const snapshot = await dbGet(userRef);
             if (snapshot == null || snapshot == undefined) {
-                showError("Profile Data Not Found.");
+                showError("Profile data not found.");
                 return false;
             }
             const userData = snapshot;
@@ -2827,7 +2827,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (isOwner || isTester || isCoOwner || isHAdmin || isDev ) {
                 return true;
             } else {
-                showError("You Do Not Have The Necessary Permissions To Access This Page.");
+                showError("You do not have the necessary permissions to access this page.");
                 return false;
             }
         }
@@ -2851,7 +2851,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     localStorage.removeItem("a_pass");
                     ADMIN_PASS = null;
                 }
-                const entered = await customPrompt("Enter Admin Password:", true);
+                const entered = await customPrompt("Enter admin password:", true);
                 if (!entered) continue;
                 ADMIN_PASS = entered.trim();
                 try {
@@ -2869,7 +2869,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         return true;
                     }
                 } catch (e) {}
-                showError("Incorrect Password.");
+                showError("Incorrect password.");
                 ADMIN_PASS = null;
             }
         }
@@ -2910,7 +2910,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         headers: NGROK_HEADERS
                     });
                     if (res.ok) fetchFiles();
-                    else showError("Failed To Delete File");
+                    else showError("Failed to delete file");
                 } else {
                     showSuccess("Canceled");
                 }
@@ -2937,10 +2937,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             if (res.ok) {
                 const state = await res.json();
-                showSuccess("Lockdown Is Now " + (state.lockdown ? "ENABLED" : "DISABLED"));
+                showSuccess("Lockdown is now " + (state.lockdown ? "ENABLED" : "DISABLED"));
                 document.getElementById("lockdownBtn").textContent = `Lockdown ` + (state.lockdown ? "ON" : "OFF");
             } else {
-                showError("Failed To Toggle Lockdown");
+                showError("Failed to toggle lockdown");
             }
         });
         document.getElementById("lockdowndisc").addEventListener("click", async () => {
@@ -2951,10 +2951,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             if (res.ok) {
                 const state = await res.json();
-                showSuccess("Discord Lockdown Is Now " + (state.lockdown ? "ENABLED" : "DISABLED"));
-                document.getElementById("lockdowndisc").textContent = `Discord Lockdown ` + (state.lockdown ? "ON" : "OFF");
+                showSuccess("Discord lockdown is now " + (state.lockdown ? "ENABLED" : "DISABLED"));
+                document.getElementById("lockdowndisc").textContent = `Discord lockdown ` + (state.lockdown ? "ON" : "OFF");
             } else {
-                showError("Failed To Toggle Discord Lockdown");
+                showError("Failed to toggle Discord lockdown");
             }
         });
         document.getElementById("restartServerBtn").addEventListener("click", async () => {
@@ -3004,7 +3004,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 return `${hours}:${minutes} ${ampm}`;
             };
             const uploadSection = document.createElement("div");
-            uploadSection.innerHTML = "<h3>Upload Logs</h3>";
+            uploadSection.innerHTML = "<h3>Upload logs</h3>";
             if (logs.uploadLogs?.length) {
                 const ul = document.createElement("ul");
                 logs.uploadLogs.forEach(l => {
@@ -3014,11 +3014,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 uploadSection.appendChild(ul);
             } else {
-                uploadSection.innerHTML += "<p>No Upload Logs</p>";
+                uploadSection.innerHTML += "<p>No upload logs</p>";
             }
             logsContainer.appendChild(uploadSection);
             const rateSection = document.createElement("div");
-            rateSection.innerHTML = "<h3>Rate Limit Logs</h3>";
+            rateSection.innerHTML = "<h3>Rate limit logs</h3>";
             if (logs.rateLimitLogs?.length) {
                 const ul = document.createElement("ul");
                 logs.rateLimitLogs.forEach(l => {
@@ -3028,11 +3028,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 rateSection.appendChild(ul);
             } else {
-                rateSection.innerHTML += "<p>No Rate Limit Logs</p>";
+                rateSection.innerHTML += "<p>No rate limit logs</p>";
             }
             logsContainer.appendChild(rateSection);
             const linksSection = document.createElement("div");
-            linksSection.innerHTML = "<h3>Active Links</h3>";
+            linksSection.innerHTML = "<h3>Active links</h3>";
             if (logs.activeLinks?.length) {
                 const ul = document.createElement("ul");
                 logs.activeLinks.forEach(l => {
@@ -3042,7 +3042,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 });
                 linksSection.appendChild(ul);
             } else {
-                linksSection.innerHTML += "<p>No Active Links</p>";
+                linksSection.innerHTML += "<p>No active links</p>";
             }
             logsContainer.appendChild(linksSection);
         }
@@ -3628,7 +3628,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             const json = await res.json();
             if (!res.ok) {
-                throw new Error(json?.error || "Request Failed");
+                throw new Error(json?.error || "Request failed");
             }
             return json;
         }
@@ -3664,7 +3664,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         function renderTemplatePicker() {
             const sel = document.getElementById('template-select');
             if (!sel) return;
-            sel.innerHTML = '<option value="">— No Template (Custom) —</option>' +
+            sel.innerHTML = '<option value="">— No template (Custom) —</option>' +
                 availableTemplates.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
         }
         window.onTemplateChange = function() {
@@ -3687,10 +3687,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         <label>{{${v}}}</label>
                         <input type="text" id="tvar-${v}" placeholder="${v}" oninput="window.updateTemplatePreview()" />
                     </div>
-                `).join('') + `<span class="template-hint">These Fill Template Variables. {{DISPLAYNAME}} Is Filled Automatically Per Recipient.</span>`;
+                `).join('') + `<span class="template-hint">These fill template variables. {{DISPLAYNAME}} Is filled automatically per recipient.</span>`;
                 varsRow.classList.add('visible');
             } else {
-                varsContainer.innerHTML = `<span class="template-hint">No Extra Variables Needed. {{DISPLAYNAME}} Is Filled Automatically Per Recipient.</span>`;
+                varsContainer.innerHTML = `<span class="template-hint">No extra variables needed. {{DISPLAYNAME}} Is filled automatically per recipient.</span>`;
                 varsRow.classList.add('visible');
             }
             document.getElementById('email-body').value = `[Using template: ${selectedTemplate.label}]\n\nThis email will use the "${selectedTemplate.id}" server-side template.\nEdit the fields above to customize variables.\n\nYou can still edit the subject line freely.`;
@@ -3722,7 +3722,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             await authReady;
             const user = currentUser;
             if (!user) {
-                window.location = "/infiniteLogins.html";
+                window.location = "/InfiniteLogins.html";
                 return;
             }
             try {
@@ -3747,9 +3747,9 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             pickerRow.innerHTML = `
                 <span class="template-picker-label">Template</span>
                 <select id="template-select" class="template-picker-select" onchange="window.onTemplateChange()">
-                    <option value="">— No Template (Custom) —</option>
+                    <option value="">— No template (Custom) —</option>
                 </select>
-                <button onclick="window.clearTemplate()" title="Clear template selection" style="background:transparent;border:1px solid #555;color:#aaa;border-radius:5px;padding:4px 9px;font-size:10px;cursor:pointer;">✕ Clear</button>
+                <button onclick="window.clearTemplate()" title="Clear template selection" style="background:transparent;border:1px solid #555;color:#aaa;border-radius:5px;padding:4px 9px;font-size:10px;cursor:pointer;">Clear</button>
             `;
             const varsRow = document.createElement('div');
             varsRow.className = 'template-vars-row';
@@ -3810,7 +3810,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const list = document.getElementById('user-list');
             const filtered = getFilteredUsers();
             if (!filtered.length) {
-                list.innerHTML = '<div class="loading-users">No Users Found.</div>';
+                list.innerHTML = '<div class="loading-users">No users found.</div>';
                 return;
             }
             list.innerHTML = filtered.map(u => `
@@ -3822,7 +3822,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                             ${escHtml(u.displayName)}
                         </div>
                         <div class="user-email">
-                            ${u.email ? escHtml(u.email) : '<span style="color:#fbbf24">No Email</span>'}
+                            ${u.email ? escHtml(u.email) : '<span style="color:#fbbf24">No email</span>'}
                         </div>
                     </div>
                     ${!u.subbed ? '<span class="unsub-badge">UNSUBSCRIBED</span>' : ''}
@@ -3846,10 +3846,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const allSelected = uidsWithEmail.every(uid => selectedUids.has(uid));
             if (allSelected) {
                 uidsWithEmail.forEach(uid => selectedUids.delete(uid));
-                document.getElementById('select-all-label').textContent = 'Select All';
+                document.getElementById('select-all-label').textContent = 'Select all';
             } else {
                 uidsWithEmail.forEach(uid => selectedUids.add(uid));
-                document.getElementById('select-all-label').textContent = 'Deselect All';
+                document.getElementById('select-all-label').textContent = 'Deselect all';
             }
             renderUserList();
             updateSelectedTags();
@@ -3864,19 +3864,19 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const container = document.getElementById('selected-tags');
             const selected = allUsers.filter(u => selectedUids.has(u.uid));
             if (!selected.length) {
-                container.innerHTML = '<span style="font-size:11px;color:white;">No Recipients Selected</span>';
+                container.innerHTML = '<span style="font-size:11px;color:white;">No recipients selected</span>';
                 return;
             }
             const shown = selected.slice(0, 6);
             const rest = selected.length - shown.length;
             container.innerHTML = shown.map(u => `
-                <div class="selected-tag" onclick="window.toggleUser('${u.uid}')" title="${escHtml(u.email || 'No Email')}">
+                <div class="selected-tag" onclick="window.toggleUser('${u.uid}')" title="${escHtml(u.email || 'No email')}">
                     ${escHtml(u.displayName)} 
                     <span class="remove">
-                        ✕
+                        <i class="ic ic-x"></i>
                     </span>
                 </div>
-            `).join('') + (rest > 0 ? `<span style="font-size:11px;color:white;">+${rest} More</span>` : '');
+            `).join('') + (rest > 0 ? `<span style="font-size:11px;color:white;">+${rest} more</span>` : '');
         }
         window.handleEmailInput = function(e, type) {
             if (e.key === 'Enter' || e.key === ',') {
@@ -3888,7 +3888,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     else { bccEmails.push(val); renderEmailTags('bcc'); }
                     inp.value = '';
                 } else if (val) {
-                    showError('Invalid Email: ' + val);
+                    showError('Invalid email: ' + val);
                 }
             } else if (e.key === 'Backspace') {
                 const inp = document.getElementById(type + '-input');
@@ -3913,7 +3913,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 <span class="email-tag">
                     ${escHtml(e)}
                     <span class="rm" onclick="window.removeEmailTag('${type}',${i})">
-                        ✕
+                        <i class="ic ic-x"></i>
                     </span>
                 </span>
             `).join('');
@@ -4025,7 +4025,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             btn.disabled = !hasRecipients || recipientsWithEmail === 0;
             const info = document.getElementById('send-info');
             if (!hasRecipients) {
-                info.innerHTML = 'Select Recipients To Send.';
+                info.innerHTML = 'Select recipients to send.';
             } else {
                 const noEmail = allUsers.filter(u => selectedUids.has(u.uid) && !u.email).length;
                 const unsubbed = allUsers.filter(u => selectedUids.has(u.uid) && u.email && !u.subbed).length;
@@ -4033,21 +4033,21 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     <strong>
                         ${recipientsWithEmail}
                     </strong>
-                    Email${recipientsWithEmail !== 1 ? 's' : ''} To Send
+                    Email${recipientsWithEmail !== 1 ? 's' : ''} to send
                 ` +
-                (noEmail ? ` <span style="color:#fbbf24">(${noEmail} Skipped — No Email)</span>` : '') +
-                (unsubbed ? ` <span style="color:#f87171">(${unsubbed} Skipped — Unsubscribed)</span>` : '') +
-                (recipientsWithEmail > 1 ? ` · 5s Delay Between Each Send` : '');
+                (noEmail ? ` <span style="color:#fbbf24">(${noEmail} skipped — no email)</span>` : '') +
+                (unsubbed ? ` <span style="color:#f87171">(${unsubbed} skipped — unsubscribed)</span>` : '') +
+                (recipientsWithEmail > 1 ? `5s delay between each send` : '');
             }
         }
         window.sendEmails = async function() {
             const subject = document.getElementById('email-subject').value.trim();
             const isTemplate = !!selectedTemplate;
             const body = isTemplate ? '' : document.getElementById('email-body').value.trim();
-            if (!subject) { showError('Subject Is Required'); return; }
-            if (!isTemplate && !body) { showError('Body Is Required'); return; }
+            if (!subject) { showError('Subject is required'); return; }
+            if (!isTemplate && !body) { showError('Body is required'); return; }
             const recipients = allUsers.filter(u => selectedUids.has(u.uid) && u.email && u.subbed);
-            if (!recipients.length) { showError('No Recipients With Email Addresses'); return; }
+            if (!recipients.length) { showError('No recipients with email addresses'); return; }
             const baseTemplateVars = isTemplate ? getTemplateVars() : null;
             const modal = document.getElementById('progress-modal');
             const fill = document.getElementById('prog-fill');
@@ -4062,7 +4062,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             let sent = 0, failed = 0;
             for (let i = 0; i < recipients.length; i++) {
                 const user = recipients[i];
-                progText.textContent = `Sending To ${user.displayName}`;
+                progText.textContent = `Sending to ${user.displayName}`;
                 progCount.textContent = `${i} / ${recipients.length}`;
                 fill.style.width = ((i / recipients.length) * 100) + '%';
                 let payload;
@@ -4084,7 +4084,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         body: JSON.stringify(payload)
                     });
                     const data = await res.json();
-                    if (!res.ok || !data.success) throw new Error(data.error || 'Send Failed');
+                    if (!res.ok || !data.success) throw new Error(data.error || 'Send failed');
                     sent++;
                     addLog(progLog, `✓ ${user.displayName} <${user.email}>`, 'ok');
                 } catch (e) {
@@ -4093,17 +4093,17 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
                 if (i < recipients.length - 1) {
                     for (let s = 5; s > 0; s--) {
-                        progText.textContent = `Next Email In ${s}s...`;
+                        progText.textContent = `Next email in ${s}s...`;
                         await sleep(1000);
                     }
                 }
             }
             fill.style.width = '100%';
-            progText.textContent = `Done — ${sent} Sent, ${failed} Failed.`;
+            progText.textContent = `Done — ${sent} sent, ${failed} failed.`;
             progCount.textContent = `${recipients.length} / ${recipients.length}`;
             progClose.style.display = 'block';
-            if (sent > 0) showSuccess(`${sent} Email${sent !== 1 ? 's' : ''} Sent Successfully`);
-            if (failed > 0) showError(`${failed} Failed To Send`);
+            if (sent > 0) showSuccess(`${sent} email${sent !== 1 ? 's' : ''} sent successfully`);
+            if (failed > 0) showError(`${failed} failed to send`);
         };
         function addLog(container, msg, cls) {
             const span = document.createElement('span');
@@ -4128,7 +4128,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             bccEmails = [];
             renderEmailTags('cc');
             renderEmailTags('bcc');
-            showSuccess('Composer Cleared');
+            showSuccess('Composer cleared');
         };
         function escHtml(str) {
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

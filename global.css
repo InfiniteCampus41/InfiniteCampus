@@ -3079,7 +3079,7 @@ select {
 	color: #fff;
 }
 #sj-error-code::before {
-    content: "Error Code:"
+    content: "Error code:"
 }
 #sj-form {
     height:30px;

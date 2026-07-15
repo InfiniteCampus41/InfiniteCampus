@@ -44,13 +44,13 @@ document.getElementById("applyFile").addEventListener("change", () => {
     }
 });
 function sanitizeUsername(name) {
-    if (!name) return "An Anonymous User";
+    if (!name) return "An anonymous user";
     return name
         .normalize("NFKD")
         .replace(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu, "")
         .replace(/\s+/g, "")
         .replace(/[^\w-]/g, "")
-        .trim() || "An Anonymous User";
+        .trim() || "An anonymous user";
 }
 async function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
@@ -72,7 +72,7 @@ async function uploadApply() {
     finishingWatcher = setInterval(() => {
         const now = Date.now();
         if (now - lastUploadTime > 1500) {
-            percentText.innerText = "Finishing Up, This May Take A While";
+            percentText.innerText = "Finishing up, this may take a while";
             document.getElementById("uploadingText").style.display = "none";
             clearInterval(finishingWatcher);
         }
@@ -92,7 +92,7 @@ async function uploadApply() {
                     displayName = sanitizeUsername(snap);
                 }
             } catch (err) {
-                console.error("Failed To Fetch DisplayName:", err);
+                console.error("Failed to fetch displayName:", err);
             }
         }
         const res = await fetch(uploadURL, {
@@ -116,7 +116,7 @@ async function uploadApply() {
             if (finishingTimeout) clearTimeout(finishingTimeout);
             percentText.innerText = "Uploaded!";
             document.getElementById("upload-status").innerText =
-                "Upload Failed: " + data.message;
+                "Upload failed: " + data.message;
             return;
         }
         let percent = Math.round(((i + 1) / totalChunks) * 100);
@@ -152,15 +152,15 @@ async function loadMovies() {
         const data = await res.json();
         if (loadId !== MOVIE_LOAD_ID) return;
         if (!data.ok) {
-            box.innerHTML = "Failed To Load Movies";
+            box.innerHTML = "Failed to load movies";
             return;
         }
         MOVIE_CACHE = data.videos;
         await renderMovies(data.videos, loadId);
     } catch (e) {
         if (loadId !== MOVIE_LOAD_ID) return;
-        showError("Failed To Load Movies, Check Server Status");
-        box.innerHTML = "Could Not Reach Server.";
+        showError("Failed to load movies, check server status");
+        box.innerHTML = "Could not reach server.";
     }
 }
 function fitTextToWidth(element, maxFont = 16, minFont = 8) {
@@ -184,12 +184,12 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                     uploaderName = `@${snap}`;
                 }
             } catch (err) {
-                console.error("Database Connection Failed:", err);
+                console.error("Database connection failed:", err);
                 FIREBASE_AVAILABLE = false;
             }
         }
         const ccBadge = v.subtitleUrl
-            ? `<i class="ic ic-badge-cc-fill" title="Subtitles Available" style="width:100%;color:white;position:absolute;right:-45%;transform:translateY(-20%);"></i>`
+            ? `<i class="ic ic-badge-cc-fill" title="Subtitles available" style="width:100%;color:white;position:absolute;right:-45%;transform:translateY(-20%);"></i>`
             : "";
 
         const movieDiv = document.createElement("div");
@@ -230,8 +230,8 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
                         </a>
                     </div>
                     <small style="font-size:0.7em;color:#ccc;margin-top:-3px;display:block;width:100%;">
-                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}" style="text-decoration:none;display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;justify-content:center;">
-                            <span style="flex-shrink:0;">Uploaded By:&nbsp;</span><span class="movie-uploader" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${uploaderName}</span>
+                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}&ref=movies" style="text-decoration:none;display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;justify-content:center;">
+                            <span style="flex-shrink:0;">Uploaded by:&nbsp;</span><span class="movie-uploader" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${uploaderName}</span>
                         </a>
                     </small>
                 </div>
@@ -311,7 +311,7 @@ function filterMovies() {
                                 <input type="range" id="vp-vol-slider" min="0" max="100" value="100" aria-label="Volume">
                             </div>
                         </div>
-                        <button class="vp-btn" id="vp-cc-btn" aria-label="Toggle Captions" title="Captions (C)">
+                        <button class="vp-btn" id="vp-cc-btn" aria-label="Toggle captions" title="Captions (C)">
                             <i class="ic ic-badge-cc-fill">
                             </i>
                         </button>
@@ -320,7 +320,7 @@ function filterMovies() {
                             </i>
                         </button>
                         <div id="vp-menu-wrap">
-                            <button class="vp-btn" id="vp-dots-btn" aria-label="More Options">
+                            <button class="vp-btn" id="vp-dots-btn" aria-label="More options">
                                 <i class="ic ic-three-dots-vertical">
                                 </i>
                             </button>
@@ -334,14 +334,14 @@ function filterMovies() {
                                     <button class="vp-menu-item" id="vp-speed-btn">
                                         <i class="ic ic-speedometer">
                                         </i>
-                                        Playback Speed
+                                        Playback speed
                                         <i class="ic ic-chevron-right">
                                         </i>
                                     </button>
                                     <button class="vp-menu-item" id="vp-pip-btn">
                                         <i class="ic ic-pip">
                                         </i>
-                                        Picture In Picture
+                                        Picture in picture
                                     </button>
                                 </div>
                                 <div id="vp-menu-speed" style="display:none;">
@@ -414,7 +414,7 @@ function filterMovies() {
             </div>
         </div>
         <div id="networkWarning">
-            Slow Network Detected
+            Slow network detected
         </div>
     `;
     const wrapper = document.getElementById("vp-wrapper");
@@ -429,7 +429,7 @@ function filterMovies() {
     backBtn.id = "vp-back-btn";
     backBtn.classList = "button";
     backBtn.type = "button";
-    backBtn.setAttribute("aria-label", "Back To Movies");
+    backBtn.setAttribute("aria-label", "Back to movies");
     backBtn.innerHTML = `<i class="ic ic-chevron-left"></i> Back`;
     backBtn.addEventListener("click", () => closeWatchPanel());
     const div = document.createElement('div');
@@ -784,7 +784,7 @@ async function openWatchPanel(name, subtitleUrl = null) {
     section.style.display = "none";
     movies.style.display = "none";
     before.style.display = "none";
-    currentfile.textContent = `Currently Watching: ${name}`;
+    currentfile.textContent = `Currently watching: ${name}`;
     currentfile.style.display = "flex";
     const watchHeader = document.getElementById("watch-header");
     if (watchHeader) watchHeader.style.display = "flex";

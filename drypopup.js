@@ -8,7 +8,7 @@ let currentUser = null;
 const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
-        isLoggedInMsg = "My Account";
+        isLoggedInMsg = "My account";
         isLoggedInLink = "/InfiniteAccounts.html"; 
         authReady = true;
         resolve(user);
@@ -148,7 +148,7 @@ window.addEventListener('DOMContentLoaded', () => {
             ? true
             : localStorage.getItem('showClockBar') === 'true';
     } catch (e) {
-        console.warn('LocalStorage Not Available, Using Defaults:', e);
+        console.warn('LocalStorage not available, using defaults:', e);
     }
     const popupHTML = `
         <div class="popup2" id="popup">
@@ -167,7 +167,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </a>
                 <div class="setting-row">
                     <label>
-                        More Accurate Weather
+                        More accurate weather
                     </label>
                     <label class="switch">
                         <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
@@ -177,7 +177,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="setting-row">
                     <label>
-                        Show Clock Bar
+                        Show clock bar
                     </label>
                     <label class="switch">
                         <input type="checkbox" id="clockBarToggle" ${showClockBarState ? 'checked' : ''}>
@@ -186,12 +186,12 @@ window.addEventListener('DOMContentLoaded', () => {
                     </label>
                 </div>
                 <button class="button" id="toggleSnowBtn">
-                    Toggle Snow
+                    Toggle snow
                 </button>
                 <hr>
                 <div class="section">
                     <div class="field-group">
-                        <input class="button" type="text" id="titleInput" placeholder="Page Title" value="${savedTitle}">
+                        <input class="button" type="text" id="titleInput" placeholder="Page title" value="${savedTitle}">
                         <div class="row-actions">
                             <button id="saveTitleBtn" class="button">
                                 Save
@@ -203,7 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="field-group">
                         <label id="fLabel" for="faviconInput" class="button">
-                            Favicon Image
+                            Favicon image
                         </label>
                         <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
                         <img id="faviconPreview" class="preview-img ${savedFavicon ? 'show' : ''}" src="${savedFavicon}">
@@ -218,7 +218,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="field-group">
                         <label id="bgLabel" for="bgInput" class="button">
-                            Background Image
+                            Background image
                         </label>
                         <input type="file" class="button" id="bgInput" accept="image/*" hidden>
                         <div id="bgPreview" class="preview-img-bg ${savedBackground ? 'show' : ''}" style="${savedBackground ? `background-image:url('${savedBackground}')` : ''}"></div>
@@ -232,8 +232,8 @@ window.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="field-group" style="display:flex; flex-direction:column; align-items:center;">
-                        <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
-                        <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
+                        <input id="panicKeyInput" class="button" placeholder="Panic key" readonly>
+                        <input id="panicUrlInput" class="button" placeholder="Set panic URL">
                         <div class="row-actions">
                             <button id="savePanicBtn" class="button">
                                 Save
@@ -258,29 +258,29 @@ window.addEventListener('DOMContentLoaded', () => {
                 <hr>
                 <div class="section" style="justify-content:center">
                     <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
-                        Change Site Theme
+                        Change site theme
                     </a>
                     <a class="button" href="InfiniteDonaters.html">
-                        Help Support By Donating
+                        Help support by donating
                     </a>
                     <a class="button" href="InfiniteApps.html?blank=true">
-                        Open In About:Blank
+                        Open in about:blank
                     </a>
                     <a class="button" href="InfiniteChatters.html?channel=Suggestions">
-                        Suggest A Feature
+                        Suggest a feature
                     </a>
                 </div>
                 <a class="button" id="resetAllBtn">
-                    Clear Data
+                    Clear data
                 </a>
                 <br>
                 <a class="discord" style="display:contents;" href="${i}" target="_blank">
-                    Join The Discord
+                    Join the discord
                 </a>
             </div>
             <div class="bar themed">
                 <a id="CTCbtn" class="darkbuttons" href="InfiniteContacts.html">
-                    Contact Me
+                    Contact me
                 </a>
             </div>
         </div>
@@ -298,12 +298,12 @@ window.addEventListener('DOMContentLoaded', () => {
         saveBackendBtn.addEventListener('click', () => {
             const url = backendUrlInput.value.trim();
             if (!url) {
-                showError('Please Enter A Valid Backend URL');
+                showError('Please enter a valid backend URL');
                 return;
             }
             localStorage.setItem('backendUrl', url);
             BACKEND = url;
-            showSuccess(`Backend URL Saved: ${url}`);
+            showSuccess(`Backend URL saved: ${url}`);
         });
     }
     if (resetBackendBtn) {
@@ -311,7 +311,7 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('backendUrl');
             BACKEND = DEFAULT_BACKEND;
             backendUrlInput.value = '';
-            showSuccess('Backend URL Reset To Default');
+            showSuccess('Backend URL reset to default');
         });
     }
     window.addEventListener('storage', (e) => {
@@ -334,7 +334,7 @@ window.addEventListener('DOMContentLoaded', () => {
         savePanicBtn.addEventListener('click', () => {
             const url = panicUrlInput.value.trim();
             if (!panicKey || !url) {
-                showError('Please Set Both A Panic Key And URL');
+                showError('Please set both a panic key and URL');
                 return;
             }
             if (currentUser) {
@@ -344,7 +344,7 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('panicKey', panicKey);
             localStorage.setItem('panicUrl', url);
             panicUrl = url;
-            showSuccess(`Panic Key "${panicKey}" Saved → ${panicUrl}`);
+            showSuccess(`Panic key "${panicKey}" saved → ${panicUrl}`);
         });
     }
     const resetAllBtn = document.getElementById('resetAllBtn');
@@ -379,7 +379,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 await dbSet(`/users/${currentUser.uid}/settings/panicKey`, null);
                 await dbSet(`/users/${currentUser.uid}/settings/panicUrl`, null);
             }
-            showSuccess('Panic Settings Cleared');
+            showSuccess('Panic settings cleared');
         });
     }
     document.addEventListener('keydown', (e) => {
@@ -408,10 +408,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     sessionStorage.setItem('city', city);
                     sessionStorage.setItem('state', state);
                 } catch (err) {
-                    console.warn('Failed To Get City/State:', err);
+                    console.warn('Failed to get city/state:', err);
                 }
             }, (error) => {
-                console.warn('Geolocation Error:', error);
+                console.warn('Geolocation error:', error);
             });
         }
     });
@@ -463,7 +463,7 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('pageTitle', newTitle);
             setTitle(newTitle);
         } else {
-            showError('Please Enter A Valid Title Before Saving.');
+            showError('Please enter a valid title before saving.');
         }
         if (currentUser) {
             dbSet(`/users/${currentUser.uid}/settings/pageTitle`, newTitle);
@@ -509,13 +509,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     const fLabel = document.getElementById('fLabel');
     setFaviconBtn.addEventListener('click', () => {
-        if (!faviconPendingDataUrl) return showError('Select An Image First');
+        if (!faviconPendingDataUrl) return showError('Select an image first');
         localStorage.setItem('customFavicon', faviconPendingDataUrl);
         updateFavicon(faviconPendingDataUrl);
         // if (currentUser) {
         //     dbSet(`/users/${currentUser.uid}/settings/customFavicon`, faviconPendingDataUrl);
         // }
-        showSuccess('Favicon Saved');
+        showSuccess('Favicon saved');
         fLabel.style.display='none';
     });
     resetFaviconBtn.addEventListener('click', () => {
@@ -576,11 +576,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 const avgBrightness = total / count;
                 document.body.classList.toggle('light-bg', avgBrightness > 175);
             } catch (e) {
-                console.warn('Could Not Analyze Background Brightness:', e);
+                console.warn('Could not analyze background brightness:', e);
             }
         };
         img.onerror = function () {
-            console.warn('Could Not Load Background Image For Brightness Check');
+            console.warn('Could not load background image for brightness check');
         };
         img.src = imgSrc;
     }
@@ -604,10 +604,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     if (setBgBtn) {
         setBgBtn.addEventListener('click', () => {
-            if (!bgPendingDataUrl) return showError('Select An Image First');
+            if (!bgPendingDataUrl) return showError('select an image first');
             localStorage.setItem('customBackground', bgPendingDataUrl);
             updateBackground(bgPendingDataUrl);
-            showSuccess('Background Image Saved');
+            showSuccess('Background image saved');
             bgLabel.style.display='none';
             bgPreview.style.height = '70%';
         });
