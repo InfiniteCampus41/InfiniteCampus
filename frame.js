@@ -502,6 +502,7 @@ function appendToMain() {
         "/InfiniteAis.html",
         "/InfiniteApps.html?listen=true",
         "/InfiniteApps.html?player=true",
+        "/InfiniteLegacyGames.html"
     ];
     const currentPage = window.location.pathname + window.location.search;
     if (excludedPages.some(page => currentPage.includes(page))) {
