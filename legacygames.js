@@ -1,0 +1,523 @@
+"use strict";
+/** @type {HTMLFormElement} */
+/** @type {HTMLInputElement} */
+/** @type {HTMLInputElement} */
+/** @type {HTMLParagraphElement} */
+/** @type {HTMLPreElement} */
+/** @param {string} input */
+/** @param {string} template */
+/** @returns {string} */
+const form = document.getElementById("sj-form");
+const address = document.getElementById("sj-address");
+const searchEngine = document.getElementById("sj-search-engine");
+const error = document.getElementById("sj-error");
+const stockSW = "./sw.js";
+const swAllowedHostnames = ["localhost", "127.0.0.1", "infinitecampus.xyz", "instructure.space", "www.infinitecampus.xyz"];
+const errorCode = document.getElementById("sj-error-code");
+let scramjet = null;
+if (typeof $scramjetLoadController !== "undefined") {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+        files: {
+            wasm: "/scram/scramjet.wasm.wasm",
+            all: "/scram/scramjet.all.js",
+            sync: "/scram/scramjet.sync.js",
+        },
+    });
+    scramjet.init();
+}
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+let blockedUrls = [];
+async function loadBlockedUrls() {
+    try {
+        const res = await fetch("/edit-urls");
+        if (!res.ok) throw new Error("Failed to fetch blocked URLs");
+        const data = await res.json();
+        blockedUrls = Object.entries(data).map(([url, reason]) => ({
+            url,
+            reason
+        }));
+    } catch (err) {
+        console.error("Error Loading URLs:", err);
+        blockedUrls = [];
+    }
+}
+function getBaseDomain(input) {
+    try {
+        const u = new URL(input.startsWith("http") ? input : "https://" + input);
+        return u.hostname.toLowerCase();
+    } catch (e) {
+        return "";
+    }
+}
+function search(input, template) {
+	try {
+		return new URL(input).toString();
+	} catch (err) {
+	}
+	try {
+		const url = new URL(`http://${input}`);
+		if (url.hostname.includes(".")) return url.toString();
+	} catch (err) {
+	}
+	return template.replace("%s", encodeURIComponent(input));
+}
+function checkBlocked(inputUrl) {
+    const domain = getBaseDomain(inputUrl);
+    for (const entry of blockedUrls) {
+        const blockedDomain = getBaseDomain(entry.url);
+        if (domain === blockedDomain) {
+            return entry.reason || "Blocked.";
+        }
+    }
+    return null;
+}
+loadBlockedUrls();
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const reason = checkBlocked(address.value);
+    if (reason) {
+        error.textContent = "The Server Could Not Process This Request. \n If You Think This Is An Error, Please Send Your Error Code To The Owner Through \n The Chat, Email From The Contact Me page, Or The Report A Bug Form";
+        errorCode.textContent = `Error Code: ${reason}`;
+        return;
+    }
+    try {
+        await registerSW();
+    } catch (err) {
+        error.textContent = "Failed To Register Service Worker.";
+        errorCode.textContent = err.toString();
+        throw err;
+    }
+    showLoader();
+    const url = search(address.value, searchEngine.value);
+    let wispUrl =
+        (location.protocol === "https:" ? "wss" : "ws") +
+        "://" +
+        location.host +
+        "/wisp/";
+    if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
+        await connection.setTransport("/libcurl/index.mjs", [
+            { websocket: wispUrl },
+        ]);
+    }
+    const frame = scramjet.createFrame();
+    frame.frame.id = "sj-frame";
+    const fullScreenBtn = document.createElement('button');
+    fullScreenBtn.innerHTML = '<i class="ic ic-fullscreen"></i>';
+    fullScreenBtn.classList = 'button';
+    fullScreenBtn.id = 'pxyFcrn';
+    fullScreenBtn.style.position = 'fixed';
+    fullScreenBtn.style.bottom = '20px';
+    fullScreenBtn.style.zIndex = '9999';
+    fullScreenBtn.style.right = '20px';
+    document.body.appendChild(fullScreenBtn);
+    let proxyContainerOld = document.querySelector('#proxy-container');
+    if (!proxyContainerOld) {
+        const proxyContainer = document.createElement("div");
+        proxyContainer.id = "proxy-container";
+        proxyContainer.style.height = "87vh";
+        document.body.appendChild(proxyContainer);
+        proxyContainer.appendChild(frame.frame);
+        frame.go(url);
+    } else {
+        proxyContainerOld.appendChild(frame.frame);
+        frame.go(url);
+    }
+});
+async function registerSW() {
+	if (!navigator.serviceWorker) {
+		if (
+			location.protocol !== "https:" &&
+			!swAllowedHostnames.includes(location.hostname)
+		)
+		throw new Error("Service Workers Cannot Be Registered Without https.");
+		throw new Error("Your Browser Doesn't Support Service Workers.");
+	}
+	await navigator.serviceWorker.register(stockSW);
+}
+document.addEventListener("DOMContentLoaded", function () {
+    const launchButton = document.getElementById("launchGames");
+    const launch2 = document.getElementById("launchGames2");
+    const OfficialSites = e;
+    if (!scramjet) {
+        launchButton.style.display = "none";
+    }
+    const def = "https://play.infinitecampus.xyz/games/";
+    const main = document.body.querySelector("main");
+    if (OfficialSites.includes(f)) {
+        launch2.textContent = 'Games (Method 2)';
+    } else {
+        launchButton.style.display = 'none';
+    }
+    const before = document.getElementById("before");
+    const games = [
+        { name: "Slope", method: ["1","2"], url: `${def}slope/index.html`},
+        { name: "Slope (2)", method: ["2"], url: `https://mathadventure1.github.io/slope/slope/index.html`},
+        { name: "NettleWeb ", method: ["2"], url: `https://nettleweb.com`},
+        { name: "NettleWeb (2)", method: ["2"], url: `https://sigmasigmatoiletedge.github.io` },
+        { name: "Ngon", method: ["1", "2"], url: `https://landgreen.github.io/n-gon/` },
+        { name: "Eaglercraft (1.12.2)", method: ["1","2"], url: `${def}eg1/index.html` },
+        { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: `https://sd592g.github.io/zj684od4lfg/` },
+        { name: "Eaglercraft ( 1.8.8 )", method: ["2"], url: `https://resent4-0.vercel.app/` },
+        { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: `https://mcraft.fun/` },
+        { name: "Eaglercraft Servers", method: ["1", "2"], url: `https://servers.eaglercraft.com/` },
+        { name: "Roblox", method: ["1"], url: `https://roblox.com`},
+        { name: "BuildNow.gg", method: ["1","2"], url: `${def}buildnow/index.html`},
+        { name: "Run 3", method: ["1", "2"], url: `${def}run3/index.html` },
+        { name: "Run 3 (2)", method: ["1", "2"], url: `https://lekug.github.io/tn6pS9dCf37xAhkJv/` },
+        { name: "Retro Bowl", method: ["1", "2"], url: `${def}retrobowl/index.html` },
+        { name: "Bad Time Simulator", method: ["1", "2"], url: `https://jcw87.github.io/c2-sans-fight/`},
+        { name: "OVO", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/ovo/game.html?nocheckorient=1` },
+        { name: "Getting Over It", method: ["1", "2"], url: `${def}goi/index.html` },
+        { name: "A Difficult Game About Climbing", method: ["1", "2"], url: `${def}adgac/index.html` },
+        { name: "Pixel Gun 3D", method: ["1", "2"], url: `https://games.crazygames.com/en_US/pixel-gun-3d/index.html` },
+        { name: "Stickman Hook", method: ["1", "2"], url: `https://mountain658.github.io/g/stickmanhook/index.html` },
+        { name: "Universal Paperclips", method: ["1", "2"], url: `${def}paperclips/index.html` },
+        { name: "Buckshot Roulette", method: ["1", "2"], url: `${def}bsr/index.html` },
+        { name: "Five Nights At Epstien's", method: ["1", "2"], url: `${def}fnae/index.html` },
+        { name: "Five Nights At Freddy's", method: ["1", "2"], url: `${def}fnaf1/index.html` },
+        { name: "Hollow Knight", method: ["1", "2"], url: `${def}hollowknight/index.html` },
+        { name: "Iron Lung", method: ["1", "2"], url: `${def}ironlung/index.html` },
+        { name: "Super Mario 64", method: ["1", "2"], url: `${def}mario64/index.html` },
+        { name: "The Legend Of Zelda Ocarina Of Time", method: ["1", "2"], url: `${def}oot/index.html` },
+        { name: "The Legend Of Zelda Majora's Mask", method: ["1", "2"], url: `${def}tlozmjm/index.html` },
+        { name: "Pokemon Emerald", method: ["1", "2"], url: `${def}pokeemr/index.html` },
+        { name: "Pokemon Red", method: ["1", "2"], url: `${def}pokered/index.html` },
+        { name: "Plants Vs Zombies", method: ["1", "2"], url: `https://games.gombis.com/plants-vs-zombies-3?hl=en` },
+        { name: "Polytrack", method: ["1", "2"], url: `https://www.kodub.com/apps/polytrack` },
+        { name: "Polytrack (2)", method: ["1", "2"], url: `https://poly-track.io/` },
+        { name: "Gridland", method: ["1", "2"], url: `https://gridland.doublespeakgames.com/` },
+        { name: "8 Ball Pool Multiplayer", method: ["1", "2"], url: `https://foony.com/games/8-ball-pool-online-billiards?&platform=crazygames` },
+        { name: "Gulper.io", method: ["1", "2"], url: `https://gulper.io/` },
+        { name: "Skribbl.io", method: ["1", "2"], url: `https://skribbl.io/` },
+        { name: "Paper.io 2", method: ["1", "2"], url: `https://mountain658.github.io/g/paperio2/paperio2.html` },
+        { name: "Deeeep.io", method: ["1", "2"], url: `https://beta.deeeep.io/` },
+        { name: "Voxiom.io", method: ["1", "2"], url: `https://voxiom.io/?nolinks=1&authTest=1` },
+        { name: "Brutal.io", method: ["1", "2"], url: `https://brutal.io/` },
+        { name: "Bonk.io", method: ["1", "2"], url: `https://bonk.io/` },
+        { name: "Slither.io", method: ["1", "2"], url: `https://slithergame.io/slither-io.embed` },
+        { name: "Wings.io", method: ["1", "2"], url: `https://wings.io/` },
+        { name: "Mope.io", method: ["1", "2"], url: `https://mope.io/` },
+        { name: "Warbot.io", method: ["1", "2"], url: `https://warbot.io/`},
+        { name: "Diep.io", method: ["1", "2"], url: `https://diep.io/` },
+        { name: "Agar.io Neocities Version", method: ["1", "2"], url: `https://agar.neocities.org/` },
+        { name: "Kour.io", method: ["1", "2"], url: `https://kour.io/` },
+        { name: "Wormate.io", method: ["1", "2"], url: `https://wormate.io/` },
+        { name: "Build Royale", method: ["1", "2"], url: `https://buildroyale.io/` },
+        { name: "BLOXD.IO", method: ["1", "2"], url: `https://bloxd.io/` },
+        { name: "1", method: ["1", "2"], url: `${def}1/` },
+        { name: "2048", method: ["1", "2"], url: `${def}2048/` },
+        { name: "9007199254740992", method: ["1", "2"], url: `https://dmitrykuzmenko.github.io/2048/` },
+        { name: "Subway Surfers", method: ["1", "2"], url: `https://dddavit.github.io/subway/` },
+        { name: "World's Hardest Game", method: ["1", "2"], url: `https://mountain658.github.io/zworldsHardestGame.html` },
+        { name: "Drive Mad", method: ["1", "2"], url: `https://ubg365.github.io/drive-mad/play.html` },
+        { name: "Madalin Stunt Cars 2", method: ["1", "2"], url: `${def}msc2/index.html` },
+        { name: "Rocket League", method: ["1","2"], url: `${def}carsoccer/index.html`},
+        { name: "HexGL", method: ["1", "2"], url: `https://hexgl.bkcore.com/play/` },
+        { name: "BitLife", method: ["1", "2"], url: `${def}bitlife/index.html` },
+        { name: "BitLife (2)", method: ["1", "2"], url: `https://ubg365.github.io/bitlife-life-simulator/play.html` },
+        { name: "Shell Shockers", method: ["1", "2"], url: `https://shellshock.io/` },
+        { name: "Moto X3M", method: ["1", "2"], url: `https://ubg365.github.io/moto-x3m/play.html` },
+        { name: "Moto X3M 2", method: ["1", "2"], url: `https://slope-game.github.io/newgame/motox3m-2/` },
+        { name: "Moto X3M 3", method: ["1", "2"], url: `https://slope-game.github.io/newgame/motox3m-3/` },
+        { name: "Moto X3M Winter", method: ["1", "2"], url: `https://unblocked-games.s3.amazonaws.com/games/2024/gm/moto-x3m-winter/index.html` },
+        { name: "Moto X3M Pool Party", method: ["1", "2"], url: `https://unblocked-games.s3.amazonaws.com/games/2024/gm/moto-x3m-pool-party/index.html` },
+        { name: "Moto X3M Spooky Land", method: ["1", "2"], url: `https://unblocked-games.s3.amazonaws.com/games/2024/gm/moto-x3m-spooky-land/index.html` },
+        { name: "Fireboy And Watergirl 1", method: ["1", "2"], url: `https://fireboyandwatergirlunblocked.github.io/` },
+        { name: "Fireboy And Watergirl 2", method: ["1", "2"], url: `https://app-96912.games.s3.yandex.net/96912/jxv8hpvk1a4cg9pivs3p6coxop7sufps/index.html` },
+        { name: "Fireboy And Watergirl 3", method: ["1", "2"], url: `https://html5.gamedistribution.com/f3a6e1ac0a77412289cbac47658b2b68/?gd_sdk_referrer_url=https://www.mathnook.com/fun-games-2/fireboy-and-watergirl-3.html` },
+        { name: "Fireboy And Watergirl 4", method: ["1", "2"], url: `https://fireboyandwatergirlunblocked.github.io/4/` },
+        { name: "Fireboy And Watergirl 5", method: ["1", "2"], url: `https://fireboyandwatergirlunblocked.github.io/5/` },
+        { name: "Fireboy And Watergirl 6", method: ["1", "2"], url: `https://fireboyandwatergirlunblocked.github.io/6/` },
+        { name: "Death Run 3D", method: ["1", "2"], url: `https://ubg365.github.io/death-run-3d/` },
+        { name: "Bad Time Simulator ( Sans Fight )", method: ["1", "2"], url: `https://undertale-play.com/wp-content/uploads/gg/bad-time-simulator/` },
+        { name: "EggyCar", method: ["1", "2"], url: `https://ubg365.github.io/eggy-car/play.html` },
+        { name: "Stack", method: ["1", "2"], url: `https://ubg365.github.io/stack/` },
+        { name: "Asteroids ( 1986 )", method: ["1", "2"], url: `https://downloads.retrostic.com/play.php?console_slug=atari-7800&rom_url=https://downloads.retrostic.com/roms/Asteroids.zip` },
+        { name: "Asteroids ( 1979 )", method: ["1", "2"], url: `https://www.retrogames.cc/embed/44988-asteroids-rev-4.html` },
+        { name: "Breakout", method: ["1", "2"], url: `https://www.coolmathgames.com/sites/default/files/public_games/41808/?gd_sdk_referrer_url=https%3A%2F%2Fwww.coolmathgames.com%2F0-atari-breakout` },
+        { name: "Block Blast", method: ["1", "2"], url: `${def}bblast/index.html` },
+        { name: "Bosconian", method: ["1", "2"], url: `https://www.retrogames.cc/embed/42458-bosconian-old-version.html` },
+        { name: "Doom", method: ["1", "2"], url: `https://arcader.com/roms/doom.html` },
+        { name: "Half-Life 1", method: ["1", "2"], url: `https://x8bitrain.github.io/webXash/` },
+        { name: "Tetris ( NES )", method: ["1", "2"], url: `https://downloads.retrostic.com/play.php?console_slug=nes&rom_url=https://downloads.retrostic.com/roms/Tetris%20%28USA%29.zip` },
+        { name: "EarthBound", method: ["1", "2"], url: `https://downloads.retrostic.com/play.php?console_slug=snes&rom_url=https://downloads.retrostic.com/roms/EarthBound%20%28USA%29.zip` },
+        { name: "Pac Man", method: ["1", "2"], url: `https://downloads.retrostic.com/play.php?console_slug=mame&rom_url=https://downloads.retrostic.com/roms/pacman.zip` },
+        { name: "New Rally X", method: ["1", "2"], url: `https://www.retrogames.cc/embed/9312-new-rally-x.html` },
+        { name: "Super Mario Bros", method: ["1", "2"], url: `https://downloads.retrostic.com/play.php?console_slug=nes&rom_url=https://downloads.retrostic.com/roms/Super%20Mario%20Bros%20%28E%29.zip` },
+        { name: "Hover Racer Drive", method: ["1", "2"], url: `https://ubg365.github.io/hover-racer-drive/` },
+        { name: "Drift Boss", method: ["1", "2"], url: `https://ubg365.github.io/drift-boss/` },
+        { name: "Breaking The Bank", method: ["1", "2"], url: `https://mountain658.github.io/zbreakingthebank.html` },
+        { name: "Escaping The Prison", method: ["1", "2"], url: `https://mountain658.github.io/zescapetheprison.html` },
+        { name: "Stealing The Diamond", method: ["1", "2"], url: `https://mountain658.github.io/zstealingthediamond.html` },
+        { name: "Infiltrating The Airship", method: ["1", "2"], url: `https://sz-games.github.io/games/Flash.html?game=/games/henry-airship/infiltratingtheairshipgame.swf` },
+        { name: "Fleeing The Complex", method: ["1", "2"], url: `https://sz-games.github.io/games/Flash.html?game=https://sz-games.github.io/Games6/Henry%20Stickmin%20-%20Fleeing%20the%20Complex.swf?raw=true` },
+        { name: "1v1.lol", method: ["1", "2"], url: `https://sz-games.github.io/Games-2/lol/` },
+        { name: "Time Shooter", method: ["1", "2"], url: `https://games.crazygames.com/en_US/time-shooter/index.html` },
+        { name: "Time Shooter 2", method: ["1", "2"], url: `https://games.crazygames.com/en_US/time-shooter-2/index.html` },
+        { name: "Time Shooter 3", method: ["1", "2"], url: `https://games.crazygames.com/en_US/time-shooter-3-swat/index.html` },
+        { name: "Tagpro", method: ["1", "2"], url: `https://tagpro.koalabeast.com/` },
+        { name: "Baldis Basics", method: ["1", "2"], url: `https://igroutka.ru/loader/game/26471/` },
+        { name: "Drift Hunters", method: ["1", "2"], url: `https://htmlxm.github.io/h/drift-hunters/` },
+        { name: "Chrome Dino", method: ["1", "2"], url: `https://htmlxm.github.io/h7/dinosaur-game/` },
+        { name: "Crossy Road", method: ["1", "2"], url: `${def}crossyroad/index.html` },
+        { name: "Crossy Road (2)", method: ["1", "2"], url: `https://htmlxm.github.io/h/crossy-road/` },
+        { name: "Angry Birds", method: ["1", "2"], url: `${def}abirds/index.html` },
+        { name: "Flappy Bird", method: ["1", "2"], url: `https://htmlxm.github.io/h8/flappy-bird-origin/` },
+        { name: "Terraria", method: ["1", "2"], url: `${def}terraria/index.html` },
+        { name: "Basketball Stars", method: ["1", "2"], url: `${def}bkstars/index.html` },
+        { name: "Basketball Stars (2)", method: ["1", "2"], url: `https://htmlxm.github.io/h/basketball-stars/` },
+        { name: "Stumble Guys ( Server 1 )", method: ["1", "2"], url: `https://www.stumbleguys.com/play` },
+        { name: "Tunnel Rush", method: ["1", "2"], url: `${def}tunnelrush/index.html` },
+        { name: "Cookie Clicker", method: ["1", "2"], url: `${def}cclick/index.html` },
+        { name: "Cookie Clicker (2)", method: ["1", "2"], url: `https://cookieclickerunblocked.github.io/games/cookie-clicker/index.html` },
+        { name: "Capybara Clicker", method: ["1", "2"], url: `https://capybara-clicker.com/` },
+        { name: "Snowball.io", method: ["1", "2"], url: `https://games.crazygames.com/en_US/snowball-io/index.html` },
+        { name: "Slither.io", method: ["1", "2"], url: `${def}slither/index.html` },
+        { name: "Doodle Road", method: ["1", "2"], url: `https://games.crazygames.com/en_US/doodle-road/index.html` },
+        { name: "Minesweeper", method: ["1", "2"], url: `https://minesweeper.online/` },
+        { name: "FNAF ( Web Remake )", method: ["1", "2"], url: `https://ubg77.github.io/fix/fnaf1/` },
+        { name: "Krunker.io", method: ["1", "2"], url: `https://krunker.io/` },
+        { name: "Duck Life", method: ["1", "2"], url: `https://ducklifegame.github.io/file/` },
+        { name: "Duck Life 2", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/duck-life-2-world-champion/game.html?nocheckorient=1` },
+        { name: "Duck Life 3", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/duck-life-3-evolution/game.html?nocheckorient=1` },
+        { name: "Duck Life 4", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/duck-life-4/game.html?nocheckorient=1` },
+        { name: "Duck Life 5", method: ["1", "2"], url: `https://archive.org/embed/duck-life-treasure-hunt` },
+        { name: "Duck Life 6", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/duck-life-6-space/game.html?nocheckorient=1` },
+        { name: "Draw Climber", method: ["1", "2"], url: `https://ext.minijuegosgratis.com//draw-climber//gameCode//index.html` },
+        { name: "Cut The Rope", method: ["1", "2"], url: `https://games.cdn.famobi.com/html5games/c/cut-the-rope/v020/?fg_domain=play.famobi.com&fg_aid=A-QU5FO&fg_uid=4531b37c-a8e0-4a67-9ebd-e8d3190b6277&fg_pid=f821547d-586c-4df8-83e5-796f8c2d3d64&fg_beat=963&original_ref=` },
+        { name: "Timore", method: ["1", "2"], url: `https://media2.y8.com/y8-studio/unity_webgl_games/u53/timore_v3/` },
+        { name: "Getaway Shootout", method: ["1", "2"], url: `https://ubg44.github.io/GetawayShootout/` },
+        { name: "Temple Of Boom", method: ["1", "2"], url: `https://g.igroutka.ru/games/49/temple_of_boom/uploads/game/html5/6009/` },
+        { name: "Tanuki Sunset", method: ["1", "2"], url: `https://kdata1.com/2020/04/962943/` },
+        { name: "Dino Swords", method: ["1", "2"], url: `https://dinoswords.gg/` },
+        { name: "Smash Karts", method: ["1", "2"], url: `https://smashkarts.io/` },
+        { name: "Tiny Fishing", method: ["1", "2"], url: `https://ubg365.github.io/tiny-fishing/` },
+        { name: "Hammer 2", method: ["1", "2"], url: `https://games.crazygames.com/en_US/hammer-2/index.html` },
+        { name: "OSU", method: ["1", "2"], url: `https://webosu.online/` },
+        { name: "Flight Sim ( Scratch )", method: ["1", "2"], url: `https://scratch.mit.edu/projects/74221074/embed` },
+        { name: "Geometry Dash ( Scratch )", method: ["1", "2"], url: `https://html.cafe/x8e83d9f3` },
+        { name: "Getting Over It ( Scratch )", method: ["1", "2"], url: `https://turbowarp.org/389464290/embed?autoplay&addons=remove-curved-stage-border,pause,gamepad` },
+        { name: "Infinite Craft", method: ["1", "2"], url: `https://infinite-craft.com/infinite-craft/` },
+        { name: "Wordle", method: ["1", "2"], url: `https://wordleunlimited.org/` },
+        { name: "Worldguessr", method: ["1", "2"], url: `https://www.worldguessr.com/` },
+        { name: "DELTARUNE", method: ["1", "2"], url: `https://g-mcb.github.io/deltarune/index.html` },
+        { name: "ULTRAKILL", method: ["1", "2"], url: `${def}ultrakill/index.html` },
+        { name: "Hollow Knight (2)", method: ["1", "2"], url: `https://orbit.foo.ng/games/hollowknight/index.html` },
+        { name: "Tomb Of The Mask", method: ["1", "2"], url: `${def}totm/index.html` },
+        { name: "Tomb Of The Mask (2)", method: ["1", "2"], url: `https://mountain658.github.io/g/tombofthemask/index.html` }
+    ];
+    function showGames(method, filterText = "") {
+        before.style.display = 'none';
+        let container = document.getElementById("gamesContainer");
+        if (!container) {
+            container = document.createElement("div");
+            container.setAttribute("id", "gamesContainer");
+            container.style.padding = "30px";
+            container.style.display = "flex";
+            container.style.flexWrap = "wrap";
+            container.style.justifyContent = "center";
+            container.style.gap = "10px";
+            main.appendChild(container);
+            const requestDiv = document.createElement("div");
+            requestDiv.style.display = "flex";
+            requestDiv.style.justifyContent = "center";
+            requestDiv.style.width = "100%";
+            requestDiv.style.maxHeight = "fit-content";
+            const requestBtn = document.createElement("a");
+            requestBtn.className = "discord";
+            requestBtn.href = "InfiniteChatters.html?channel=Suggestions";
+            requestBtn.innerText = "Request A Game";
+            requestDiv.appendChild(requestBtn);
+            container.appendChild(requestDiv);
+            const searchDiv = document.createElement("div");
+            searchDiv.style.width = "100%";
+            searchDiv.style.display = "flex";
+            searchDiv.style.flexDirection = "column";
+            searchDiv.style.alignItems = "center";
+            const hr = document.createElement("hr");
+            hr.style.width = "100%";
+            const searchInput = document.createElement("input");
+            searchInput.type = "text";
+            searchInput.placeholder = "Search Games";
+            searchInput.style.padding = "10px";
+            searchInput.style.width = "300px";
+            searchInput.style.fontSize = "16px";
+            searchInput.classList = "button";
+            searchInput.style.borderRadius = "8px";
+            searchInput.style.border = "1px solid #ccc";
+            searchDiv.appendChild(searchInput);
+            searchDiv.appendChild(hr);
+            container.appendChild(searchDiv);
+            searchInput.addEventListener("input", function () {
+                container.querySelectorAll("button").forEach(btn => btn.remove());
+                showGames(method, searchInput.value);
+            });
+        }
+        if (method == "1") {
+            games.forEach(function (game) {
+                if (game.method.includes("1")) {
+                    if (!game.name.toLowerCase().includes(filterText.toLowerCase())) return;
+                    const button = document.createElement("button");
+                    button.textContent = game.name;
+                    button.className = "button";
+                    button.style.padding = "10px 20px";
+                    button.style.fontSize = "16px";
+                    button.style.cursor = "pointer";
+                    button.onclick = function () {
+                        const proxyContainer = document.getElementById('proxy-container');
+                        if (proxyContainer) {
+                            proxyContainer.style.display = 'block';
+                        }
+                        container.style.display = "none";
+                        showLoader();
+                        const backButton = document.createElement("button");
+                        backButton.innerHTML = "<i class='ic ic-arrow-left'></i>";
+                        backButton.className = "button";
+                        backButton.style.position = "fixed";
+                        backButton.style.top = "calc(var(--headerHeight) + 5px)";
+                        backButton.style.left = "10px";
+                        backButton.style.zIndex = "1000";
+                        backButton.style.padding = "10px";
+                        backButton.style.fontSize = "16px";
+                        backButton.style.cursor = "pointer";
+                        main.appendChild(backButton);
+                        const fullscreen = document.createElement("button");
+                        fullscreen.innerHTML = "<i class='ic ic-fullscreen'></i>";
+                        fullscreen.className = "button";
+                        fullscreen.style.position = "fixed";
+                        fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";
+                        fullscreen.style.right = "10px";
+                        fullscreen.style.zIndex = "1000";
+                        fullscreen.style.padding = "10px";
+                        fullscreen.style.fontSize = "16px";
+                        fullscreen.style.cursor = "pointer";
+                        main.appendChild(fullscreen);
+                        const addressInput = document.getElementById("sj-address");
+                        if (addressInput) {
+                            addressInput.value = game.url;
+                            const form = document.getElementById("sj-form");
+                            if (form) {
+                                const event = new Event("submit", { bubbles: true, cancelable: true });
+                                form.dispatchEvent(event);
+                                const waitForIframe = setInterval(() => {
+                                    const gameIframe = document.getElementById("sj-frame");
+                                    if (gameIframe) {
+                                        clearInterval(waitForIframe);
+                                        gameIframe.addEventListener("load", () => {
+                                            hideLoader();
+                                        });
+                                        setTimeout(() => {
+                                            hideLoader();
+                                        }, 10000);
+                                    }
+                                }, 100);
+                            }
+                        }
+                        fullscreen.onclick = function () {
+                            const allIframes = document.querySelectorAll("iframe");
+                            let gameIframe = null;
+                            for (let i = allIframes.length - 1; i >= 0; i--) {
+                                const src = allIframes[i].src || '';
+                                if (!src.includes('google') && !src.includes('doubleclick') && 
+                                    !src.includes('ads') && !src.includes('ad-') &&
+                                    allIframes[i].offsetWidth > 100 && allIframes[i].offsetHeight > 100) {
+                                    gameIframe = allIframes[i];
+                                    break;
+                                }
+                            }
+                            if (!gameIframe) return;
+                            if (!document.fullscreenElement) {
+                                gameIframe.setAttribute("allowfullscreen", "");
+                                gameIframe.requestFullscreen().catch(err => {
+                                    document.body.requestFullscreen().catch(err2 => console.error(err2));
+                                });
+                            } else {
+                                document.exitFullscreen();
+                            }
+                        };
+                        backButton.onclick = function () {
+                            const proxyContainer = document.getElementById('proxy-container');
+                            if (proxyContainer) {
+                                proxyContainer.style.display = 'none';
+                            }
+                            hideLoader();
+                            const iframes = document.querySelectorAll("iframe");
+                            iframes.forEach(iframe => iframe.remove());
+                            backButton.remove();
+                            fullscreen.remove();
+                            container.style.display = "flex";
+                        };
+                    };
+                    container.appendChild(button);
+                }
+            });
+        } else {
+            games.forEach(function (game) {
+                if (game.method.includes("2")) {
+                    if (!game.name.toLowerCase().includes(filterText.toLowerCase())) return;
+                    const button = document.createElement("button");
+                    button.textContent = game.name;
+                    button.className = "button";
+                    button.style.padding = "10px 20px";
+                    button.style.fontSize = "16px";
+                    button.style.cursor = "pointer";
+                    button.onclick = function () {
+                        container.style.display = "none";
+                        const backButton = document.createElement("button");
+                        backButton.innerHTML = "<i class='ic ic-arrow-left'></i>";
+                        backButton.className = "button";
+                        backButton.style.position = "fixed";
+                        backButton.style.top = "calc(var(--headerHeight) + 5px)";
+                        backButton.style.left = "10px";
+                        backButton.style.zIndex = "1000";
+                        backButton.style.padding = "10px";
+                        backButton.style.fontSize = "16px";
+                        backButton.style.cursor = "pointer";
+                        main.appendChild(backButton);
+                        const fullscreen = document.createElement("button");
+                        fullscreen.innerHTML = "<i class='ic ic-fullscreen'></i>";
+                        fullscreen.className = "button";
+                        fullscreen.style.position = "fixed";
+                        fullscreen.style.bottom = "calc(var(--footerHeight) + 5px)";
+                        fullscreen.style.right = "10px";
+                        fullscreen.style.zIndex = "1000";
+                        fullscreen.style.padding = "10px";
+                        fullscreen.style.fontSize = "16px";
+                        fullscreen.style.cursor = "pointer";
+                        main.appendChild(fullscreen);
+                        const iframe = document.createElement("iframe");
+                        iframe.id = "gameFrame";
+                        iframe.style.width = "100vw";
+                        iframe.style.height = "calc(100vh - calc(var(--headerHeight) + var(--footerHeight)))";
+                        iframe.src = game.url;
+                        main.appendChild(iframe);
+                        fullscreen.onclick = function () {
+                            const iframe = document.getElementById("gameFrame");
+                            if (!iframe) return;
+                            if (!document.fullscreenElement) {
+                                iframe.requestFullscreen().catch(err => console.error(err));
+                            } else {
+                                document.exitFullscreen();
+                            }
+                        };
+                        backButton.onclick = function () {
+                            const iframe = document.getElementById("gameFrame");
+                            if (iframe) iframe.remove();
+                            backButton.remove();
+                            fullscreen.remove();
+                            container.style.display = "flex";
+                        };
+                    };
+                    container.appendChild(button);
+                }
+            })
+        }
+    }
+    launch2.addEventListener("click", function () {
+        showGames("2");
+    });
+    launchButton.addEventListener("click", function () {
+        showGames("1");
+    });
+})

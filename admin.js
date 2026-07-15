@@ -938,7 +938,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     if (profile.isDonater) badgeContainer.innerHTML += '<i class="ic ic-balloon-heart" style="color:#00E5FF"></i>';
                     if (profile.isPartner) badgeContainer.innerHTML += '<i class="ic ic-handshake" style="color:cornflowerblue"></i>';
                     if (profile.isUploader) badgeContainer.innerHTML += '<i class="ic ic-film" style="color:grey"></i>';
-                    if (profile.gameUploader) badgeContainer.innerHTML += '<i class="ic ic-controller" style="color:orange"></i>';
                     if (profile.mileStone) badgeContainer.innerHTML += '<i class="ic ic-award" style="color:yellow"></i>';
                     if (profile.isGuesser) badgeContainer.innerHTML += '<i class="ic ic-stopwatch" style="color:red"></i>';
                     if (profile.dUsername && profile.dUsername.trim() !== "") {

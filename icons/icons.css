@@ -126,6 +126,10 @@ i {
     mask-image: url('/icons/discord.svg');
     -webkit-mask-image: url('/icons/discord.svg');
 }
+.ic-dot {
+    mask-image: url('/icons/dot.svg');
+    -webkit-mask-image: url('/icons/dot.svg');
+}
 .ic-download {
     mask-image: url('/icons/download.svg');
     -webkit-mask-image: url('/icons/download.svg');
