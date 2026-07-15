@@ -78,6 +78,21 @@
         if (!game.hasThumbnail) return null;
         return `${a}/zonegames/${encodeURIComponent(game.id)}/thumbnail`;
     }
+    let gameLoadInProgress = false;
+    let thumbQueue = [];
+    function scheduleThumbnail(img, src) {
+        if (gameLoadInProgress) {
+            thumbQueue.push(() => { img.src = src; });
+        } else {
+            img.src = src;
+        }
+    }
+    function flushThumbQueue() {
+        gameLoadInProgress = false;
+        const queued = thumbQueue;
+        thumbQueue = [];
+        for (const run of queued) run();
+    }
     function render() {
         const filtered = getFiltered();
         const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -87,7 +102,8 @@
         grid.innerHTML = "";
         for (const game of pageItems) {
             const card = document.createElement("div");
-            card.className = "glCard";
+            card.classList = "glCard niceTitle";
+            card.title = game.name;
             const thumb = document.createElement("div");
             thumb.className = "glCardThumb";
             const thumbSrc = thumbUrlFor(game);
@@ -96,7 +112,7 @@
                 img.loading = "lazy";
                 img.decoding = "async";
                 if ("fetchPriority" in img) img.fetchPriority = "low";
-                img.src = thumbSrc;
+                scheduleThumbnail(img, thumbSrc);
                 img.alt = game.name;
                 img.onerror = () => { img.remove(); thumb.innerHTML = '<i class="ic ic-controller"></i>'; };
                 thumb.appendChild(img);
@@ -147,6 +163,7 @@
         }
     }
     async function openGame(game) {
+        gameLoadInProgress = true;
         currentGameUrl = `${a}/games/${encodeURIComponent(game.id)}?id=${game.id}`;
         window.history.replaceState(null, null, `?play=${game.id}`);
         if ("fetchPriority" in frame) frame.fetchPriority = "high";
@@ -158,6 +175,9 @@
         metaDesc.textContent = "";
         setAuthor(game);
         bumpPopularity(game.id);
+        const flushTimeout = setTimeout(() => {
+            flushThumbQueue();
+        }, 8000);
         const wait = setInterval(() => {
             try {
                 const outerDoc = frame.contentDocument;
@@ -172,6 +192,8 @@
                 const canvas = content.querySelector("canvas");
                 if (canvas) canvas.style.maxHeight = "100%";
                 clearInterval(wait);
+                clearTimeout(flushTimeout);
+                flushThumbQueue();
                 console.log("Content found!");
             } catch (e) {
             }
@@ -184,6 +206,7 @@
         overlay.style.display = "none";
         document.body.classList.remove("gl-scroll-locked");
         scrollLocked = false;
+        flushThumbQueue();
     }
     closeBtn.addEventListener("click", closeGame);
     newTabBtn.addEventListener("click", () => {

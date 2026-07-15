@@ -122,7 +122,7 @@ console.log('%cC', `
     background: linear-gradient(to bottom, #8BC53F, #1bc34b);
 `);
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const TOOLTIP_SELECTOR = 'i[title], i[data-title]';
+const TOOLTIP_SELECTOR = 'i[title], i[data-title], .niceTitle[title], .niceTitle[data-title]';
 function showTooltip(el) {
     const text = el.getAttribute('title') || el.dataset.title;
     if (!text) return;

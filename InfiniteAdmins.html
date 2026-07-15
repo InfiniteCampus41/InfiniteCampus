@@ -63,11 +63,6 @@
                     </a>
                     <br>
                     <br>
-                    <a class="button apbtn" href="InfiniteAdmins.html?games=true">
-                        Admin Game Panel
-                    </a>
-                    <br>
-                    <br>
                     <a class="button apbtn" href="InfiniteAdmins.html?chat=true">
                         Admin Chat Panel
                     </a>
@@ -248,75 +243,6 @@
                     </div>
                 </div>
             </div>
-            <div id="adminGames" style="display:none">
-                <center>
-                    <h1 class="tptxt">
-                        Manage Games
-                    </h1>
-                    <hr>
-                    <br>
-                    <button id="gamesTabPending" class="button" onclick="showGamesTab('pending')">
-                        Pending Review
-                    </button>
-                    <button id="gamesTabManage" class="button" onclick="showGamesTab('manage')">
-                        Manage Games
-                    </button>
-                    <br>
-                    <br>
-                    <div id="gamesBefore">
-                        <button class="button" onclick="loadPendingGames()">
-                            Reload List
-                        </button>
-                        <br>
-                        <div id="pendingGamesList" style="color:white; max-width:50vw;">
-                        </div>
-                    </div>
-                    <div id="manageGamesSection" style="display:none;">
-                        <button class="button" onclick="loadManageGames()">
-                            Reload List
-                        </button>
-                        <br>
-                        <div id="manageGamesList" style="color:white; max-width:60vw;">
-                        </div>
-                    </div>
-                    <div id="gamePlayPanel" style="display:none;">
-                        <button id="gamePlayBackBtn" class="button" onclick="closeGamePlay()">
-                            Back
-                        </button>
-                        <br>
-                        <br>
-                        <iframe id="gamePlayFrame" style="width:80vw; height:70vh; border:1px solid #333; background:#000;" sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"></iframe>
-                    </div>
-                    <br>
-                    <br>
-                </center>
-                <div id="gameJsonEditorModal" class="json-editor-modal" style="display:none;">
-                    <div class="json-editor-box">
-                        <div class="json-editor-header">
-                            <span id="gameJsonEditorTitle">
-                                Edit Game JSON
-                            </span>
-                            <button id="closeGameJsonEditor" class="button" onclick="closeGameJsonEditor()">
-                                ✕
-                            </button>
-                        </div>
-                        <textarea id="gameJsonEditorTextarea"></textarea>
-                        <div class="json-editor-actions">
-                            <button id="formatGameJsonBtn" class="button" onclick="formatGameJson()">
-                                Format
-                            </button>
-                            <button id="saveGameJsonBtn" class="button" onclick="saveGameJson()">
-                                Save
-                            </button>
-                            <button id="cancelGameJsonBtn" class="button" onclick="closeGameJsonEditor()">
-                                Cancel
-                            </button>
-                        </div>
-                        <div id="gameJsonEditorError" style="color:red; margin-top:5px;">
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div id="adminRules" style="display:none">
                 <center>
                     <h1 class="tptxt">
@@ -336,6 +262,12 @@
                     </span>
                     <span class="editor-tab" data-tab="users">
                         User Data
+                    </span>
+                    <span class="editor-tab" data-tab="gamesjson">
+                        Games JSON
+                    </span>
+                    <span class="editor-tab" data-tab="hiddengames">
+                        Hidden Games
                     </span>
                 </div>
                 <div id="rules-section" class="editor-section visible">
@@ -437,6 +369,48 @@
                         <div id="users-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
                         </div>
                     </div>
+                </div>
+                <div id="gamesjson-section" class="editor-section">
+                    <div id="gamesjson-toolbar" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                        <button id="gamesjson-save-btn" class="button">
+                            Save
+                        </button>
+                        <button id="gamesjson-refresh-btn" class="button">
+                            Refresh
+                        </button>
+                        <button id="gamesjson-collapse-all-btn" class="button">
+                            Collapse All
+                        </button>
+                        <button id="gamesjson-expand-all-btn" class="button">
+                            Expand All
+                        </button>
+                        <span id="gamesjson-status" style="font-size:0.85rem;opacity:0.85;margin-left:auto;">
+                            Loading
+                        </span>
+                    </div>
+                    <div id="gamesjson-wrap" style="display:flex;border:1px solid #3e3e3e;border-radius:6px;overflow:auto;background:#1e1e2e;font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:0.82rem;line-height:1.6;min-height:420px;max-height:70vh;">
+                        <div id="gamesjson-gutter" style="min-width:2.8rem;padding:0.75rem 0.5rem;text-align:right;color:#555;background:#181825;border-right:1px solid #313145;user-select:none;line-height:1.6;font-size:0.78rem;">
+                        </div>
+                        <div id="gamesjson-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="hiddengames-section" class="editor-section">
+                    <div id="hiddengames-toolbar" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                        <button id="hiddengames-save-btn" class="button">
+                            Save
+                        </button>
+                        <button id="hiddengames-refresh-btn" class="button">
+                            Refresh
+                        </button>
+                        <span id="hiddengames-status" style="font-size:0.85rem;opacity:0.85;margin-left:auto;">
+                            Loading
+                        </span>
+                    </div>
+                    <p style="color:#aaa;font-size:0.85rem;max-width:60ch;">
+                        Enter one game ID per line. Games listed here are hidden from the game library.
+                    </p>
+                    <textarea id="hiddengames-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="1042&#10;1057&#10;1099" style="width:100%;min-height:300px;max-height:60vh;background:#1e1e2e;color:#cdd6f4;border:1px solid #3e3e3e;border-radius:6px;padding:0.75rem 1rem;font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:0.85rem;line-height:1.6;"></textarea>
                 </div>
                 <div id="panel-btn" class="button">
                     <i class="ic ic-arrow-left">

@@ -5,13 +5,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
     const adminPages = document.getElementById("adminPages");
     const adminChat = document.getElementById("adminChat");
     const adminMovies = document.getElementById("adminMovies");
-    const adminGames = document.getElementById("adminGames");
     const adminRules = document.getElementById("adminRules");
     const adminServer = document.getElementById("adminServer");
     const adminEmail = document.getElementById("adminEmail");
     const adminChatParams = kdsuhParams.get("chat");
     const adminMovieParams = kdsuhParams.get("movies");
-    const adminGameParams = kdsuhParams.get("games");
     const adminRuleParams = kdsuhParams.get("rules");
     const adminServerParams = kdsuhParams.get("server");
     const adminEmailParams = kdsuhParams.get("email");
@@ -2496,6 +2494,114 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
             });
         }
+        let _gamesJsonOriginal = "";
+        let _gamesJsonLoaded = false;
+        async function fetchGamesJson() {
+            const statusEl = document.getElementById("gamesjson-status");
+            statusEl.textContent = "Loading...";
+            statusEl.style.color = "";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/games-json", {
+                    method: "GET",
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const result = await res.json();
+                if (!res.ok) {
+                    statusEl.textContent = result.error || "Failed to load games.json.";
+                    return;
+                }
+                const pretty = JSON.stringify(result.games, null, 2);
+                _gamesJsonOriginal = pretty;
+                document.getElementById("gamesjson-editor").innerHTML = syntaxHighlightCollapsible(pretty, "gamesjson-editor");
+                updateLineNumbers("gamesjson-editor");
+                statusEl.textContent = "Loaded.";
+            } catch (err) {
+                statusEl.textContent = "Error: " + err.message;
+            }
+        }
+        async function saveGamesJson() {
+            const statusEl = document.getElementById("gamesjson-status");
+            const raw = document.getElementById("gamesjson-editor").innerText;
+            let parsed;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (e) {
+                showError(`Invalid JSON: ${e.message}`);
+                return;
+            }
+            showConfirm(`This Will Overwrite games.json. Are You Sure?`, async (confirmed) => {
+                if (!confirmed) return;
+                statusEl.textContent = "Saving...";
+                statusEl.style.color = "";
+                try {
+                    const res = await adminFetch(BACKEND + "/admin/games-json", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                        body: JSON.stringify({ games: parsed })
+                    });
+                    const result = await res.json();
+                    if (!res.ok) {
+                        showError(result.error || "Save Failed");
+                        statusEl.textContent = "Save failed.";
+                        return;
+                    }
+                    _gamesJsonOriginal = JSON.stringify(parsed, null, 2);
+                    showSuccess("games.json Saved.");
+                    document.getElementById("gamesjson-editor").innerHTML = syntaxHighlightCollapsible(_gamesJsonOriginal, "gamesjson-editor");
+                    updateLineNumbers("gamesjson-editor");
+                    statusEl.textContent = "Saved.";
+                } catch (err) {
+                    showError(err.message);
+                    statusEl.textContent = "Error.";
+                }
+            });
+        }
+        let _hiddenGamesLoaded = false;
+        async function fetchHiddenGames() {
+            const statusEl = document.getElementById("hiddengames-status");
+            statusEl.textContent = "Loading...";
+            statusEl.style.color = "";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/hidden-games", {
+                    method: "GET",
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const result = await res.json();
+                if (!res.ok) {
+                    statusEl.textContent = result.error || "Failed to load hidden games.";
+                    return;
+                }
+                document.getElementById("hiddengames-editor").value = (result.hidden || []).join("\n");
+                statusEl.textContent = "Loaded.";
+            } catch (err) {
+                statusEl.textContent = "Error: " + err.message;
+            }
+        }
+        async function saveHiddenGames() {
+            const statusEl = document.getElementById("hiddengames-status");
+            const raw = document.getElementById("hiddengames-editor").value;
+            const hidden = raw.split("\n").map(s => s.trim()).filter(Boolean);
+            statusEl.textContent = "Saving...";
+            statusEl.style.color = "";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/hidden-games", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    body: JSON.stringify({ hidden })
+                });
+                const result = await res.json();
+                if (!res.ok) {
+                    showError(result.error || "Save Failed");
+                    statusEl.textContent = "Save failed.";
+                    return;
+                }
+                showSuccess(`Hidden Games Saved (${(result.hidden || hidden).length} id(s)).`);
+                statusEl.textContent = "Saved.";
+            } catch (err) {
+                showError(err.message);
+                statusEl.textContent = "Error.";
+            }
+        }
         document.querySelectorAll(".editor-tab").forEach(tab => {
             tab.addEventListener("click", () => {
                 document.querySelectorAll(".editor-tab").forEach(t => t.classList.remove("active"));
@@ -2505,6 +2611,8 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 document.getElementById("data-section").classList.toggle("visible", target === "data");
                 document.getElementById("words-section").classList.toggle("visible", target === "words");
                 document.getElementById("users-section").classList.toggle("visible", target === "users");
+                document.getElementById("gamesjson-section").classList.toggle("visible", target === "gamesjson");
+                document.getElementById("hiddengames-section").classList.toggle("visible", target === "hiddengames");
                 if (target === "data" && !_dataLoaded) {
                     _dataLoaded = true;
                     fetchData();
@@ -2516,6 +2624,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 if (target === "users" && !_usersLoaded) {
                     _usersLoaded = true;
                     fetchUsers();
+                }
+                if (target === "gamesjson" && !_gamesJsonLoaded) {
+                    _gamesJsonLoaded = true;
+                    fetchGamesJson();
+                }
+                if (target === "hiddengames" && !_hiddenGamesLoaded) {
+                    _hiddenGamesLoaded = true;
+                    fetchHiddenGames();
                 }
             });
         });
@@ -2606,6 +2722,31 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         document.getElementById("words-expand-all-btn").onclick = () => expandAll("words-editor");
         document.getElementById("users-collapse-all-btn").onclick = () => collapseAll("users-editor");
         document.getElementById("users-expand-all-btn").onclick = () => expandAll("users-editor");
+        document.getElementById("gamesjson-save-btn").onclick = saveGamesJson;
+        document.getElementById("gamesjson-refresh-btn").onclick = fetchGamesJson;
+        document.getElementById("gamesjson-collapse-all-btn").onclick = () => collapseAll("gamesjson-editor");
+        document.getElementById("gamesjson-expand-all-btn").onclick = () => expandAll("gamesjson-editor");
+        document.getElementById("gamesjson-editor").addEventListener("input", () => {
+            updateLineNumbers("gamesjson-editor");
+        });
+        document.getElementById("gamesjson-editor").addEventListener("keydown", (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                document.execCommand("insertText", false, "  ");
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                saveGamesJson();
+            }
+        });
+        document.getElementById("hiddengames-save-btn").onclick = saveHiddenGames;
+        document.getElementById("hiddengames-refresh-btn").onclick = fetchHiddenGames;
+        document.getElementById("hiddengames-editor").addEventListener("keydown", (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                saveHiddenGames();
+            }
+        });
         (async () => {
             await verifyAdminPassword();
         })();
@@ -3999,435 +4140,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             updateSendBtn();
         });
         document.getElementById('email-subject').addEventListener('input', updateSendBtn);
-    } else if (adminGameParams) {
-        adminGames.style.display = 'block';
-        adminPages.style.display = 'none';
-        let currentUser = null;
-        const authReadyPromise = new Promise((resolve) => {
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                resolve(user);
-            });
-        });
-        async function getAuthToken() {
-            await authReadyPromise;
-            if (currentUser) return await currentUser.getIdToken();
-            return null;
-        }
-        async function fetchAPI(endpoint, body) {
-            const token = await getAuthToken();
-            const headers = { "Content-Type": "application/json" };
-            if (token) headers["Authorization"] = "Bearer " + token;
-            const res = await fetch(`${a}/${endpoint}`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(body)
-            });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json?.error || "Request Failed");
-            return json;
-        }
-        function pathToArray(path) {
-            return path.split("/").filter(Boolean);
-        }
-        async function dbGet(path) {
-            const res = await fetchAPI("read", { path: pathToArray(path) });
-            return res.data;
-        }
-        let BACKEND = `${a}`;
-        let ADMIN_PASS = localStorage.getItem("a_pass") || null;
-        async function verifyAdminPassword() {
-            while (true) {
-                if (ADMIN_PASS) {
-                    try {
-                        const res = await fetch(BACKEND + "/check_pass", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "ngrok-skip-browser-warning": "true"
-                            },
-                            body: JSON.stringify({ password: ADMIN_PASS })
-                        });
-                        const data = await res.json().catch(() => null);
-                        if (data && data.ok) return true;
-                    } catch (e) {}
-                    localStorage.removeItem("a_pass");
-                    ADMIN_PASS = null;
-                }
-                const entered = await customPrompt("Enter Admin Password:", true);
-                if (!entered) continue;
-                ADMIN_PASS = entered.trim();
-                try {
-                    const res = await fetch(BACKEND + "/check_pass", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "ngrok-skip-browser-warning": "true"
-                        },
-                        body: JSON.stringify({ password: ADMIN_PASS })
-                    });
-                    const data = await res.json().catch(() => null);
-                    if (data && data.ok) {
-                        localStorage.setItem("a_pass", ADMIN_PASS);
-                        return true;
-                    }
-                } catch (e) {}
-                showError("Incorrect Password.");
-                ADMIN_PASS = null;
-            }
-        }
-        async function adminFetch(url, options = {}) {
-            options.headers = Object.assign({}, options.headers, {
-                "x-admin-password": ADMIN_PASS,
-                "ngrok-skip-browser-warning": "true"
-            });
-            return fetch(url, options);
-        }
-        async function checkUserAuthentication() {
-            return new Promise((resolve) => {
-                onAuthStateChanged(auth, async (user) => {
-                    if (!user) {
-                        showError('You Must Be Logged In To View This Content.');
-                        resolve(false);
-                        return;
-                    }
-                    const profile = await dbGet(`/users/${user.uid}/profile`);
-                    if (!profile || !(profile.isOwner || profile.isTester || profile.isCoOwner || profile.isHAdmin || profile.isDev)) {
-                        showError('You Do Not Have The Necessary Permissions To View Or Interact With This Content.');
-                        resolve(false);
-                        return;
-                    }
-                    resolve(true);
-                });
-            });
-        }
-        const displayNameCache = new Map();
-        async function resolveDisplayName(uid) {
-            if (displayNameCache.has(uid)) return displayNameCache.get(uid);
-            try {
-                const profile = await dbGet(`/users/${uid}/profile`);
-                const name = profile?.displayName || uid;
-                displayNameCache.set(uid, name);
-                return name;
-            } catch {
-                return uid;
-            }
-        }
-        function escGameHtml(str) {
-            return String(str ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-        }
-        async function loadPendingGames() {
-            const isAuthenticated = await checkUserAuthentication();
-            if (!isAuthenticated) return;
-            await verifyAdminPassword();
-            const box = document.getElementById("pendingGamesList");
-            box.innerHTML = "Loading...";
-            try {
-                const res = await adminFetch(BACKEND + `/admin/games/pending?t=${Date.now()}`);
-                const data = await res.json();
-                if (!data.ok) {
-                    box.innerHTML = "Failed To Load Pending Games.";
-                    return;
-                }
-                if (data.games.length === 0) {
-                    box.innerHTML = "No Games Pending Review.";
-                    return;
-                }
-                box.innerHTML = "";
-                for (const g of data.games) {
-                    const uploaderName = await resolveDisplayName(g.uid);
-                    const div = document.createElement("div");
-                    div.className = "file-item";
-                    div.innerHTML = `
-                        <div style="display:inline-flex; width:100%;">
-                            <span style="width:100%; text-align:center">
-                                <b>${escGameHtml(g.name)}</b> ${g.isUpdate ? '<span class="y">(Update)</span>' : ''} —
-                                <span>${escGameHtml((g.type || "").toUpperCase())}</span> —
-                                <span>${escGameHtml(g.humanSize)}</span>
-                            </span>
-                        </div>
-                        <br>
-                        <span class="btxt">Uploaded By: ${escGameHtml(uploaderName)} (${escGameHtml(g.uid)})</span>
-                        <br>
-                        <button class="button gm-play">Play</button>
-                        <button class="button gm-accept">Accept</button>
-                        <button class="button gm-delete">Delete</button>
-                    `;
-                    div.querySelector(".gm-play").addEventListener("click", () => playPendingGame(g.id, g.kind, g.type));
-                    div.querySelector(".gm-accept").addEventListener("click", () => acceptPendingGame(g.id, g.kind));
-                    div.querySelector(".gm-delete").addEventListener("click", () => deletePendingGame(g.id, g.kind));
-                    box.appendChild(div);
-                }
-            } catch (err) {
-                box.innerHTML = "Error Loading Pending Games.";
-            }
-        }
-        function playPendingGame(id, kind, type) {
-            document.getElementById("gamesBefore").style.display = "none";
-            document.getElementById("gamePlayPanel").style.display = "block";
-            const frame = document.getElementById("gamePlayFrame");
-            frame.src = `${BACKEND}/game_preview_x9a7b2/${kind}/${encodeURIComponent(id)}/${type === "html5" ? "index.html" : ""}`;
-        }
-        function closeGamePlay() {
-            const frame = document.getElementById("gamePlayFrame");
-            frame.src = "";
-            document.getElementById("gamePlayPanel").style.display = "none";
-            document.getElementById("gamesBefore").style.display = "block";
-        }
-        async function acceptPendingGame(id, kind) {
-            const isAuthenticated = await checkUserAuthentication();
-            if (!isAuthenticated) return;
-            showConfirm(`Accept This Game?`, async function (result) {
-                if (!result) return;
-                try {
-                    const res = await adminFetch(BACKEND + "/admin/games/accept", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id, kind })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        showSuccess("Game Accepted.");
-                        loadPendingGames();
-                    } else {
-                        showError("Failed: " + (data.error || "Unknown Error"));
-                    }
-                } catch (err) {
-                    showError("Failed: " + err.message);
-                }
-            });
-        }
-        async function deletePendingGame(id, kind) {
-            const isAuthenticated = await checkUserAuthentication();
-            if (!isAuthenticated) return;
-            showConfirm(`Delete This Pending Game?`, async function (result) {
-                if (!result) return;
-                try {
-                    const res = await adminFetch(BACKEND + "/admin/games/reject", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id, kind })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        showSuccess("Deleted.");
-                        loadPendingGames();
-                    } else {
-                        showError("Failed: " + (data.error || "Unknown Error"));
-                    }
-                } catch (err) {
-                    showError("Failed: " + err.message);
-                }
-            });
-        }
-        window.loadPendingGames = loadPendingGames;
-        window.playPendingGame = playPendingGame;
-        window.closeGamePlay = closeGamePlay;
-        window.acceptPendingGame = acceptPendingGame;
-        window.deletePendingGame = deletePendingGame;
-        function showGamesTab(tab) {
-            const pendingBox = document.getElementById("gamesBefore");
-            const manageBox = document.getElementById("manageGamesSection");
-            const tabPending = document.getElementById("gamesTabPending");
-            const tabManage = document.getElementById("gamesTabManage");
-            if (tab === "manage") {
-                pendingBox.style.display = "none";
-                manageBox.style.display = "block";
-                tabPending.style.borderColor = "";
-                tabManage.style.borderColor = "#8cbe37";
-                loadManageGames();
-            } else {
-                pendingBox.style.display = "block";
-                manageBox.style.display = "none";
-                tabManage.style.borderColor = "";
-                tabPending.style.borderColor = "#8cbe37";
-            }
-        }
-        let manageGamesData = [];
-        async function loadManageGames() {
-            const isAuthenticated = await checkUserAuthentication();
-            if (!isAuthenticated) return;
-            await verifyAdminPassword();
-            const box = document.getElementById("manageGamesList");
-            box.innerHTML = "Loading...";
-            try {
-                const res = await adminFetch(BACKEND + `/admin/games/list?t=${Date.now()}`);
-                const data = await res.json();
-                if (!data.ok) {
-                    box.innerHTML = "Failed To Load Games.";
-                    return;
-                }
-                manageGamesData = data.games;
-                renderManageGames();
-            } catch (err) {
-                box.innerHTML = "Error Loading Games.";
-            }
-        }
-        function renderManageGames() {
-            const box = document.getElementById("manageGamesList");
-            box.innerHTML = "";
-            if (manageGamesData.length === 0) {
-                box.innerHTML = "No Games Uploaded Yet.";
-                return;
-            }
-            for (const g of manageGamesData) {
-                const div = document.createElement("div");
-                div.className = "file-item";
-                const thumbSrc = g.thumbnail ? `${BACKEND}/gamefiles/${encodeURIComponent(g.id)}/thumbnail?t=${Date.now()}` : "";
-                div.innerHTML = `
-                    <div style="display:flex; gap:14px; align-items:flex-start; width:100%;">
-                        <img src="${escGameHtml(thumbSrc)}" onerror="this.style.display='none'" style="width:90px; height:68px; object-fit:cover; border-radius:6px; background:#111; border:1px solid #333; ${g.thumbnail ? '' : 'display:none;'}">
-                        <div style="flex:1; text-align:left;">
-                            <label style="color:#888; font-size:0.75em;">Name</label>
-                            <input type="text" class="form-control gm-name" value="${escGameHtml(g.name)}" maxlength="100" style="margin-bottom:6px;">
-                            <label style="color:#888; font-size:0.75em;">Description</label>
-                            <textarea class="form-control gm-desc" rows="2" maxlength="2000" style="margin-bottom:6px;">${escGameHtml(g.description || "")}</textarea>
-                            <span class="btxt" style="font-size:0.8em;">Type: ${escGameHtml((g.type || '').toUpperCase())} — ID: ${escGameHtml(g.id)}</span>
-                            <br>
-                            <label class="button" style="display:inline-block; margin-top:8px; cursor:pointer;">
-                                Change Thumbnail
-                                <input type="file" class="gm-thumb" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
-                            </label>
-                            <button class="button gm-save">Save Name / Description</button>
-                            <button class="button gm-json">Edit Raw JSON</button>
-                            <button class="button gm-delete">Delete</button>
-                        </div>
-                    </div>
-                `;
-                div.querySelector(".gm-save").addEventListener("click", () => saveManageGame(g.id, div));
-                div.querySelector(".gm-thumb").addEventListener("change", (e) => uploadManageThumbnail(g.id, e.target.files[0]));
-                div.querySelector(".gm-json").addEventListener("click", () => openGameJsonEditor(g.id));
-                div.querySelector(".gm-delete").addEventListener("click", () => deleteManageGame(g.id));
-                box.appendChild(div);
-            }
-        }
-        async function saveManageGame(id, div) {
-            const name = div.querySelector(".gm-name").value.trim();
-            const description = div.querySelector(".gm-desc").value;
-            if (!name) return showError("Name Cannot Be Empty.");
-            try {
-                const res = await adminFetch(BACKEND + "/admin/games/patch", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, patch: { name, description } })
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    showSuccess("Game Updated.");
-                    loadManageGames();
-                } else {
-                    showError("Failed: " + (data.error || "Unknown Error"));
-                }
-            } catch (err) {
-                showError("Failed: " + err.message);
-            }
-        }
-        async function uploadManageThumbnail(id, file) {
-            if (!file) return;
-            try {
-                const token = await getAuthToken();
-                const formData = new FormData();
-                formData.append("id", id);
-                formData.append("thumbnail", file);
-                const headers = { "x-admin-password": ADMIN_PASS, "ngrok-skip-browser-warning": "true" };
-                const res = await fetch(BACKEND + "/admin/games/thumbnail", { method: "POST", headers, body: formData });
-                const data = await res.json();
-                if (data.ok) {
-                    showSuccess("Thumbnail Updated.");
-                    loadManageGames();
-                } else {
-                    showError("Failed: " + (data.error || "Unknown Error"));
-                }
-            } catch (err) {
-                showError("Failed: " + err.message);
-            }
-        }
-        async function deleteManageGame(id) {
-            showConfirm(`Permanently Delete This Game?`, async function (result) {
-                if (!result) return;
-                try {
-                    const res = await adminFetch(BACKEND + "/admin/games/delete", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        showSuccess("Game Deleted.");
-                        loadManageGames();
-                    } else {
-                        showError("Failed: " + (data.error || "Unknown Error"));
-                    }
-                } catch (err) {
-                    showError("Failed: " + err.message);
-                }
-            });
-        }
-        let gameJsonEditingId = null;
-        function openGameJsonEditor(id) {
-            const game = manageGamesData.find(g => g.id === id);
-            if (!game) return;
-            gameJsonEditingId = id;
-            const modal = document.getElementById("gameJsonEditorModal");
-            const textarea = document.getElementById("gameJsonEditorTextarea");
-            const title = document.getElementById("gameJsonEditorTitle");
-            const errorBox = document.getElementById("gameJsonEditorError");
-            title.innerText = `Editing: ${game.name}`;
-            const { id: _omit, ...rest } = game;
-            textarea.value = JSON.stringify(rest, null, 2);
-            errorBox.innerText = "";
-            modal.style.display = "flex";
-        }
-        function closeGameJsonEditor() {
-            document.getElementById("gameJsonEditorModal").style.display = "none";
-            gameJsonEditingId = null;
-        }
-        function formatGameJson() {
-            const textarea = document.getElementById("gameJsonEditorTextarea");
-            const errorBox = document.getElementById("gameJsonEditorError");
-            try {
-                const parsed = JSON.parse(textarea.value);
-                textarea.value = JSON.stringify(parsed, null, 2);
-                errorBox.innerText = "";
-            } catch (err) {
-                errorBox.innerText = "Invalid JSON.";
-            }
-        }
-        async function saveGameJson() {
-            const textarea = document.getElementById("gameJsonEditorTextarea");
-            const errorBox = document.getElementById("gameJsonEditorError");
-            let parsed;
-            try {
-                parsed = JSON.parse(textarea.value);
-            } catch (err) {
-                errorBox.innerText = "Invalid JSON.";
-                return;
-            }
-            try {
-                const res = await adminFetch(BACKEND + "/admin/games/edit-raw", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: gameJsonEditingId, data: parsed })
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    showSuccess("Game JSON Updated.");
-                    closeGameJsonEditor();
-                    loadManageGames();
-                } else {
-                    errorBox.innerText = data.error || "Failed To Save.";
-                }
-            } catch (err) {
-                errorBox.innerText = err.message || "Failed To Save.";
-            }
-        }
-        window.showGamesTab = showGamesTab;
-        window.loadManageGames = loadManageGames;
-        window.closeGameJsonEditor = closeGameJsonEditor;
-        window.formatGameJson = formatGameJson;
-        window.saveGameJson = saveGameJson;
-        showGamesTab('pending');
-        loadPendingGames();
     } else {
         adminPages.style.display = 'block';
     }
