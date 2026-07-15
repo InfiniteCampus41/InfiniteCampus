@@ -1420,29 +1420,26 @@ function renderGamesList(container, games, defaultVisible = 10) {
     heading.textContent = "Uploaded Games";
     container.appendChild(heading);
     const list = document.createElement("div");
-    list.style.display = "grid";
-    list.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))";
-    list.style.gap = "12px";
+    list.id = "glGrid";
     container.appendChild(list);
     function renderItems(items) {
         list.innerHTML = "";
         for (const g of items) {
             const card = document.createElement("div");
-            card.style.position = "relative";
-            card.style.cursor = g.pending ? "default" : "pointer";
+            card.classList = "glCard";
             const badgeHtml = g.pending
-                ? `<span style="position:absolute;top:6px;right:-4px;background:#f08c00;color:white;font-size:0.65em;padding:2px 8px;border-radius:4px 0 0 4px;white-space:nowrap;">PENDING</span>`
-                : `<span style="position:absolute;top:6px;right:-4px;background:#444;color:white;font-size:0.65em;padding:2px 8px;border-radius:4px 0 0 4px;white-space:nowrap;">${escGamesHtml((g.type || '').toUpperCase())}</span>`;
+                ? `<span class="glCardBadge pending">PENDING</span>`
+                : `<span class="glCardBadge ${escGamesHtml((g.type || ''))}" >${escGamesHtml((g.type || '').toUpperCase())}</span>`;
             const thumbSrc = (!g.pending && g.hasThumbnail) ? `${a}/gamefiles/${encodeURIComponent(g.id)}/thumbnail` : null;
             const thumbInnerHtml = thumbSrc
-                ? `<img src="${escGamesHtml(thumbSrc)}" alt="${escGamesHtml(g.name)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();">`
+                ? `<img src="${escGamesHtml(thumbSrc)}" alt="${escGamesHtml(g.name)}" onerror="this.remove();">`
                 : `<i class="ic ic-controller"></i>`;
             card.innerHTML = `
-                <div style="aspect-ratio:4/3;background:#1a1a1a;border:1px solid #333;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#666;font-size:1.6em;overflow:hidden;">
+                <div class="glCardThumb">
                     ${thumbInnerHtml}
                     ${badgeHtml}
                 </div>
-                <div style="text-align:center;font-size:0.8em;color:#ccc;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escGamesHtml(g.name)}</div>
+                <div class="glCardTitle">${escGamesHtml(g.name)}</div>
             `;
             if (!g.pending) {
                 card.addEventListener("click", () => { window.location.href = `InfiniteGamers.html?play=${encodeURIComponent(g.id)}`; });

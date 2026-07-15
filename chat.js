@@ -2142,6 +2142,7 @@ async function openPrivateChat(uid, name) {
         showError("You Cannot Open A Private Chat With Yourself!");
         return;
     }
+    window.history.replaceState(null, null, `?dm=${uid}`);
     stopGroupPolling();
     currentGroupId = null;
     currentGroupOwnerUid = null;
@@ -2529,6 +2530,7 @@ async function switchChannel(ch) {
     currentGroupId = null;
     currentGroupOwnerUid = null;
     currentGroupName = null;
+    window.history.replaceState(null, null, `?channel=${ch}`);
     if (groupInfoBtn) groupInfoBtn.style.display = "none";
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (privateMenu) privateMenu.style.display = "none";

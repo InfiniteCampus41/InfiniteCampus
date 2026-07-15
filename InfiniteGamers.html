@@ -126,29 +126,10 @@
                 </h1>
                 <hr>
                 <br>
-                <a class="button apbtn" href="/InfiniteGameUploads.html">
-                    Upload A Game
-                </a>
-                <br>
-                <br>
                 <div id="glSearchWrap">
                     <input type="text" id="glSearch" placeholder="Search Games">
                     <i class="ic ic-search">
                     </i>
-                </div>
-                <div id="glFilters">
-                    <button class="glFilterBtn active" data-type="all">
-                        All
-                    </button>
-                    <button class="glFilterBtn" data-type="html5">
-                        HTML5
-                    </button>
-                    <button class="glFilterBtn" data-type="flash">
-                        Flash
-                    </button>
-                    <button class="glFilterBtn" data-type="url">
-                        Web
-                    </button>
                 </div>
                 <div id="glSortWrap">
                     <span>
@@ -181,7 +162,7 @@
             </center>
         </section>
         <div id="glPlayerOverlay" style="display:none;">
-            <iframe id="glPlayerFrame" sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"></iframe>
+            <iframe id="glPlayerFrame" sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups allow-modals"></iframe>
             <div id="glPlayerBar">
                 <button id="glCloseBtn" title="Close">
                     <i class="ic ic-x">
@@ -214,8 +195,8 @@
                 </span> 
                 &middot;
                 By 
-                <span id="glMetaUploader">
-                </span>
+                <a id="glMetaUploader" target="_blank" rel="noopener noreferrer">
+                </a>
                 <p id="glMetaDesc">
                 </p>
             </div>

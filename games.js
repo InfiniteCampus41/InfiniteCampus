@@ -151,25 +151,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const before = document.getElementById("before");
     const games = [
-        { name: "Slope", method: ["1","2"], url: `${def}slope/index.html`},
-        { name: "Slope (2)", method: ["2"], url: `https://mathadventure1.github.io/slope/slope/index.html`},
-        { name: "NettleWeb ", method: ["2"], url: `https://nettleweb.com`},
-        { name: "NettleWeb (2)", method: ["2"], url: `https://sigmasigmatoiletedge.github.io` },
-        { name: "Ngon", method: ["1", "2"], url: `https://landgreen.github.io/n-gon/` },
-        { name: "Eaglercraft (1.12.2)", method: ["1","2"], url: `${def}eg1/index.html` },
-        { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: `https://sd592g.github.io/zj684od4lfg/` },
-        { name: "Eaglercraft ( 1.8.8 )", method: ["2"], url: `https://resent4-0.vercel.app/` },
-        { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: `https://mcraft.fun/` },
-        { name: "Eaglercraft Servers", method: ["1", "2"], url: `https://servers.eaglercraft.com/` },
+        { name: "Slope", method: ["1","2"], url: `${def}slope/index.html`},                                               //done
+        { name: "Slope (2)", method: ["2"], url: `https://mathadventure1.github.io/slope/slope/index.html`},              //done
+        { name: "NettleWeb ", method: ["2"], url: `https://nettleweb.com`},                                               //done
+        { name: "NettleWeb (2)", method: ["2"], url: `https://sigmasigmatoiletedge.github.io` },                          //done
+        { name: "Ngon", method: ["1", "2"], url: `https://landgreen.github.io/n-gon/` },                                  //done
+        { name: "Eaglercraft (1.12.2)", method: ["1","2"], url: `${def}eg1/index.html` },                                 //done
+        { name: "Eaglercraft ( 1.5.2 )", method: ["1", "2"], url: `https://sd592g.github.io/zj684od4lfg/` },              //done
+        { name: "Eaglercraft ( 1.8.8 )", method: ["2"], url: `https://resent4-0.vercel.app/` },                           //done
+        { name: "Minecraft ( Connect To Real Servers! )", method: ["1", "2"], url: `https://mcraft.fun/` },               //done
+        { name: "Eaglercraft Servers", method: ["1", "2"], url: `https://servers.eaglercraft.com/` },                     //done
         { name: "Roblox", method: ["1"], url: `https://roblox.com`},
         { name: "BuildNow.gg", method: ["1","2"], url: `${def}buildnow/index.html`},
-        { name: "Run 3", method: ["1", "2"], url: `${def}run3/index.html` },
-        { name: "Run 3 (2)", method: ["1", "2"], url: `https://lekug.github.io/tn6pS9dCf37xAhkJv/` },
-        { name: "Retro Bowl", method: ["1", "2"], url: `${def}retrobowl/index.html` },
+        { name: "Run 3", method: ["1", "2"], url: `${def}run3/index.html` },                                              //done
+        { name: "Run 3 (2)", method: ["1", "2"], url: `https://lekug.github.io/tn6pS9dCf37xAhkJv/` },                     //done
+        { name: "Retro Bowl", method: ["1", "2"], url: `${def}retrobowl/index.html` },                                    //done
         { name: "Bad Time Simulator", method: ["1", "2"], url: `https://jcw87.github.io/c2-sans-fight/`},
         { name: "OVO", method: ["1", "2"], url: `https://www.hoodamath.com/mobile/games/ovo/game.html?nocheckorient=1` },
         { name: "Getting Over It", method: ["1", "2"], url: `${def}goi/index.html` },
-        { name: "A Difficult Game About Climbing", method: ["1", "2"], url: `${def}adgac/index.html` },
+        { name: "A Difficult Game About Climbing", method: ["1", "2"], url: `${def}adgac/index.html` },                   //done
         { name: "Pixel Gun 3D", method: ["1", "2"], url: `https://games.crazygames.com/en_US/pixel-gun-3d/index.html` },
         { name: "Stickman Hook", method: ["1", "2"], url: `https://mountain658.github.io/g/stickmanhook/index.html` },
         { name: "Universal Paperclips", method: ["1", "2"], url: `${def}paperclips/index.html` },
@@ -526,20 +526,18 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!grid) return;
     const searchInput = document.getElementById("glSearch");
     const sortSelect = document.getElementById("glSort");
-    const filterBtns = document.querySelectorAll(".glFilterBtn");
     const prevBtn = document.getElementById("glPrevPage");
     const nextBtn = document.getElementById("glNextPage");
     const PAGE_SIZE = 100;
     let allGames = [];
-    let filterType = "all";
     let sortBy = "popularity";
     let searchTerm = "";
     let page = 0;
     async function loadGamesData() {
         try {
-            const res = await fetch(`${a}/api/games-json?t=${Date.now()}`);
+            const res = await fetch(`${a}/api/zone-games?t=${Date.now()}`);
             const data = await res.json();
-            allGames = Object.entries(data).map(([id, g]) => ({ id, ...g }));
+            allGames = (data && data.ok && Array.isArray(data.games)) ? data.games : [];
         } catch (e) {
             console.error("Failed To Load Games:", e);
             allGames = [];
@@ -548,7 +546,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function getFiltered() {
         let list = allGames.slice();
-        if (filterType !== "all") list = list.filter(g => g.type === filterType);
         if (searchTerm.trim()) {
             const q = searchTerm.trim().toLowerCase();
             list = list.filter(g => (g.name || "").toLowerCase().includes(q));
@@ -563,8 +560,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return list;
     }
     function thumbUrlFor(game) {
-        if (!game.thumbnail) return null;
-        return `${a}/gamefiles/${encodeURIComponent(game.id)}/thumbnail`;
+        if (!game.hasThumbnail) return null;
+        return `${a}/zonegames/${encodeURIComponent(game.id)}/thumbnail`;
     }
     function render() {
         const filtered = getFiltered();
@@ -588,10 +585,6 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 thumb.innerHTML = '<i class="ic ic-controller"></i>';
             }
-            const badge = document.createElement("span");
-            badge.className = `glCardBadge ${game.type}`;
-            badge.textContent = (game.type || "").toUpperCase();
-            thumb.appendChild(badge);
             const title = document.createElement("div");
             title.className = "glCardTitle";
             title.textContent = game.name;
@@ -607,15 +600,6 @@ document.addEventListener("DOMContentLoaded", function () {
     nextBtn.addEventListener("click", () => { page++; render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
     searchInput.addEventListener("input", () => { searchTerm = searchInput.value; page = 0; render(); });
     sortSelect.addEventListener("change", () => { sortBy = sortSelect.value; page = 0; render(); });
-    filterBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            filterBtns.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            filterType = btn.dataset.type;
-            page = 0;
-            render();
-        });
-    });
     const overlay = document.getElementById("glPlayerOverlay");
     const frame = document.getElementById("glPlayerFrame");
     const closeBtn = document.getElementById("glCloseBtn");
@@ -629,37 +613,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const metaDesc = document.getElementById("glMetaDesc");
     let currentGameUrl = "";
     let scrollLocked = false;
-    async function resolveUploaderName(uid) {
-        try {
-            const res = await fetch(`${a}/read`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ path: ["users", uid, "profile"] })
-            });
-            const data = await res.json();
-            return data?.data?.displayName || uid;
-        } catch {
-            return uid;
-        }
-    }
     async function bumpPopularity(id) {
         try {
-            await fetch(`${a}/api/games/${encodeURIComponent(id)}/popularity`, { method: "POST" });
+            await fetch(`${a}/api/zone-games/${encodeURIComponent(id)}/popularity`, { method: "POST" });
         } catch {}
     }
+    function setAuthor(game) {
+        metaUploader.textContent = game.author || "Unknown";
+        if (game.authorLink) {
+            metaUploader.setAttribute("href", game.authorLink);
+            metaUploader.classList.add("gl-author-link");
+        } else {
+            metaUploader.removeAttribute("href");
+            metaUploader.classList.remove("gl-author-link");
+        }
+    }
     async function openGame(game) {
-        currentGameUrl = `${a}/gamefiles/${encodeURIComponent(game.id)}/`;
+        currentGameUrl = `${a}/games/${encodeURIComponent(game.id)}`;
+        window.history.replaceState(null, null, `?play=${game.id}`);
         frame.src = currentGameUrl;
         overlay.style.display = "flex";
-        metaType.textContent = (game.type || "").toUpperCase();
+        metaType.textContent = "GAME";
         metaId.textContent = `ID: ${game.id}`;
         metaDate.textContent = game.dateAdded ? new Date(game.dateAdded).toLocaleDateString() : "Unknown";
-        metaDesc.textContent = game.description || "";
-        metaUploader.textContent = game.uploader || "Unknown";
-        resolveUploaderName(game.uploader).then(name => { metaUploader.textContent = name; });
+        metaDesc.textContent = "";
+        setAuthor(game);
         bumpPopularity(game.id);
     }
     function closeGame() {
+        const newUrl = window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
         frame.src = "";
         overlay.style.display = "none";
         document.body.classList.remove("gl-scroll-locked");
@@ -683,7 +666,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const params = new URLSearchParams(window.location.search);
             const playId = params.get("play");
             if (playId) {
-                const target = allGames.find(g => g.id === playId);
+                const target = allGames.find(g => String(g.id) === playId);
                 if (target) {
                     document.getElementById("gameLibrary")?.scrollIntoView({ behavior: "instant", block: "start" });
                     openGame(target);

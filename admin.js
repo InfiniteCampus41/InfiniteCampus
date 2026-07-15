@@ -1500,9 +1500,9 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     <br>
                     <span class="btxt">${statusText}</span>
                     <br>
-                    <button class="button" onclick="watchApply('${f.file}')">Watch</button>
-                    <button class="button" onclick="deleteApply('${f.file}')">Delete</button>
-                    <button class="button" onclick="acceptFile('${f.file}')">Accept</button>
+                    <button class="button" onclick="watchApply(\'${f.file}\')">Watch</button>
+                    <button class="button" onclick="deleteApply(\'${f.file}\')">Delete</button>
+                    <button class="button" onclick="acceptFile(\'${f.file}\')">Accept</button>
                     <div class="file-progress" style="margin-top:8px;text-align:left;">
                         <div class="file-progress-bar" data-filename="${f.file}"
                             style="width:${progress}%;background:#4caf50;padding:2px;font-size:12px;text-align:left;">
@@ -4115,7 +4115,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             }
         }
         function escGameHtml(str) {
-            return String(str ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            return String(str ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
         async function loadPendingGames() {
             const isAuthenticated = await checkUserAuthentication();
@@ -4143,17 +4143,20 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         <div style="display:inline-flex; width:100%;">
                             <span style="width:100%; text-align:center">
                                 <b>${escGameHtml(g.name)}</b> ${g.isUpdate ? '<span class="y">(Update)</span>' : ''} —
-                                <span>${escGameHtml((g.type || '').toUpperCase())}</span> —
+                                <span>${escGameHtml((g.type || "").toUpperCase())}</span> —
                                 <span>${escGameHtml(g.humanSize)}</span>
                             </span>
                         </div>
                         <br>
                         <span class="btxt">Uploaded By: ${escGameHtml(uploaderName)} (${escGameHtml(g.uid)})</span>
                         <br>
-                        <button class="button" onclick="playPendingGame('${g.id}','${g.kind}','${g.type}')">Play</button>
-                        <button class="button" onclick="acceptPendingGame('${g.id}','${g.kind}')">Accept</button>
-                        <button class="button" onclick="deletePendingGame('${g.id}','${g.kind}')">Delete</button>
+                        <button class="button gm-play">Play</button>
+                        <button class="button gm-accept">Accept</button>
+                        <button class="button gm-delete">Delete</button>
                     `;
+                    div.querySelector(".gm-play").addEventListener("click", () => playPendingGame(g.id, g.kind, g.type));
+                    div.querySelector(".gm-accept").addEventListener("click", () => acceptPendingGame(g.id, g.kind));
+                    div.querySelector(".gm-delete").addEventListener("click", () => deletePendingGame(g.id, g.kind));
                     box.appendChild(div);
                 }
             } catch (err) {
