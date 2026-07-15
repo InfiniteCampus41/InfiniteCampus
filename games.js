@@ -10,16 +10,54 @@
     let sortBy = "popularity";
     let searchTerm = "";
     let page = 0;
-    async function loadGamesData() {
+    const GAMES_CACHE_KEY = "icZoneGamesCache_v1";
+    function readGamesCache() {
         try {
-            const res = await fetch(`${a}/api/zone-games?t=${Date.now()}`);
+            const raw = localStorage.getItem(GAMES_CACHE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.games)) return null;
+            return parsed.games;
+        } catch {
+            return null;
+        }
+    }
+    function writeGamesCache(games) {
+        try {
+            localStorage.setItem(GAMES_CACHE_KEY, JSON.stringify({ games, savedAt: Date.now() }));
+        } catch {}
+    }
+    function canonicalize(list) {
+        return JSON.stringify(list.slice().sort((x, y) => x.id - y.id));
+    }
+    async function loadGamesData() {
+        const cached = readGamesCache();
+        if (cached && cached.length) {
+            allGames = cached;
+            render();
+        }
+        try {
+            const res = await fetch(`${a}/api/zone-games`);
             const data = await res.json();
-            allGames = (data && data.ok && Array.isArray(data.games)) ? data.games : [];
+            const fresh = (data && data.ok && Array.isArray(data.games)) ? data.games : null;
+            if (fresh) {
+                const changed = !cached || canonicalize(fresh) !== canonicalize(cached);
+                writeGamesCache(fresh);
+                if (changed) {
+                    allGames = fresh;
+                    render();
+                }
+            } else if (!cached) {
+                allGames = [];
+                render();
+            }
         } catch (e) {
             console.error("Failed To Load Games:", e);
-            allGames = [];
+            if (!cached) {
+                allGames = [];
+                render();
+            }
         }
-        render();
     }
     function getFiltered() {
         let list = allGames.slice();
@@ -55,6 +93,9 @@
             const thumbSrc = thumbUrlFor(game);
             if (thumbSrc) {
                 const img = document.createElement("img");
+                img.loading = "lazy";
+                img.decoding = "async";
+                if ("fetchPriority" in img) img.fetchPriority = "low";
                 img.src = thumbSrc;
                 img.alt = game.name;
                 img.onerror = () => { img.remove(); thumb.innerHTML = '<i class="ic ic-controller"></i>'; };
@@ -108,6 +149,7 @@
     async function openGame(game) {
         currentGameUrl = `${a}/games/${encodeURIComponent(game.id)}?id=${game.id}`;
         window.history.replaceState(null, null, `?play=${game.id}`);
+        if ("fetchPriority" in frame) frame.fetchPriority = "high";
         frame.src = currentGameUrl;
         overlay.style.display = "flex";
         metaType.textContent = "GAME";
@@ -116,6 +158,24 @@
         metaDesc.textContent = "";
         setAuthor(game);
         bumpPopularity(game.id);
+        const wait = setInterval(() => {
+            try {
+                const outerDoc = frame.contentDocument;
+                if (!outerDoc) return;
+                const zoneFrame = outerDoc.getElementById("zoneFrame");
+                if (!zoneFrame) return;
+                const innerDoc = zoneFrame.contentDocument;
+                if (!innerDoc) return;
+                const content = innerDoc.getElementById("content");
+                if (!content) return;
+                content.style.maxHeight = "100%";
+                const canvas = content.querySelector("canvas");
+                if (canvas) canvas.style.maxHeight = "100%";
+                clearInterval(wait);
+                console.log("Content found!");
+            } catch (e) {
+            }
+        }, 100);
     }
     function closeGame() {
         const newUrl = window.location.pathname;
