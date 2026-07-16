@@ -176,10 +176,7 @@ const headerHTML = `
             Future Updates
         </a>
         <a href="InfiniteApps.html?website=true" class="darkbuttons">
-            Download This Website
-        </a>
-        <a href="InfiniteApps.html?games=true" class="darkbuttons">
-            Download Games
+            Download
         </a>
         <a href="InfiniteContacts.html" class="darkbuttons">
             Contact Me
@@ -388,46 +385,31 @@ document.addEventListener("DOMContentLoaded", () => {
             snowflakes.forEach(flake => flake.start && flake.start());
         }
     });
-    const downloadToggle = document.getElementById('downloadToggle');
-    const downloadDropdown = document.getElementById('downloadDropdown');
     const helpToggle = document.getElementById('helpToggle');
     const helpDropdown = document.getElementById('helpDropdown');
     const abtToggle = document.getElementById('abtToggle');
     const abtDropdown = document.getElementById('abtDropdown');
     const updateToggle = document.getElementById('updateToggle');
     const updateDropdown = document.getElementById('updateDropdown');
-    downloadToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        downloadDropdown.style.display = downloadDropdown.style.display === 'flex' ? 'none' : 'flex';
-        updateDropdown.style.display = 'none';
-        helpDropdown.style.display = 'none';
-        abtDropdown.style.display = 'none';
-    });
     helpToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
-        downloadDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
     });
     abtToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
-        downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     updateToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         updateDropdown.style.display = updateDropdown.style.display === 'flex' ? 'none' : 'flex';
         abtDropdown.style.display = 'none';
-        downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     document.addEventListener('click', (e) => {
-        if (!downloadDropdown.contains(e.target) && !downloadToggle.contains(e.target)) {
-            downloadDropdown.style.display = 'none';
-        }
         if (!helpDropdown.contains(e.target) && !helpToggle.contains(e.target)) {
             helpDropdown.style.display = 'none';
         }
