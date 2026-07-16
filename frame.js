@@ -124,7 +124,7 @@ const headerHTML = `
                     </div>
                 </div>
                 <a href='InfiniteApps.html?website=true'>
-                    Download this website
+                    Download
                 </a>
                 <a class="contactme" href="InfiniteContacts.html">
                     Contact me
