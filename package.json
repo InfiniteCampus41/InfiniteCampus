@@ -17,10 +17,9 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "adm-zip": "^0.5.10"
+    "adm-zip": "^0.5.18",
+    "express": "^5.2.1"
   },
-  "optionalDependencies": {},
   "keywords": [
     "express",
     "server",

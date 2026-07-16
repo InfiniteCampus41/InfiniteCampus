@@ -10,6 +10,7 @@ let lastUploadTime = Date.now();
 let currentlyOpenActions = null;
 let finishingWatcher = null;
 let currentSubtitleBlobUrl = null;
+let autoOpenedMovie = false;
 const currentfile = document.getElementById("currentFile");
 const movies = document.getElementById("movies");
 const section = document.getElementById("section");
@@ -43,7 +44,19 @@ document.getElementById("applyFile").addEventListener("change", () => {
     } else {
         label.innerText = "";
     }
-});
+})
+function updateMovieURL(movieName = null) {
+    const url = new URL(window.location);
+    if (movieName) {
+        url.searchParams.set("movie", movieName);
+    } else {
+        url.searchParams.delete("movie");
+    }
+    history.replaceState({}, "", url);
+}
+function getMovieFromURL() {
+    return new URLSearchParams(window.location.search).get("movie");
+}
 function sanitizeUsername(name) {
     if (!name) return "An Anonymous User";
     return name
@@ -592,6 +605,12 @@ function vpCloseDropup() {
         if (video && !video.paused) vpHideUI();
     });
     video.addEventListener("click", (e) => {
+        if (autoOpenedMovie && video.muted) {
+            video.muted = false;
+            autoOpenedMovie = false;
+            vpUpdateVolIcon();
+            vpUpdateVolSlider();
+        }
         if (e.target.closest("#vp-controls") || e.target.closest("#vp-center-btn")) return;
         const isDesktop = window.matchMedia("(hover: hover)").matches;
         if (isDesktop) {
@@ -795,6 +814,7 @@ document.addEventListener("fullscreenchange", () => {
     vpShowUI();
 });
 async function openWatchPanel(name, subtitleUrl = null) {
+    updateMovieURL(name);
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
     const before = document.getElementById("before");
@@ -835,6 +855,9 @@ async function openWatchPanel(name, subtitleUrl = null) {
     const streamURL = BACKEND + "/movies/x9a7b2/" + name;
     _vpCurrentSrc = streamURL;
     player.src = streamURL;
+    if (autoOpenedMovie) {
+        player.muted = true;
+    }
     player.play();
     fetch(BACKEND + "/api/watch_x9a7b2/" + name, {
         method: "POST",
@@ -859,6 +882,8 @@ function closeWatchPanel() {
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
     const before = document.getElementById("before");
+    updateMovieURL(null);
+    autoOpenedMovie = false;
     player.pause();
     player.src = "";
     _vpCurrentSrc = "";
@@ -879,7 +904,17 @@ function closeWatchPanel() {
 }
 window.openWatchPanel = openWatchPanel;
 window.closeWatchPanel = closeWatchPanel;
-loadMovies();
+loadMovies().then(() => {
+    const movie = getMovieFromURL();
+    if (!movie) return;
+    const found = MOVIE_CACHE.find(
+        m => m.name.toLowerCase() === decodeURIComponent(movie).toLowerCase()
+    );
+    if (found) {
+        autoOpenedMovie = true;
+        openWatchPanel(found.name, found.subtitleUrl || null);
+    }
+});
 const networkWarning = document.getElementById("networkWarning");
 const SPEED_THRESHOLD_MS = 750;
 async function checkNetworkSpeed() {
