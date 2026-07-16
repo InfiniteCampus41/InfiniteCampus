@@ -1,5 +1,5 @@
-let rightFtMsg = `Pissing off your teachers since 2024`;
-let leftFtMsg = `Made with all the love we are legally allowed to give!`;
+let rightFtMsg = `Pissing Off Your Teachers Since 2024`;
+let leftFtMsg = `Made With All The Love We Are Legally Allowed To Give!`;
 const frameToday = new Date();
 const month = frameToday.getMonth() + 1;
 const day = frameToday.getDate();
@@ -14,30 +14,30 @@ const isThirdSundayOfJune =
     day >= 15 &&
     day <= 21;
 if (isSecondSundayOfMay) {
-    leftFtMsg = `Made with motherly love`;
+    leftFtMsg = `Made With Motherly Love`;
 } else if (isThirdSundayOfJune) {
-    leftFtMsg = `Made with fatherly love`;
+    leftFtMsg = `Made With Fatherly Love`;
 } else if (month === 1 && day === 1) {
-    rightFtMsg = `New year, same chaos since 2024`;
-    leftFtMsg = `Starting the year questionably!`;
+    rightFtMsg = `New Year, Same Chaos Since 2024`;
+    leftFtMsg = `Starting The Year Questionably!`;
 } else if (month === 2 && day === 14) {
-    rightFtMsg = `Spreading love (And mild annoyance) since 2024`;
-    leftFtMsg = `Made with slightly extra love today`;
+    rightFtMsg = `Spreading Love (And Mild Annoyance) Since 2024`;
+    leftFtMsg = `Made With Slightly Extra Love Today`;
 } else if (month === 4 && day === 1) {
-    rightFtMsg = `April fools!`;
-    leftFtMsg = `This website will shut down for good in a month`;
+    rightFtMsg = `April Fools!`;
+    leftFtMsg = `This Website Will Shut Down For Good In A Month`;
 } else if (month === 7 && day === 4) {
-    rightFtMsg = `Independently annoying since 2024`;
-    leftFtMsg = `Red, white, and playing games at school`;
+    rightFtMsg = `Independently Annoying Since 2024`;
+    leftFtMsg = `Red, White, And Playing Games At School`;
 } else if (month === 10 && day === 31) {
-    rightFtMsg = `Scaring teachers since 2024`;
-    leftFtMsg = `Powered by sugar and bad decisions`;
+    rightFtMsg = `Scaring Teachers Since 2024`;
+    leftFtMsg = `Powered By Sugar And Bad Decisions`;
 } else if (month === 11 && day >= 22 && day <= 28 && frameToday.getDay() === 4) {
-    rightFtMsg = `Thankful for chaos since 2024`;
-    leftFtMsg = `Stuffed with code and regret`;
+    rightFtMsg = `Thankful For Chaos Since 2024`;
+    leftFtMsg = `Stuffed With Code And Regret`;
 } else if (month === 12 && day === 25) {
-    rightFtMsg = `Sleighing teachers since 2024`;
-    leftFtMsg = `Made with festive mischief`;
+    rightFtMsg = `Sleighing Teachers Since 2024`;
+    leftFtMsg = `Made With Festive Mischief`;
 }
 const headerHTML = `
     <header id="site-header" class="themed">
@@ -69,10 +69,10 @@ const headerHTML = `
                     </button>
                     <div class="dropdown themed" id="abtDropdown">
                         <a href='InfiniteAbouts.html'>
-                            About us
+                            About Us
                         </a>
                         <a href='InfinitePolicies.html'>
-                            Privacy policy
+                            Privacy Policy
                         </a>
                         <a href='InfiniteTerms.html'>
                             Terms
@@ -94,10 +94,10 @@ const headerHTML = `
                             FAQ
                         </a>
                         <a href='InfiniteEmbeds.html?choice=5'>
-                            Report a bug
+                            Report A Bug
                         </a>
                         <a href='InfiniteApps.html?mirror=true'>
-                            Mirror links
+                            Mirror Links
                         </a>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ const headerHTML = `
                             Updates
                         </a>
                         <a href="InfiniteUpdaters.html?future=true">
-                            Future updates
+                            Future Updates
                         </a>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ const headerHTML = `
                     Download
                 </a>
                 <a class="contactme" href="InfiniteContacts.html">
-                    Contact me
+                    Contact Me
                 </a>
             </div>
         </div>
@@ -155,10 +155,10 @@ const headerHTML = `
             FAQ
         </a>
         <a href="InfiniteEmbeds.html?choice=5" class="darkbuttons">
-            Report a bug
+            Report A Bug
         </a>
         <a href="InfiniteApps.html?mirror=true" class="darkbuttons">
-            Mirror links
+            Mirror Links
         </a>
         <a href="InfiniteGamers.html" class="darkbuttons">
             Games
@@ -173,19 +173,19 @@ const headerHTML = `
             Updates
         </a>
         <a href="InfiniteUpdaters.html?future=true" class="darkbuttons">
-            Future updates
+            Future Updates
         </a>
         <a href="InfiniteApps.html?website=true" class="darkbuttons">
-            Download this website
+            Download This Website
         </a>
         <a href="InfiniteApps.html?games=true" class="darkbuttons">
-            Download games
+            Download Games
         </a>
         <a href="InfiniteContacts.html" class="darkbuttons">
-            Contact me
+            Contact Me
         </a>
         <a href="InfinitePolicies.html" class="darkbuttons">
-            Privacy policy
+            Privacy Policy
         </a>
         <a href="InfiniteTerms.html" class="darkbuttons">
             Terms
@@ -303,15 +303,15 @@ document.addEventListener("DOMContentLoaded", () => {
     waitForToggleSnowBtn((toggleBtn) => {
         const monthIndex = new Date().getMonth();
         if (monthIndex === 11 || monthIndex === 0) {
-            toggleBtn.textContent = "Toggle snow";
+            toggleBtn.textContent = "Toggle Snow";
         } else if (monthIndex === 1) {
-            toggleBtn.textContent = 'Toggle hearts';
+            toggleBtn.textContent = 'Toggle Hearts';
         } else if (monthIndex >= 2 && monthIndex <= 8) {
             toggleBtn.style.display = 'none';
         } else if (monthIndex === 9) {
-            toggleBtn.textContent = 'Toggle pumpkins';
+            toggleBtn.textContent = 'Toggle Pumpkins';
         } else if (monthIndex === 10) {
-            toggleBtn.textContent = 'Toggle leaves';
+            toggleBtn.textContent = 'Toggle Leaves';
         }
         toggleBtn.addEventListener("click", () => {
             snowEnabled = !snowEnabled;
@@ -388,31 +388,46 @@ document.addEventListener("DOMContentLoaded", () => {
             snowflakes.forEach(flake => flake.start && flake.start());
         }
     });
+    const downloadToggle = document.getElementById('downloadToggle');
+    const downloadDropdown = document.getElementById('downloadDropdown');
     const helpToggle = document.getElementById('helpToggle');
     const helpDropdown = document.getElementById('helpDropdown');
     const abtToggle = document.getElementById('abtToggle');
     const abtDropdown = document.getElementById('abtDropdown');
     const updateToggle = document.getElementById('updateToggle');
     const updateDropdown = document.getElementById('updateDropdown');
+    downloadToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadDropdown.style.display = downloadDropdown.style.display === 'flex' ? 'none' : 'flex';
+        updateDropdown.style.display = 'none';
+        helpDropdown.style.display = 'none';
+        abtDropdown.style.display = 'none';
+    });
     helpToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
+        downloadDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
     });
     abtToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
         updateDropdown.style.display = 'none';
+        downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     updateToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         updateDropdown.style.display = updateDropdown.style.display === 'flex' ? 'none' : 'flex';
         abtDropdown.style.display = 'none';
+        downloadDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
     });
     document.addEventListener('click', (e) => {
+        if (!downloadDropdown.contains(e.target) && !downloadToggle.contains(e.target)) {
+            downloadDropdown.style.display = 'none';
+        }
         if (!helpDropdown.contains(e.target) && !helpToggle.contains(e.target)) {
             helpDropdown.style.display = 'none';
         }
@@ -491,7 +506,7 @@ function appendToMain() {
         <center>
             <div id="donation-auto-msg">
                 <p class="btxt">
-                    Infinite Campus is a free service, but it isn't free to run. If you would like to support us, consider donating
+                    Infinite Campus Is A Free Service, But It Isn't Free To Run. If You Would Like To Support Us, Consider Donating
                 </p>
                 <a class="button apbtn" href="/InfiniteDonaters.html">
                     Donate
@@ -499,9 +514,9 @@ function appendToMain() {
             </div>
             <br>
             <p class="btxt">
-                All new updates are on the updates page
+                All New Updates Are On The Updates Page
                 <br>
-                Also join the
+                Also Join The
                 <a href="${i}" class="discord" target="_blank">
                     Discord
                 </a>
@@ -534,13 +549,13 @@ if (!isChattersPage) {
         </div>
         <div id="loader-maint-content" style="display:none; flex-direction:column; align-items:center; margin-top:20px;">
             <div id="loader-maint-message" style="margin-bottom:15px; font-size:18px; text-align:center;"></div>
-            <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check statuses</a>
+            <a href="https://status.infinitecampus.xyz" id="loader-maint-btn" class="discord">Check Statuses</a>
         </div>
         <div id="loader-slow-msg">
-            <div id="loader-slow-second-msg">Taking longer than usual<br><small>The site may be under heavy load.</small></div>
-            <a href="https://status.infinitecampus.xyz" class="discord" style="font-size:13px; margin-top:8px;">Check statuses</a>
+            <div id="loader-slow-second-msg">Taking Longer Than Usual<br><small>The Site May Be Under Heavy Load.</small></div>
+            <a href="https://status.infinitecampus.xyz" class="discord" style="font-size:13px; margin-top:8px;">Check Statuses</a>
             <div id="loader-disable-row">
-                <span id="loader-disable-label">Disable loading screens</span>
+                <span id="loader-disable-label">Disable Loading Screens</span>
                 <label class="switch" id="loader-disable-switch">
                     <input type="checkbox" id="loader-disable-checkbox" ${loadingScreensDisabled ? "checked" : ""}>
                     <span class="slider"></span>
@@ -624,7 +639,7 @@ if (!isChattersPage) {
         if (mode === "maint") {
             showLoader();
             maintContent.style.display = "flex";
-            maintMessage.textContent = message || "Maintenance mode enabled";
+            maintMessage.textContent = message || "Maintenance Mode Enabled";
         }
         else if (mode === "infinite") {
             maintContent.style.display = "none";

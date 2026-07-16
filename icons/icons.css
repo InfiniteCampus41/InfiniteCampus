@@ -46,6 +46,10 @@ i {
     mask-image: url('/icons/award.svg');
     -webkit-mask-image: url('/icons/award.svg');
 }
+.ic-badge-cc {
+    mask-image: url('/icons/badge-cc.svg');
+    -webkit-mask-image: url('/icons/badge-cc.svg');
+}
 .ic-badge-cc-fill {
     mask-image: url('/icons/badge-cc-fill.svg');
     -webkit-mask-image: url('/icons/badge-cc-fill.svg');
@@ -137,6 +141,10 @@ i {
 .ic-emoji-smile {
     mask-image: url('/icons/emoji-smile.svg');
     -webkit-mask-image: url('/icons/emoji-smile.svg');
+}
+.ic-eye-fill {
+    mask-image: url('/icons/eye-fill.svg');
+    -webkit-mask-image: url('/icons/eye-fill.svg');
 }
 .ic-file-earmark-code {
     mask-image: url('/icons/file-earmark-code.svg');

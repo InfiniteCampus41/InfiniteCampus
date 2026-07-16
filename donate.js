@@ -20,7 +20,7 @@ let authReady = false;
 let applePayInstance = null;
 let googlePayInstance = null;
 let lastAmount = null;
-const GOAL = 200;
+const GOAL = 201.16;
 const progressBar = document.getElementById("donation-progress-bar");
 const progressText = document.getElementById("donation-progress-text");
 const authReadyPromise = new Promise((resolve) => {
@@ -108,16 +108,16 @@ async function refreshWallets() {
                     if (tokenResult.status === "OK") {
                         await sendPayment(tokenResult.token, currentAmount, "Google Pay");
                     } else {
-                        showError("Google pay failed");
+                        showError("Google Pay Failed");
                     }
                 } catch (err) {
                     console.error(err);
-                    showError("Google pay error");
+                    showError("Google Pay Error");
                 }
             };
         }
     } catch (e) {
-        console.warn("Google pay not available", e);
+        console.warn("Google Pay Not Available", e);
     }
     try {
         if (applePayInstance) {
@@ -128,7 +128,7 @@ async function refreshWallets() {
         }
         await initApplePay();
     } catch (e) {
-        console.warn("Apple pay refresh failed", e);
+        console.warn("Apple Pay refresh failed", e);
     }
 }
 async function sendPayment(token, amount, methodName) {
@@ -146,11 +146,11 @@ async function sendPayment(token, amount, methodName) {
             })
         });
         const data = await response.json();
-        showSuccess(`${methodName} payment of $${amount} successful!`);
+        showSuccess(`${methodName} Payment Of $${amount} Successful!`);
         console.log(data);
     } catch (err) {
         console.error(err);
-        showError(`${methodName} payment failed`);
+        showError(`${methodName} Payment Failed`);
     }
 }
 function updatePaymentUI() {
@@ -212,7 +212,7 @@ async function initApplePay() {
     } catch (e) {
         const appleOption = document.querySelector("#payment-method option[value='applePay']");
         if (appleOption) appleOption.remove();
-        console.log("[ApplePay] not available:", e?.message || e);
+        console.log("[ApplePay] Not available:", e?.message || e);
     }
 }
 async function initPayments() {
@@ -229,7 +229,7 @@ async function initPayments() {
             await sendPayment(result.token, amount, "Credit Card");
         } else {
             console.error(result.errors);
-            showError("Credit card payment Failed");
+            showError("Credit Card Payment Failed");
         }
     });
 }

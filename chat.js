@@ -13,6 +13,7 @@ const chatInput = document.getElementById("chatInput");
 const chatLog = document.getElementById("chatLog");
 const downloadBtn = document.createElement("a");
 const imgViewer = document.createElement("div");
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 const mentionHint = document.getElementById("mentionHint");
 const mentionMenu = document.getElementById("mentionMenu");
 const mentionNotif = document.getElementById("mentionNotif");
@@ -295,7 +296,7 @@ async function toggleReaction(msgId, emoji) {
                 renderReactionsInRow(row, json.reactions);
             }
         } catch (e) {
-            showError(e?.message || "Could not react to message");
+            showError(e?.message || "Could Not React To Message");
         }
         return;
     }
@@ -313,7 +314,7 @@ async function toggleReaction(msgId, emoji) {
             body: JSON.stringify({ path: pathParts, emoji, channel })
         });
         const json = await res.json();
-        if (!res.ok) showError(json?.error || "Could not react to message");
+        if (!res.ok) showError(json?.error || "Could Not React To Message");
     } catch (e) {
         showError("Reaction failed: " + (e?.message || e));
     }
@@ -459,7 +460,7 @@ viewerImg.style.maxWidth = "90%";
 viewerImg.style.maxHeight = "80%";
 viewerImg.style.cursor = "zoom-in";
 viewerImg.style.transition = "transform 0.2s";
-downloadBtn.textContent = "Download image";
+downloadBtn.textContent = "Download Image";
 downloadBtn.style.marginTop = "15px";
 downloadBtn.style.color = "white";
 downloadBtn.style.textDecoration = "underline";
@@ -502,7 +503,7 @@ async function loadOlderMessages() {
         loadingBar = document.createElement("div");
         loadingBar.id = "__loadMoreIndicator";
         loadingBar.style.cssText = "text-align:center;padding:8px;color:#888;font-size:0.8em;";
-        loadingBar.textContent = "Loading messages";
+        loadingBar.textContent = "Loading Messages";
     }
     chatLog.prepend(loadingBar);
     try {
@@ -516,7 +517,7 @@ async function loadOlderMessages() {
         const msgs = res.data;
         if (!msgs || (Array.isArray(msgs) && msgs.length === 0)) {
             hasMoreMessages = false;
-            loadingBar.textContent = "No more messages";
+            loadingBar.textContent = "No More Messages";
             setTimeout(() => loadingBar.remove(), 1500);
             loadingOlderMessages = false;
             return;
@@ -717,7 +718,7 @@ mentionToggle.addEventListener("change", async () => {
         await dbSet(`users/${currentUser.uid}/settings/showMentions`, newValue);
         mentionToggleLabel.style.color = newValue ? "gold" : "#888";
     } catch (err) {
-        showError("Failed to save mention setting:", err);
+        showError("Failed To Save Mention Setting:", err);
     }
 });
 async function loadMentionSetting(user) {
@@ -731,13 +732,13 @@ async function loadMentionSetting(user) {
         }
         mentionToggleLabel.style.color = mentionToggle.checked ? "gold" : "#888";
     } catch (err) {
-        showError("Failed to load mention setting:", err);
+        showError("Failed To Load Mention Setting:", err);
         mentionToggle.checked = true;
     }
 }
 async function getDisplayName(uid) {
     let dn = await dbGet(`users/${uid}/profile/displayName`);
-    if (!dn || dn.trim() === "") dn = "Spam account";
+    if (!dn || dn.trim() === "") dn = "Spam Account";
     return dn;
 }
 mentionNotif.addEventListener("click", () => {
@@ -767,7 +768,7 @@ async function processChannelMentions(htmlText) {
     const allChannels = channels ? Object.keys(channels) : [];
     return htmlText.replace(channelRegex, (match, chName) => {
         if (allChannels.includes(chName)) {
-            return `<span class="channel-mention" data-channel="${chName}" title="Go to the ${chName} channel">#${chName}</span>`;
+            return `<span class="channel-mention" data-channel="${chName}" title="Go To The ${chName} Channel">#${chName}</span>`;
         } else {
             return `#${chName}`;
         }
@@ -791,7 +792,7 @@ function formatTimestamp(ts) {
     const isYesterday = d.toDateString() === yesterday.toDateString();
     const timeString = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
     if (isToday) return timeString;
-    else if (isYesterday) return `Yesterday at ${timeString}`;
+    else if (isYesterday) return `Yesterday At ${timeString}`;
     else return `${d.toLocaleDateString()} ${timeString}`;
 }
 function isRestrictedChannel(ch) {
@@ -902,8 +903,8 @@ async function renderMessageInstant(id, msg) {
             span.addEventListener("click", async () => {
                 const name = span.dataset.name;
                 const uid = await getUidByDisplayName(name);
-                if (!uid) { showError("User profile not found."); return; }
-                window.location.href = `InfiniteAccounts.html?user=${uid}&ref=chat`;
+                if (!uid) { showError("User Profile Not Found."); return; }
+                window.location.href = `InfiniteAccounts.html?user=${uid}`;
             });
         });
         textDivEl.querySelectorAll(".channel-mention").forEach(span => {
@@ -954,7 +955,7 @@ async function renderMessageInstant(id, msg) {
                 previewDiv.style.left = `${Math.min(rect.left, window.innerWidth - 340)}px`;
                 previewDiv.style.display = "block";
                 previewDiv.style.opacity = "1";
-                previewDiv.innerHTML = "Loading preview...";
+                previewDiv.innerHTML = "Loading Preview...";
                 if (!previewCache[url]) {
                     try {
                         const r = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
@@ -962,8 +963,8 @@ async function renderMessageInstant(id, msg) {
                         if (data.status === "success" && data.data) {
                             const { title, description, image } = data.data;
                             previewCache[url] = { title, description, image };
-                        } else { previewCache[url] = { error: "(No preview available)" }; }
-                    } catch { previewCache[url] = { error: "(Preview failed)" }; }
+                        } else { previewCache[url] = { error: "(No Preview Available)" }; }
+                    } catch { previewCache[url] = { error: "(Preview Failed)" }; }
                 }
                 const info = previewCache[url];
                 if (info.error) {
@@ -1026,7 +1027,7 @@ async function renderMessageInstant(id, msg) {
         nameSpan.style.color = "#aaa";
         nameSpan.style.cursor = "default";
         const anonBadge = document.createElement("span");
-        anonBadge.title = "Guest message (Not logged in)";
+        anonBadge.title = "Guest message (Not Logged In)";
         anonBadge.style.marginLeft = "4px";
         anonBadge.style.fontSize = "0.75em";
         anonBadge.style.color = "#888";
@@ -1038,10 +1039,10 @@ async function renderMessageInstant(id, msg) {
     } else if (isDiscordMsg) {
         profilePic.src = `${BACKEND}${msg.a}` || "/res/discord.png";
         profilePic.onerror = () => { profilePic.src = "/res/discord.png"; };
-        nameSpan.textContent = msg.u || "This message is from the discord";
+        nameSpan.textContent = msg.u || "This Message Is From The Discord";
         nameSpan.style.color = "#5865F2";
         const discordBadge = document.createElement("span");
-        discordBadge.innerHTML = `<i class="ic ic-discord" style="color:#5865F2" title="This message is from the discord"></i>`;
+        discordBadge.innerHTML = `<i class="ic ic-discord" style="color:#5865F2" title="This Message Is From The Discord"></i>`;
         discordBadge.style.marginLeft = "4px";
         leftWrapper.appendChild(discordBadge);
         if (msg.r) {
@@ -1053,7 +1054,7 @@ async function renderMessageInstant(id, msg) {
                         const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
                         let rText;
                         if (rData.file || rData.fileUrl || rData.attachment) {
-                            rText = '<span style="color:#4fa3ff;">Click to view attachment</span>';
+                            rText = '<span style="color:#4fa3ff;">Click To View Attachment</span>';
                         } else {
                             rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
                         }
@@ -1078,7 +1079,7 @@ async function renderMessageInstant(id, msg) {
                         reply.style.overflow = "hidden";
                         reply.style.textOverflow = "ellipsis";
                         reply.style.maxWidth = "100%";
-                        reply.innerHTML = `Replying to: @${rName}: ${rText}`;
+                        reply.innerHTML = `Replying To: @${rName}: ${rText}`;
                         replyPreview.appendChild(arrow);
                         replyPreview.appendChild(reply);
                         div.prepend(replyPreview);
@@ -1096,12 +1097,12 @@ async function renderMessageInstant(id, msg) {
         const discordReactBtn = document.createElement("button");
         discordReactBtn.className = "react-btn";
         discordReactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
-        discordReactBtn.title = "Add reaction";
+        discordReactBtn.title = "Add Reaction";
         discordReactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
         const discordReplyBtn = document.createElement("button");
         discordReplyBtn.innerHTML = `<i class="ic ic-arrow-90deg-left"></i>`;
         discordReplyBtn.title = "Reply to Discord message";
-        discordReplyBtn.onclick = () => toggleReply(id, msg.u || "Discord user", rawText);
+        discordReplyBtn.onclick = () => toggleReply(id, msg.u || "Discord User", rawText);
         msgBtns.appendChild(discordReplyBtn);
         msgBtns.appendChild(discordReactBtn);
         div.insertBefore(msgBtns, topRow);
@@ -1137,14 +1138,14 @@ async function renderMessageInstant(id, msg) {
         if (isOwner || isCoOwner || isTester || isHAdmin) {
             const anonDelBtn = document.createElement("button");
             anonDelBtn.innerHTML = "<i class='ic ic-trash'></i>";
-            anonDelBtn.title = "Delete guest message";
+            anonDelBtn.title = "Delete Guest Message";
             anonDelBtn.onclick = async (e) => {
                 if (e.shiftKey) {
                     await dbDelete(`${currentPath}/${id}`);
                     div.remove();
                     return;
                 }
-                showConfirm("Delete this guest message?", async (ok) => {
+                showConfirm("Delete This Guest Message?", async (ok) => {
                     if (!ok) return;
                     await dbDelete(`${currentPath}/${id}`);
                     div.remove();
@@ -1177,7 +1178,7 @@ async function renderMessageInstant(id, msg) {
                     const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : (rData.sender ? await getDisplayName(rData.sender) : "Unknown"));
                     let rText;
                     if (rData.file || rData.fileUrl || rData.attachment) {
-                        rText = '<span style="color:#4fa3ff;">Click to view attachment</span>';
+                        rText = '<span style="color:#4fa3ff;">Click To View Attachment</span>';
                     } else {
                         rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
                     }
@@ -1203,7 +1204,7 @@ async function renderMessageInstant(id, msg) {
                     replySpan.style.overflow = "hidden";
                     replySpan.style.textOverflow = "ellipsis";
                     replySpan.style.maxWidth = "100%";
-                    replySpan.innerHTML = `Replying to: @${rName}: ${rText}`;
+                    replySpan.innerHTML = `Replying To: @${rName}: ${rText}`;
                     replyPreview.appendChild(arrow);
                     replyPreview.appendChild(replySpan);
                     div.prepend(replyPreview);
@@ -1214,7 +1215,7 @@ async function renderMessageInstant(id, msg) {
     const reactBtn = document.createElement("button");
     reactBtn.className = "react-btn";
     reactBtn.innerHTML = `<i class="ic ic-emoji-smile"></i>`;
-    reactBtn.title = "Add reaction";
+    reactBtn.title = "Add Reaction";
     reactBtn.onclick = (e) => { e.stopPropagation(); showEmojiPicker(e, id); };
     msgBtns.appendChild(reactBtn);
     div.appendChild(topRow);
@@ -1237,7 +1238,7 @@ async function renderMessageInstant(id, msg) {
         try {
             const meta = await getUserMeta(senderId);
             let displayName = meta.displayName;
-            if (!displayName || displayName.trim() === "") displayName = "Spam account";
+            if (!displayName || displayName.trim() === "") displayName = "Spam Account";
             let profilePics = [];
             try {
                 const pfpDate = Date.now();
@@ -1253,7 +1254,7 @@ async function renderMessageInstant(id, msg) {
             profilePic.style.border = `2px solid ${meta.color}`;
             nameSpan.textContent = displayName;
             nameSpan.style.color = meta.color;
-            const openProfile = () => { window.location.href = `InfiniteAccounts.html?user=${senderId}&ref=chat`; };
+            const openProfile = () => { window.location.href = `InfiniteAccounts.html?user=${senderId}`; };
             nameSpan.onclick = openProfile;
             profilePic.onclick = openProfile;
             if (((isOwner || isTester) && !meta.owner) || (isCoOwner && !meta.owner && !meta.tester && !meta.coOwner) || (isHAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin) || (isAdmin && !meta.owner && !meta.tester && !meta.coOwner && !meta.hAdmin && !meta.admin)) {
@@ -1266,10 +1267,10 @@ async function renderMessageInstant(id, msg) {
                     menu.style.left = e.pageX + "px";
                     menu.style.top = e.pageY + "px";
                     if (alreadyMuted) {
-                        menu.textContent = "Unmute user";
+                        menu.textContent = "Unmute User";
                         menu.onclick = async () => { await unmuteUser(senderId); closeMenu(); };
                     } else {
-                        menu.textContent = "Mute user";
+                        menu.textContent = "Mute User";
                         const options = document.createElement("div");
                         options.style.cssText = "display:flex;flex-direction:column;margin-top:4px;";
                         const mkOpt = (label, fn) => {
@@ -1277,7 +1278,7 @@ async function renderMessageInstant(id, msg) {
                             d.textContent = label; d.style.cursor = "pointer";
                             d.onclick = fn; options.appendChild(d);
                         };
-                        mkOpt("Toggle", async () => { await dbSet(`mutedUsers/${senderId}`, { expires: "Never" }); delete userMetaCache[senderId]; showSuccess("User muted"); closeMenu(); });
+                        mkOpt("Toggle", async () => { await dbSet(`mutedUsers/${senderId}`, { expires: "Never" }); delete userMetaCache[senderId]; showSuccess("User Muted"); closeMenu(); });
                         mkOpt("Minutes", async () => { let m = parseInt(await customPrompt("Minutes?", false, "5")); if (!isNaN(m) && m > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + m * 60000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${m}m`); } closeMenu(); });
                         mkOpt("Hours", async () => { let h = parseInt(await customPrompt("Hours?", false, "1")); if (!isNaN(h) && h > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + h * 3600000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${h}h`); } closeMenu(); });
                         mkOpt("Days", async () => { let d = parseInt(await customPrompt("Days?", false, "1")); if (!isNaN(d) && d > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + d * 86400000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${d}d`); } closeMenu(); });
@@ -1293,7 +1294,7 @@ async function renderMessageInstant(id, msg) {
             const mutedBadge = document.createElement("span");
             mutedBadge.style.color = "red";
             mutedBadge.style.display = "none";
-            mutedBadge.title = "This user is muted";
+            mutedBadge.title = "This User Is Muted";
             mutedBadge.innerHTML = '<i class="ic ic-volume-mute-fill"></i>';
             dbListen(`mutedUsers/${senderId}`, async (data) => {
                 if (!data) { mutedBadge.style.display = "none"; return; }
@@ -1305,11 +1306,11 @@ async function renderMessageInstant(id, msg) {
             const extraBadges = [];
             const mkP = (cls, color, title) => allPrimaryBadges.push({ cls, color, title });
             const mkE = (cls, color, label, title) => extraBadges.push({ cls, color, label, title });
-            if (meta.sus) mkP("ic ic-shield-exclamation","red","Under investigation");
+            if (meta.sus) mkP("ic ic-shield-exclamation","red","Under Investigation");
             if (meta.owner) mkP("ic ic-shield-plus","lime","Owner");
             if (meta.tester) mkP("ic ic-cogs","darkGoldenRod","Tester");
-            if (meta.coOwner) mkP("ic ic-shield-fill","lightblue","Co-owner");
-            if (meta.hAdmin) mkP("ic ic-shield-halved","#00cc99","Head admin");
+            if (meta.coOwner) mkP("ic ic-shield-fill","lightblue","Co-Owner");
+            if (meta.hAdmin) mkP("ic ic-shield-halved","#00cc99","Head Admin");
             if (meta.admin) mkP("ic ic-shield","dodgerblue","Admin");
             if (meta.dev) mkP("ic ic-code-square","green","Developer");
             if (meta.premium3) mkP("ic ic-hearts","red","Premium T3");
@@ -1317,11 +1318,11 @@ async function renderMessageInstant(id, msg) {
             if (meta.premium1) mkP("ic ic-heart-half","yellow","Premium T1");
             if (meta.donor) mkP("ic ic-balloon-heart","#00E5FF","Donated");
             if (meta.partner) mkE("ic ic-handshake","cornflowerblue","Partner","Partner");
-            if (meta.uploader) mkE("ic ic-film","grey","Uploader","Uploaded a movie");
-            if (meta.milestone) mkE("ic ic-award","yellow","Award","100th user");
-            if (meta.guesser) mkE("ic ic-stopwatch","#ff0000","Guesser","guesser");
+            if (meta.uploader) mkE("ic ic-film","grey","Uploader","Uploaded A Movie");
+            if (meta.milestone) mkE("ic ic-award","yellow","Award","Award Badge");
+            if (meta.guesser) mkE("ic ic-stopwatch","#ff0000","Guesser","Guesser");
             if (meta.discord && meta.discord.trim()) mkE("ic ic-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
-            if (meta.linker) mkE("ic ic-link","#4fa3ff","Linker","Link sharer");
+            if (meta.linker) mkE("ic ic-link","#4fa3ff","Linker","Link Sharer");
             if (meta.secure) mkE("ic ic-securely","dodgerblue","Securely","Has Securely");
             if (meta.guardian) mkE("ic ic-goguardian","grey","GoGuardian","Has GoGuardian");
             if (meta.lanschool) mkE("ic ic-lanschool","greenyellow","Lanschool","Has Lanschool");
@@ -1457,7 +1458,7 @@ async function renderMessageInstant(id, msg) {
                             div.remove();
                         };
                         if (e.shiftKey) { await doDelete(); return; }
-                        showConfirm("Delete this message?", async (ok) => {
+                        showConfirm("Delete This Message?", async (ok) => {
                             if (!ok) return;
                             await doDelete();
                         });
@@ -1467,7 +1468,7 @@ async function renderMessageInstant(id, msg) {
             }
             div.insertBefore(msgBtns, topRow);
         } catch (e) {
-            console.warn("Failed to load user data for message:", e);
+            console.warn("Failed To Load User Data For Message:", e);
             nameSpan.textContent = "User";
         }
     })();
@@ -1751,7 +1752,7 @@ dbListen("mutedUsers", async (allMutes) => {
         const data = allMutes[uid];
         if (data.expires && data.expires !== "Never" && Date.now() > data.expires) {
             await dbDelete(`mutedUsers/${uid}`);
-            console.log(`Expired mute for ${uid} removed`);
+            console.log(`Expired Mute For ${uid} Removed`);
         }
     }
 }, "others");
@@ -2079,7 +2080,7 @@ function initAudioPlayers(container) {
 function playNotificationSound() {
     const audio = new Audio("/res/notif.mp3");
     audio.play().catch(err => {
-        console.warn("Autoplay prevented:", err);
+        console.warn("Autoplay Prevented:", err);
     });
 }
 function attachPrivateMessageListener(uid) {
@@ -2104,7 +2105,7 @@ function attachPrivateMessageListener(uid) {
 async function sendPrivateMessage(otherUid, text) {
     if (!currentUser || !otherUid) return;
     if (otherUid === currentUser.uid) {
-        showError("You cannot send private messages to yourself!");
+        showError("You Cannot Send Private Messages To Yourself!");
         return;
     }
     const [a, b] = [currentUser.uid, otherUid].sort();
@@ -2135,7 +2136,7 @@ async function sendPrivateMessage(otherUid, text) {
 async function openPrivateChat(uid, name) {
     if (!currentUser || !uid) return;
     if (uid === currentUser.uid) {
-        showError("You cannot open a private chat with yourself!");
+        showError("You Cannot Open A Private Chat With Yourself!");
         return;
     }
     window.history.replaceState(null, null, `?dm=${uid}`);
@@ -2188,10 +2189,10 @@ async function updatePrivateListFromSnapshot(chatsSnapshot) {
             closeBtn.innerHTML = `<i class="ic ic-x-circle" title="Close PM"></i>`;
             closeBtn.onclick = async (e) => {
                 e.stopPropagation();
-                showConfirm(`Close private chat with ${name}? messages will still be saved`, function(result) {
+                showConfirm(`Close Private Chat With ${name}? Messages Will Still Be Saved`, function(result) {
                     if (result) {
                         dbDelete(`metadata/${currentUser.uid}/privateChats/${otherUid}`);
-                        showSuccess("Chat closed");
+                        showSuccess("Chat Closed");
                     } else {
                         showSuccess("Canceled");
                     }
@@ -2255,27 +2256,27 @@ function openChannelSettings(channel, data) {
                 </h2>
             </center>
             <br>
-            <input id="channelNameInput" class="form-control" value="${channel}" placeholder="Channel name" style="width:100%; padding:6px;margin-bottom:10px;">
+            <input id="channelNameInput" class="form-control" value="${channel}" placeholder="Channel Name" style="width:100%; padding:6px;margin-bottom:10px;">
             <br>
-            <label style="color:#aaa;font-size:0.85em;">Discord channel ID (Leave empty to unlink)</label>
-            <input id="discordChannelIdInput" class="form-control" placeholder="Discord channel ID" style="width:100%; padding:6px;margin-bottom:10px;">
+            <label style="color:#aaa;font-size:0.85em;">Discord Channel ID (Leave Empty To Unlink)</label>
+            <input id="discordChannelIdInput" class="form-control" placeholder="Discord Channel ID" style="width:100%; padding:6px;margin-bottom:10px;">
             <div id="discordIdStatus" style="font-size:0.78em;color:#aaa;margin-bottom:10px;"></div>
             <hr>
-            <center><h3>Guest settings</h3></center>
+            <center><h3>Guest Settings</h3></center>
             <hr>
             <div style="margin-bottom:14px;">
                 <label class="switch">
                     <input type="checkbox" id="guestReadToggle">
                     <span class="slider"></span>
                 </label>
-                Guest read
+                Guest Read
             </div>
             <div style="margin-bottom:18px;">
                 <label class="switch">
                     <input type="checkbox" id="guestWriteToggle">
                     <span class="slider"></span>
                 </label>
-                Guest write
+                Guest Write
             </div>
             <center>
                 <h3>
@@ -2299,7 +2300,7 @@ function openChannelSettings(channel, data) {
                 </button>
                 <br>
                 <button id="deleteChannel" style="background:#a00; color:white;">
-                    Delete channel
+                    Delete Channel
                 </button>
                 <br>
                 <button id="cancelSettings">
@@ -2323,7 +2324,7 @@ function openChannelSettings(channel, data) {
                 if (input) {
                     input.value = currentId;
                     const status = overlay.querySelector("#discordIdStatus");
-                    if (status) status.textContent = currentId ? `Currently mapped to: ${currentId}` : "Not mapped to any Discord channel";
+                    if (status) status.textContent = currentId ? `Currently Mapped To: ${currentId}` : "Not Mapped To Any Discord Channel";
                 }
             }
         } catch {}
@@ -2347,7 +2348,7 @@ function openChannelSettings(channel, data) {
         if (!guestReadToggle.checked) guestWriteToggle.checked = false;
     });
     document.getElementById("deleteChannel").onclick = async () => {
-        showConfirm(`Delete "${channel}"? This cannot be undone.`, async (result) => {
+        showConfirm(`Delete "${channel}"? This Cannot Be Undone.`, async (result) => {
             if (!result) return;
             try {
                 await dbDelete(`channels/${channel}`);
@@ -2364,9 +2365,9 @@ function openChannelSettings(channel, data) {
                     switchChannel("General");
                 }
                 overlay.remove();
-                showSuccess("Channel deleted");
+                showSuccess("Channel Deleted");
             } catch (err) {
-                showError("Failed to delete channel:", err);
+                showError("Failed To Delete Channel:", err);
             }
         });
     };
@@ -2380,7 +2381,7 @@ function openChannelSettings(channel, data) {
         const guestRead  = !!(overlay.querySelector("#guestReadToggle")?.checked);
         const guestWrite = !!(overlay.querySelector("#guestWriteToggle")?.checked);
         if (discordId && !/^\d+$/.test(discordId)) {
-            showError("Discord channel ID must be a number");
+            showError("Discord Channel ID Must Be A Number");
             return;
         }
         try {
@@ -2406,12 +2407,12 @@ function openChannelSettings(channel, data) {
                     body: JSON.stringify({ channelName: targetName, discordChannelId: discordId })
                 });
             } catch (e) {
-                console.warn("Failed to save Discord channel mapping:", e);
+                console.warn("Failed To Save Discord Channel Mapping:", e);
             }
             overlay.remove();
-            showSuccess("Channel settings saved!");
+            showSuccess("Channel Settings Saved!");
         } catch (err) {
-            showError("Failed to save channel settings:", err);
+            showError("Failed To Save Channel Settings:", err);
         }
     };
 }
@@ -2498,7 +2499,7 @@ async function renderChannelsFromDB() {
             const btnWrap = document.createElement("span");
             btnWrap.style.marginLeft = "10px";
             const settingsBtn = document.createElement("button");
-            settingsBtn.innerHTML = `<i class='ic ic-gear' title='Open settings for #${ch}'></i>`;
+            settingsBtn.innerHTML = `<i class='ic ic-gear' title='Open Settings For #${ch}'></i>`;
             settingsBtn.style.background = "none";
             settingsBtn.style.border = "none";
             settingsBtn.style.padding = "0px";
@@ -2537,7 +2538,7 @@ async function switchChannel(ch) {
         if (attachBtn) attachBtn.style.display = "";
     }
     if (isRestrictedChannel(ch) && !(isAdmin || isOwner || isCoOwner || isHAdmin || isTester || isDev || isPre2 || isPre3)) {
-        showError("You don't have permission to access that channel.");
+        showError("You Don't Have Permission To Access That Channel.");
         ch = "General";
     }
     currentPrivateUid = null;
@@ -2554,7 +2555,7 @@ async function switchChannel(ch) {
             return;
         }
         sendBtn.disabled = !canWrite;
-        sendBtn.title = canWrite ? "Send message" : "This channel does not allow guest messages";
+        sendBtn.title = canWrite ? "Send Message" : "This Channel Does Not Allow Guest Messages";
         let notice = document.getElementById("guestReadOnlyNotice");
         if (!canWrite) {
             if (!notice) {
@@ -2563,7 +2564,7 @@ async function switchChannel(ch) {
                 notice.style.cssText = "text-align:center;color:#aaa;font-size:0.8em;padding:4px;background:rgba(0,0,0,0.3);border-radius:4px;margin:2px 0;";
                 chatInput?.parentElement?.insertBefore(notice, chatInput);
             }
-            notice.textContent = "Read-only — log in to send messages in this channel";
+            notice.textContent = "Read-only — Log In To Send Messages In This Channel";
         } else if (notice) {
             notice.remove();
         }
@@ -2589,8 +2590,8 @@ async function switchChannel(ch) {
         if (uniqueNames.length > 0) {
             typingIndicator.textContent =
                 uniqueNames.length === 1
-                    ? `${uniqueNames[0]} is typing...`
-                    : `${uniqueNames.join(", ")} are typing...`;
+                    ? `${uniqueNames[0]} Is Typing...`
+                    : `${uniqueNames.join(", ")} Are Typing...`;
             typingIndicator.style.display = "block";
             if (typingVisibleTimeout) clearTimeout(typingVisibleTimeout);
             typingVisibleTimeout = setTimeout(() => {
@@ -2612,13 +2613,13 @@ function startMetadataListener() {
 }
 sendBtn.onclick = async () => {
     if (currentGroupId) {
-        if (!currentUser || isGuest) { showError("You must be logged in to use group chats."); return; }
+        if (!currentUser || isGuest) { showError("You Must Be Logged In To Use Group Chats."); return; }
         const text = chatInput.value.trim();
         if (!text && !pendingAttachFile) return;
         if (!isAdmin && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
             const now = Date.now();
             if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
-                showError("You can only send a message every 3 seconds.");
+                showError("You Can Only Send A Message Every 3 Seconds.");
                 return;
             }
             lastMessageTimestamp = now;
@@ -2640,19 +2641,19 @@ sendBtn.onclick = async () => {
         let text = chatInput.value.trim();
         if (!text && !pendingAttachFile) return;
         if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
-            showError("@everyone and @here mentions are not allowed.");
+            showError("@everyone And @here Mentions Are Not Allowed.");
             chatInput.value = "";
             return;
         }
         if (text.length > 500) {
-            showError("Guest messages are limited to 500 characters.");
+            showError("Guest Messages Are Limited To 500 Characters.");
             chatInput.value = "";
             return;
         }
         const ch = currentPath.split("/")[1];
         const chData = await dbGet(`channels/${ch}`);
         if (!(await hasPermission(chData, "write"))) {
-            showError("This channel does not allow guest messages.");
+            showError("This Channel Does Not Allow Guest Messages.");
             return;
         }
         if (pendingAttachFile) {
@@ -2671,7 +2672,7 @@ sendBtn.onclick = async () => {
                 toggleReply();
                 return;
             } catch (err) {
-                showError("File upload failed: " + err.message);
+                showError("File Upload Failed: " + err.message);
                 return;
             }
         }
@@ -2690,7 +2691,7 @@ sendBtn.onclick = async () => {
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                showError(err.error || "Failed to send");
+                showError(err.error || "Failed To Send");
                 return;
             }
         } catch (e) {
@@ -2706,30 +2707,30 @@ sendBtn.onclick = async () => {
     if (!text) return;
     const muted = await isUserMuted(currentUser.uid);
     if (muted) {
-        showError("You are muted and cannot send messages right now.");
+        showError("You Are Muted And Cannot Send Messages Right Now.");
         return;
     }
     if (!isAdmin && !isHAdmin && !isOwner && !isCoOwner && !isTester) {
         const now = Date.now();
         if (now - lastMessageTimestamp < MESSAGE_COOLDOWN) {
-            showError("You can only send a message every 3 seconds.");
+            showError("You Can Only Send A Message Every 3 Seconds.");
             return;
         }
         lastMessageTimestamp = now;
     }
     if (/@everyone\b/i.test(text) || /@here\b/i.test(text)) {
-        showError("@everyone and @here mentions are not allowed.");
+        showError("@everyone And @here Mentions Are Not Allowed.");
         chatInput.value = "";
         return;
     }
     const mentions = text.match(/@\w+/g);
     if (mentions && mentions.length > 1) {
-        showError("Only one mention per message is allowed.");
+        showError("Only One Mention Per Message Is Allowed.");
         chatInput.value = "";
         return;
     }
     if (text.length > 1000 && !(isCoOwner || isOwner || isHAdmin || isTester)) {
-        showError(`Your message is too long (${text.length} characters). please keep it under 1000.`);
+        showError(`Your Message Is Too Long (${text.length} Characters). Please Keep It Under 1000.`);
         chatInput.value = "";
         return;
     }
@@ -2756,7 +2757,7 @@ sendBtn.onclick = async () => {
         const ch = currentPath.split("/")[1];
         const chData = await dbGet(`channels/${ch}`);
         if (!(await hasPermission(chData, "write"))) {
-            showError("You cannot send messages in this channel.");
+            showError("You Cannot Send Messages In This Channel.");
             return;
         }
         if (pendingAttachFile) {
@@ -2888,7 +2889,7 @@ onAuthStateChanged(auth, async user => {
     if (!displayName || displayName.trim() === "") displayName = "Spam Account";
     const bioDisplay = p.bio || "Bio Not Set";
     const DNC = s.color || "#ffffff";
-    roleSpan.textContent = isSus ? "Suspicious account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-owner" : (isHAdmin ? "Head admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" :(isLinker ? "Link sharer" : "User")))))))))));
+    roleSpan.textContent = isSus ? "Suspicious Account" : (isOwner ? "Owner" : (isAdmin ? "Admin" : (isCoOwner ? "Co-Owner" : (isHAdmin ? "Head Admin" : (isTester ? "Tester" : (isPartner ? "Partner" :(isDev ? "Developer" :(isPre3 ? "Premium T3" :(isPre2 ? "Premium T2" :(isPre1 ? "Premium T1" :(isLinker ? "Link Sharer" : "User")))))))))));
     roleSpan.style.color = isSus ? "red" : (isOwner ? "lime" : (isAdmin ? "dodgerblue" : (isCoOwner ? "lightblue" : (isHAdmin ? "#00cc99" : (isTester ? "darkGoldenRod" : (isPartner ? "cornflowerblue" :(isDev ? "green" :(isPre3 ? "red" :(isPre2 ? "orange" :(isPre1 ? "yellow" :(isLinker ? "#4fa3ff": "white")))))))))));
     bioSpan.textContent = bioDisplay;
     bioSpan.style.color = "gray";
@@ -2904,7 +2905,7 @@ onAuthStateChanged(auth, async user => {
             const files = await res.json();
             profilePics = files.map(file => `${pfpDomain}/${file}`);
         } catch (e) {
-            console.error("Failed to load profile pics:", e);
+            console.error("Failed To Load Profile Pics:", e);
             profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
         }
     }
@@ -2920,8 +2921,8 @@ function _injectGuestNameButton() {
     if (document.getElementById("guestNameBtn")) return;
     const btn = document.createElement("button");
     btn.id = "guestNameBtn";
-    btn.textContent = "Set name";
-    btn.title = "Set your anonymous display name";
+    btn.textContent = "Set Name";
+    btn.title = "Set Your Anonymous Display Name";
     btn.style.cssText = "font-size:0.75em;padding:3px 8px;margin-top:4px;background:#333;color:#ccc;border:1px solid #555;border-radius:4px;cursor:pointer;";
     btn.onclick = _promptGuestName;
     const container = usernameSpan?.parentElement;
@@ -2936,7 +2937,7 @@ function _injectGuestNameButton() {
 }
 async function _promptGuestName() {
     window.location.href = window.location.href;
-    const name = await customPrompt("Enter your anonymous display name (Max 32 chars):", false, anonDisplayName);
+    const name = await customPrompt("Enter Your Anonymous Display Name (Max 32 Chars):", false, anonDisplayName);
     if (!name || !name.trim()) return;
     try {
         const res = await fetch(`${BACKEND}/api/anon-name`, {
@@ -2946,7 +2947,7 @@ async function _promptGuestName() {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            showError(err.error || "Failed to set name");
+            showError(err.error || "Failed To Set Name");
             return;
         }
         const data = await res.json();
@@ -2955,9 +2956,9 @@ async function _promptGuestName() {
         localStorage.setItem("anonSessionToken", anonSessionToken);
         localStorage.setItem("anonDisplayName", anonDisplayName);
         if (usernameSpan) usernameSpan.textContent = anonDisplayName;
-        showSuccess(`Display name set to "${anonDisplayName}"`);
+        showSuccess(`Display Name Set To "${anonDisplayName}"`);
     } catch (e) {
-        showError("Failed to set name: " + e.message);
+        showError("Failed To Set Name: " + e.message);
     }
 }
 async function loadAllUsernames() {
@@ -2981,32 +2982,32 @@ addChannelBtn.onclick = async () => {
         <div class="channelModal">
             <center>
                 <h2>
-                    Create channel
+                    Create Channel
                 </h2>
             </center>
             <hr>
             <br>
-            <input id="channelNameInput" class="form-control" placeholder="Channel name" />
+            <input id="channelNameInput" class="form-control" placeholder="Channel Name" />
             <br>
-            <center><h3>Guest access</h3></center>
+            <center><h3>Guest Access</h3></center>
             <hr>
             <div style="margin-bottom:14px;">
                 <label class="switch">
                     <input type="checkbox" id="guestReadToggle">
                     <span class="slider"></span>
                 </label>
-                Guest read
+                Guest Read
             </div>
             <div style="margin-bottom:18px;">
                 <label class="switch">
                     <input type="checkbox" id="guestWriteToggle">
                     <span class="slider"></span>
                 </label>
-                Guest write
+                Guest Write
             </div>
             <center>
                 <h3>
-                    Read permissions
+                    Read Permissions
                 </h3>
             </center>
             <hr>
@@ -3014,7 +3015,7 @@ addChannelBtn.onclick = async () => {
             ${renderRoleCheckboxes("read")}
             <center>
                 <h3>
-                    Write permissions
+                    Write Permissions
                 </h3>
             </center>
             <hr>
@@ -3078,8 +3079,8 @@ function renderRoleCheckboxes(type) {
     const roleNames = {
         isOwner: "Owner",
         isTester: "Tester",
-        isCoOwner: "Co-owner",
-        isHAdmin: "Head admin",
+        isCoOwner: "Co-Owner",
+        isHAdmin: "Head Admin",
         isAdmin: "Admin",
         isDev: "Developer",
         isPartner: "Partner",
@@ -3087,17 +3088,17 @@ function renderRoleCheckboxes(type) {
         premium2: "Premium T2",
         premium1: "Premium T1",
         isDonater: "Donator",
-        isSus: "Suspicious user",
-        mileStone: "Award badge",
+        isSus: "Suspicious User",
+        mileStone: "Award Badge",
         isGuesser: "Guesser",
-        isUploader: "Movie uploader",
-        isLink: "Link sharer",
+        isUploader: "Movie Uploader",
+        isLink: "Link Sharer",
         secure: "Securely",
         guardian: "GoGuardian",
         lanschool: "Lanschool",
         linewize: "Linewize",
         blocksi: "Blocksi",
-        verified: "Verified users"
+        verified: "Verified Users"
     };
     return roles.map(r => `
         <div style="margin-bottom:20px;">
@@ -3127,7 +3128,7 @@ function getSelectedRoles(type) {
     document.body.appendChild(fileInput);
     const attachBtn = document.createElement("button");
     attachBtn.id = "chatAttachBtn";
-    attachBtn.innerHTML = `<i class="ic ic-file-earmark-plus" title="Attach file" style="display:block;padding:10px;font-size:1.5em;"></i>`;
+    attachBtn.innerHTML = `<i class="ic ic-file-earmark-plus" title="Attach File" style="display:block;padding:10px;font-size:1.5em;"></i>`;
     attachBtn.style.cssText = "background:none;border:none;cursor:pointer;padding:15px;";
     attachBtn.onmouseenter = () => attachBtn.style.color = "#fff";
     attachBtn.onmouseleave = () => attachBtn.style.color = "#aaa";
@@ -3152,7 +3153,7 @@ function getSelectedRoles(type) {
         if (!file) return;
         const MAX = 10 * 1024 * 1024;
         if (file.size > MAX) {
-            showError("File is too large. Maximum size is 10 MB.");
+            showError("File Is Too Large. Maximum Size Is 10 MB.");
             fileInput.value = "";
             return;
         }
@@ -3208,7 +3209,7 @@ chatInput.addEventListener("paste", (e) => {
             if (file) {
                 e.preventDefault();
                 const MAX = 10 * 1024 * 1024;
-                if (file.size > MAX) { showError("Pasted image is too large (max 10 MB)."); return; }
+                if (file.size > MAX) { showError("Pasted Image Is Too Large (max 10 MB)."); return; }
                 pendingAttachFile = new File([file], "pasted-image.png", { type: file.type });
                 const previewBar = document.getElementById("chatFilePreview");
                 const previewName = previewBar?.querySelector("span:nth-child(2)");
@@ -3222,7 +3223,7 @@ chatInput.addEventListener("paste", (e) => {
 chatInput.addEventListener("input", () => {
     const mentions = chatInput.value.match(/@\w+/g);
     if (mentions && mentions.length > 1) {
-        showError("Only one mention per message is allowed.");
+        showError("Only One Mention Per Message Is Allowed.");
         chatInput.value = "";
     }
 });
@@ -3303,7 +3304,7 @@ chatInput.addEventListener("input", () => {
         return;
     }
     if (currentPrivateUid && justTypedAt) {
-        mentionHint.textContent = `Press tab to mention ${currentPrivateName || "This user"}`;
+        mentionHint.textContent = `Press Tab To Mention ${currentPrivateName || "This User"}`;
         mentionHint.style.display = "block";
     } else if (!afterAt) {
         mentionHint.style.display = "none";
@@ -3326,7 +3327,7 @@ function renderMentionMenu(names) {
     const left = document.createElement("span");
     left.textContent = "@support";
     const right = document.createElement("span");
-    right.textContent = "Request support from staff";
+    right.textContent = "Request Support From Staff";
     right.style.fontSize = "0.75em";
     right.style.color = "#888";
     supportItem.appendChild(left);
@@ -3389,7 +3390,7 @@ setInterval(async () => {
             },
         });
         if (!res.ok) {
-            throw new Error("Online indicator post failed");
+            throw new Error("Online Indicator Post Failed");
         }
     }
     initAudioPlayers(chatLog);
@@ -3404,7 +3405,7 @@ if ("serviceWorker" in navigator) {
             if (action === "verify" && notifData.uid) {
                 try {
                     const token = await getAuthToken();
-                    if (!token) { showError("Not logged in"); return; }
+                    if (!token) { showError("Not Logged In"); return; }
                     const res = await fetch(`${a}/verify-user`, {
                         method: "POST",
                         headers: {
@@ -3415,9 +3416,9 @@ if ("serviceWorker" in navigator) {
                     });
                     const json = await res.json();
                     if (res.ok) {
-                        showSuccess(json.message || "User verified");
+                        showSuccess(json.message || "User Verified");
                     } else {
-                        showError(json.error || "Verification failed");
+                        showError(json.error || "Verification Failed");
                     }
                 } catch (e) {
                     showError("Verify failed: " + (e?.message || e));
@@ -3491,30 +3492,30 @@ if (tabGlobalBtn) tabGlobalBtn.onclick = () => switchSidebarTab("global");
 if (tabPrivateBtn) tabPrivateBtn.onclick = () => switchSidebarTab("private");
 if (dmStartBtn) dmStartBtn.onclick = async () => {
     const name = (dmUsernameInput?.value || "").trim();
-    if (!name) { showError("Enter a username first."); return; }
+    if (!name) { showError("Enter A Username First."); return; }
     const uid = await getUidByDisplayName(name);
-    if (!uid) { showError("User not found."); return; }
+    if (!uid) { showError("User Not Found."); return; }
     hidePrivateMenu();
     await openPrivateChat(uid, name);
     dmUsernameInput.value = "";
 };
 if (groupCreateBtn) groupCreateBtn.onclick = async () => {
     const name = (groupNameInput?.value || "").trim();
-    if (!name) { showError("Enter a group name first."); return; }
+    if (!name) { showError("Enter A Group Name First."); return; }
     try {
         const res = await fetchAPI("groups/create", { name });
         groupNameInput.value = "";
-        showSuccess?.("Group created!") ?? null;
+        showSuccess?.("Group Created!") ?? null;
         await renderGroupList();
         hidePrivateMenu();
         await openGroupChat(res.group.id);
     } catch (e) {
-        showError(e?.message || "Could not create group.");
+        showError(e?.message || "Could Not Create Group.");
     }
 };
 if (groupJoinBtn) groupJoinBtn.onclick = async () => {
     const code = (groupInviteInput?.value || "").trim();
-    if (!code) { showError("Enter an invite code first."); return; }
+    if (!code) { showError("Enter An Invite Code First."); return; }
     try {
         const res = await fetchAPI("groups/join", { inviteCode: code });
         groupInviteInput.value = "";
@@ -3522,7 +3523,7 @@ if (groupJoinBtn) groupJoinBtn.onclick = async () => {
         hidePrivateMenu();
         await openGroupChat(res.group.id);
     } catch (e) {
-        showError(e?.message || "Could not join group.");
+        showError(e?.message || "Could Not Join Group.");
     }
 };
 async function renderGroupList() {
@@ -3595,7 +3596,7 @@ async function pollGroupOnce(groupId, isInitialLoad) {
         group = res.group;
     } catch (e) {
         if (isInitialLoad) {
-            showError(e?.message || "Could not load group.");
+            showError(e?.message || "Could Not Load Group.");
             stopGroupPolling();
         }
         return;
@@ -3678,7 +3679,7 @@ async function openGroupInfoPanel(groupId) {
     try {
         data = await fetchAPI(`groups/${groupId}/members`, {});
     } catch (e) {
-        showError(e?.message || "Could not load group info.");
+        showError(e?.message || "Could Not Load Group Info.");
         return;
     }
     groupInfoName.textContent = data.name;
@@ -3718,13 +3719,13 @@ async function openGroupInfoPanel(groupId) {
             kickBtn.className = "kickMemberBtn";
             kickBtn.textContent = "Kick";
             kickBtn.onclick = () => {
-                showConfirm(`Kick ${member.displayName} from the group?`, async (ok) => {
+                showConfirm(`Kick ${member.displayName} From The Group?`, async (ok) => {
                     if (!ok) return;
                     try {
                         await fetchAPI(`groups/${groupId}/kick`, { targetUid: member.uid });
                         await openGroupInfoPanel(groupId);
                     } catch (e) {
-                        showError(e?.message || "Could not kick member.");
+                        showError(e?.message || "Could Not Kick Member.");
                     }
                 });
             };
@@ -3740,43 +3741,43 @@ async function openGroupInfoPanel(groupId) {
 }
 if (groupRenameBtn) groupRenameBtn.onclick = async () => {
     if (!currentGroupId) return;
-    const newName = await customPrompt("New group name:", false, currentGroupName || "");
+    const newName = await customPrompt("New Group Name:", false, currentGroupName || "");
     if (!newName || !newName.trim()) return;
     fetchAPI(`groups/${currentGroupId}/rename`, { name: newName.trim() })
         .then(() => { renderGroupList(); openGroupInfoPanel(currentGroupId); })
-        .catch(e => showError(e?.message || "Could not rename group."));
+        .catch(e => showError(e?.message || "Could Not Rename Group."));
 };
 if (groupResetInviteBtn) groupResetInviteBtn.onclick = () => {
     if (!currentGroupId) return;
-    showConfirm("Reset the invite link? The old link will stop working.", async (ok) => {
+    showConfirm("Reset The Invite Link? The Old Link Will Stop Working.", async (ok) => {
         if (!ok) return;
         try {
             await fetchAPI(`groups/${currentGroupId}/reset-invite`, {});
             await openGroupInfoPanel(currentGroupId);
         } catch (e) {
-            showError(e?.message || "Could not reset invite.");
+            showError(e?.message || "Could Not Reset Invite.");
         }
     });
 };
 if (groupTransferBtn) groupTransferBtn.onclick = async () => {
     if (!currentGroupId) return;
-    const username = await customPrompt("Transfer ownership to (Username):", false);
+    const username = await customPrompt("Transfer Ownership To (Username):", false);
     if (!username || !username.trim()) return;
     const targetUid = await getUidByDisplayName(username.trim());
-    if (!targetUid) { showError("User not found."); return; }
-    showConfirm(`Transfer ownership of this group to ${username}?`, async (ok) => {
+    if (!targetUid) { showError("User Not Found."); return; }
+    showConfirm(`Transfer Ownership Of This Group To ${username}?`, async (ok) => {
         if (!ok) return;
         try {
             await fetchAPI(`groups/${currentGroupId}/transfer`, { targetUid });
             await openGroupInfoPanel(currentGroupId);
         } catch (e) {
-            showError(e?.message || "Could not transfer ownership.");
+            showError(e?.message || "Could Not Transfer Ownership.");
         }
     });
 };
 if (groupDeleteBtn) groupDeleteBtn.onclick = () => {
     if (!currentGroupId) return;
-    showConfirm("Delete this group? This cannot be undone.", async (ok) => {
+    showConfirm("Delete This Group? This Cannot Be Undone.", async (ok) => {
         if (!ok) return;
         try {
             const token = await getAuthToken();
@@ -3786,7 +3787,7 @@ if (groupDeleteBtn) groupDeleteBtn.onclick = () => {
             });
             if (!delRes.ok) {
                 const err = await delRes.json().catch(() => ({}));
-                throw new Error(err.error || "Delete failed");
+                throw new Error(err.error || "Delete Failed");
             }
             stopGroupPolling();
             currentGroupId = null;
@@ -3795,13 +3796,13 @@ if (groupDeleteBtn) groupDeleteBtn.onclick = () => {
             showPrivateMenu();
             renderGroupList();
         } catch (e) {
-            showError(e?.message || "Could not delete group.");
+            showError(e?.message || "Could Not Delete Group.");
         }
     });
 };
 if (groupLeaveBtn) groupLeaveBtn.onclick = () => {
     if (!currentGroupId) return;
-    showConfirm("Leave this group?", async (ok) => {
+    showConfirm("Leave This Group?", async (ok) => {
         if (!ok) return;
         try {
             await fetchAPI(`groups/${currentGroupId}/leave`, {});
@@ -3812,7 +3813,7 @@ if (groupLeaveBtn) groupLeaveBtn.onclick = () => {
             showPrivateMenu();
             renderGroupList();
         } catch (e) {
-            showError(e?.message || "Could not leave group.");
+            showError(e?.message || "Could Not Leave Group.");
         }
     });
 };
@@ -3821,7 +3822,7 @@ async function sendGroupTextMessage(text) {
     try {
         await fetchAPI(`groups/${currentGroupId}/message`, { text, replyTo: replyMsgId || undefined });
     } catch (e) {
-        showError(e?.message || "Could not send message.");
+        showError(e?.message || "Could Not Send Message.");
     }
 }
 async function uploadGroupAttachment(file) {
@@ -3837,9 +3838,9 @@ async function uploadGroupAttachment(file) {
             body: form
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || "Upload failed");
+        if (!res.ok) throw new Error(json?.error || "Upload Failed");
     } catch (e) {
-        showError("File upload failed: " + (e?.message || e));
+        showError("File Upload Failed: " + (e?.message || e));
     }
 }
 async function handleJoinCodeFromUrl() {
@@ -3853,7 +3854,7 @@ async function handleJoinCodeFromUrl() {
         await openGroupChat(res.group.id);
         showSuccess?.(`Joined "${res.group.name}"!`);
     } catch (e) {
-        showError(e?.message || "Could not join group from invite link.");
+        showError(e?.message || "Could Not Join Group From Invite Link.");
     } finally {
         const url = new URL(window.location.href);
         url.searchParams.delete("joinCode");

@@ -24,6 +24,6 @@ onAuthStateChanged(auth, async (user) => {
         hb = await Hyperbeam(virtualComputerDiv, data.embed_url);
     } catch (err) {
         console.error(err);
-        virtualComputerDiv.innerText = "Failed to load VM";
+        virtualComputerDiv.innerText = "Failed To Load VM";
     }
 });

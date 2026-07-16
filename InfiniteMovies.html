@@ -20,7 +20,7 @@
         <link id="dynamic-favicon" rel="icon" type="image/png" href="/res/icon.png">
         <link rel="stylesheet" href="./global.css">
         <meta name="keywords" content="Infinite campus,infinite campus,Infinite Campus,infinite Campus">
-        <meta name="description" content="Infinite Campus is an international buisiness and has good devs">
+        <meta name="description" content="Infinite Campus Is A International Buisiness And Has Good Devs">
         <meta property="og:title" content="Infinite Campus">
         <meta property="og:description" content="Infinite Campus Is An International Buisiness And Has Good Devs">
         <meta property="og:url" content="https://www.infinitecampus.xyz">
@@ -104,6 +104,11 @@
                         Available Movies
                     </h2>
                     <input class="button mbInp" id="search" placeholder="Search Movies" autocomplete="off" oninput="filterMovies()">
+                    <select class="button" id="sortSelect" onchange="setSortMode(this.value)">
+                        <option value="order">Sort: Default Order</option>
+                        <option value="name">Sort: Name (A-Z)</option>
+                        <option value="popularity">Sort: Most Popular</option>
+                    </select>
                     <button class="button" onclick="loadMovies()">
                         Reload List
                     </button>

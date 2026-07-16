@@ -20,7 +20,7 @@ try {
         }
     }   
 } catch {
-    console.error("Notification system error")
+    console.error("Notification System Error")
 }
 let profileImages = [];
 async function loadProfileImages() {
@@ -30,7 +30,7 @@ async function loadProfileImages() {
         const files = await res.json();
         return files.map(f => `${pfpDomain}/` + f);
     } catch (e) {
-        console.error("Failed to load profile images:", e);
+        console.error("Failed To Load Profile Images:", e);
         return [`${pfpDomain}/1.jpeg`];
     }
 }
@@ -128,15 +128,15 @@ const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isInStandaloneMode = window.navigator.standalone === true;
 async function enableNotifications() {
     if (!("Notification" in window)) {
-        showError("Your browser does not support notifications.");
+        showError("Your Browser Does Not Support Notifications.");
         return;
     }
     if (!("serviceWorker" in navigator)) {
-        showError("Your browser does not support service workers required for notifications.");
+        showError("Your Browser Does Not Support Service Workers Required For Notifications.");
         return;
     }
     if (isIos && !isInStandaloneMode) {
-        showError("To enable notifications on iPhone or iPad, please add this app to your home screen first, then try again.");
+        showError("To Enable Notifications On iPhone Or iPad, Please Add This App To Your Home Screen First, Then Try Again.");
         return;
     }
     try {
@@ -151,7 +151,7 @@ async function enableNotifications() {
             const user = auth.currentUser;
             if (user) {
                 await dbSet("notifications/" + user.uid + "/tokens/" + token, true);
-                showSuccess("Notifications have been enabled");
+                showSuccess("Notifications Have Been Enabled");
                 document.dispatchEvent(new Event("notificationsEnabled"));
             } else {
                 window.location.href = 'InfiniteLogins.html';
@@ -159,10 +159,10 @@ async function enableNotifications() {
             }
             window.location.href = 'InfiniteAccounts.html';
         } else {
-            showError("Notification permission was denied.");
+            showError("Notification Permission Was Denied.");
         }
     } catch (err) {
-        showError("Failed to enable notifications: " + err.message);
+        showError("Failed To Enable Notifications: " + err.message);
     }
 }
 if (enableNotifBtn) {
@@ -179,7 +179,7 @@ if (enableNotifBtn) {
     const notifSettingsBtn = document.createElement("a");
     notifSettingsBtn.id = "notifSettingsBtn";
     notifSettingsBtn.className = "button apbtn";
-    notifSettingsBtn.textContent = "Notification settings";
+    notifSettingsBtn.textContent = "Notification Settings";
     notifSettingsBtn.style.display = "none";
     if (enableNotifBtn && enableNotifBtn.parentNode) {
         enableNotifBtn.parentNode.insertBefore(notifSettingsBtn, enableNotifBtn.nextSibling);
@@ -198,10 +198,10 @@ if (enableNotifBtn) {
         padding:24px 28px; min-width:280px; max-width:360px; color:#fff; position:relative;
     `;
     modal.innerHTML = `
-        <h3 style="margin:0 0 14px;font-size:1.1em;font-weight:700;color:#8cbe37;">Notification settings</h3>
+        <h3 style="margin:0 0 14px;font-size:1.1em;font-weight:700;color:#8cbe37;">Notification Settings</h3>
         <hr style="border-color:#333;margin-bottom:16px;">
         <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#ccc;">Direct messages</span>
+            <span style="color:#ccc;">Direct Messages</span>
             <label class="switch" style="margin:0">
                 <input type="checkbox" id="notifToggleDms" checked>
                 <span class="slider"></span>
@@ -215,7 +215,7 @@ if (enableNotifBtn) {
             </label>
         </div>
         <div class="notif-toggle-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-            <span style="color:#ccc;">Message reactions</span>
+            <span style="color:#ccc;">Message Reactions</span>
             <label class="switch" style="margin:0">
                 <input type="checkbox" id="notifToggleReactions" checked>
                 <span class="slider"></span>
@@ -229,7 +229,7 @@ if (enableNotifBtn) {
             </label>
         </div>
         <small style="color:#666;display:block;margin-bottom:14px;">
-            Note: Messages from owners will always notify you regardless of these settings.
+            Note: Messages From Owners Will Always Notify You Regardless Of These Settings.
         </small>
         <button id="notifSettingsSaveBtn" class="button apbtn" style="width:100%;margin-top:4px;">Save</button>
     `;
@@ -263,9 +263,9 @@ if (enableNotifBtn) {
         try {
             await dbSet(`notifications/${user.uid}/settings`, { dms, mentions, reactions, replies });
             overlay.style.display = "none";
-            showSuccess("Notification settings saved.");
+            showSuccess("Notification Settings Saved.");
         } catch (e) {
-            showError("Failed to save notification settings: " + e.message);
+            showError("Failed To Save Notification Settings: " + e.message);
         }
     });
     function refreshNotifButtons() {
@@ -294,7 +294,7 @@ if (unsub) {
     async function handleResetPassword(newPassword) {
         try {
             await confirmPasswordReset(auth, oobCode, newPassword);
-            showSuccess("Password has been reset!");
+            showSuccess("Password Has Been Reset!");
             window.location.href = continueUrl;
         } catch (error) {
             showError("Error: " + error.message);
@@ -303,7 +303,7 @@ if (unsub) {
     async function handleVerifyEmail() {
         try {
             await applyActionCode(auth, oobCode);
-            showSuccess("Email verification successful!");
+            showSuccess("Email Verification Successful!");
             window.location.href = continueUrl;
         } catch (error) {
             showError("Error: " + error.message);
@@ -314,17 +314,17 @@ if (unsub) {
         document.getElementById('resetPasswordBtn').addEventListener('click', () => {
             const newPassword = document.getElementById('newPasswordInput').value.trim();
             const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
-            if (!newPassword) return showError("Password is required.");
-            if (newPassword.length < 8) return showError("Password must be at least 8 characters.");
-            if (!confirmPassword) return showError("Please confirm your password.");
-            if (newPassword !== confirmPassword) return showError("Passwords do not match.");
+            if (!newPassword) return showError("Password Is Required.");
+            if (newPassword.length < 8) return showError("Password Must Be At Least 8 Characters.");
+            if (!confirmPassword) return showError("Please Confirm Your Password.");
+            if (newPassword !== confirmPassword) return showError("Passwords Do Not Match.");
             handleResetPassword(newPassword);
         });
     } else if (mode === "verifyEmail") {
         verifyEmailContainer.style.display = "block";
         document.getElementById('verifyEmailBtn2').addEventListener('click', handleVerifyEmail);
     } else {
-        showError("Unknown mode:", mode);
+        showError("Unknown Mode:", mode);
         verifyEmailContainer.style.display = "block";
         document.getElementById('verifyEmailBtn2').addEventListener('click', handleVerifyEmail);
     }
@@ -384,8 +384,6 @@ if (unsub) {
     const messageBtn = document.getElementById("messageUserBtn");
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get("user");
-    const referral= urlParams.get("ref");
-    const backToRef = document.getElementById('backToRef');
     const profileStats = document.getElementById('profileStats');
     function createBadge(profile, isVerified, dUsername, uploads) {
         const badgeContainer = document.createElement("span");
@@ -394,27 +392,27 @@ if (unsub) {
         badgeContainer.style.gap = "6px";
         badgeContainer.style.marginLeft = "6px";
         const roles = [
-            { key: "isSus", icon: "ic ic-shield-exclamation", title: "This user is currently under investigation, please do not interact with this user", color: "red" },
+            { key: "isSus", icon: "ic ic-shield-exclamation", title: "This User Is Currently Under Investigation, Please Do Not Interact With This User", color: "red" },
             { key: "isOwner", icon: "ic ic-shield-plus", title: "Owner", color: "lime" },
             { key: "isTester", icon: "ic ic-cogs", title: "Tester", color: "DarkGoldenRod" },
-            { key: "isCoOwner", icon: "ic ic-shield-fill", title: "Co-owner", color: "lightblue" },
-            { key: "isHAdmin", icon: "ic ic-shield-halved", title: "Head admin", color: "#00cc99" },
+            { key: "isCoOwner", icon: "ic ic-shield-fill", title: "Co-Owner", color: "lightblue" },
+            { key: "isHAdmin", icon: "ic ic-shield-halved", title: "Head Admin", color: "#00cc99" },
             { key: "isAdmin", icon: "ic ic-shield", title: "Admin", color: "dodgerblue" },
-            { key: "isPartner", icon: "ic ic-handshake", title: "This user is a partner of Infinite Campus", color: "cornflowerblue" },
-            { key: "isDev", icon: "ic ic-code-square", title: "This user is a developer for Infinite Campus", color: "green" },
-            { key: "premium3", icon: "ic ic-hearts", title: "This user has Infinite Campus Premium T3", color: "red" },
-            { key: "premium2", icon: "ic ic-heart-fill", title: "This user has Infinite Campus Premium T2", color: "orange" },
-            { key: "premium1", icon: "ic ic-heart-half", title: "This user has Infinite Campus Premium T1", color: "yellow" },
-            { key: "isDonater", icon: "ic ic-balloon-heart", title: "This user has donated to Infinite Campus", color: "#00E5FF"},
-            { key: "isUploader", icon: "ic ic-film", title: "This user has uploaded a movie to Infinite Campus", color: "grey"},
-            { key: "mileStone", icon: "ic ic-award", title: "This user is the 100th signed up user", color: "yellow" },
-            { key: "isGuesser", icon: "ic ic-stopwatch", title: "This user has a lot of freetime", color: "#FF0000" },
-            { key: "isLink", icon: "ic ic-link", title: "This user has shared lots of links in the Links channel", color: "#4fa3ff"},
-            { key: "secure", icon: "ic ic-securely", title: "This user has Securely at school", color: "dodgerblue"},
-            { key: "guardian", icon: "ic ic-goguardian", title: "This user has GoGuardian at school", color: "grey"},
-            { key: "lanschool", icon: "ic ic-lanschool", title: "This user has Lanschool at school", color: "greenyellow"},
-            { key: "linewize", icon: "ic ic-linewize", title: "This user has Linewize at school", color: "lightskyblue"},
-            { key: "blocksi", icon: "ic ic-blocksi", title: "This user has Blocksi at school", color: "cadetblue"}
+            { key: "isPartner", icon: "ic ic-handshake", title: "This User Is A Partner Of Infinite Campus", color: "cornflowerblue" },
+            { key: "isDev", icon: "ic ic-code-square", title: "This User Is A Developer For Infinitecampus.xyz", color: "green" },
+            { key: "premium3", icon: "ic ic-hearts", title: "This User Has Infinite Campus Premium T3", color: "red" },
+            { key: "premium2", icon: "ic ic-heart-fill", title: "This User Has Infinite Campus Premium T2", color: "orange" },
+            { key: "premium1", icon: "ic ic-heart-half", title: "This User Has Infinite Campus Premium T1", color: "yellow" },
+            { key: "isDonater", icon: "ic ic-balloon-heart", title: "This User Has Donated To Infinite Campus", color: "#00E5FF"},
+            { key: "isUploader", icon: "ic ic-film", title: "This User Has Uploaded A Movie To Infinite Campus", color: "grey"},
+            { key: "mileStone", icon: "ic ic-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
+            { key: "isGuesser", icon: "ic ic-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
+            { key: "isLink", icon: "ic ic-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
+            { key: "secure", icon: "ic ic-securely", title: "This User Has Securely At School", color: "dodgerblue"},
+            { key: "guardian", icon: "ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
+            { key: "lanschool", icon: "ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
+            { key: "linewize", icon: "ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
+            { key: "blocksi", icon: "ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -429,7 +427,7 @@ if (unsub) {
         if (dUsername && dUsername.trim() !== "") {
             const discordBadge = document.createElement("i");
             discordBadge.className = "ic ic-discord";
-            discordBadge.title = `Known as @${dUsername} on the infinite campus discord server`;
+            discordBadge.title = `Known As @${dUsername} On The Infinite Campus Discord Server`;
             discordBadge.style.color = "#5865F2";
             badgeContainer.appendChild(discordBadge);
         }
@@ -437,13 +435,13 @@ if (unsub) {
             const stat = document.createElement("div");
             stat.classList = "btxt";
             stat.style.padding = "5px 3px";
-            stat.innerHTML = `<span>Movies uploaded:</span><span>${uploads}</span>`;
+            stat.innerHTML = `<span>Movies Uploaded:</span><span>${uploads}</span>`;
             profileStats.appendChild(stat);
         }
         if (isVerified === true) {
             const verified = document.createElement("i");
             verified.className = "ic ic-shield-check";
-            verified.title = "Verified user";
+            verified.title = "Verified User";
             verified.style.color = "white";
             verified.style.fontSize = "1.1em";
             badgeContainer.appendChild(verified);
@@ -460,7 +458,7 @@ if (unsub) {
         try {
             const userSnap = await fetchAPI("read", { path: ["users", uid] });
             if (!userSnap?.data) {
-                showError(`User with ID "${uid}" not found.`);
+                showError(`User With ID "${uid}" Not Found.`);
                 return;
             }
             const foundUser = userSnap.data;
@@ -479,8 +477,8 @@ if (unsub) {
             } catch {}
             const color = foundUser.settings?.color || "#ffffff";
             const displayNameRaw = foundUser.profile?.displayName;
-            const displayName = displayNameRaw?.trim() ? displayNameRaw : "Spam account";
-            const bio = foundUser.profile?.bio || "No bio set.";
+            const displayName = displayNameRaw?.trim() ? displayNameRaw : "Spam Account";
+            const bio = foundUser.profile?.bio || "No Bio Set.";
             const email = foundUser.settings?.userEmail || "(Hidden)";
             const picValue = foundUser.profile?.pic ?? 0;
             const profileImages = await loadProfileImages();
@@ -533,21 +531,6 @@ if (unsub) {
             }
         } catch (err) {
             showError("Error Loading Profile: " + err.message);
-        }
-    }
-    if (referral) {
-        if (referral == "chat") {
-            backToRef.href = "/InfiniteChatters.html";
-            backToRef.innerText = "Back to chat";
-        } else if (referral == "news") {
-            backToRef.href = "/InfiniteArticles.html";
-            backToRef.innerText = "Back to articles";
-        } else if (referral == "movies") {
-            backToRef.href = "/InfiniteMovies.html";
-            backToRef.innerText = "Back to movies"
-        } else {
-            backToRef.href = "/index.html";
-            backToRef.innerText = "Home";
         }
     }
 } else {
@@ -750,23 +733,23 @@ if (unsub) {
                 });
                 const data = await res.json();
                 if (!data.success) {
-                    showError("Upload failed");
+                    showError("Upload Failed");
                     return;
                 }
                 const newUrl = `${pfpDomain}/` + data.file;
                 panelPic.src = newUrl + "?t=" + Date.now();
                 currentServerPicUrl = newUrl;
-                showSuccess("Profile picture updated!");
+                showSuccess("Profile Picture Updated!");
             }
             if (removeRequested) {
                 await dbSet(`users/${currentUser.uid}/profile/pic`, 0);
                 panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
-                showSuccess("Profile picture removed!");
+                showSuccess("Profile Picture Removed!");
             }
             pfpModalBg.style.display = "none";
         } catch (err) {
             console.error(err);
-            showError("Failed to save picture");
+            showError("Failed To Save Picture");
         }
     };
     const userpanel = document.getElementById('userpanel');
@@ -790,7 +773,7 @@ if (unsub) {
     let currentDisplay = "";
     window.appSettings = {
         nameColor: "#ffffff",
-        bio: "No bio set",
+        bio: "No Bio Set",
         displayName: "User",
         pic: `${pfpDomain}/1.jpeg?t=${Date.now()}`
     };
@@ -814,7 +797,7 @@ if (unsub) {
             setSetting("displayName", currentDisplay);
         } else {
             displayNameInput.value = "";
-            displayNameInput.placeholder = "Enter display name here";
+            displayNameInput.placeholder = "Enter Display Name Here";
         }
         displayCharCount.textContent = `${displayNameInput.value.length} / 20`;
         autoResizeDisplay();
@@ -838,7 +821,7 @@ if (unsub) {
         if (!currentUser) return;
         const newDisplay = displayNameInput.value.trim();
         if (!/^[a-zA-Z0-9 _-]*$/.test(newDisplay)) {
-            return showError("Display name can only contain letters, numbers, spaces, underscores, and dashes.");
+            return showError("Display Name Can Only Contain Letters, Numbers, Spaces, Underscores, And Dashes.");
         }
         const usersSnap = await dbGet('users');
         if (usersSnap) {
@@ -850,16 +833,16 @@ if (unsub) {
                     break;
                 }
             }
-            if (taken) return showError("Display name already taken.");
+            if (taken) return showError("Display Name Already Taken.");
         }
-        if (newDisplay.length === 0) return showError("Display name cannot be empty.");
-        if (newDisplay.length > 20) return showError("Display name cannot exceed 20 characters.");
+        if (newDisplay.length === 0) return showError("Display Name Cannot Be Empty.");
+        if (newDisplay.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
         await dbSet(`users/${currentUser.uid}/profile/displayName`, newDisplay);
         setSetting("displayName", newDisplay);
         await updateProfile(currentUser, { displayName: newDisplay });
         currentDisplay = newDisplay;
         disableDisplayEditing();
-        showSuccess("Display name saved!");
+        showSuccess("Display Name Saved!");
     }
     editDisplayBtn.addEventListener("click", enableDisplayEditing);
     saveDisplayBtn.addEventListener("click", saveDisplayName);
@@ -906,9 +889,9 @@ if (unsub) {
     async function updateDisplayName() {
         if (!currentUser) return;
         const newName = displayNameInput.value.trim();
-        if (!newName) return showError("Display name cannot be empty.");
-        if (newName.length > 20) return showError("Display name cannot exceed 20 characters.");
-        if (!/^[a-zA-Z0-9 _-]+$/.test(newName)) return showError("Invalid display name.");
+        if (!newName) return showError("Display Name Cannot Be Empty.");
+        if (newName.length > 20) return showError("Display Name Cannot Exceed 20 Characters.");
+        if (!/^[a-zA-Z0-9 _-]+$/.test(newName)) return showError("Invalid Display Name.");
         const usersSnap = await dbGet('users');
         if (usersSnap) {
             let taken = false;
@@ -919,10 +902,10 @@ if (unsub) {
                     break;
                 }
             }
-            if (taken) return showError("Display name already taken.");
+            if (taken) return showError("Display Name Already Taken.");
         }
         await setDisplayNameEverywhere(currentUser, newName);
-        showSuccess("Display name updated!");
+        showSuccess("Display Name Updated!");
     }
     function hexToRgb(hex) {
         hex = hex.replace(/^#/, '');
@@ -947,12 +930,12 @@ if (unsub) {
         if (colorDistance(rgb, darkGray) < darkThreshold) {
             color = lightGray;
             nameColorInput.value = lightGray;
-            showError("Color too dark! Changed to light grey.");
+            showError("Color Too Dark! Changed To Light Grey.");
         }
         await dbSet(`users/${currentUser.uid}/settings/color`, color);
         localStorage.setItem("color", color);
         setSetting("nameColor", color);
-        showSuccess("Name color saved!");
+        showSuccess("Name Color Saved!");
     });
     const bioInput = document.getElementById("bioInput");
     const editBioBtn = document.getElementById("editBioBtn");
@@ -975,7 +958,7 @@ if (unsub) {
             autoResizeBio();
         } else {
             bioInput.value = "";
-            bioInput.placeholder = "Enter bio here";
+            bioInput.placeholder = "Enter Bio Here";
         }
         bioCharCount.textContent = `${bioInput.value.length} / 50`;
     }
@@ -998,12 +981,12 @@ if (unsub) {
     async function saveUserBio() {
         if (!currentUser) return;
         const newBio = bioInput.value.trim();
-        if (newBio.length > 50) return showError("Bio cannot exceed 50 characters.");
+        if (newBio.length > 50) return showError("Bio Cannot Exceed 50 Characters.");
         await dbSet(`users/${currentUser.uid}/profile/bio`, newBio);
         currentBio = newBio;
         disableBioEditing();
         setSetting("bio", newBio);
-        showSuccess("Bio saved!");
+        showSuccess("Bio Saved!");
     }
     editBioBtn.addEventListener("click", enableBioEditing);
     saveBioBtn.addEventListener("click", saveUserBio);
@@ -1034,7 +1017,7 @@ if (unsub) {
             disInput.style.color = "white";
         } else {
             disInput.value = "";
-            disInput.placeholder = "Enter discord username here";
+            disInput.placeholder = "Enter Discord Username Here";
         }
         autoResizeDis();
     }
@@ -1057,8 +1040,8 @@ if (unsub) {
     async function saveUserDis() {
         if (!currentUser) return;
         const newDis = disInput.value.trim();
-        if (!newDis) return showError("Discord username cannot be empty.");
-        if (newDis.length > 50) return showError("Discord username cannot exceed 50 characters.");
+        if (!newDis) return showError("Discord Username Cannot Be Empty.");
+        if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
         try {
             const res = await fetch(`${a}/discordVerify`, {
                 method: "POST",
@@ -1073,19 +1056,19 @@ if (unsub) {
             const data = await res.json();
             if (!data.success) {
                 if (data.message === "Not In Server") {
-                    return showError("You are not in the discord server.");
+                    return showError("You Are Not In The Discord Server.");
                 }
-                return showError(data.error || "Verification failed.");
+                return showError(data.error || "Verification Failed.");
             }
-            showSuccess("A verification code was sent to your Discord DMs.");
-            const code = prompt("Enter the 6 digit code sent to your Discord:");
+            showSuccess("A Verification Code Was Sent To Your Discord DMs.");
+            const code = prompt("Enter The 6 Digit Code Sent To Your Discord:");
             if (!code) {
                 await fetch(`${a}/discordVerifyCancel`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ uid: currentUser.uid })
                 });
-                return showSuccess("Verification cancelled.");
+                return showError("Verification Cancelled.");
             }
             const confirmRes = await fetch(`${a}/discordVerifyConfirm`, {
                 method: "POST",
@@ -1102,13 +1085,13 @@ if (unsub) {
                 currentDis = newDis;
                 disableDisEditing();
                 setSetting("dUsername", newDis);
-                showSuccess("Discord account verified!");
+                showSuccess("Discord Account Verified!");
             } else {
-                showError(confirmData.error || "Invalid code.");
+                showError(confirmData.error || "Invalid Code.");
             }
         } catch (err) {
             console.error(err);
-            showError("Failed to verify Discord username.");
+            showError("Failed To Verify Discord Username.");
         }
     }
     editDisBtn.addEventListener("click", enableDisEditing);
@@ -1135,7 +1118,7 @@ if (unsub) {
     });
     resetPasswordBtnAcc.addEventListener("click", async () => {
         const email = currentUser?.email;
-        if (!email) return showError("No email found. Please log in again.");
+        if (!email) return showError("No Email Found. Please Log In Again.");
         try {
             const token = await getAuthToken();
             const res = await fetch(`${a}/auth/send-password-reset`, {
@@ -1147,10 +1130,10 @@ if (unsub) {
                 body: JSON.stringify({ email })
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to send reset email");
-            showSuccess("Password reset email sent to " + email);
+            if (!res.ok) throw new Error(data.error || "Failed To Send Reset Email");
+            showSuccess("Password Reset Email Sent To " + email);
         } catch (e) {
-            showError("Failed to send reset email: " + e.message);
+            showError("Failed To Send Reset Email: " + e.message);
         }
     });
     logoutBtn.addEventListener("click", async () => {
@@ -1160,7 +1143,7 @@ if (unsub) {
     });
     const verifyEmailBtn = document.getElementById("verifyEmailBtn");
     verifyEmailBtn.addEventListener("click", async () => {
-        if (!currentUser) return showError("No user logged in.");
+        if (!currentUser) return showError("No User Logged In.");
         try {
             const token = await getAuthToken();
             const res = await fetch(`${a}/auth/send-email-verify`, {
@@ -1171,11 +1154,11 @@ if (unsub) {
                 }
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to send verification email");
-            showSuccess("Verification email sent to " + currentUser.email + ". Please check your inbox.");
+            if (!res.ok) throw new Error(data.error || "Failed To Send Verification Email");
+            showSuccess("Verification Email Sent To " + currentUser.email + ". Please Check Your Inbox.");
         } catch (err) {
             console.error(err);
-            showError("Failed to send verification email: " + err.message);
+            showError("Failed To Send Verification Email: " + err.message);
         }
     });
     async function loadUserProfilePic(uid) {
@@ -1193,7 +1176,7 @@ if (unsub) {
             panelPic.src = cleanBase + "?t=" + Date.now();
             setSetting("pic", cleanBase);
         } catch (err) {
-            console.error("Failed to load profile picture:", err);
+            console.error("Failed To Load Profile Picture:", err);
             panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
         }
     }
@@ -1251,7 +1234,7 @@ if (unsub) {
                 }
                 let hasAnyRole = false;
                 if (profile.isSus) {
-                    addBadge("This user is currently under investigation, please do not interact with this user", "red", "ic ic-shield-exclamation");
+                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "ic ic-shield-exclamation");
                     hasAnyRole = true;
                 }
                 if (profile.isOwner) {
@@ -1265,12 +1248,12 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isCoOwner) {
-                    addBadge("Co-owner", "lightblue", "ic ic-shield-fill");
+                    addBadge("Co-Owner", "lightblue", "ic ic-shield-fill");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.isHAdmin) {
-                    addBadge("Head admin", "#00cc99", "ic ic-shield-halved");
+                    addBadge("Head Admin", "#00cc99", "ic ic-shield-halved");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
@@ -1279,73 +1262,73 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isPartner) {
-                    addBadge("This user is a partner of Infinite Campus", "cornflowerblue", "ic ic-handshake");
+                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "ic ic-handshake");
                     hasAnyRole = true;
                 }
                 if (profile.isDev) {
-                    addBadge("This user is a developer for Infinite Campus", "green", "ic ic-code-square");
+                    addBadge("This User Is A Developer For Infinitecampus.xyz", "green", "ic ic-code-square");
                     adminBtn.style.display = 'block';
                     hasAnyRole = true;
                 }
                 if (profile.premium3) {
-                    addBadge("This user has Infinite Campus Premium T3", "red", "ic ic-hearts");
+                    addBadge("This User Has Infinite Campus Premium T3", "red", "ic ic-hearts");
                     hasAnyRole = true;
                 }
                 if (profile.premium2) {
-                    addBadge("This user has Infinite Campus Premium T2", "orange", "ic ic-heart-fill");
+                    addBadge("This User Has Infinite Campus Premium T2", "orange", "ic ic-heart-fill");
                     hasAnyRole = true;
                 }
                 if (profile.premium1) {
-                    addBadge("This user has Infinite Campus Premium", "yellow", "ic ic-heart-half");
+                    addBadge("This User Has Infinite Campus Premium", "yellow", "ic ic-heart-half");
                     hasAnyRole = true;
                 }
                 if (profile.isDonater) {
-                    addBadge("This user has donated to Infinite Campus", "#00E5FF", "ic ic-balloon-heart");
+                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "ic ic-balloon-heart");
                     hasAnyRole = true;
                 }
                 if (profile.isUploader) {
-                    addBadge("This user has uploaded a movie to Infinite Campus", "grey", "ic ic-film");
+                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "ic ic-film");
                     hasAnyRole = true
                 }
                 if (profile.mileStone) {
-                    addBadge("This user is the 100th signed up user", "yellow", "ic ic-award");
+                    addBadge("This User Is The 100th Signed Up User", "yellow", "ic ic-award");
                     hasAnyRole = true;
                 }
                 if (profile.isGuesser) {
-                    addBadge("This user has a lot of freetime", "#FF0000", "ic ic-stopwatch");
+                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "ic ic-stopwatch");
                     hasAnyRole = true;
                 }
                 if (profile.dUsername) {
                     const discordUser = profile.dUsername;
-                    addBadge(`Known as @${discordUser} on the Infinite Campus Discord server`, "#5865F2", "ic ic-discord");
+                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "ic ic-discord");
                     hasAnyRole = true;
                 }
                 if (profile.isLink) {
-                    addBadge("This user has shared a lot of links in the Links channel", "#4fa3ff", "ic ic-link");
+                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "ic ic-link");
                     hasAnyRole = true;
                 }
                 if (profile.secure) {
-                    addBadge("This user has Securely at school", "dodgerblue", "ic ic-securely");
+                    addBadge("This User Has Securely At School", "dodgerblue", "ic ic-securely");
                     hasAnyRole = true;
                 }
                 if (profile.guardian) {
-                     addBadge("This user has GoGuardian at school", "grey", "ic ic-goguardian");
+                     addBadge("This User Has GoGuardian At School", "grey", "ic ic-goguardian");
                     hasAnyRole = true;
                 }
                 if (profile.lanschool) {
-                    addBadge("This user has Lanschool at school", "greenyellow", "ic ic-lanschool");
+                    addBadge("This User Has Lanschool At School", "greenyellow", "ic ic-lanschool");
                     hasAnyRole = true;
                 }
                 if (profile.linewize) {
-                    addBadge("This user has Linewize at school", "lightskyblue", "ic ic-linewize");
+                    addBadge("This User Has Linewize At School", "lightskyblue", "ic ic-linewize");
                     hasAnyRole = true;
                 }
                 if (profile.blocksi) {
-                    addBadge("This user has Blocksi at school", "cadetblue", "ic ic-blocksi");
+                    addBadge("This User Has Blocksi At School", "cadetblue", "ic ic-blocksi");
                     hasAnyRole = true;
                 }
                 if (profile.verified) {
-                    addBadge("Verified user", "white", "ic ic-shield-check");
+                    addBadge("Verified User", "white", "ic ic-shield-check");
                     hasAnyRole = true;
                 }
             }
@@ -1353,7 +1336,7 @@ if (unsub) {
             setInterval(() => {
                 dbGet(`users/${user.uid}/profile`).then(applyProfile).catch(() => {});
             }, 15000);
-            statusEl.textContent = `Logged in as ${user.email}`;
+            statusEl.textContent = `Logged In As ${user.email}`;
             const userSettingsRef = `users/${user.uid}/settings`;
             const userSettingsSnap = await dbGet(userSettingsRef);
             let settings = userSettingsSnap || {};
@@ -1362,7 +1345,7 @@ if (unsub) {
                 await dbSet(`users/${user.uid}/settings/userEmail`, user.email);
             }
         } else {
-            statusEl.textContent = "Not logged in.";
+            statusEl.textContent = "Not Logged In.";
             setTimeout(() => location.href = "InfiniteLogins.html", 1000);
         }
         if (user) {

@@ -52,7 +52,7 @@
                 render();
             }
         } catch (e) {
-            console.error("Failed to load games:", e);
+            console.error("Failed To Load Games:", e);
             if (!cached) {
                 allGames = [];
                 render();
