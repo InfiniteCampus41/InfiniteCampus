@@ -61,6 +61,8 @@ const groupDeleteBtn = document.getElementById("groupDeleteBtn");
 const groupLeaveBtn = document.getElementById("groupLeaveBtn");
 let activeListenersCount = 0;
 let allUsernames = [];
+let mentionableUsernames = [];
+let mentionLoadToken = 0;
 let authReady = false;
 let autoScrollEnabled = true;
 let pendingAttachFile = null;
@@ -2159,6 +2161,7 @@ async function openPrivateChat(uid, name) {
     const [a, b] = [currentUser.uid, uid].sort();
     currentPath = `private/${a}/${b}`;
     attachMessageListeners(currentPath);
+    loadMentionableUsers();
     await dbUpdate(`metadata/${currentUser.uid}/privateChats/${uid}`, {
         lastRead: Date.now(),
         unreadCount: 0
@@ -2573,6 +2576,7 @@ async function switchChannel(ch) {
         return;
     } else {
         attachMessageListeners(currentPath);
+        loadMentionableUsers();
     }
     if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
     if (typingRef) {
@@ -2961,6 +2965,30 @@ async function _promptGuestName() {
         showError("Failed To Set Name: " + e.message);
     }
 }
+async function loadMentionableUsers() {
+    const token = ++mentionLoadToken;
+    let body = null;
+    if (currentGroupId) {
+        body = { type: "group", groupId: currentGroupId };
+    } else if (currentPrivateUid) {
+        body = { type: "private", targetUid: currentPrivateUid };
+    } else if (currentPath && currentPath.startsWith("messages/")) {
+        body = { type: "channel", channel: currentPath.split("/")[1] };
+    }
+    if (!body) {
+        mentionableUsernames = [];
+        return;
+    }
+    try {
+        const res = await fetchAPI("api/mentionable-users", body);
+        if (token !== mentionLoadToken) return;
+        mentionableUsernames = (res.users || []).map(u => u.displayName).filter(Boolean);
+    } catch (e) {
+        if (token !== mentionLoadToken) return;
+        mentionableUsernames = [];
+        console.warn("Failed To Load Mentionable Users:", e);
+    }
+}
 async function loadAllUsernames() {
     const data = await dbGet("users");
     allUsernames = [];
@@ -3296,7 +3324,7 @@ chatInput.addEventListener("input", () => {
     mentionActive = true;
     triggerIndex = lastAt;
     const typed = value.slice(lastAt + 1, cursorPos).toLowerCase();
-    const matches = allUsernames.filter(name =>
+    const matches = mentionableUsernames.filter(name =>
         name.toLowerCase().startsWith(typed)
     );
     if (matches.length === 0) {
@@ -3574,6 +3602,7 @@ async function openGroupChat(groupId) {
     currentPrivateName = null;
     stopGroupPolling();
     currentGroupId = groupId;
+    loadMentionableUsers();
     hidePrivateMenu();
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (groupInfoBtn) groupInfoBtn.style.display = "";
