@@ -7,12 +7,6 @@ firebase.initializeApp({
   	messagingSenderId: "424229778181",
   	appId: "1:424229778181:web:fa531219ed165346fa7d6c"
 });
-self.options = {
-    "domain": "3nbf4.com",
-    "zoneId": 11487388
-}
-self.lary = ""
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   	self.registration.showNotification(payload.notification.title, {
