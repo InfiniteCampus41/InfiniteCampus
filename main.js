@@ -924,3 +924,9 @@ function initSettingsUI(apply) {
 }
 document.addEventListener('DOMContentLoaded', initSettingsUI);
 document.addEventListener('settingsLoaded', initSettingsUI);
+setInterval(() => {
+    const headerHeight = getComputedStyle(document.documentElement).getPropertyValue('--headerheight').trim();
+    document.querySelectorAll('iframe:not([id])').forEach(iframe => {
+        iframe.style.top = headerHeight;
+    });
+}, 100);
