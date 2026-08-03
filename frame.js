@@ -219,6 +219,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     applyDiscordLink();
+    const THEME_PARTICLES = {
+        wtr: { iconClass: "ic ic-snow", colors: ["white", "#e0f7ff", "#cfe8ff"], label: "Toggle Snow" },
+        cms: { iconClass: "ic ic-snow", colors: ["white", "#e0f7ff", "#cfe8ff"], label: "Toggle Snow" },
+        lve: { iconClass: "ic ic-heart-fill", colors: ["red", "#ff4d6d", "#ff8fa3"], label: "Toggle Hearts" },
+        hwn: { iconClass: "ic ic-pumpkin", colors: ["orange", "#ff7518", "#cc5500"], label: "Toggle Pumpkins" },
+        tky: { iconClass: "ic ic-leaf-fill", colors: ["yellow", "#d4a017", "#b7410e"], label: "Toggle Leaves" }
+    };
+    function getMonthFallbackThemeKey() {
+        const monthIndex = new Date().getMonth();
+        if (monthIndex === 0) return "wtr";
+        if (monthIndex === 1) return "lve";
+        if (monthIndex === 9) return "hwn";
+        if (monthIndex === 10) return "tky";
+        if (monthIndex === 11) return "cms";
+        return null;
+    }
+    function getActiveThemeKey() {
+        const storedTheme = localStorage.getItem("useGradient");
+        if (storedTheme) {
+            return THEME_PARTICLES[storedTheme] ? storedTheme : null;
+        }
+        return getMonthFallbackThemeKey();
+    }
+    function getActiveParticleConfig() {
+        const key = getActiveThemeKey();
+        return key ? THEME_PARTICLES[key] : null;
+    }
     function createSnowflakes() {
         snowContainer.innerHTML = "";
         const count = calculateFlakeCount();
@@ -253,7 +280,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     adjustSnowflakeCount();
     window.addEventListener("resize", adjustSnowflakeCount);
-    let containerWidth = snowContainer.clientWidth;
+    function getContainerWidth() {
+        const header = document.getElementById("site-header");
+        const width = header ? header.clientWidth : snowContainer.clientWidth;
+        return width || snowContainer.clientWidth || window.innerWidth;
+    }
+    let containerWidth = getContainerWidth();
     function updateSnowflakePositions() {
         const spacing = containerWidth / snowflakes.length;
         snowflakes.forEach((flake, index) => {
@@ -263,6 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSnowflakePositions();
     function startSnow() {
         snowContainer.style.display = "block";
+        containerWidth = getContainerWidth();
+        updateSnowflakePositions();
         snowflakes.forEach(flake => flake.start && flake.start());
     }
     function stopSnow() {
@@ -297,19 +331,17 @@ document.addEventListener("DOMContentLoaded", () => {
             subtree: true
         });
     }
-    waitForToggleSnowBtn((toggleBtn) => {
-        const monthIndex = new Date().getMonth();
-        if (monthIndex === 11 || monthIndex === 0) {
-            toggleBtn.textContent = "Toggle Snow";
-        } else if (monthIndex === 1) {
-            toggleBtn.textContent = 'Toggle Hearts';
-        } else if (monthIndex >= 2 && monthIndex <= 8) {
+    function updateToggleButton(toggleBtn) {
+        const config = getActiveParticleConfig();
+        if (!config) {
             toggleBtn.style.display = 'none';
-        } else if (monthIndex === 9) {
-            toggleBtn.textContent = 'Toggle Pumpkins';
-        } else if (monthIndex === 10) {
-            toggleBtn.textContent = 'Toggle Leaves';
+        } else {
+            toggleBtn.style.display = '';
+            toggleBtn.textContent = config.label;
         }
+    }
+    waitForToggleSnowBtn((toggleBtn) => {
+        updateToggleButton(toggleBtn);
         toggleBtn.addEventListener("click", () => {
             snowEnabled = !snowEnabled;
             localStorage.setItem("snowEnabled", snowEnabled.toString());
@@ -317,32 +349,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
     function initSnowflakeAnimations() {
-        const monthIndex = new Date().getMonth();
+        const config = getActiveParticleConfig();
         snowflakes.forEach((flake) => {
             flake.style.display = "";
-            let iconClass = "";
-            let iconColor = "";
-            if (monthIndex === 11 || monthIndex === 0) {
-                iconClass = "ic ic-snow";
-                iconColor = "white";
-            } 
-            else if (monthIndex === 1) {
-                iconClass = "ic ic-heart-fill";
-                iconColor = "red";
-            } 
-            else if (monthIndex >= 2 && monthIndex <= 8) {
+            if (!config) {
                 flake.style.display = "none";
                 return;
-            } 
-            else if (monthIndex === 9) {
-                iconClass = "ic ic-pumpkin";
-                iconColor = "orange";
-            } 
-            else if (monthIndex === 10) {
-                iconClass = "ic ic-leaf-fill";
-                iconColor = "darkgoldenrod";
             }
-            flake.innerHTML = `<i class="${iconClass}" style="color:${iconColor}"></i>`;
+            const flakeColor = config.colors[Math.floor(Math.random() * config.colors.length)];
+            flake.innerHTML = `<i class="${config.iconClass}" style="color:${flakeColor}"></i>`;
+            if (flake.stop) flake.stop();
             let y = Math.random() * 60;
             let swayOffset = Math.random() * Math.PI * 2;
             let running = false;
@@ -377,13 +393,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     initSnowflakeAnimations();
     window.addEventListener("resize", () => {
-        containerWidth = snowContainer.clientWidth;
+        containerWidth = getContainerWidth();
         snowflakes = createSnowflakes();
         updateSnowflakePositions();
         initSnowflakeAnimations();
         if (snowEnabled) {
             snowflakes.forEach(flake => flake.start && flake.start());
         }
+    });
+    let lastThemeKey = getActiveThemeKey();
+    function refreshParticleTheme() {
+        const newKey = getActiveThemeKey();
+        if (newKey === lastThemeKey) return;
+        lastThemeKey = newKey;
+        initSnowflakeAnimations();
+        if (snowEnabled) {
+            snowflakes.forEach(flake => flake.start && flake.start());
+        }
+        const btn = document.getElementById("toggleSnowBtn");
+        if (btn) updateToggleButton(btn);
+    }
+    document.addEventListener("themeChanged", refreshParticleTheme);
+    window.addEventListener("storage", (e) => {
+        if (e.key === "useGradient") refreshParticleTheme();
     });
     const helpToggle = document.getElementById('helpToggle');
     const helpDropdown = document.getElementById('helpDropdown');

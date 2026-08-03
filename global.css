@@ -1969,6 +1969,9 @@ main {
     #header-left {
         display:none;
     }
+    .weather-switch {
+        display:none;
+    }
 }
 .mention {
     color: #4fa3ff;

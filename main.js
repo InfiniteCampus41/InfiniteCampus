@@ -388,6 +388,7 @@ function customPrompt(message, hidden = false, value) {
     });
 }
 let themedElements = null;
+let lastAppliedThemeKey;
 setInterval(() => {
     themedElements = document.querySelectorAll('.themed');
     initSettingsUI("apply");
@@ -603,6 +604,11 @@ function initSettingsUI(apply) {
         }
         const textColor = isDark ? 'white' : '';
         localStorage.setItem('globalDarkTheme', isDark);
+        const themeKey = gradientSetting || null;
+        if (themeKey !== lastAppliedThemeKey) {
+            lastAppliedThemeKey = themeKey;
+            document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: themeKey } }));
+        }
         localStorage.setItem('globalTextColor', textColor);
         [header, footer, mobile].forEach(bar => {
             if (!bar) return;
