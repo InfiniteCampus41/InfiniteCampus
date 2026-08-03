@@ -420,11 +420,7 @@ window.addEventListener('DOMContentLoaded', () => {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            <hr>
-                            <a class="button" id="resetAllBtn">
-                                Clear Data
-                            </a>
+                            </div>                            
                         </div>
                         <div class="tab-pane" id="tab-data">
                             <div class="section" style="flex-direction:column; align-items:center;">
@@ -445,7 +441,12 @@ window.addEventListener('DOMContentLoaded', () => {
                                     </label>
                                     <input type="file" class="button" id="importDataInput" accept="application/json,.json" hidden>
                                 </div>
-                                <span id="dataStatus" class="theme-name"></span>
+                                <span id="dataStatus" class="theme-name">
+                                </span>
+                                <br>
+                                <a class="button" id="resetAllBtn">
+                                    Clear Data
+                                </a>
                             </div>
                         </div>
                         <div class="tab-pane" id="tab-about">
