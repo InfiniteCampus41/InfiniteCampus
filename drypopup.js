@@ -159,6 +159,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const ICON_CLOAK = `<i class="ic ic-eye-slash"></i>`;
     const ICON_CUSTOM = `<i class="ic ic-palette"></i>`;
     const ICON_ADV = `<i class="ic ic-sliders"></i>`;
+    const ICON_DATA = `<i class="ic ic-database-fill"></i>`;
     const ICON_ABOUT = `<i class="ic ic-info-circle"></i>`;
     const ICON_CHECK = `<i class="ic ic-check-circle-fill"></i>`;
     const THEMES = [
@@ -238,6 +239,12 @@ window.addEventListener('DOMContentLoaded', () => {
                             ${ICON_ADV}
                             <span>
                                 Advanced
+                            </span>
+                        </button>
+                        <button class="tab-btn" type="button" data-tab="data">
+                            ${ICON_DATA}
+                            <span>
+                                Data
                             </span>
                         </button>
                         <button class="tab-btn" type="button" data-tab="about">
@@ -418,6 +425,28 @@ window.addEventListener('DOMContentLoaded', () => {
                             <a class="button" id="resetAllBtn">
                                 Clear Data
                             </a>
+                        </div>
+                        <div class="tab-pane" id="tab-data">
+                            <div class="section" style="flex-direction:column; align-items:center;">
+                                <p class="btxt" style="text-align:center">
+                                    Export A Backup Of All Your Local Data Including Settings, Playlists, And Login Data Or Import A Previously Exported Backup.
+                                </p>
+                                <strong>
+                                    <p class="r">
+                                        WARNING: Do Not Share This File With Another User, As It Will Allow Them To Access Your Account And Data.
+                                    </p>
+                                </strong>
+                                <div class="row-actions">
+                                    <button class="button" id="exportDataBtn">
+                                        Export Data
+                                    </button>
+                                    <label id="importDataLabel" for="importDataInput" class="button">
+                                        Import Data
+                                    </label>
+                                    <input type="file" class="button" id="importDataInput" accept="application/json,.json" hidden>
+                                </div>
+                                <span id="dataStatus" class="theme-name"></span>
+                            </div>
                         </div>
                         <div class="tab-pane" id="tab-about">
                             <div class="section" style="justify-content:center">
@@ -853,6 +882,248 @@ window.addEventListener('DOMContentLoaded', () => {
                 document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
             });
             location.reload();
+        });
+    }
+    function reqToPromise(req) {
+        return new Promise((resolve, reject) => {
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+    function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        return btoa(binary);
+    }
+    function base64ToArrayBuffer(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    async function toSerializable(value) {
+        if (value === null || typeof value !== 'object') return value;
+        if (value instanceof ArrayBuffer) {
+            return { __icType: 'ArrayBuffer', data: arrayBufferToBase64(value) };
+        }
+        if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+            return { __icType: 'TypedArray', ctor: value.constructor.name, data: arrayBufferToBase64(value.buffer) };
+        }
+        if (value instanceof Date) {
+            return { __icType: 'Date', data: value.toISOString() };
+        }
+        if (value instanceof Blob) {
+            const buffer = await value.arrayBuffer();
+            return { __icType: 'Blob', mime: value.type || '', data: arrayBufferToBase64(buffer) };
+        }
+        if (Array.isArray(value)) {
+            const out = [];
+            for (const item of value) out.push(await toSerializable(item));
+            return out;
+        }
+        const out = {};
+        for (const [k, v] of Object.entries(value)) {
+            out[k] = await toSerializable(v);
+        }
+        return out;
+    }
+    function importJsonReviver(key, value) {
+        if (value && typeof value === 'object' && value.__icType) {
+            if (value.__icType === 'ArrayBuffer') {
+                return base64ToArrayBuffer(value.data);
+            }
+            if (value.__icType === 'TypedArray') {
+                const buffer = base64ToArrayBuffer(value.data);
+                const Ctor = window[value.ctor] || Uint8Array;
+                return new Ctor(buffer);
+            }
+            if (value.__icType === 'Date') {
+                return new Date(value.data);
+            }
+            if (value.__icType === 'Blob') {
+                const buffer = base64ToArrayBuffer(value.data);
+                return new Blob([buffer], { type: value.mime || '' });
+            }
+        }
+        return value;
+    }
+    async function exportIndexedDBDatabase(name) {
+        const db = await new Promise((resolve, reject) => {
+            const req = indexedDB.open(name);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+        const storeNames = Array.from(db.objectStoreNames);
+        const result = { version: db.version, stores: {} };
+        for (const storeName of storeNames) {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            const keyPath = store.keyPath;
+            const autoIncrement = store.autoIncrement;
+            const keys = await reqToPromise(store.getAllKeys());
+            const values = await reqToPromise(store.getAll());
+            result.stores[storeName] = {
+                keyPath,
+                autoIncrement,
+                entries: keys.map((k, idx) => ({ key: k, value: values[idx] }))
+            };
+        }
+        db.close();
+        return result;
+    }
+    async function exportAllData() {
+        const data = {
+            exportedAt: new Date().toISOString(),
+            localStorage: {},
+            sessionStorage: {},
+            indexedDB: {}
+        };
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            data.localStorage[key] = localStorage.getItem(key);
+        }
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            data.sessionStorage[key] = sessionStorage.getItem(key);
+        }
+        if (indexedDB.databases) {
+            const dbs = await indexedDB.databases();
+            for (const dbInfo of dbs) {
+                if (!dbInfo.name) continue;
+                try {
+                    data.indexedDB[dbInfo.name] = await exportIndexedDBDatabase(dbInfo.name);
+                } catch (err) {
+                    console.warn(`Failed To Export IndexedDB "${dbInfo.name}":`, err);
+                }
+            }
+        }
+        const serializableData = await toSerializable(data);
+        const json = JSON.stringify(serializableData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ic-data-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
+    async function importIndexedDBDatabase(name, dbData) {
+        const storeNames = Object.keys(dbData.stores || {});
+        let db = await new Promise((resolve, reject) => {
+            const req = indexedDB.open(name);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+        const missingStores = storeNames.filter(s => !db.objectStoreNames.contains(s));
+        if (missingStores.length > 0) {
+            const newVersion = db.version + 1;
+            db.close();
+            db = await new Promise((resolve, reject) => {
+                const req = indexedDB.open(name, newVersion);
+                req.onupgradeneeded = () => {
+                    const upgradeDb = req.result;
+                    missingStores.forEach(storeName => {
+                        const storeInfo = dbData.stores[storeName];
+                        upgradeDb.createObjectStore(storeName, storeInfo.keyPath
+                            ? { keyPath: storeInfo.keyPath, autoIncrement: !!storeInfo.autoIncrement }
+                            : { autoIncrement: !!storeInfo.autoIncrement });
+                    });
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+        for (const storeName of storeNames) {
+            if (!db.objectStoreNames.contains(storeName)) continue;
+            const storeInfo = dbData.stores[storeName];
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                store.clear();
+                (storeInfo.entries || []).forEach(entry => {
+                    if (storeInfo.keyPath) {
+                        store.put(entry.value);
+                    } else {
+                        store.put(entry.value, entry.key);
+                    }
+                });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+        db.close();
+    }
+    async function importAllData(file) {
+        const text = await file.text();
+        const data = JSON.parse(text, importJsonReviver);
+        if (data.localStorage) {
+            for (const [k, v] of Object.entries(data.localStorage)) {
+                try { localStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set LocalStorage Key', k, e); }
+            }
+        }
+        if (data.sessionStorage) {
+            for (const [k, v] of Object.entries(data.sessionStorage)) {
+                try { sessionStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set SessionStorage Key', k, e); }
+            }
+        }
+        if (data.indexedDB) {
+            for (const [dbName, dbData] of Object.entries(data.indexedDB)) {
+                try {
+                    await importIndexedDBDatabase(dbName, dbData);
+                } catch (err) {
+                    console.warn(`Failed To Import IndexedDB "${dbName}":`, err);
+                }
+            }
+        }
+    }
+    const exportDataBtn = document.getElementById('exportDataBtn');
+    const importDataInput = document.getElementById('importDataInput');
+    const dataStatus = document.getElementById('dataStatus');
+    if (exportDataBtn) {
+        exportDataBtn.addEventListener('click', async () => {
+            try {
+                if (dataStatus) dataStatus.textContent = 'Exporting...';
+                await exportAllData();
+                if (dataStatus) dataStatus.textContent = '';
+                showSuccess('Data Exported Successfully');
+            } catch (err) {
+                if (dataStatus) dataStatus.textContent = '';
+                console.error('Export Failed:', err);
+                showError('Failed To Export Data');
+            }
+        });
+    }
+    if (importDataInput) {
+        importDataInput.addEventListener('change', () => {
+            const file = importDataInput.files && importDataInput.files[0];
+            if (!file) return;
+            showConfirm('Importing Will Overwrite Your Current Local Data With The Contents Of This File. Continue?', async (confirmed) => {
+                if (!confirmed) {
+                    importDataInput.value = '';
+                    return;
+                }
+                try {
+                    if (dataStatus) dataStatus.textContent = 'Importing...';
+                    await importAllData(file);
+                    if (dataStatus) dataStatus.textContent = '';
+                    showSuccess('Data Imported Successfully. Reloading...');
+                    setTimeout(() => location.reload(), 1200);
+                } catch (err) {
+                    if (dataStatus) dataStatus.textContent = '';
+                    console.error('Import Failed:', err);
+                    showError('Failed To Import Data. Make Sure The File Is A Valid Export.');
+                } finally {
+                    importDataInput.value = '';
+                }
+            });
         });
     }
     if (clearPanicBtn) {

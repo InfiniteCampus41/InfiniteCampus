@@ -134,6 +134,10 @@ i {
     mask-image: url('/icons/discord.svg');
     -webkit-mask-image: url('/icons/discord.svg');
 }
+.ic-database-fill {
+    mask-image: url('/icons/database-fill.svg');
+    -webkit-mask-image: url('/icons/database-fill.svg');
+}
 .ic-dot {
     mask-image: url('/icons/dot.svg');
     -webkit-mask-image: url('/icons/dot.svg');
