@@ -121,7 +121,6 @@ if (x3tfypage == '/InfiniteAbouts.html') {
 } else if (x3tfypage == '/InfiniteApps.html') {
     const playerParams = x3tfyparams.get("player");
     const listenParams = x3tfyparams.get("listen");
-    const themeParams = x3tfyparams.get("theme");
     const timerParams = x3tfyparams.get("timer");
     const statParams = x3tfyparams.get("stats");
     const qrParams = x3tfyparams.get("qr");
@@ -148,14 +147,10 @@ if (x3tfypage == '/InfiniteAbouts.html') {
     const qrPage = document.getElementById("qrPage");
     const statsPage = document.getElementById("statsPage");
     const timerPage = document.getElementById("timerPage");
-    const themePage = document.getElementById("themePage");
     const playerPage = document.getElementById("playerPage");
     const appsPage = document.getElementById("appsPage");
     const listenPage = document.getElementById("listenPage");
-    if (themeParams) {
-        themePage.style.display = "block";
-        appsPage.style.display = "none";
-    } else if (timerParams) {
+    if (timerParams) {
         timerPage.style.display = "block";
         appsPage.style.display = "none";
         let timer;

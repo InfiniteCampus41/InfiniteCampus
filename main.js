@@ -480,7 +480,6 @@ function initSettingsUI(apply) {
             ['gradientLeft', 'gradientRight', 'headerColor'].forEach(k => localStorage.removeItem(k));
             localStorage.setItem('useGradient', sel);
             applyTheme('#000000', sel);
-            location.reload();
         });
         resetBtn?.addEventListener('click', () => {
             ['headerColor', 'useGradient', 'gradientLeft', 'gradientRight', 'globalTextColor', 'globalDarkTheme']
@@ -507,7 +506,6 @@ function initSettingsUI(apply) {
             if (gradLeftInput) gradLeftInput.value = defaultColor;
             if (gradRightInput) gradRightInput.value = defaultColor;
             applyTheme(defaultColor);
-            location.reload();
         });
     }
     function applyTheme(colOrLeft, gradientSetting = null) {
@@ -628,11 +626,26 @@ function initSettingsUI(apply) {
                     btn.style.color = 'black';
                     btn.style.border = '';
                 });
-                bar.querySelectorAll('a').forEach(a => {
-                    a.style.color = 'black';
+                bar.querySelectorAll('a, div').forEach(el => {
+                    el.style.color = 'black';
                 })
             }
             if (!isDark && bar === footer) {
+                bar.querySelectorAll('p, span, div').forEach(el => {
+                    el.style.color = '';
+                });
+            }
+            if (isDark && bar === header) {
+                bar.querySelectorAll('button').forEach(btn => {
+                    btn.style.backgroundColor = '';
+                    btn.style.color = 'white';
+                    btn.style.border = '';
+                });
+                bar.querySelectorAll('a, div').forEach(el => {
+                    el.style.color = 'white';
+                })
+            }
+            if (isDark && bar === footer) {
                 bar.querySelectorAll('p, span, div').forEach(el => {
                     el.style.color = '';
                 });
@@ -744,7 +757,6 @@ function initSettingsUI(apply) {
         if (gradLeftInput) gradLeftInput.value = defaultColor;
         if (gradRightInput) gradRightInput.value = defaultColor;
         applyTheme(defaultColor);
-        location.reload();
     });
     if (e.includes(window.location.host)) {
     } else {

@@ -74,6 +74,10 @@ i {
     mask-image: url('/icons/broadcast.svg');
     -webkit-mask-image: url('/icons/broadcast.svg');
 }
+.ic-check-circle-fill {
+    mask-image: url('/icons/check-circle-fill.svg');
+    -webkit-mask-image: url('/icons/check-circle-fill.svg');
+}
 .ic-check2 {
     mask-image: url('/icons/check2.svg');
     -webkit-mask-image: url('/icons/check2.svg');
@@ -145,6 +149,10 @@ i {
 .ic-eye-fill {
     mask-image: url('/icons/eye-fill.svg');
     -webkit-mask-image: url('/icons/eye-fill.svg');
+}
+.ic-eye-slash {
+    mask-image: url('/icons/eye-slash.svg');
+    -webkit-mask-image: url('/icons/eye-slash.svg');
 }
 .ic-file-earmark-code {
     mask-image: url('/icons/file-earmark-code.svg');
@@ -266,6 +274,10 @@ i {
     mask-image: url('/icons/online.png');
     -webkit-mask-image: url('/icons/online.png');
 }
+.ic-palette {
+    mask-image: url('/icons/palette.svg');
+    -webkit-mask-image: url('/icons/palette.svg');
+}
 .ic-pause-fill {
     mask-image: url('/icons/pause-fill.svg');
     -webkit-mask-image: url('/icons/pause-fill.svg');
@@ -357,6 +369,10 @@ i {
 .ic-skip-start-fill {
     mask-image: url('/icons/skip-start-fill.svg');
     -webkit-mask-image: url('/icons/skip-start-fill.svg');
+}
+.ic-sliders {
+    mask-image: url('/icons/sliders.svg');
+    -webkit-mask-image: url('/icons/sliders.svg');
 }
 .ic-snow {
     mask-image: url('/icons/snow.svg');

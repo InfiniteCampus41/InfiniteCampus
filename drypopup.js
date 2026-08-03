@@ -74,6 +74,7 @@ function applySettingsToUI() {
     const panicKeyInput = document.getElementById('panicKeyInput');
     const panicUrlInput = document.getElementById('panicUrlInput');
     const titleInput = document.getElementById('titleInput');
+    const fontInputEl = document.getElementById('fontInput');
     const betterWeatherToggle = document.getElementById('betterWeatherToggle');
     const clockBarToggle = document.getElementById('clockBarToggle');
     const clockBar = document.getElementById('clockBar');
@@ -82,6 +83,7 @@ function applySettingsToUI() {
     const savedTitle = localStorage.getItem('pageTitle') || '';
     const savedFavicon = localStorage.getItem('customFavicon') || '';
     const savedBackground = localStorage.getItem('customBackground') || '';
+    const savedFontVal = localStorage.getItem('customFont') || '';
     const betterWeatherState = localStorage.getItem('betterWeather') === 'true';
     const showClockBarState = localStorage.getItem('showClockBar') === null
         ? true
@@ -102,6 +104,9 @@ function applySettingsToUI() {
     if (titleInput) {
         titleInput.value = savedTitle;
         if (savedTitle) document.title = savedTitle;
+    }
+    if (fontInputEl) {
+        fontInputEl.value = savedFontVal;
     }
     if (betterWeatherToggle) {
         betterWeatherToggle.checked = betterWeatherState;
@@ -150,138 +155,379 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
         console.warn('LocalStorage Not Available, Using Defaults:', e);
     }
-    const popupHTML = `
-        <div class="popup2" id="popup">
-            <div class="bar themed" id="clockBar" style="${showClockBarState ? '' : 'display:none;'}">
-                <div id="clocks">
-                    --:--:-- --
+    const savedFont = localStorage.getItem('customFont') || '';
+    const ICON_CLOAK = `<i class="ic ic-eye-slash"></i>`;
+    const ICON_CUSTOM = `<i class="ic ic-palette"></i>`;
+    const ICON_ADV = `<i class="ic ic-sliders"></i>`;
+    const ICON_ABOUT = `<i class="ic ic-info-circle"></i>`;
+    const ICON_CHECK = `<i class="ic ic-check-circle-fill"></i>`;
+    const THEMES = [
+        { key: 'red', name: 'Crimson', gradient: 'linear-gradient(to right, darkred, black)' },
+        { key: 'green', name: 'Green Fien', gradient: 'linear-gradient(to right, #8cbe37, black)' },
+        { key: 'sunset', name: 'Sunset', gradient: 'linear-gradient(to right, yellow, brown)' },
+        { key: 'reversered', name: 'Reverse Crimson', gradient: 'linear-gradient(to right, black, darkred)' },
+        { key: 'reversegreen', name: 'Reverse Green', gradient: 'linear-gradient(to right, black, #8cbe37)' },
+        { key: 'reversesunset', name: 'Reverse Sunset', gradient: 'linear-gradient(to right, brown, yellow)' },
+        { key: 'bty', name: 'Beauty', gradient: 'linear-gradient(to right, #37A7BE, #8cbe37, yellow)' },
+        { key: 'btg', name: 'Black & Gold', gradient: 'linear-gradient(to right, black, gold)' },
+        { key: 'lights', name: 'Stripes', gradient: 'linear-gradient(234deg, black, darkred, red, blue, orange, darkgreen, lime, yellow, gold, black)' },
+        { key: 'bld', name: 'Darksaber', gradient: 'linear-gradient(to bottom, black, white, black)' },
+        { key: 'gsaber', name: 'Green Saber', gradient: 'linear-gradient(to bottom, #004000, #00FF00, white)' },
+        { key: 'rsaber', name: 'Red Saber', gradient: 'linear-gradient(to bottom, #330000, red, white)' },
+        { key: 'bsaber', name: 'Blue Saber', gradient: 'linear-gradient(to bottom, #011926, #5880A2, white)' },
+        { key: 'psaber', name: 'Purple Saber', gradient: 'linear-gradient(to bottom, #1B1B1B, purple, white)' },
+        { key: 'trans', name: 'Transparent', gradient: 'linear-gradient(to bottom, black, transparent, black)' },
+        { key: 'drk', name: 'Dark', gradient: 'linear-gradient(to right, black, black)' },
+        { key: 'lit', name: 'Light', gradient: 'linear-gradient(to right, rgb(214,214,214), rgb(214,214,214))' },
+        { key: 'mnb', name: 'Midnight Blue', gradient: 'linear-gradient(to right, darkblue, black)' },
+        { key: 'cms', name: 'Christmas', gradient: 'linear-gradient(to right, green, red)' },
+        { key: 'wtr', name: 'Winter', gradient: 'linear-gradient(to right, #374377, #bec7ad)' },
+        { key: 'lve', name: 'Valentines', gradient: 'linear-gradient(to right, #be5f37, #be3786)' },
+        { key: 'tky', name: 'Fall Theme', gradient: 'linear-gradient(to right, #be9a37, #be5f37)' },
+        { key: 'hwn', name: 'Halloween', gradient: 'linear-gradient(to right, #ff9500, #231f1f)' },
+        { key: 'rgb', name: 'RGB', gradient: 'linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red)' }
+    ];
+    const themeGridHTML = THEMES.map(t => `
+        <div class="theme-item" data-theme="${t.key}">
+            <div class="theme-swatch" style="background:${t.gradient}">
+                <div class="theme-check">
+                    ${ICON_CHECK}
                 </div>
             </div>
-            <div class="text">
+            <span class="theme-name">
+                ${t.name}
+            </span>
+        </div>
+    `).join('');
+    const popupHTML = `
+        <div class="popup-backdrop" id="popupBackdrop"></div>
+        <div class="popup2" id="popup">
+            <div class="popup-header themed">
+                <div class="bar" id="clockBar" style="${showClockBarState ? '' : 'display:none;'}">
+                    <div id="clocks">
+                        --:--:-- --
+                    </div>
+                </div>
                 <h3 class="btxt">
                     Settings
                 </h3>
-                <hr>
-                <a class="button" id="popuplogin" href="${isLoggedInLink}">
-                    ${isLoggedInMsg}
-                </a>
-                <div class="setting-row">
-                    <label>
-                        More Accurate Weather
-                    </label>
-                    <label class="switch">
-                        <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
-                        <span class="slider">
-                        </span>
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <label>
-                        Show Clock Bar
-                    </label>
-                    <label class="switch">
-                        <input type="checkbox" id="clockBarToggle" ${showClockBarState ? 'checked' : ''}>
-                        <span class="slider">
-                        </span>
-                    </label>
-                </div>
-                <button class="button" id="toggleSnowBtn">
-                    Toggle Snow
+                <button class="popup-close" id="popupClose" type="button" aria-label="Close">
+                    <i class="ic ic-x-circle">
+                    </i>
                 </button>
-                <hr>
-                <div class="section">
-                    <div class="field-group">
-                        <input class="button" type="text" id="titleInput" placeholder="Page Title" value="${savedTitle}">
-                        <div class="row-actions">
-                            <button id="saveTitleBtn" class="button">
-                                Save
-                            </button>
-                            <button id="resetTitleBtn" class="button">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label id="fLabel" for="faviconInput" class="button">
-                            Favicon Image
-                        </label>
-                        <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
-                        <img id="faviconPreview" class="preview-img ${savedFavicon ? 'show' : ''}" src="${savedFavicon}">
-                        <div class="row-actions">
-                            <button class="button" id="setFaviconBtn">
-                                Save
-                            </button>
-                            <button class="button" id="resetFaviconBtn">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label id="bgLabel" for="bgInput" class="button">
-                            Background Image
-                        </label>
-                        <input type="file" class="button" id="bgInput" accept="image/*" hidden>
-                        <div id="bgPreview" class="preview-img-bg ${savedBackground ? 'show' : ''}" style="${savedBackground ? `background-image:url('${savedBackground}')` : ''}"></div>
-                        <div class="row-actions">
-                            <button class="button" id="setBgBtn">
-                                Save
-                            </button>
-                            <button class="button" id="resetBgBtn">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field-group" style="display:flex; flex-direction:column; align-items:center;">
-                        <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
-                        <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
-                        <div class="row-actions">
-                            <button id="savePanicBtn" class="button">
-                                Save
-                            </button>
-                            <button id="clearPanicBtn" class="button">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
-                        <div class="row-actions">
-                            <button id="saveBackendBtn" class="button">
-                                Save
-                            </button>
-                            <button id="resetBackendBtn" class="button">
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div class="section" style="justify-content:center">
-                    <a class="themed button darkbuttons" href="InfiniteApps.html?theme=true">
-                        Change Site Theme
-                    </a>
-                    <a class="button" href="InfiniteDonaters.html">
-                        Help Support By Donating
-                    </a>
-                    <a class="button" href="InfiniteApps.html?blank=true">
-                        Open In About:Blank
-                    </a>
-                    <a class="button" href="InfiniteChatters.html?channel=Suggestions">
-                        Suggest A Feature
-                    </a>
-                </div>
-                <a class="button" id="resetAllBtn">
-                    Clear Data
-                </a>
-                <br>
-                <a class="discord" style="display:contents;" href="${i}" target="_blank">
-                    Join The Discord
-                </a>
             </div>
-            <div class="bar themed">
-                <a id="CTCbtn" class="darkbuttons" href="InfiniteContacts.html">
-                    Contact Me
-                </a>
+            <div class="popup-body">
+                <div class="popup-sidebar">
+                    <a class="button account-btn" id="popuplogin" href="${isLoggedInLink}">
+                        ${isLoggedInMsg}
+                    </a>
+                    <div class="tab-list">
+                        <button class="tab-btn active" type="button" data-tab="cloaking">
+                            ${ICON_CLOAK}
+                            <span>
+                                Tab Cloaking
+                            </span>
+                        </button>
+                        <button class="tab-btn" type="button" data-tab="customization">
+                            ${ICON_CUSTOM}
+                            <span>
+                                Customization
+                            </span>
+                        </button>
+                        <button class="tab-btn" type="button" data-tab="advanced">
+                            ${ICON_ADV}
+                            <span>
+                                Advanced
+                            </span>
+                        </button>
+                        <button class="tab-btn" type="button" data-tab="about">
+                            ${ICON_ABOUT}
+                            <span>
+                                About
+                            </span>
+                        </button>
+                    </div>
+                    <a class="button contact-btn-side" href="InfiniteContacts.html">
+                        Contact Me
+                    </a>
+                </div>
+                <div class="popup-content">
+                    <div class="tab-title-bar" id="tabTitleBar">
+                        Tab Cloaking
+                    </div>
+                    <div class="tab-panes-wrapper">
+                        <div class="tab-pane active" id="tab-cloaking">
+                            <div class="section">
+                                <div class="field-group">
+                                    <input class="button" type="text" id="titleInput" placeholder="Page Title" value="${savedTitle}">
+                                    <div class="row-actions">
+                                        <button id="saveTitleBtn" class="button">
+                                            Save
+                                        </button>
+                                        <button id="resetTitleBtn" class="button">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label id="fLabel" for="faviconInput" class="button">
+                                        Favicon Image
+                                    </label>
+                                    <input type="file" class="button" id="faviconInput" accept="image/*" hidden>
+                                    <img id="faviconPreview" class="preview-img ${savedFavicon ? 'show' : ''}" src="${savedFavicon}">
+                                    <div class="row-actions">
+                                        <button class="button" id="setFaviconBtn">
+                                            Save
+                                        </button>
+                                        <button class="button" id="resetFaviconBtn">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field-group" style="display:flex; flex-direction:column; align-items:center;">
+                                    <input id="panicKeyInput" class="button" placeholder="Panic Key" readonly>
+                                    <input id="panicUrlInput" class="button" placeholder="Set Panic URL">
+                                    <div class="row-actions">
+                                        <button id="savePanicBtn" class="button">
+                                            Save
+                                        </button>
+                                        <button id="clearPanicBtn" class="button">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="section" style="justify-content:center">
+                                <a class="button" href="InfiniteApps.html?blank=true">
+                                    Open In About:Blank
+                                </a>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tab-customization">
+                            <div class="setting-row weather-switch">
+                                <label>
+                                    More Accurate Weather
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="betterWeatherToggle" ${betterWeatherState ? 'checked' : ''}>
+                                    <span class="slider">
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="setting-row">
+                                <label>
+                                    Show Clock Bar
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="clockBarToggle" ${showClockBarState ? 'checked' : ''}>
+                                    <span class="slider">
+                                    </span>
+                                </label>
+                            </div>
+                            <hr>
+                            <div class="section">
+                                <div class="field-group">
+                                    <label id="bgLabel" for="bgInput" class="button">
+                                        Background Image
+                                    </label>
+                                    <input type="file" class="button" id="bgInput" accept="image/*" hidden>
+                                    <div id="bgPreview" class="preview-img-bg ${savedBackground ? 'show' : ''}" style="${savedBackground ? `background-image:url('${savedBackground}')` : ''}"></div>
+                                    <div class="row-actions">
+                                        <button class="button" id="setBgBtn">
+                                            Save
+                                        </button>
+                                        <button class="button" id="resetBgBtn">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <input class="button" type="text" id="fontInput" placeholder="Google Font Name" value="${savedFont}">
+                                    <div class="row-actions">
+                                        <button id="applyFontBtn" class="button">
+                                            Save
+                                        </button>
+                                        <button id="resetFontBtn" class="button">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label id="fontFileLabel" for="fontFileInput" class="button">
+                                        Import .woff2 Font
+                                    </label>
+                                    <input type="file" class="button" id="fontFileInput" accept=".woff2" hidden>
+                                    <span id="fontFileName" class="theme-name"></span>
+                                    <div class="row-actions">
+                                        <button id="resetFontFileBtn" class="button">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="button" id="toggleSnowBtn">
+                                Toggle Snow
+                            </button>
+                            <hr>
+                            <div class="section" style="flex-direction:column; align-items:center;">
+                                <div class="field-group theme-option-group" id="solidColorGroup">
+                                    <label class="theme-section-label">Solid Color <span class="option-check">${ICON_CHECK}</span></label>
+                                    <input type="color" class="button" id="colorInput" title="Pick A Solid Header Color">
+                                </div>
+                                <div class="field-group theme-option-group" id="gradientColorGroup">
+                                    <label class="theme-section-label">
+                                        Custom Gradient 
+                                        <span class="option-check">
+                                            ${ICON_CHECK}
+                                        </span>
+                                    </label>
+                                    <div class="row-actions">
+                                        <input type="color" class="button" id="gradientLeft" title="Left Gradient Color">
+                                        <input type="color" class="button" id="gradientRight" title="Right Gradient Color">
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label class="theme-section-label">
+                                        Preset Themes
+                                    </label>
+                                    <div class="theme-grid" id="themeGrid">
+                                        ${themeGridHTML}
+                                    </div>
+                                </div>
+                                <button class="button" id="resetColors">
+                                    Reset Theme
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tab-advanced">
+                            <div class="section">
+                                <div class="field-group">
+                                    <input id="backendUrlInput" class="button" placeholder="Backend URL" value="${localStorage.getItem('backendUrl') || ''}">
+                                    <div class="row-actions">
+                                        <button id="saveBackendBtn" class="button">
+                                            Save
+                                        </button>
+                                        <button id="resetBackendBtn" class="button">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <a class="button" id="resetAllBtn">
+                                Clear Data
+                            </a>
+                        </div>
+                        <div class="tab-pane" id="tab-about">
+                            <div class="section" style="justify-content:center">
+                                <a class="button" href="InfiniteChatters.html?channel=Suggestions">
+                                    Suggest A Feature
+                                </a>
+                                <a class="discord button" href="${i}" target="_blank">
+                                    Join The Discord
+                                </a>
+                                <a class="button" href="InfiniteDonaters.html">
+                                    Help Support By Donating
+                                </a>
+                            </div>
+                            <hr>
+                            <p class="btxt" style="text-align:left">
+                                Credits
+                            </p>
+                            <div class="credits">
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Hacker41
+                                    </span>
+                                    <span class="credit-role">
+                                        Owner & Developer
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        F3intl
+                                    </span>
+                                    <span class="credit-role">
+                                        Co-Owner
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Kaiden
+                                    </span>
+                                    <span class="credit-role">
+                                        Co-Owner
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Yoyomaster95
+                                    </span>
+                                    <span class="credit-role">
+                                        Co-Owner
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Nitrix67
+                                    </span>
+                                    <span class="credit-role">
+                                        Head-Admin
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Gmacbride
+                                    </span>
+                                    <span class="credit-role">
+                                        Developer
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Breeezyy
+                                    </span>
+                                    <span class="credit-role">
+                                        Admin
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Kid
+                                    </span>
+                                    <span class="credit-role">
+                                        Admin
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        WalmartQuagmire
+                                    </span>
+                                    <span class="credit-role">
+                                        Admin
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Scramjet
+                                    </span>
+                                    <span class="credit-role">
+                                        Proxy Engine
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        GN-Math
+                                    </span>
+                                    <span class="credit-role">
+                                        Games Source
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="settings-button themed" id="trigger">
@@ -291,6 +537,248 @@ window.addEventListener('DOMContentLoaded', () => {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = popupHTML;
     document.body.appendChild(wrapper);
+    const tabBtns = wrapper.querySelectorAll('.tab-btn');
+    const tabPanes = wrapper.querySelectorAll('.tab-pane');
+    const tabTitleBar = document.getElementById('tabTitleBar');
+    tabBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach((b) => b.classList.remove('active'));
+            tabPanes.forEach((p) => p.classList.remove('active'));
+            btn.classList.add('active');
+            const target = wrapper.querySelector(`#tab-${btn.dataset.tab}`);
+            if (target) target.classList.add('active');
+            if (tabTitleBar) {
+                const label = btn.querySelector('span');
+                tabTitleBar.textContent = label ? label.textContent : '';
+            }
+        });
+    });
+    function updateFont(fontName) {
+        const existingLink = document.getElementById('customFontLink');
+        if (existingLink) existingLink.remove();
+        if (fontName) {
+            const link = document.createElement('link');
+            link.id = 'customFontLink';
+            link.rel = 'stylesheet';
+            link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName).replace(/%20/g, '+')}&display=swap`;
+            document.head.appendChild(link);
+            document.body.style.fontFamily = `'${fontName}', sans-serif`;
+        } else {
+            document.body.style.fontFamily = '';
+        }
+    }
+    if (savedFont) updateFont(savedFont);
+    const fontInput = document.getElementById('fontInput');
+    const applyFontBtn = document.getElementById('applyFontBtn');
+    const resetFontBtn = document.getElementById('resetFontBtn');
+    if (applyFontBtn) {
+        applyFontBtn.addEventListener('click', () => {
+            const fontName = fontInput.value.trim();
+            if (!fontName) {
+                showError('Please Enter A Valid Font Name');
+                return;
+            }
+            localStorage.setItem('customFont', fontName);
+            updateFont(fontName);
+            if (uploadedFontFace) {
+                try { document.fonts.delete(uploadedFontFace); } catch (e) {}
+                uploadedFontFace = null;
+            }
+            deleteFontFileFromDB().catch(() => {});
+            const fFileInput = document.getElementById('fontFileInput');
+            const fFileName = document.getElementById('fontFileName');
+            const fFileLabel = document.getElementById('fontFileLabel');
+            if (fFileInput) fFileInput.value = '';
+            if (fFileName) fFileName.textContent = '';
+            if (fFileLabel) fFileLabel.style.display = '';
+            showSuccess(`Font Set To "${fontName}"`);
+        });
+    }
+    if (resetFontBtn) {
+        resetFontBtn.addEventListener('click', () => {
+            localStorage.removeItem('customFont');
+            fontInput.value = '';
+            updateFont('');
+            showSuccess('Font Reset To Default');
+        });
+    }
+    const FONT_DB_NAME = 'customFontFilesDB';
+    const FONT_STORE_NAME = 'fonts';
+    const FONT_DB_KEY = 'customFontFile';
+    function openFontDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(FONT_DB_NAME, 1);
+            req.onupgradeneeded = () => {
+                if (!req.result.objectStoreNames.contains(FONT_STORE_NAME)) {
+                    req.result.createObjectStore(FONT_STORE_NAME);
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+    async function saveFontFileToDB(name, buffer) {
+        const db = await openFontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(FONT_STORE_NAME, 'readwrite');
+            tx.objectStore(FONT_STORE_NAME).put({ name, buffer }, FONT_DB_KEY);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+    async function loadFontFileFromDB() {
+        const db = await openFontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(FONT_STORE_NAME, 'readonly');
+            const req = tx.objectStore(FONT_STORE_NAME).get(FONT_DB_KEY);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+        });
+    }
+    async function deleteFontFileFromDB() {
+        const db = await openFontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(FONT_STORE_NAME, 'readwrite');
+            tx.objectStore(FONT_STORE_NAME).delete(FONT_DB_KEY);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+    let uploadedFontFace = null;
+    async function applyFontFile(buffer) {
+        if (uploadedFontFace) {
+            try { document.fonts.delete(uploadedFontFace); } catch (e) {}
+        }
+        const fontFace = new FontFace('CustomUploadedFont', buffer);
+        await fontFace.load();
+        document.fonts.add(fontFace);
+        uploadedFontFace = fontFace;
+        const existingLink = document.getElementById('customFontLink');
+        if (existingLink) existingLink.remove();
+        document.body.style.fontFamily = "'CustomUploadedFont', sans-serif";
+    }
+    const fontFileInput = document.getElementById('fontFileInput');
+    const fontFileLabel = document.getElementById('fontFileLabel');
+    const fontFileName = document.getElementById('fontFileName');
+    const resetFontFileBtn = document.getElementById('resetFontFileBtn');
+    (async () => {
+        try {
+            const stored = await loadFontFileFromDB();
+            if (stored && stored.buffer) {
+                await applyFontFile(stored.buffer);
+                if (fontFileName) fontFileName.textContent = stored.name || '';
+                if (fontFileLabel) fontFileLabel.style.display = 'none';
+            }
+        } catch (err) {
+            console.warn('Could Not Load Stored Font File:', err);
+        }
+    })();
+    if (fontFileInput) {
+        fontFileInput.addEventListener('change', async () => {
+            const file = fontFileInput.files[0];
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.woff2')) {
+                showError('Please Select A .woff2 Font File');
+                return;
+            }
+            try {
+                const buffer = await file.arrayBuffer();
+                await applyFontFile(buffer);
+                await saveFontFileToDB(file.name, buffer);
+                localStorage.removeItem('customFont');
+                if (fontInput) fontInput.value = '';
+                if (fontFileName) fontFileName.textContent = file.name;
+                if (fontFileLabel) fontFileLabel.style.display = 'none';
+                showSuccess(`Font File "${file.name}" Applied`);
+            } catch (err) {
+                console.error('Failed To Load Font File:', err);
+                showError('Failed To Load Font File');
+            }
+        });
+    }
+    if (resetFontFileBtn) {
+        resetFontFileBtn.addEventListener('click', async () => {
+            try {
+                await deleteFontFileFromDB();
+            } catch (err) {
+                console.warn('Could Not Clear Stored Font File:', err);
+            }
+            if (uploadedFontFace) {
+                try { document.fonts.delete(uploadedFontFace); } catch (e) {}
+                uploadedFontFace = null;
+            }
+            document.body.style.fontFamily = '';
+            if (fontFileInput) fontFileInput.value = '';
+            if (fontFileName) fontFileName.textContent = '';
+            if (fontFileLabel) fontFileLabel.style.display = '';
+            showSuccess('Custom Font File Reset');
+            const gFont = localStorage.getItem('customFont');
+            if (gFont) updateFont(gFont);
+        });
+    }
+    const themeItems = wrapper.querySelectorAll('.theme-item');
+    const solidColorGroup = document.getElementById('solidColorGroup');
+    const gradientColorGroup = document.getElementById('gradientColorGroup');
+    function clearThemeSelection() {
+        themeItems.forEach((item) => {
+            const swatch = item.querySelector('.theme-swatch');
+            if (swatch) swatch.classList.remove('selected');
+        });
+    }
+    function clearCustomOptionSelection() {
+        solidColorGroup?.classList.remove('selected');
+        gradientColorGroup?.classList.remove('selected');
+    }
+    function markThemeSelected(key) {
+        clearThemeSelection();
+        clearCustomOptionSelection();
+        if (!key) return;
+        const match = wrapper.querySelector(`.theme-item[data-theme="${key}"] .theme-swatch`);
+        if (match) match.classList.add('selected');
+    }
+    function markSolidColorSelected() {
+        clearThemeSelection();
+        gradientColorGroup?.classList.remove('selected');
+        solidColorGroup?.classList.add('selected');
+    }
+    function markGradientSelected() {
+        clearThemeSelection();
+        solidColorGroup?.classList.remove('selected');
+        gradientColorGroup?.classList.add('selected');
+    }
+    const initialTheme = localStorage.getItem('useGradient');
+    const initialFlat = localStorage.getItem('headerColor');
+    if (initialTheme && initialTheme !== 'custom') {
+        markThemeSelected(initialTheme);
+    } else if (initialTheme === 'custom') {
+        markGradientSelected();
+    } else if (initialFlat) {
+        markSolidColorSelected();
+    }
+    themeItems.forEach((item) => {
+        item.addEventListener('click', () => {
+            const key = item.dataset.theme;
+            ['gradientLeft', 'gradientRight', 'headerColor'].forEach((k) => localStorage.removeItem(k));
+            localStorage.setItem('useGradient', key);
+            if (typeof window.applyTheme === 'function') {
+                window.applyTheme('#000000', key);
+            }
+            markThemeSelected(key);
+            const nameEl = item.querySelector('.theme-name');
+            showSuccess(`Theme Set To "${nameEl ? nameEl.textContent : key}"`);
+        });
+    });
+    const colorInputEl = document.getElementById('colorInput');
+    const gradientLeftEl = document.getElementById('gradientLeft');
+    const gradientRightEl = document.getElementById('gradientRight');
+    colorInputEl?.addEventListener('input', markSolidColorSelected);
+    gradientLeftEl?.addEventListener('input', markGradientSelected);
+    gradientRightEl?.addEventListener('input', markGradientSelected);
+    const resetColorsBtn = document.getElementById('resetColors');
+    resetColorsBtn?.addEventListener('click', () => {
+        clearThemeSelection();
+        clearCustomOptionSelection();
+    });
     const backendUrlInput = document.getElementById('backendUrlInput');
     const saveBackendBtn = document.getElementById('saveBackendBtn');
     const resetBackendBtn = document.getElementById('resetBackendBtn');
@@ -428,23 +916,43 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const button = document.getElementById('trigger');
     const popup = document.getElementById('popup');
+    const popupBackdrop = document.getElementById('popupBackdrop');
+    const popupClose = document.getElementById('popupClose');
+    function openPopup() {
+        popup.classList.add('shows');
+        if (popupBackdrop) popupBackdrop.classList.add('shows');
+        button.classList.add('actives');
+    }
+    function closePopup() {
+        popup.classList.remove('shows');
+        if (popupBackdrop) popupBackdrop.classList.remove('shows');
+        button.classList.remove('actives');
+    }
     if (button && popup) {
         button.addEventListener('click', (e) => {
             e.stopPropagation();
             const isOpen = popup.classList.contains('shows');
-            popup.classList.toggle('shows');
-            button.classList.toggle('actives', !isOpen);
+            isOpen ? closePopup() : openPopup();
         });
+        if (popupClose) {
+            popupClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closePopup();
+            });
+        }
+        if (popupBackdrop) {
+            popupBackdrop.addEventListener('click', () => {
+                closePopup();
+            });
+        }
         document.addEventListener('click', (e) => {
             if (!popup.contains(e.target) && !button.contains(e.target)) {
-                popup.classList.remove('shows');
-                button.classList.remove('actives');
+                closePopup();
             }
         });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                popup.classList.remove('shows');
-                button.classList.remove('actives');
+                closePopup();
             }
         });
     }
