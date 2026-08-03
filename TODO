@@ -1,20 +1,18 @@
 TODO
-    add ability to upload subtitles for movie from site in admin panel
-    add ability to delete movies from site in admin movie panel
-    fix private chat media uploads
-    fix group chat media uploads
-    
+    add chat spam protection
+    push discord server more
+    2: allow for snow to be on themes when themes selected
+    allow custom fonts
+    allow for exporting of data and importing of data & playlists
+
+
     Header Stuff:
         Replace Contact Me Button With My Account Button
 
     Settings:
         Have One Settings Page Like Nettleweb With Customization Options
 
-    Website Chat:
-        Need To Do:
-            Add Group Chats:
-                Make It So Only People Inside Of Group Chats Can Be Mentioned Inside Of Them
-            
+    Website Chat:            
         Might Do:
             Map Discord Roles To Website Roles To Allow Deleting Of Discord Messages From Website:
                 Allow Users With Owner Role To Delete All Discord Messages
@@ -24,6 +22,5 @@ TODO
             Fix Discord Channel Mentions In Chat
     The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
         Here Are The Steps To Do So:
-            Allow Deleting Movies From Site
             Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
             Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)

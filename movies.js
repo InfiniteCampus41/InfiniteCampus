@@ -235,7 +235,7 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
         movieDiv.style.borderRadius = "12px";
         movieDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
         movieDiv.innerHTML = `
-            <img src="${v.cover || ""}" alt="${v.name} Cover" style="height:300px;width:200px;border-radius:12px;position:absolute;z-index:3;display:flex;" />
+            <img src="${v.proxiedthumb ? BACKEND + v.proxiedthumb : (v.cover || "")}" alt="${v.name} Cover" style="height:300px;width:200px;border-radius:12px;position:absolute;z-index:3;display:flex;" />
             <div class="movie-actions" style="height:100%;width:100%;opacity:0;pointer-events:none;position:absolute;z-index:4;display:flex;flex-direction:column;transition:opacity 0.3s ease;">
                 <div style="top:0px;position:absolute;width:100%;justify-content:center;align-items:center;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;flex-direction:column;border-top-left-radius:12px;border-top-right-radius:12px;">
                     <span style="display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;">

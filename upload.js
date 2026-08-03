@@ -111,7 +111,7 @@ if (fileParam) {
     appDiv.innerHTML = `
         <center>
             <h2 class="tptxt">
-                Upload A File And Get A 5 Minute Download Link
+                Upload A File And Get A 10 Minute Download Link
             </h2>
             <br>
             <hr>
