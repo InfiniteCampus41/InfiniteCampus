@@ -5,7 +5,6 @@ TODO
                 Allow Users With Owner Role To Delete All Discord Messages
                 Allow Co Owners To Delete Messages Sent By Lower Roles
             Allow Deleting Of Your Discord Messages If Your Account And Discord Are Connected
-            Fix Discord Username Mentions In Chat
             Fix Discord Channel Mentions In Chat
     The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
         Here Are The Steps To Do So:

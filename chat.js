@@ -776,6 +776,45 @@ async function processChannelMentions(htmlText) {
         }
     });
 }
+const discordUserLookupCache = {};
+const discordUserLookupPending = {};
+async function resolveDiscordUserIds(ids) {
+    const toFetch = ids.filter(id => !(id in discordUserLookupCache) && !(id in discordUserLookupPending));
+    if (toFetch.length) {
+        const promise = (async () => {
+            try {
+                const res = await fetch(`${BACKEND}/discord-user-lookup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ids: toFetch })
+                });
+                const json = await res.json().catch(() => ({}));
+                for (const id of toFetch) {
+                    discordUserLookupCache[id] = (res.ok && json?.users) ? (json.users[id] || null) : null;
+                }
+            } catch {
+                for (const id of toFetch) discordUserLookupCache[id] = null;
+            } finally {
+                for (const id of toFetch) delete discordUserLookupPending[id];
+            }
+        })();
+        toFetch.forEach(id => { discordUserLookupPending[id] = promise; });
+    }
+    const waitFor = ids.map(id => discordUserLookupPending[id]).filter(Boolean);
+    if (waitFor.length) await Promise.all([...new Set(waitFor)]);
+}
+async function processDiscordMentions(htmlText) {
+    if (!htmlText || htmlText.indexOf("&lt;@") === -1) return htmlText;
+    const mentionRegex = /&lt;@!?(\d{5,25})&gt;/g;
+    const ids = [...new Set([...htmlText.matchAll(mentionRegex)].map(m => m[1]))];
+    if (!ids.length) return htmlText;
+    await resolveDiscordUserIds(ids);
+    return htmlText.replace(mentionRegex, (match, id) => {
+        const username = discordUserLookupCache[id];
+        if (!username) return match;
+        return `<span class="mention discord-mention" data-discord-id="${id}" title="Discord User">@${username}</span>`;
+    });
+}
 function clearChannelMention(channelName) {
     channelMentionSet.delete(channelName);
     const lis = channelList.querySelectorAll("li");
@@ -890,6 +929,7 @@ async function renderMessageInstant(id, msg) {
     async function buildRichText(raw, textDivEl) {
         let safe = buildSafeText(raw);
         safe = await processChannelMentions(safe);
+        safe = await processDiscordMentions(safe);
         textDivEl.innerHTML = safe;
         textDivEl.querySelectorAll("discord-embed-b64").forEach(el => {            
             try {
@@ -1843,6 +1883,7 @@ async function attachMessageListeners(path) {
                 const editedSpan = existing.querySelector(".edited-label");
                 if (textDiv) {
                     let safeText = buildSafeText(val.t || val.text);
+                    safeText = await processDiscordMentions(safeText);
                     textDiv.innerHTML = safeText;
                     if (editedSpan) editedSpan.textContent = (val.e || val.edited) ? "(Edited)" : "";
                 }
@@ -3645,7 +3686,8 @@ async function pollGroupOnce(groupId, isInitialLoad) {
             if (existing) {
                 const textDiv = existing.querySelector(".msg-text");
                 if (textDiv && msg.t !== undefined) {
-                    const currentSafe = buildSafeText(msg.t);
+                    let currentSafe = buildSafeText(msg.t);
+                    currentSafe = await processDiscordMentions(currentSafe);
                     if (textDiv.dataset.rawText !== msg.t) {
                         textDiv.innerHTML = currentSafe;
                         textDiv.dataset.rawText = msg.t;
