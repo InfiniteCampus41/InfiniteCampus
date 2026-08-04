@@ -1599,16 +1599,13 @@ main {
         padding: 6px 0;
     }
 }
-@media (max-width: 560px) {
-    .popup2 {
-        width: 96vw;
-        height: 90vh;
-    }
-    .popup2 .popup-sidebar {
-        width: 130px;
+@media (max-width: 380px) {
+    .popup2 .tab-btn {
+        min-width: 44px;
+        padding: 10px;
     }
     .popup2 .tab-btn span {
-        font-size: 0.95em;
+        display: none;
     }
 }
 @media (max-width: 640px) {
@@ -1624,6 +1621,131 @@ main {
     }
 }
 @media (max-width: 700px) {
+    .popup2 {
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        transform: none !important;
+        border-radius: 0 !important;
+    }
+    .popup2 .account-btn, .popup2 .contact-btn-side {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+        padding: 8px 12px !important;
+    }
+    .popup2 #clockBar {
+        display: none !important;
+    }
+    .popup2 .credits-row {
+        flex-wrap: wrap !important;
+    }
+    .popup2 .field-group {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 5px !important;
+        margin-bottom: 8px !important;
+    }
+    .popup2 input, .popup2 .section button, .popup2 .section a:not(.discord), #fLabel {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+        padding: 11px 8px !important;
+        font-size: 0.95em !important;
+    }
+    .popup2 .popup-body {
+        flex-direction: column !important;
+    }
+    .popup2 .popup-close {
+        font-size: 24px !important;
+        padding: 8px 12px !important;
+    }
+    .popup2 .popup-header {
+        height: 48px !important;
+        padding: 0 6px 0 14px !important;
+    }
+    .popup2 .popup-header h3 {
+        font-size: 0.95em !important;
+    }
+    .popup2 .popup-content {
+        padding: 14px !important;
+        text-align: left !important;
+    }
+    .popup2 .popup-sidebar {
+        width: 100% !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 8px 10px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+        scrollbar-width: thin !important;
+    }
+    .popup2 .popup-sidebar::-webkit-scrollbar {
+        height: 4px !important;
+    }
+    .popup2 .preview-img-bg {
+        height: 120px !important;
+    }
+    .popup2 .row-actions {
+        display: flex !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+    .popup2 .row-actions .button {
+        flex: 1 !important;
+        margin: 0 !important;
+    }
+    .popup2 .section {
+        justify-content: stretch !important;
+    }
+    .popup2 .setting-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 12px 2px !important;
+        gap: 10px !important;
+    }
+    .popup2.shows {
+        transform: none !important;
+    }
+    .popup2 .tab-btn {
+        flex-direction: column !important;
+        gap: 3px !important;
+        padding: 8px 12px !important;
+        min-width: 62px !important;
+        min-height: 44px !important;
+        justify-content: center !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+    }
+    .popup2 .tab-btn span {
+        font-size: 0.72em !important;
+    }
+    .popup2 .tab-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+    .popup2 .tab-list {
+        flex-direction: row !important;
+        flex: 0 0 auto !important;
+        gap: 6px !important;
+    }
+    .popup2 .tab-title-bar {
+        margin: -14px -14px 12px -14px !important;
+        text-align: center !important;
+    }
+    .popup2 .theme-grid {
+        justify-content: center !important;
+        gap: 10px !important;
+    }
     .sp-ctrl {
         width: 34px;
         height: 34px;
@@ -2681,6 +2803,9 @@ main {
     border-bottom: 1px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.3);
     flex-shrink: 0;
+}
+.popup2 .weather-switch {
+    display: flex !important;
 }
 pre code {
     font-size:.75em !important;

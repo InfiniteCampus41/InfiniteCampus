@@ -427,11 +427,6 @@ window.addEventListener('DOMContentLoaded', () => {
                                 <p class="btxt" style="text-align:center">
                                     Export A Backup Of All Your Local Data Including Settings, Playlists, And Login Data Or Import A Previously Exported Backup.
                                 </p>
-                                <strong>
-                                    <p class="r">
-                                        WARNING: Do Not Share This File With Another User, As It Will Allow Them To Access Your Account And Data.
-                                    </p>
-                                </strong>
                                 <div class="row-actions">
                                     <button class="button" id="exportDataBtn">
                                         Export Data
@@ -443,7 +438,17 @@ window.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <span id="dataStatus" class="theme-name">
                                 </span>
+                                <hr style="width:75%;">
+                                <div style="position:relative; display:inline-block;">
+                                    <span class="r" style="display:block; font-size:0.8em; text-align:center; margin-bottom:2px;">
+                                        WARNING: Contains Your Login Data
+                                    </span>
+                                    <button class="button" id="exportDataFullBtn">
+                                        Export Data (Full)
+                                    </button>
+                                </div>
                                 <br>
+                                <hr style="width:75%;">
                                 <a class="button" id="resetAllBtn">
                                     Clear Data
                                 </a>
@@ -978,7 +983,7 @@ window.addEventListener('DOMContentLoaded', () => {
         db.close();
         return result;
     }
-    async function exportAllData() {
+    async function exportAllData(includeFirebase = true) {
         const data = {
             exportedAt: new Date().toISOString(),
             localStorage: {},
@@ -997,6 +1002,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const dbs = await indexedDB.databases();
             for (const dbInfo of dbs) {
                 if (!dbInfo.name) continue;
+                if (!includeFirebase && dbInfo.name.toLowerCase().startsWith('firebase')) continue;
                 try {
                     data.indexedDB[dbInfo.name] = await exportIndexedDBDatabase(dbInfo.name);
                 } catch (err) {
@@ -1086,13 +1092,14 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     const exportDataBtn = document.getElementById('exportDataBtn');
+    const exportDataFullBtn = document.getElementById('exportDataFullBtn');
     const importDataInput = document.getElementById('importDataInput');
     const dataStatus = document.getElementById('dataStatus');
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', async () => {
             try {
                 if (dataStatus) dataStatus.textContent = 'Exporting...';
-                await exportAllData();
+                await exportAllData(false);
                 if (dataStatus) dataStatus.textContent = '';
                 showSuccess('Data Exported Successfully');
             } catch (err) {
@@ -1100,6 +1107,23 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('Export Failed:', err);
                 showError('Failed To Export Data');
             }
+        });
+    }
+    if (exportDataFullBtn) {
+        exportDataFullBtn.addEventListener('click', async () => {
+            showConfirm('This Export Will Include Your Login Data (Firebase). Do Not Share This File With Anyone. Continue?', async (confirmed) => {
+                if (!confirmed) return;
+                try {
+                    if (dataStatus) dataStatus.textContent = 'Exporting...';
+                    await exportAllData(true);
+                    if (dataStatus) dataStatus.textContent = '';
+                    showSuccess('Data Exported Successfully');
+                } catch (err) {
+                    if (dataStatus) dataStatus.textContent = '';
+                    console.error('Export Failed:', err);
+                    showError('Failed To Export Data');
+                }
+            });
         });
     }
     if (importDataInput) {
