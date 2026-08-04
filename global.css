@@ -1549,7 +1549,7 @@ input[type="range"]::-webkit-slider-thumb {
     transition:0.3s all;
 }
 #logo:hover, #toggle:hover, .dropdown-toggle:hover, #header-right a:hover,
-.popup2 input:hover, .popup2 a:hover, #fLabel:hover,
+.popup2 input:hover, .popup2 a:hover:not(.mini-profile-btn), #fLabel:hover,
 .button:hover {
     filter:invert(0.9);
 }
@@ -2243,6 +2243,35 @@ main {
 .meta span:not(#person span) {
     width:100%;
 }
+.mini-profile-btn {
+    display:flex;
+    align-items:center;
+    flex-direction: row;
+    gap:6px;
+    background:black;
+    border:1px solid #444;
+    border-radius:7px;
+    padding:3px;
+    transition:all 0.3s;
+    color:white;
+}
+.mini-profile-btn:hover {
+    background:white;
+    color:black;
+}
+.mini-profile-edit {
+    margin-bottom:0px !important;
+    text-align:left;
+    font-size:0.9em;
+}
+.mini-profile-pic {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+}
+.mini-profile-username {
+    font-weight:bold;
+}
 #minute {
     width: 120px;
     height: 4px;
@@ -2803,9 +2832,6 @@ main {
     border-bottom: 1px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.3);
     flex-shrink: 0;
-}
-.popup2 .weather-switch {
-    display: flex !important;
 }
 pre code {
     font-size:.75em !important;

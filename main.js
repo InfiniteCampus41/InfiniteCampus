@@ -510,7 +510,7 @@ function initSettingsUI(apply) {
     }
     function applyTheme(colOrLeft, gradientSetting = null) {
             document.querySelectorAll('.themed').forEach(div => {
-            div.style.animation = 'none !important';
+            div.style.animation = 'none';
         });
         let bg = colOrLeft;
         let isDark = isDarkColor(colOrLeft);

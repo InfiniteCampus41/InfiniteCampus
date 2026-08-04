@@ -1,6 +1,7 @@
 import { auth, onAuthStateChanged } from "./imports.js";
 let authReady = false;
 let isLoggedInMsg = "Login";
+let isLoggedInClass = "button";
 let isLoggedInLink = "/InfiniteLogins.html";
 const DEFAULT_BACKEND = a;
 let BACKEND = localStorage.getItem('backendUrl') || DEFAULT_BACKEND;
@@ -9,6 +10,7 @@ const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         isLoggedInMsg = "My Account";
+        isLoggedInClass = ""
         isLoggedInLink = "/InfiniteAccounts.html"; 
         authReady = true;
         resolve(user);
@@ -49,14 +51,48 @@ async function dbSet(path, value) {
         value
     });
 }
+let pfpDomain = "/pfps";
+if (!(e.includes(window.location.host))) {
+    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps";
+}
+let profileImages = [];
+async function loadProfileImages() {
+    try {
+        const res = await fetch(`${pfpDomain}/index.json`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const files = await res.json();
+        return files.map(f => `${pfpDomain}/` + f);
+    } catch (e) {
+        console.error("Failed To Load Profile Images:", e);
+        return [`${pfpDomain}/1.jpeg`];
+    }
+}
+async function resolveProfilePicUrl(picIndex) {
+    try {
+        if (!profileImages || profileImages.length === 0) {
+            profileImages = await loadProfileImages();
+        }
+        const baseUrl = profileImages[picIndex || 0] || profileImages[0] || `${pfpDomain}/1.jpeg`;
+        return baseUrl.split("?")[0];
+    } catch (err) {
+        console.error("Failed To Resolve Profile Picture:", err);
+        return `${pfpDomain}/1.jpeg`;
+    }
+}
+let accountDisplayName = "";
+let accountNameColor = "#ffffff";
+let accountPicUrl = "";
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;   
     try {
-        const [pankey, panurl, title, weather] = await Promise.all([
+        const [pankey, panurl, title, weather, displayName, nameColor, picIndex] = await Promise.all([
             dbGet(`users/${user.uid}/settings/panicKey`),
             dbGet(`users/${user.uid}/settings/panicUrl`),
             dbGet(`users/${user.uid}/settings/pageTitle`),
-            dbGet(`users/${user.uid}/settings/betterWeather`)
+            dbGet(`users/${user.uid}/settings/betterWeather`),
+            dbGet(`users/${user.uid}/profile/displayName`),
+            dbGet(`users/${user.uid}/settings/color`),
+            dbGet(`users/${user.uid}/profile/pic`)
         ]);
         if (pankey) localStorage.setItem('panicKey', pankey);
         if (panurl) localStorage.setItem('panicUrl', panurl);
@@ -64,12 +100,49 @@ onAuthStateChanged(auth, async (user) => {
         if (weather !== undefined) {
             localStorage.setItem('betterWeather', weather ? 'true' : 'false');
         }
+        accountDisplayName = displayName || user.email || "Account";
+        accountNameColor = nameColor || localStorage.getItem('color') || "#ffffff";
+        if (nameColor) localStorage.setItem('color', nameColor);
+        accountPicUrl = await resolveProfilePicUrl(picIndex);
         window.dispatchEvent(new Event("settingsLoaded"));
         applySettingsToUI();
     } catch (error) {
         console.warn("DB load failed:", error);
     }
 });
+function updateAccountButton(el) {
+    if (!el) return;
+    el.href = isLoggedInLink;
+    el.innerHTML = '';
+    if (currentUser) {
+        el.classList.remove('button');
+        el.classList.add('mini-profile-btn');
+        const photoURL = accountPicUrl || `${pfpDomain}/1.jpeg`;
+        const username = accountDisplayName || currentUser.email || 'Account';
+        const nameColor = accountNameColor || '#ffffff';
+        const pic = document.createElement('img');
+        pic.className = 'mini-profile-pic';
+        pic.src = photoURL;
+        pic.alt = '';
+        const info = document.createElement('div');
+        info.className = 'mini-profile-info';
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'mini-profile-username';
+        nameSpan.style.color = nameColor;
+        nameSpan.textContent = username;
+        const editSpan = document.createElement('p');
+        editSpan.className = 'mini-profile-edit';
+        editSpan.innerHTML = '<i class="ic ic-pencil-fill"></i>  Edit Profile';
+        info.appendChild(nameSpan);
+        info.appendChild(editSpan);
+        el.appendChild(pic);
+        el.appendChild(info);
+    } else {
+        el.classList.remove('mini-profile-btn');
+        el.classList.add('button');
+        el.textContent = isLoggedInMsg;
+    }
+}
 function applySettingsToUI() {
     const panicKeyInput = document.getElementById('panicKeyInput');
     const panicUrlInput = document.getElementById('panicUrlInput');
@@ -91,10 +164,7 @@ function applySettingsToUI() {
     const panicKey = localStorage.getItem('panicKey') || '';
     const panicUrl = localStorage.getItem('panicUrl') || '';
     const popuplogin = document.getElementById('popuplogin');
-    if (currentUser) {
-        popuplogin.innerText = isLoggedInMsg;
-        popuplogin.href = isLoggedInLink;
-    }
+    updateAccountButton(popuplogin);
     if (panicKeyInput) {
         panicKeyInput.value = panicKey ? `Key: ${panicKey}` : '';
     }
@@ -219,7 +289,7 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="popup-body">
                 <div class="popup-sidebar">
-                    <a class="button account-btn" id="popuplogin" href="${isLoggedInLink}">
+                    <a class="account-btn ${isLoggedInClass}" id="popuplogin" href="${isLoggedInLink}">
                         ${isLoggedInMsg}
                     </a>
                     <div class="tab-list">
