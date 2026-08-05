@@ -238,6 +238,38 @@ const MAX_REACTIONS_PER_USER = 20;
         .badge-popover:hover {
             display: flex;
         }
+        .mention, .discord-mention, .discord-role-mention, .mention-self {
+            background: rgba(88,101,242,0.15);
+            border-radius: 4px;
+            padding: 0px 3px;
+            font-weight: 500;
+            cursor: default;
+        }
+        .mention-self {
+            background: rgba(250,166,26,0.22);
+            color: #faa61a;
+        }
+        .discord-mention {
+            color: #7289da;
+        }
+        .discord-channel-mention {
+            background: rgba(79,163,255,0.15);
+            border-radius: 4px;
+            padding: 0px 3px;
+            color: #4fa3ff;
+            font-weight: 500;
+            cursor: default;
+        }
+        .channel-mention {
+            cursor: pointer;
+        }
+        .discord-timestamp {
+            background: rgba(255,255,255,0.06);
+            border-radius: 4px;
+            padding: 0px 4px;
+            color: #dcddde;
+            cursor: default;
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -803,17 +835,141 @@ async function resolveDiscordUserIds(ids) {
     const waitFor = ids.map(id => discordUserLookupPending[id]).filter(Boolean);
     if (waitFor.length) await Promise.all([...new Set(waitFor)]);
 }
+const discordChannelLookupCache = {};
+const discordChannelLookupPending = {};
+async function resolveDiscordChannelIds(ids) {
+    const toFetch = ids.filter(id => !(id in discordChannelLookupCache) && !(id in discordChannelLookupPending));
+    if (toFetch.length) {
+        const promise = (async () => {
+            try {
+                const res = await fetch(`${BACKEND}/discord-channel-lookup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ids: toFetch })
+                });
+                const json = await res.json().catch(() => ({}));
+                for (const id of toFetch) {
+                    discordChannelLookupCache[id] = (res.ok && json?.channels) ? (json.channels[id] || null) : null;
+                }
+            } catch {
+                for (const id of toFetch) discordChannelLookupCache[id] = null;
+            } finally {
+                for (const id of toFetch) delete discordChannelLookupPending[id];
+            }
+        })();
+        toFetch.forEach(id => { discordChannelLookupPending[id] = promise; });
+    }
+    const waitFor = ids.map(id => discordChannelLookupPending[id]).filter(Boolean);
+    if (waitFor.length) await Promise.all([...new Set(waitFor)]);
+}
+const discordRoleLookupCache = {};
+const discordRoleLookupPending = {};
+async function resolveDiscordRoleIds(ids) {
+    const toFetch = ids.filter(id => !(id in discordRoleLookupCache) && !(id in discordRoleLookupPending));
+    if (toFetch.length) {
+        const promise = (async () => {
+            try {
+                const res = await fetch(`${BACKEND}/discord-role-lookup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ids: toFetch })
+                });
+                const json = await res.json().catch(() => ({}));
+                for (const id of toFetch) {
+                    discordRoleLookupCache[id] = (res.ok && json?.roles) ? (json.roles[id] || null) : null;
+                }
+            } catch {
+                for (const id of toFetch) discordRoleLookupCache[id] = null;
+            } finally {
+                for (const id of toFetch) delete discordRoleLookupPending[id];
+            }
+        })();
+        toFetch.forEach(id => { discordRoleLookupPending[id] = promise; });
+    }
+    const waitFor = ids.map(id => discordRoleLookupPending[id]).filter(Boolean);
+    if (waitFor.length) await Promise.all([...new Set(waitFor)]);
+}
+function formatDiscordRelativeTime(d) {
+    const diffSec = Math.round((d.getTime() - Date.now()) / 1000);
+    const abs = Math.abs(diffSec);
+    const units = [
+        ["year", 31536000], ["month", 2592000], ["week", 604800],
+        ["day", 86400], ["hour", 3600], ["minute", 60], ["second", 1]
+    ];
+    for (const [name, secs] of units) {
+        if (abs >= secs || name === "second") {
+            const val = Math.round(diffSec / secs);
+            try {
+                return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(val, name);
+            } catch {
+                return d.toLocaleString();
+            }
+        }
+    }
+    return d.toLocaleString();
+}
+function formatDiscordTimestamp(unixSeconds, style) {
+    const d = new Date(unixSeconds * 1000);
+    if (isNaN(d.getTime())) return null;
+    if (style === "R") return formatDiscordRelativeTime(d);
+    const optsByStyle = {
+        t: { hour: "2-digit", minute: "2-digit" },
+        T: { hour: "2-digit", minute: "2-digit", second: "2-digit" },
+        d: { year: "numeric", month: "2-digit", day: "2-digit" },
+        D: { year: "numeric", month: "long", day: "numeric" },
+        f: { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" },
+        F: { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }
+    };
+    const opts = optsByStyle[style] || optsByStyle.f;
+    return d.toLocaleString([], opts);
+}
 async function processDiscordMentions(htmlText) {
-    if (!htmlText || htmlText.indexOf("&lt;@") === -1) return htmlText;
-    const mentionRegex = /&lt;@!?(\d{5,25})&gt;/g;
-    const ids = [...new Set([...htmlText.matchAll(mentionRegex)].map(m => m[1]))];
-    if (!ids.length) return htmlText;
-    await resolveDiscordUserIds(ids);
-    return htmlText.replace(mentionRegex, (match, id) => {
-        const username = discordUserLookupCache[id];
-        if (!username) return match;
-        return `<span class="mention discord-mention" data-discord-id="${id}" title="Discord User">@${username}</span>`;
-    });
+    if (!htmlText) return htmlText;
+    if (htmlText.indexOf("&lt;@") !== -1) {
+        const roleMentionRegex = /&lt;@&amp;(\d{5,25})&gt;/g;
+        const roleIds = [...new Set([...htmlText.matchAll(roleMentionRegex)].map(m => m[1]))];
+        if (roleIds.length) {
+            await resolveDiscordRoleIds(roleIds);
+            htmlText = htmlText.replace(roleMentionRegex, (match, id) => {
+                const role = discordRoleLookupCache[id];
+                if (!role) return match;
+                const color = role.color ? `#${Number(role.color).toString(16).padStart(6, "0")}` : "#5865F2";
+                return `<span class="mention discord-role-mention" data-discord-role-id="${id}" style="color:${color};" title="Discord Role">@${role.name}</span>`;
+            });
+        }
+        const userMentionRegex = /&lt;@!?(\d{5,25})&gt;/g;
+        const userIds = [...new Set([...htmlText.matchAll(userMentionRegex)].map(m => m[1]))];
+        if (userIds.length) {
+            await resolveDiscordUserIds(userIds);
+            htmlText = htmlText.replace(userMentionRegex, (match, id) => {
+                const username = discordUserLookupCache[id];
+                if (!username) return match;
+                return `<span class="mention discord-mention" data-discord-id="${id}" title="Discord User">@${username}</span>`;
+            });
+        }
+    }
+    if (htmlText.indexOf("&lt;#") !== -1) {
+        const channelMentionRegex = /&lt;#(\d{5,25})&gt;/g;
+        const channelIds = [...new Set([...htmlText.matchAll(channelMentionRegex)].map(m => m[1]))];
+        if (channelIds.length) {
+            await resolveDiscordChannelIds(channelIds);
+            htmlText = htmlText.replace(channelMentionRegex, (match, id) => {
+                const ch = discordChannelLookupCache[id];
+                if (!ch || !ch.name) return match;
+                return `<span class="mention discord-channel-mention" data-discord-channel-id="${id}" title="Discord Channel">#${ch.name}</span>`;
+            });
+        }
+    }
+    if (htmlText.indexOf("&lt;t:") !== -1) {
+        const timestampRegex = /&lt;t:(-?\d+)(?::([tTdDfFR]))?&gt;/g;
+        htmlText = htmlText.replace(timestampRegex, (match, unix, style) => {
+            const display = formatDiscordTimestamp(Number(unix), style || "f");
+            if (!display) return match;
+            const fullDate = new Date(Number(unix) * 1000).toLocaleString();
+            return `<span class="discord-timestamp" title="${fullDate}">${display}</span>`;
+        });
+    }
+    return htmlText;
 }
 function clearChannelMention(channelName) {
     channelMentionSet.delete(channelName);
@@ -1698,6 +1854,9 @@ function buildSafeText(raw) {
         const lower = name.toLowerCase();
         if (lower === "support" && currentPath && currentPath.startsWith("messages/") && (isDev || isOwner || isTester)) {
             return `<span class="mention-self">@support</span>`;
+        }
+        if (lower === "everyone" || lower === "here") {
+            return `<span class="mention discord-role-mention" title="Discord ${lower === "everyone" ? "Everyone" : "Here"} Mention">@${name}</span>`;
         }
         const cleanLower = lower.replace(/ 💎/g, "");
         const isKnownUser = knownUserDisplayNames.has(cleanLower) || knownUserDisplayNames.has(lower);

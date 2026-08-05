@@ -5,11 +5,7 @@ TODO
                 Allow Users With Owner Role To Delete All Discord Messages
                 Allow Co Owners To Delete Messages Sent By Lower Roles
             Allow Deleting Of Your Discord Messages If Your Account And Discord Are Connected
-            Fix Discord Channel Mentions In Chat
     The Final Goal Is To Be Able To Make It So I Dont Have To Edit The Code Of The Site To Edit Stuff Around The Site
         Here Are The Steps To Do So:
             Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
             Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
-
-2: encrypt proxy urls
-3: fix discord channel mentions
