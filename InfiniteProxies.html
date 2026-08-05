@@ -65,11 +65,30 @@
                             <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden"/>
                             <input id="sj-address" type="text" placeholder="Search Or Type Url Here">
                         </form>
-                        <div id="nav-buttons">
+                        <div id="nav-buttons" style="position:relative;">
+                            <button title="Currently Selected: Google" type="button" id="searchEngineTrigger">
+                                <i class="ic ic-search">
+                                </i>
+                            </button>
                             <a title="Use Old Proxy" href="InfiniteOldProxies.html">
                                 <i class="ic ic-archive">
                                 </i>
                             </a>
+                            <div class="mini-engine-popup" id="miniEnginePopup">
+                                <p class="search-section-title">
+                                    Search Engine
+                                </p>
+                                <div class="search-engine-grid" id="miniSearchEngineGrid">
+                                </div>
+                                <div class="field-group" id="miniCustomEngineGroup" style="display:none; margin-top:10px;">
+                                    <input class="button" type="text" id="miniCustomEngineInput" placeholder="https://example.com/search?q=%s" style="width:100%; box-sizing:border-box;">
+                                    <div class="row-actions">
+                                        <button id="miniSaveCustomEngineBtn" class="button">
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -83,6 +83,102 @@ function checkBlocked(inputUrl) {
     return null;
 }
 loadBlockedUrls();
+const SEARCH_ENGINES = [
+    { key: 'google', name: 'Google', desc: 'Most results', url: 'https://www.google.com/search?q=%s' },
+    { key: 'brave', name: 'Brave', desc: 'Independent index', url: 'https://search.brave.com/search?q=%s' },
+    { key: 'duckduckgo', name: 'DuckDuckGo', desc: 'Private, Bing-backed', url: 'https://duckduckgo.com/?q=%s' },
+    { key: 'bing', name: 'Bing', desc: 'Microsoft', url: 'https://www.bing.com/search?q=%s' },
+    { key: 'startpage', name: 'Startpage', desc: 'Google results, no tracking', url: 'https://www.startpage.com/sp/search?query=%s' },
+    { key: 'ecosia', name: 'Ecosia', desc: 'Plants trees', url: 'https://www.ecosia.org/search?q=%s' },
+    { key: 'wikipedia', name: 'Wikipedia', desc: 'Encyclopedia only', url: 'https://en.wikipedia.org/wiki/Special:Search?search=%s' },
+    { key: 'custom', name: 'Custom', desc: 'Your own URL with %s', url: null }
+];
+const DEFAULT_SEARCH_ENGINE_KEY = 'google';
+function applySavedSearchEngineToAddressBar() {
+    const savedUrl = localStorage.getItem('searchEngineUrl');
+    if (savedUrl && searchEngine) {
+        searchEngine.value = savedUrl;
+    } else if (searchEngine) {
+        searchEngine.value = SEARCH_ENGINES.find(e => e.key === DEFAULT_SEARCH_ENGINE_KEY).url;
+    }
+}
+applySavedSearchEngineToAddressBar();
+function initSearchEnginePopup() {
+    const trigger = document.getElementById("searchEngineTrigger");
+    const popup = document.getElementById("miniEnginePopup");
+    const grid = document.getElementById("miniSearchEngineGrid");
+    const customGroup = document.getElementById("miniCustomEngineGroup");
+    const customInput = document.getElementById("miniCustomEngineInput");
+    const saveCustomBtn = document.getElementById("miniSaveCustomEngineBtn");
+    if (!trigger || !popup || !grid) return;
+    function getSelectedId() {
+        return localStorage.getItem('searchEngineId') || DEFAULT_SEARCH_ENGINE_KEY;
+    }
+    function renderGrid() {
+        const selectedId = getSelectedId();
+        grid.innerHTML = SEARCH_ENGINES.map(se => `
+            <div class="search-engine-item ${se.key === selectedId ? 'selected' : ''}" data-engine="${se.key}">
+                <span class="search-engine-title">${se.name}</span>
+                <span class="search-engine-desc">${se.desc}</span>
+            </div>
+        `).join('');
+        grid.querySelectorAll('.search-engine-item').forEach((item) => {
+            item.addEventListener('click', () => {
+                const key = item.dataset.engine;
+                const engine = SEARCH_ENGINES.find(se => se.key === key);
+                if (!engine) return;
+                if (key === 'custom') {
+                    grid.querySelectorAll('.search-engine-item').forEach((el) => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    customGroup.style.display = '';
+                    const existingCustom = localStorage.getItem('searchEngineCustomUrl');
+                    if (existingCustom && customInput) customInput.value = existingCustom;
+                    if (customInput) customInput.focus();
+                    return;
+                }
+                customGroup.style.display = 'none';
+                applyEngine(engine.key, engine.url, engine.name);
+            });
+        });
+    }
+    function updateTooltip(name) {
+        trigger.title = `Currently Selected: ${name}`;
+    }
+    function applyEngine(key, url, name) {
+        localStorage.setItem('searchEngineId', key);
+        localStorage.setItem('searchEngineUrl', url);
+        if (searchEngine) searchEngine.value = url;
+        updateTooltip(name);
+        renderGrid();
+    }
+    const initialId = getSelectedId();
+    const initialEngine = SEARCH_ENGINES.find(se => se.key === initialId) || SEARCH_ENGINES.find(se => se.key === DEFAULT_SEARCH_ENGINE_KEY);
+    updateTooltip(initialEngine.name);
+    if (initialId === 'custom') {
+        customGroup.style.display = '';
+        const existingCustom = localStorage.getItem('searchEngineCustomUrl');
+        if (existingCustom && customInput) customInput.value = existingCustom;
+    }
+    renderGrid();
+    if (saveCustomBtn) {
+        saveCustomBtn.addEventListener('click', () => {
+            const url = customInput.value.trim();
+            if (!url || !url.includes('%s')) return;
+            localStorage.setItem('searchEngineCustomUrl', url);
+            applyEngine('custom', url, 'Custom');
+        });
+    }
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popup.classList.toggle('shows');
+    });
+    document.addEventListener('click', (e) => {
+        if (!popup.contains(e.target) && !trigger.contains(e.target)) {
+            popup.classList.remove('shows');
+        }
+    });
+}
+document.addEventListener("DOMContentLoaded", initSearchEnginePopup);
 let tabs = [];
 let activeTabId = null;
 let tabCounter = 0;
