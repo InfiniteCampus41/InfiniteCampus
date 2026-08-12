@@ -963,6 +963,18 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 };
             }).then(() => showSaved('Saved')).catch(() => showSaved('Save Failed', true));
         }
+        function saveState() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('state', 'readwrite');
+                const stateStore = tx.objectStore('state');
+                stateStore.put({ key:'currentIndex', value: localIndex });
+                stateStore.put({ key:'isLooping', value: isLooping });
+                stateStore.put({ key:'lastPlaylistId', value: playerMode === 'playlist' && playlistQueue ? playlistQueue.plId : null });
+                stateStore.put({ key:'lastTrackIdx', value: playerMode === 'playlist' && playlistQueue ? playlistQueue.idx : 0 });
+                tx.oncomplete = resolve;
+                tx.onerror = e => reject(e);
+            }).catch(() => {});
+        }
         function loadAll() {
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(['songs','state'], 'readonly');
@@ -1181,7 +1193,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     artwork: [{ src: t.artworkDataUrl || FALLBACK_ART, sizes:'512x512', type:'image/png' }]
                 });
             }
-            saveAll();
+            saveState();
         }
         function nextLocalTrack() {
             if (!localTracks.length) return;
@@ -1389,7 +1401,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             playerMode = 'playlist';
             await _loadPlaylistQueueEntry(true);
             syncPlaylistRows();
-            saveAll();
+            saveState();
         }
         async function _loadPlaylistQueueEntry(autoplay = true) {
             if (!playlistQueue) return;
@@ -1429,7 +1441,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 }
             }
             syncPlaylistRows();
-            saveAll();
+            saveState();
         }
         function nextPlaylistTrack() {
             if (!playlistQueue) return;
@@ -1499,8 +1511,9 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         el.plModalClose.addEventListener('click', closeModal);
         el.plModal.addEventListener('click', e => { if (e.target === el.plModal) closeModal(); });
         el.plModalNew.addEventListener('click', () => {
+            const trackToAdd = pendingAddTrack;
             closeModal();
-            promptCreatePlaylist(pendingAddTrack || null);
+            promptCreatePlaylist(trackToAdd);
         });
         function addTrackToPlaylist(plId, trackObj) {
             const pl = playlists.find(p => p.id === plId);
@@ -1984,6 +1997,38 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 else { isPlaying = false; syncPlayIcon(); }
             }
         });
+        let lastErrorSrc = null;
+        audio.addEventListener('error', () => {
+            if (!audio.src) return;
+            const failedSrc = audio.src;
+            const isRepeat = failedSrc === lastErrorSrc;
+            lastErrorSrc = failedSrc;
+            if (playerMode === 'local' && !isRepeat) {
+                const t = localTracks[localIndex];
+                if (t) {
+                    objectUrlCache.delete(t.id);
+                    audio.src = getObjectURL(t);
+                    audio.play().catch(() => nextLocalTrack());
+                    return;
+                }
+            }
+            if (playerMode === 'playlist' && playlistQueue) {
+                const t = playlistQueue.tracks[playlistQueue.idx];
+                const localId = t?.localId;
+                if (!isRepeat && localId) {
+                    const local = localTracks.find(lt => lt.id === localId);
+                    if (local) {
+                        objectUrlCache.delete(local.id);
+                        audio.src = getObjectURL(local);
+                        audio.play().catch(() => nextPlaylistTrack());
+                        return;
+                    }
+                }
+                nextPlaylistTrack();
+                return;
+            }
+            if (playerMode === 'local') nextLocalTrack();
+        });
         el.seekBar.addEventListener('input', () => {
             const dur = audio.duration || 0;
             audio.currentTime = el.seekBar.value / 1000 * dur;
@@ -2005,7 +2050,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             isLooping = !isLooping;
             audio.loop = isLooping && playerMode === 'stream';
             el.loopBtn.classList.toggle('sp-ctrl-active', isLooping);
-            if (playerMode === 'local') saveAll();
+            saveState();
         });
         el.downloadBtn.addEventListener('click', () => {
             if (currentTrack?.downloadUrl) window.open(currentTrack.downloadUrl, '_blank');
@@ -2120,7 +2165,6 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             el.searchInput.value = 'trending';
             searchSongs();
         })();
-        window.addEventListener('beforeunload', revokeAllObjectURLs);
     }
 } else if (x3tfypage == '/InfiniteArchives.html') {
     document.querySelectorAll('.vhtml').forEach(link => {
