@@ -230,6 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const monthIndex = new Date().getMonth();
         if (monthIndex === 0) return "wtr";
         if (monthIndex === 1) return "lve";
+        if (monthIndex === 8) return "tky";
         if (monthIndex === 9) return "hwn";
         if (monthIndex === 10) return "tky";
         if (monthIndex === 11) return "cms";

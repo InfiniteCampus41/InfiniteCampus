@@ -284,12 +284,30 @@ window.addEventListener('DOMContentLoaded', () => {
         { key: 'hwn', name: 'Halloween', gradient: 'linear-gradient(to right, #ff9500, #231f1f)' },
         { key: 'rgb', name: 'RGB', gradient: 'linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red)' }
     ];
+    const THEME_SWATCH_PARTICLES = {
+        wtr: { iconClass: "ic ic-snow", colors: ["white", "#e0f7ff", "#cfe8ff"] },
+        cms: { iconClass: "ic ic-snow", colors: ["white", "#e0f7ff", "#cfe8ff"] },
+        lve: { iconClass: "ic ic-heart-fill", colors: ["red", "#ff4d6d", "#ff8fa3"] },
+        hwn: { iconClass: "ic ic-pumpkin", colors: ["orange", "#ff7518", "#cc5500"] },
+        tky: { iconClass: "ic ic-leaf-fill", colors: ["yellow", "#d4a017", "#b7410e"] }
+    };
+    const SWATCH_PARTICLE_ROTATIONS = [25, 100, 125];
+    function buildSwatchParticlesHTML(themeKey) {
+        const config = THEME_SWATCH_PARTICLES[themeKey];
+        if (!config) return '';
+        const particles = SWATCH_PARTICLE_ROTATIONS.map((deg, i) => {
+            const color = config.colors[i % config.colors.length];
+            return `<i class="${config.iconClass} theme-swatch-particle" style="color:${color}; transform:rotate(${deg}deg);"></i>`;
+        }).join('');
+        return `<div class="theme-swatch-particles">${particles}</div>`;
+    }
     const themeGridHTML = THEMES.map(t => `
         <div class="theme-item" data-theme="${t.key}">
             <div class="theme-swatch" style="background:${t.gradient}">
                 <div class="theme-check">
                     ${ICON_CHECK}
                 </div>
+                ${buildSwatchParticlesHTML(t.key)}
             </div>
             <span class="theme-name">
                 ${t.name}

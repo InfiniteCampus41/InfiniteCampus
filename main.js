@@ -439,8 +439,10 @@ function initSettingsUI(apply) {
                 applyTheme('#000000', 'wtr');
             } else if (monthIndex === 1) {
                 applyTheme('#000000', 'lve');
-            } else if (monthIndex >= 2 && monthIndex <= 8) {
+            } else if (monthIndex >= 2 && monthIndex <= 7) {
                 applyTheme('#8cbe37');
+            } else if (monthIndex === 8) {
+                applyTheme('#000000', 'tky');
             } else if (monthIndex === 9) {
                 applyTheme('#000000', 'hwn');
             } else if (monthIndex === 10) {
@@ -491,8 +493,10 @@ function initSettingsUI(apply) {
                 defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
             } else if (monthIndex === 1) {
                 defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
-            } else if (monthIndex >= 2 && monthIndex <= 8) {
+            } else if (monthIndex >= 2 && monthIndex <= 7) {
                 defaultColor = '#8cbe37';
+            } else if (monthIndex === 8) {
+                defaultColor = 'linear-gradient(to right, #be9a37, #be5f37)';
             } else if (monthIndex === 9) {
                 defaultColor = 'linear-gradient(to right, #ff9500, #231f1f)';
             } else if (monthIndex === 10) {
@@ -690,8 +694,10 @@ function initSettingsUI(apply) {
             applyTheme('#000000', 'wtr');
         } else if (monthIndex === 1) {
             applyTheme('#000000', 'lve');
-        } else if (monthIndex >= 2 && monthIndex <= 8) {
+        } else if (monthIndex >= 2 && monthIndex <= 7) {
             applyTheme('#8cbe37');
+        } else if (monthIndex === 8) {
+            applyTheme('#000000', 'tky');
         } else if (monthIndex === 9) {
             applyTheme('#000000', 'hwn');
         } else if (monthIndex === 10) {
@@ -742,8 +748,10 @@ function initSettingsUI(apply) {
             defaultColor = 'linear-gradient(to right, #374377, #bec7ad)';
         } else if (monthIndex === 1) {
             defaultColor = 'linear-gradient(to right, #be5f37, #be3786)';
-        } else if (monthIndex >= 2 && monthIndex <= 8) {
+        } else if (monthIndex >= 2 && monthIndex <= 7) {
             defaultColor = '#8cbe37';
+        } else if (monthIndex === 8) {
+            defaultColor = 'linear-gradient(to right, #be9a37, #be5f37)';
         } else if (monthIndex === 9) {
             defaultColor = 'linear-gradient(to right, #ff9500, #231f1f)';
         } else if (monthIndex === 10) {
