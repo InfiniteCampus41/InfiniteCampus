@@ -2102,6 +2102,12 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             navigator.mediaSession.setActionHandler('seekto', details => {
                 audio.currentTime = details.seekTime ?? audio.currentTime;
             });
+            try {
+                navigator.mediaSession.setActionHandler('enterpictureinpicture', () => {
+                    openMiniPlayer();
+                });
+            } catch (e) {
+            }
         }
         let pipWindow = null;
         let pipEl = null;
@@ -2160,7 +2166,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         }
         async function openMiniPlayer() {
             if (!('documentPictureInPicture' in window)) {
-                alert('Mini Player needs a Chromium browser (Chrome or Edge 116+).');
+                showError('Mini Player needs a Chromium browser (Chrome or Edge 116+).');
                 return;
             }
             if (pipWindow) { pipWindow.focus(); return; }
