@@ -1007,6 +1007,26 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         }
         async function extractID3Tags(file) {
             const result = { artworkDataUrl: FALLBACK_ART, artist: '', title: '' };
+            function sniffImageMime(bytes) {
+                if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg';
+                if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
+                if (bytes.length >= 6 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return 'image/gif';
+                if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4D) return 'image/bmp';
+                if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+                    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'image/webp';
+                return null;
+            }
+            function normalizeMime(m) {
+                if (!m) return null;
+                m = m.trim().toLowerCase().split(';')[0];
+                if (m === 'jpg' || m === 'image/jpg' || m === 'jpeg' || m === 'image/pjpeg') return 'image/jpeg';
+                if (m === 'png' || m === 'image/x-png') return 'image/png';
+                if (m === 'gif') return 'image/gif';
+                if (m === 'bmp' || m === 'image/x-bmp' || m === 'image/x-ms-bmp') return 'image/bmp';
+                if (m === 'webp') return 'image/webp';
+                if (m.startsWith('image/')) return m;
+                return null;
+            }
             try {
                 const head = await file.slice(0, 524288).arrayBuffer();
                 const view = new DataView(head);
@@ -1014,6 +1034,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     return result;
                 const version = view.getUint8(3);
                 const flags   = view.getUint8(5);
+                const isV2    = version === 2;
                 let offset = 10;
                 if (flags & 0x40) {
                     const extSize = version === 4
@@ -1035,32 +1056,56 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                     } catch {}
                     return '';
                 }
-                while (offset + 10 <= head.byteLength) {
-                    const fid = String.fromCharCode(
-                        view.getUint8(offset),view.getUint8(offset+1),
-                        view.getUint8(offset+2),view.getUint8(offset+3));
-                    const fsize = version === 4
-                        ? ((view.getUint8(offset+4)&0x7f)<<21)|((view.getUint8(offset+5)&0x7f)<<14)|
-                          ((view.getUint8(offset+6)&0x7f)<<7) |(view.getUint8(offset+7)&0x7f)
-                        : view.getUint32(offset+4);
-                    offset += 10;
+                const frameIdLen = isV2 ? 3 : 4;
+                const frameHeaderLen = isV2 ? 6 : 10;
+                while (offset + frameHeaderLen <= head.byteLength) {
+                    let fid, fsize;
+                    if (isV2) {
+                        fid = String.fromCharCode(view.getUint8(offset),view.getUint8(offset+1),view.getUint8(offset+2));
+                        fsize = (view.getUint8(offset+3)<<16)|(view.getUint8(offset+4)<<8)|view.getUint8(offset+5);
+                    } else {
+                        fid = String.fromCharCode(
+                            view.getUint8(offset),view.getUint8(offset+1),
+                            view.getUint8(offset+2),view.getUint8(offset+3));
+                        fsize = version === 4
+                            ? ((view.getUint8(offset+4)&0x7f)<<21)|((view.getUint8(offset+5)&0x7f)<<14)|
+                              ((view.getUint8(offset+6)&0x7f)<<7) |(view.getUint8(offset+7)&0x7f)
+                            : view.getUint32(offset+4);
+                    }
+                    offset += frameHeaderLen;
                     if (!fid.trim() || fsize <= 0) break;
                     if (offset + fsize > head.byteLength) break;
-                    if (fid === 'TIT2' || fid === 'TPE1') {
+                    const isTitleFrame  = fid === 'TIT2' || fid === 'TT2';
+                    const isArtistFrame = fid === 'TPE1' || fid === 'TP1';
+                    if (isTitleFrame || isArtistFrame) {
                         const enc  = view.getUint8(offset);
                         const data = new Uint8Array(head, offset + 1, fsize - 1);
                         const text = readTextFrame(data, enc);
-                        if (fid === 'TIT2' && text) result.title  = text;
-                        if (fid === 'TPE1' && text) result.artist = text;
+                        if (isTitleFrame && text) result.title  = text;
+                        if (isArtistFrame && text) result.artist = text;
                     }
-                    if (fid === 'APIC' && !result._gotArt) {
+                    const isPicFrame = fid === 'APIC' || fid === 'PIC';
+                    if (isPicFrame && !result._gotArt) {
                         const apic = new Uint8Array(head, offset, fsize);
                         let p = 0;
                         const textEnc = apic[p++];
-                        let mimeEnd = p;
-                        while (mimeEnd < apic.length && apic[mimeEnd] !== 0) mimeEnd++;
-                        const mime = new TextDecoder('iso-8859-1').decode(apic.subarray(p, mimeEnd)) || 'image/jpeg';
-                        p = mimeEnd + 1 + 1;
+                        let declaredMime;
+                        if (isV2) {
+                            // ID3v2.2 "PIC" frames use a fixed 3-char image format code
+                            // (e.g. "JPG"/"PNG") instead of a null-terminated MIME string.
+                            const fmt = String.fromCharCode(apic[p]||0, apic[p+1]||0, apic[p+2]||0).toUpperCase();
+                            p += 3;
+                            declaredMime = fmt === 'PNG' ? 'image/png'
+                                : fmt === 'GIF' ? 'image/gif'
+                                : fmt === 'BMP' ? 'image/bmp'
+                                : 'image/jpeg';
+                        } else {
+                            let mimeEnd = p;
+                            while (mimeEnd < apic.length && apic[mimeEnd] !== 0) mimeEnd++;
+                            declaredMime = new TextDecoder('iso-8859-1').decode(apic.subarray(p, mimeEnd));
+                            p = mimeEnd + 1;
+                        }
+                        p += 1; // picture type byte
                         if (textEnc === 1 || textEnc === 2) {
                             while (p+1 < apic.length && !(apic[p]===0 && apic[p+1]===0)) p+=2;
                             p+=2;
@@ -1068,7 +1113,19 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                             while (p < apic.length && apic[p] !== 0) p++;
                             p++;
                         }
-                        const blob = new Blob([apic.subarray(p)], { type: mime || 'image/jpeg' });
+                        // "-->" means the frame holds a URL to the image rather than
+                        // embedded binary data, so there's nothing here to decode as a blob.
+                        if (declaredMime === '-->') {
+                            offset += fsize;
+                            continue;
+                        }
+                        const imgBytes = apic.subarray(p);
+                        // Trust the actual image bytes over whatever MIME string the
+                        // tagger wrote (taggers frequently write bogus/odd values like
+                        // "image/jpg", "JFIF", or leave it blank), falling back to a
+                        // normalized version of the declared type, then a safe default.
+                        const finalMime = sniffImageMime(imgBytes) || normalizeMime(declaredMime) || 'image/jpeg';
+                        const blob = new Blob([imgBytes], { type: finalMime });
                         result.artworkDataUrl = await new Promise(res => {
                             const fr = new FileReader();
                             fr.onload  = () => res(fr.result || FALLBACK_ART);
@@ -1082,6 +1139,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             } catch {}
             return result;
         }
+        
         async function extractArtworkDataUrl(file) {
             return (await extractID3Tags(file)).artworkDataUrl;
         }
