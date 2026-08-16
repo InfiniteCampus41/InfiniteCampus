@@ -1028,10 +1028,19 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 return null;
             }
             try {
-                const head = await file.slice(0, 524288).arrayBuffer();
-                const view = new DataView(head);
-                if (String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2)) !== 'ID3')
+                // First read just the 10-byte ID3v2 header so we know the tag's real
+                // size. Embedded cover art (APIC) is very often larger than a fixed
+                // 512KB window on its own, which was silently truncating the frame
+                // and causing artwork to fall back to the placeholder.
+                const headerBuf = await file.slice(0, 10).arrayBuffer();
+                const headerView = new DataView(headerBuf);
+                if (String.fromCharCode(headerView.getUint8(0), headerView.getUint8(1), headerView.getUint8(2)) !== 'ID3')
                     return result;
+                const tagSize = ((headerView.getUint8(6)&0x7f)<<21)|((headerView.getUint8(7)&0x7f)<<14)|
+                                 ((headerView.getUint8(8)&0x7f)<<7) |(headerView.getUint8(9)&0x7f);
+                const readLen = Math.min(file.size, 10 + tagSize);
+                const head = await file.slice(0, readLen).arrayBuffer();
+                const view = new DataView(head);
                 const version = view.getUint8(3);
                 const flags   = view.getUint8(5);
                 const isV2    = version === 2;
