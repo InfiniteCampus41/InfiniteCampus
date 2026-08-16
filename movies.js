@@ -6,6 +6,7 @@ let CURRENT_SORT = "order";
 let finishingTimeout = null;
 let FIREBASE_AVAILABLE = true;
 let MOVIE_LOAD_ID = 0;
+let isLoadingMovies = false;
 let lastUploadTime = Date.now();
 let currentlyOpenActions = null;
 let finishingWatcher = null;
@@ -28,6 +29,9 @@ async function fetchAPI(endpoint, body) {
         throw new Error(json?.error || "Request failed");
     }
     return json;
+}
+function normalizeForSearch(str) {
+    return str.toLowerCase().replace(/_/g, " ");
 }
 function pathToArray(path) {
     return path.split("/").filter(Boolean);
@@ -172,6 +176,7 @@ async function loadMovies() {
     const url = BACKEND + "/api/list_videos_x9a7b2";
     const box = document.getElementById("movies");
     const loadId = ++MOVIE_LOAD_ID;
+    isLoadingMovies = true;
     box.innerHTML = "Loading...";
     try {
         const res = await fetch(url, {
@@ -186,11 +191,17 @@ async function loadMovies() {
             return;
         }
         MOVIE_CACHE = data.videos;
-        await renderMovies(sortMovieList(data.videos), loadId);
+        const term = normalizeForSearch(document.getElementById("search")?.value || "");
+        const filtered = term
+            ? data.videos.filter(m => normalizeForSearch(m.name).includes(term))
+            : data.videos;
+        await renderMovies(sortMovieList(filtered), loadId);
     } catch (e) {
         if (loadId !== MOVIE_LOAD_ID) return;
         showError("Failed To Load Movies, Check Server Status");
         box.innerHTML = "Could Not Reach Server.";
+    } finally {
+        if (loadId === MOVIE_LOAD_ID) isLoadingMovies = false;
     }
 }
 function fitTextToWidth(element, maxFont = 16, minFont = 8) {
@@ -296,11 +307,21 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
     }
 }
 function filterMovies() {
-    const term = document.getElementById("search").value.toLowerCase();
+    if (isLoadingMovies) {
+        // A load is still in flight. Bumping MOVIE_LOAD_ID inside loadMovies()
+        // invalidates that in-progress load's render loop (it checks loadId
+        // against MOVIE_LOAD_ID and bails out), effectively stopping it. The
+        // fresh load kicked off here will apply the current search term once
+        // its data arrives.
+        loadMovies();
+        return;
+    }
+    const loadId = ++MOVIE_LOAD_ID;
+    const term = normalizeForSearch(document.getElementById("search").value);
     const filtered = MOVIE_CACHE.filter(m =>
-        m.name.toLowerCase().includes(term)
+        normalizeForSearch(m.name).includes(term)
     );
-    renderMovies(sortMovieList(filtered));
+    renderMovies(sortMovieList(filtered), loadId);
 }
 (function buildPlayerDOM() {
     const panel = document.getElementById("watchPanel");
