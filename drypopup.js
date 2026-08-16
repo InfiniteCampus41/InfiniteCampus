@@ -51,6 +51,34 @@ async function dbSet(path, value) {
         value
     });
 }
+async function sendOnlineHeartbeat() {
+    if (!currentUser) return;
+    if (document.visibilityState !== "visible") return;
+    try {
+        const token = await getAuthToken();
+        const res = await fetch(`${BACKEND}/online`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+        });
+        if (!res.ok) {
+            throw new Error("Online Indicator Post Failed");
+        }
+    } catch (e) {
+        console.warn("Online Heartbeat Failed:", e);
+    }
+}
+authReadyPromise.then(() => {
+    sendOnlineHeartbeat();
+});
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        sendOnlineHeartbeat();
+    }
+});
+setInterval(sendOnlineHeartbeat, 20000);
 let pfpDomain = "/pfps";
 if (!(e.includes(window.location.host))) {
     pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps";

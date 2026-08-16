@@ -1056,7 +1056,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const x3FColor = info.settings?.color || "white";
                 userProfiles[uid] = { displayName: name, pic: picNum.toString() };
                 const div = document.createElement("div");
-                div.className = "user-item";
+                div.className = "user-item" + (info.profile?.online ? " online" : "");
                 div.style.color = `${x3FColor}`;
                 div.innerHTML = `
                     <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
@@ -1064,6 +1064,9 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 `;
                 div.onclick = () => editUser(uid, info);
                 userListDiv.appendChild(div);
+                dbListen(`users/${uid}/profile/online`, (isOnline) => {
+                    div.classList.toggle("online", !!isOnline);
+                });
             });
             populateSendAsOptions();
         }

@@ -5044,6 +5044,9 @@ th, td {
 .user-item:hover {
     background: #333;
 }
+.user-item.online {
+	border: 2px solid #69a84f !important;
+}
 #userpanel {
     display:flex;
     justify-content:center;
