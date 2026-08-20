@@ -18,6 +18,14 @@ i {
 .ic::before {
     content: "";
 }
+.ib {
+    mask-image: none;
+    -webkit-mask-image: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
 .ic-archive {
     mask-image: url('/icons/archive.svg');
     -webkit-mask-image: url('/icons/archive.svg');
@@ -58,13 +66,15 @@ i {
     mask-image: url('/icons/balloon-heart.svg');
     -webkit-mask-image: url('/icons/balloon-heart.svg');
 }
+.ic-barracuda {
+    background-image: url('/res/barracuda.webp');
+}
 .ic-bell-fill {
     mask-image: url('/icons/bell-fill.svg');
     -webkit-mask-image: url('/icons/bell-fill.svg');
 }
 .ic-blocksi {
-    mask-image: url('/icons/blocksi.png');
-    -webkit-mask-image: url('/icons/blocksi.png');
+    background-image: url('/res/blocksi.webp');
 }
 .ic-box-arrow-up-right {
     mask-image: url('/icons/box-arrow-up-right.svg');
@@ -94,6 +104,9 @@ i {
     mask-image: url('/icons/chevron-up.svg');
     -webkit-mask-image: url('/icons/chevron-up.svg');
 }
+.ic-cisco {
+    background-image: url('/res/cisco.webp');
+}
 .ic-cloud-arrow-down {
     mask-image: url('/icons/cloud-arrow-down.svg');
     -webkit-mask-image: url('/icons/cloud-arrow-down.svg');
@@ -118,6 +131,9 @@ i {
     mask-image: url('/icons/compass.svg');
     -webkit-mask-image: url('/icons/compass.svg');
 }
+.ic-contentkeeper {
+    background-image: url('/res/contentkeeper.webp');
+}
 .ic-controller {
     mask-image: url('/icons/controller.svg');
     -webkit-mask-image: url('/icons/controller.svg');
@@ -137,6 +153,9 @@ i {
 .ic-database-fill {
     mask-image: url('/icons/database-fill.svg');
     -webkit-mask-image: url('/icons/database-fill.svg');
+}
+.ic-deledao {
+    background-image: url('/res/deledao.webp');
 }
 .ic-dot {
     mask-image: url('/icons/dot.svg');
@@ -178,6 +197,9 @@ i {
     mask-image: url('/icons/film.svg');
     -webkit-mask-image: url('/icons/film.svg');
 }
+.ic-fortiguard {
+    background-image: url('/res/fortiguard.webp');
+}
 .ic-fullscreen-exit {
     mask-image: url('/icons/fullscreen-exit.svg');
     -webkit-mask-image: url('/icons/fullscreen-exit.svg');
@@ -195,8 +217,7 @@ i {
     -webkit-mask-image: url('/icons/globe2.svg');
 }
 .ic-goguardian {
-    mask-image: url('/icons/goguardian.png');
-    -webkit-mask-image: url('/icons/goguardian.png');
+    background-image: url('/res/goguardian.webp');
 }
 .ic-grip-vertical {
     mask-image: url('/icons/grip-vertical.svg');
@@ -230,6 +251,9 @@ i {
     mask-image: url('/icons/hourglass-split.svg');
     -webkit-mask-image: url('/icons/hourglass-split.svg');
 }
+.ic-iboss {
+    background-image: url('/res/iboss.webp');
+}
 .ic-image-fill {
     mask-image: url('/icons/image-fill.svg');
     -webkit-mask-image: url('/icons/image-fill.svg');
@@ -239,16 +263,17 @@ i {
     -webkit-mask-image: url('/icons/info-circle.svg');
 }
 .ic-lanschool {
-    mask-image: url('/icons/lanschool.png');
-    -webkit-mask-image: url('/icons/lanschool.png');
+    background-image: url('/res/lanschool.webp');
 }
 .ic-leaf-fill {
     mask-image: url('/icons/leaf-fill.svg');
     -webkit-mask-image: url('/icons/leaf-fill.svg');
 }
+.ic-lightspeed {
+    background-image: url('/res/lightspeed.webp');
+}
 .ic-linewize {
-    mask-image: url('/icons/linewize.png');
-    -webkit-mask-image: url('/icons/linewize.png');
+    background-image: url('/res/linewize.webp');
 }
 .ic-link {
     mask-image: url('/icons/link.svg');
@@ -271,12 +296,10 @@ i {
     -webkit-mask-image: url('/icons/music-note-list.svg');
 }
 .ic-offline {
-    mask-image: url('/icons/offline.png');
-    -webkit-mask-image: url('/icons/offline.png');
+    background-image: url('/icons/offline.png');
 }
 .ic-online {
-    mask-image: url('/icons/online.png');
-    -webkit-mask-image: url('/icons/online.png');
+    background-image: url('/icons/online.png');
 }
 .ic-palette {
     mask-image: url('/icons/palette.svg');
@@ -328,8 +351,7 @@ i {
     -webkit-mask-image: url('/icons/search.svg');
 }
 .ic-securely {
-    mask-image: url('/icons/securely.png');
-    -webkit-mask-image: url('/icons/securely.png');
+    background-image: url('/res/securely.webp');
 }
 .ic-send {
     mask-image: url('/icons/send.svg');

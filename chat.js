@@ -670,6 +670,13 @@ async function getUserMeta(uid) {
         lanschool: !!p.lanschool,
         linewize: !!p.linewize,
         blocksi: !!p.blocksi,
+        fortiguard: !!p.fortiguard,
+        lightspeed: !!p.lightspeed,
+        cisco: !!p.cisco,
+        contentkeeper: !!p.contentkeeper,
+        deledao: !!p.deledao,
+        iboss: !!p.iboss,
+        barracuda: !!p.barracuda,
         online: !!p.online
     };
     userMetaCache[uid] = data;
@@ -1527,11 +1534,18 @@ async function renderMessageInstant(id, msg) {
             if (meta.guesser) mkE("ic ic-stopwatch","#ff0000","Guesser","Guesser");
             if (meta.discord && meta.discord.trim()) mkE("ic ic-discord","#5865F2",`@${meta.discord}`,`Discord: @${meta.discord}`);
             if (meta.linker) mkE("ic ic-link","#4fa3ff","Linker","Link Sharer");
-            if (meta.secure) mkE("ic ic-securely","dodgerblue","Securely","Has Securely");
-            if (meta.guardian) mkE("ic ic-goguardian","grey","GoGuardian","Has GoGuardian");
-            if (meta.lanschool) mkE("ic ic-lanschool","greenyellow","Lanschool","Has Lanschool");
-            if (meta.linewize) mkE("ic ic-linewize","lightskyblue","Linewize","Has Linewize");
-            if (meta.blocksi) mkE("ic ic-blocksi","cadetblue","Blocksi","Has Blocksi");
+            if (meta.secure) mkE("ib ic ic-securely","","Securely","Has Securely");
+            if (meta.guardian) mkE("ib ic ic-goguardian","","GoGuardian","Has GoGuardian");
+            if (meta.lanschool) mkE("ib ic ic-lanschool","","Lanschool","Has Lanschool");
+            if (meta.linewize) mkE("ib ic ic-linewize","","Linewize","Has Linewize");
+            if (meta.blocksi) mkE("ib ic ic-blocksi","","Blocksi","Has Blocksi");
+            if (meta.fortiguard) mkE("ib ic ic-fortiguard","","FortiGuard","Has FortiGuard");
+            if (meta.lightspeed) mkE("ib ic ic-lightspeed","","LightSpeed","Has LightSpeed");
+            if (meta.cisco) mkE("ib ic ic-cisco","","Cisco Umbrella","Has Cisco Umbrella");
+            if (meta.contentkeeper) mkE("ib ic ic-contentkeeper","","ContentKeeper","Has ContentKeeper");
+            if (meta.deledao) mkE("ib ic ic-deledao","","Deledao","Has Deledao");
+            if (meta.iboss) mkE("ib ic ic-iboss","","IBoss","Has IBoss");
+            if (meta.barracuda) mkE("ib ic ic-barracuda","","Barracuda","Has Barracuda");
             const totalRoles = allPrimaryBadges.length + extraBadges.length;
             let inlinePrimaries, overflowPrimaries, inlineExtras, popoverExtras;
             if (totalRoles <= 3) {
@@ -1544,8 +1558,7 @@ async function renderMessageInstant(id, msg) {
             }
             const onlineBadge = document.createElement("i");
             const setOnlineStatus = (isOnline) => {
-                onlineBadge.className = isOnline ? "ic ic-online" : "ic ic-offline";
-                onlineBadge.style.color = isOnline ? "#69a84f" : "#999999";
+                onlineBadge.className = isOnline ? "ib ic ic-online" : "ib ic ic-offline";
                 onlineBadge.title = isOnline ? "Online" : "Offline";
             };
             setOnlineStatus(meta.online);
@@ -2662,7 +2675,14 @@ async function hasPermission(channelData, type) {
         guardian: meta.guardian,
         lanschool: meta.lanschool,
         linewize: meta.linewize,
-        blocksi: meta.blocksi
+        blocksi: meta.blocksi,
+        fortiguard: meta.fortiguard,
+        lightspeed: meta.lightspeed,
+        cisco: meta.cisco,
+        contentkeeper: meta.contentkeeper,
+        deledao: meta.deledao,
+        iboss: meta.iboss,
+        barracuda: meta.barracuda
     };
     for (const role in perms) {
         if (perms[role] === true && userRoles[role]) {
@@ -3390,6 +3410,13 @@ function renderRoleCheckboxes(type) {
         "lanschool",
         "linewize",
         "blocksi",
+        "fortiguard",
+        "lightspeed",
+        "cisco",
+        "contentkeeper",
+        "deledao",
+        "iboss",
+        "barracuda",
         "verified"
     ];
     const roleNames = {
@@ -3414,6 +3441,13 @@ function renderRoleCheckboxes(type) {
         lanschool: "Lanschool",
         linewize: "Linewize",
         blocksi: "Blocksi",
+        fortiguard: "FortiGuard",
+        lightspeed: "LightSpeed",
+        cisco: "Cisco Umbrella",
+        contentkeeper: "ContentKeeper",
+        deledao: "Deledao",
+        iboss: "IBoss",
+        barracuda: "Barracuda",
         verified: "Verified Users"
     };
     return roles.map(r => `

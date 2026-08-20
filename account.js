@@ -408,11 +408,19 @@ if (unsub) {
             { key: "mileStone", icon: "ic ic-award", title: "This User Is The 100th Signed Up User", color: "yellow" },
             { key: "isGuesser", icon: "ic ic-stopwatch", title: "This User Has A Lot Of Freetime", color: "#FF0000" },
             { key: "isLink", icon: "ic ic-link", title: "This Use Has Shared Lots Of Links In The Links Channel", color: "#4fa3ff"},
-            { key: "secure", icon: "ic ic-securely", title: "This User Has Securely At School", color: "dodgerblue"},
-            { key: "guardian", icon: "ic ic-goguardian", title: "This User Has GoGuardian At School", color: "grey"},
-            { key: "lanschool", icon: "ic ic-lanschool", title: "This User Has Lanschool At School", color: "greenyellow"},
-            { key: "linewize", icon: "ic ic-linewize", title: "This User Has Linewize At School", color: "lightskyblue"},
-            { key: "blocksi", icon: "ic ic-blocksi", title: "This User Has Blocksi At School", color: "cadetblue"}
+            { key: "secure", icon: "ib ic ic-securely", title: "This User Has Securely At School", color: ""},
+            { key: "guardian", icon: "ib ic ic-goguardian", title: "This User Has GoGuardian At School", color: ""},
+            { key: "lanschool", icon: "ib ic ic-lanschool", title: "This User Has Lanschool At School", color: ""},
+            { key: "linewize", icon: "ib ic ic-linewize", title: "This User Has Linewize At School", color: ""},
+            { key: "blocksi", icon: "ib ic ic-blocksi", title: "This User Has Blocksi At School", color: ""},
+            { key: "fortiguard", icon:"ib ic ic-fortiguard", title: "This User Has FortiGuard At School", color:"" },
+            { key: "lightspeed", icon:"ib ic ic-lightspeed", title: "This User Has LightSpeed At School", color:"" },
+            { key: "cisco", icon:"ib ic ic-cisco", title: "This User Has Cisco Umbrella At School", color:"" },
+            { key: "contentkeeper", icon:"ib ic ic-contentkeeper", title: "This User Has ContentKeeper At School", color:"" },
+            { key: "deledao", icon:"ib ic ic-deledao", title: "This User Has Deledao At School", color:""},
+            { key: "iboss", icon:"ib ic ic-iboss", title: "This User Has IBoss At School", color:"" },
+            { key: "barracuda", icon:"ib ic ic-barracuda", title: "This User Has Barracuda At School", color:"" },
+
         ];
         roles.forEach(r => {
             if (profile?.[r.key] === true) {
@@ -580,6 +588,36 @@ if (unsub) {
         }
         .btn:active {
             border:none;
+        }
+        #extCheckContainer {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 4px 2px;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+        .extCheckItem {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 4px;
+        }
+        .extCheckItem img {
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .extCheckItem label {
+            color: #ccc;
+            text-align: left;
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+        .extCheckItem .switch {
+            margin-left: auto;
+            flex-shrink: 0;
+            max-width:50px;
         }
     `;
     document.head.appendChild(style);
@@ -1103,7 +1141,59 @@ if (unsub) {
             disInput.value = disInput.value.slice(0, 50);
         }
     });
-    const extCheckboxes = document.querySelectorAll(".extCheck");
+    const BLOCKING_EXTENSIONS = [
+        { key: "secure", label: "Securely", img: "/res/securely.webp" },
+        { key: "guardian", label: "GoGuardian", img: "/res/goguardian.webp" },
+        { key: "lanschool", label: "Lanschool", img: "/res/lanschool.webp" },
+        { key: "linewize", label: "Linewize", img: "/res/linewize.webp" },
+        { key: "blocksi", label: "Blocksi", img: "/res/blocksi.webp" },
+        { key: "fortiguard", label: "FortiGuard", img: "/res/fortiguard.webp" },
+        { key: "lightspeed", label: "LightSpeed", img: "/res/lightspeed.webp" },
+        { key: "cisco", label: "Cisco Umbrella", img: "/res/cisco.webp" },
+        { key: "contentkeeper", label: "ContentKeeper", img: "/res/contentkeeper.webp" },
+        { key: "deledao", label: "Deledao", img: "/res/deledao.webp" },
+        { key: "iboss", label: "IBoss", img: "/res/iboss.webp" },
+        { key: "barracuda", label: "Barracuda", img: "/res/barracuda.webp" }
+    ];
+    const extCheckContainer = document.getElementById("extCheckContainer");
+    let extCheckboxes = [];
+    if (extCheckContainer) {
+        extCheckContainer.innerHTML = "";
+        BLOCKING_EXTENSIONS.forEach(ext => {
+            const item = document.createElement("div");
+            item.className = "extCheckItem";
+
+            const img = document.createElement("img");
+            img.src = ext.img;
+
+            const label = document.createElement("label");
+            label.htmlFor = `extCheck_${ext.key}`;
+            label.textContent = ext.label;
+
+            const switchLabel = document.createElement("label");
+            switchLabel.className = "switch";
+
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.className = "extCheck";
+            cb.id = `extCheck_${ext.key}`;
+            cb.dataset.key = ext.key;
+
+            const slider = document.createElement("span");
+            slider.className = "slider";
+
+            switchLabel.appendChild(cb);
+            switchLabel.appendChild(slider);
+
+            item.appendChild(img);
+            item.appendChild(label);
+            item.appendChild(switchLabel);
+            extCheckContainer.appendChild(item);
+        });
+        extCheckboxes = Array.from(extCheckContainer.querySelectorAll(".extCheck"));
+    } else {
+        console.error("extCheckContainer Not Found In The Page.");
+    }
     extCheckboxes.forEach(cb => {
         cb.addEventListener("change", async () => {
             if (!currentUser) return;
@@ -1308,23 +1398,51 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.secure) {
-                    addBadge("This User Has Securely At School", "dodgerblue", "ic ic-securely");
+                    addBadge("This User Has Securely At School", "", "ib ic ic-securely");
                     hasAnyRole = true;
                 }
                 if (profile.guardian) {
-                     addBadge("This User Has GoGuardian At School", "grey", "ic ic-goguardian");
+                     addBadge("This User Has GoGuardian At School", "", "ib ic ic-goguardian");
                     hasAnyRole = true;
                 }
                 if (profile.lanschool) {
-                    addBadge("This User Has Lanschool At School", "greenyellow", "ic ic-lanschool");
+                    addBadge("This User Has Lanschool At School", "", "ib ic ic-lanschool");
                     hasAnyRole = true;
                 }
                 if (profile.linewize) {
-                    addBadge("This User Has Linewize At School", "lightskyblue", "ic ic-linewize");
+                    addBadge("This User Has Linewize At School", "", "ib ic ic-linewize");
                     hasAnyRole = true;
                 }
                 if (profile.blocksi) {
-                    addBadge("This User Has Blocksi At School", "cadetblue", "ic ic-blocksi");
+                    addBadge("This User Has Blocksi At School", "", "ib ic ic-blocksi");
+                    hasAnyRole = true;
+                }
+                if (profile.fortiguard) {
+                    addBadge("This User Has FortiGuard At School", "", "ib ic ic-fortiguard");
+                    hasAnyRole = true;
+                }
+                if (profile.lightspeed) {
+                    addBadge("This User Has LightSpeed At School", "", "ib ic ic-lightspeed");
+                    hasAnyRole = true;
+                }
+                if (profile.cisco) {
+                    addBadge("This User Has Cisco Umbrella At School", "", "ib ic ic-cisco");
+                    hasAnyRole = true;
+                }
+                if (profile.contentkeeper) {
+                    addBadge("This User Has ContentKeeper At School", "", "ib ic ic-contentkeeper");
+                    hasAnyRole = true;
+                }
+                if (profile.deledao) {
+                    addBadge("This User Has Deledao At School", "", "ib ic ic-deledao");
+                    hasAnyRole = true;
+                }
+                if (profile.iboss) {
+                    addBadge("This User Has IBoss At School", "", "ib ic ic-iboss");
+                    hasAnyRole = true;
+                }
+                if (profile.barracuda) {
+                    addBadge("This User Has Barracuda At School", "", "ib ic ic-barracuda");
                     hasAnyRole = true;
                 }
                 if (profile.verified) {
