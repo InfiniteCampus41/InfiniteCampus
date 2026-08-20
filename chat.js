@@ -3174,7 +3174,7 @@ onAuthStateChanged(auth, async user => {
         const _msgId = window.location.hash.replace("#msg-", "").trim() || null;
         if (_joinCode) {
             switchChannel("General");
-            handleJoinCodeFromUrl();
+            handleJoinCodeFromUrl(_joinCode);
         } else if (_dmUid) {
             getDisplayName(_dmUid).then(name => {
                 openPrivateChat(_dmUid, name).then(() => {
@@ -4219,9 +4219,11 @@ async function uploadGroupAttachment(file) {
         showError("File Upload Failed: " + (e?.message || e));
     }
 }
-async function handleJoinCodeFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const joinCode = params.get("joinCode");
+async function handleJoinCodeFromUrl(joinCode) {
+    if (!joinCode) {
+        const params = new URLSearchParams(window.location.search);
+        joinCode = params.get("joinCode");
+    }
     if (!joinCode || !currentUser || isGuest) return;
     try {
         const res = await fetchAPI("groups/join", { inviteCode: joinCode });
