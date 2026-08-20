@@ -3036,6 +3036,20 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 showError("Failed To Toggle Discord Lockdown");
             }
         });
+        document.getElementById("movieToggleBtn").addEventListener("click", async () => {
+            if (!await checkPermissions()) return;
+            const res = await adminFetch(`${a}/admin/movies_toggle`, {
+                method: "POST",
+                headers: NGROK_HEADERS
+            });
+            if (res.ok) {
+                const state = await res.json();
+                showSuccess("Movie Endpoints Are Now " + (state.moviesDisabled ? "DOWN" : "UP"));
+                document.getElementById("movieToggleBtn").textContent = "Movies " + (state.moviesDisabled ? "DOWN" : "UP");
+            } else {
+                showError("Failed To Toggle Movie Endpoints");
+            }
+        });
         document.getElementById("restartServerBtn").addEventListener("click", async () => {
             if (!await checkPermissions()) return;
             showConfirm("Restart the server? Active accepts will be waited on first.", async function(result) {
