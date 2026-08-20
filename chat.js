@@ -382,11 +382,17 @@ async function getAuthToken() {
 async function fetchAPI(endpoint, body) {
     const token = await getAuthToken();
     const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
+    let payload = body;
+    if (token) {
+        headers["Authorization"] = "Bearer " + token;
+    } else if (anonSessionToken) {
+        headers["x-anon-session"] = anonSessionToken;
+        payload = { ...(body || {}), anonSession: anonSessionToken };
+    }
     const res = await fetch(`${a}/${endpoint}`, {
         method: "POST",
         headers,
-        body: JSON.stringify(body)
+        body: JSON.stringify(payload)
     });
     const json = await res.json();
     if (!res.ok) {
