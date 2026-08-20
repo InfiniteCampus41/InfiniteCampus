@@ -428,6 +428,10 @@ i {
     mask-image: url('/icons/trash.svg');
     -webkit-mask-image: url('/icons/trash.svg');
 }
+.ic-upload {
+    mask-image: url('/icons/upload.svg');
+    -webkit-mask-image: url('/icons/upload.svg');
+}
 .ic-volume-mute-fill {
     mask-image: url('/icons/volume-mute-fill.svg');
     -webkit-mask-image: url('/icons/volume-mute-fill.svg');

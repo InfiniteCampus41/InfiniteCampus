@@ -113,20 +113,38 @@ let accountPicUrl = "";
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;   
     try {
-        const [pankey, panurl, title, weather, displayName, nameColor, picIndex] = await Promise.all([
+        const [pankey, panurl, title, weather, displayName, nameColor, picIndex, useGradient, headerColor, gradientLeft, gradientRight, customBackground, customFont, showClockBar] = await Promise.all([
             dbGet(`users/${user.uid}/settings/panicKey`),
             dbGet(`users/${user.uid}/settings/panicUrl`),
             dbGet(`users/${user.uid}/settings/pageTitle`),
             dbGet(`users/${user.uid}/settings/betterWeather`),
             dbGet(`users/${user.uid}/profile/displayName`),
             dbGet(`users/${user.uid}/settings/color`),
-            dbGet(`users/${user.uid}/profile/pic`)
+            dbGet(`users/${user.uid}/profile/pic`),
+            dbGet(`users/${user.uid}/settings/useGradient`),
+            dbGet(`users/${user.uid}/settings/headerColor`),
+            dbGet(`users/${user.uid}/settings/gradientLeft`),
+            dbGet(`users/${user.uid}/settings/gradientRight`),
+            dbGet(`users/${user.uid}/settings/customBackground`),
+            dbGet(`users/${user.uid}/settings/customFont`),
+            dbGet(`users/${user.uid}/settings/showClockBar`)
         ]);
         if (pankey) localStorage.setItem('panicKey', pankey);
         if (panurl) localStorage.setItem('panicUrl', panurl);
         if (title) localStorage.setItem('pageTitle', title);
         if (weather !== undefined) {
             localStorage.setItem('betterWeather', weather ? 'true' : 'false');
+        }
+        if (useGradient) {
+            localStorage.setItem('useGradient', useGradient);
+        }
+        if (headerColor) localStorage.setItem('headerColor', headerColor);
+        if (gradientLeft) localStorage.setItem('gradientLeft', gradientLeft);
+        if (gradientRight) localStorage.setItem('gradientRight', gradientRight);
+        if (customBackground) localStorage.setItem('customBackground', customBackground);
+        if (customFont) localStorage.setItem('customFont', customFont);
+        if (showClockBar !== undefined) {
+            localStorage.setItem('showClockBar', showClockBar ? 'true' : 'false');
         }
         accountDisplayName = displayName || user.email || "Account";
         accountNameColor = nameColor || localStorage.getItem('color') || "#ffffff";
@@ -600,7 +618,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         <div class="tab-pane" id="tab-data">
                             <div class="section" style="flex-direction:column; align-items:center;">
                                 <p class="btxt" style="text-align:center">
-                                    Export A Backup Of All Your Local Data Including Settings, Playlists, And Login Data Or Import A Previously Exported Backup.
+                                    Export A Backup Of Your Local Data Or Import A Previously Exported Backup.
                                 </p>
                                 <div class="row-actions">
                                     <button class="button" id="exportDataBtn">
@@ -613,16 +631,6 @@ window.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <span id="dataStatus" class="theme-name">
                                 </span>
-                                <hr style="width:75%;">
-                                <div style="position:relative; display:inline-block;">
-                                    <span class="r" style="display:block; font-size:0.8em; text-align:center; margin-bottom:2px;">
-                                        WARNING: Contains Your Login Data
-                                    </span>
-                                    <button class="button" id="exportDataFullBtn">
-                                        Export Data (Full)
-                                    </button>
-                                </div>
-                                <br>
                                 <hr style="width:75%;">
                                 <a class="button" id="resetAllBtn">
                                     Clear Data
@@ -810,6 +818,9 @@ window.addEventListener('DOMContentLoaded', () => {
             if (fFileName) fFileName.textContent = '';
             if (fFileLabel) fFileLabel.style.display = '';
             showSuccess(`Font Set To "${fontName}"`);
+            if (currentUser) {
+                dbSet(`/users/${currentUser.uid}/settings/customFont`, fontName);
+            }
         });
     }
     if (resetFontBtn) {
@@ -818,6 +829,9 @@ window.addEventListener('DOMContentLoaded', () => {
             fontInput.value = '';
             updateFont('');
             showSuccess('Font Reset To Default');
+            if (currentUser) {
+                dbSet(`/users/${currentUser.uid}/settings/customFont`, null);
+            }
         });
     }
     const FONT_DB_NAME = 'customFontFilesDB';
@@ -984,6 +998,12 @@ window.addEventListener('DOMContentLoaded', () => {
             markThemeSelected(key);
             const nameEl = item.querySelector('.theme-name');
             showSuccess(`Theme Set To "${nameEl ? nameEl.textContent : key}"`);
+            if (currentUser) {
+                dbSet(`/users/${currentUser.uid}/settings/useGradient`, key);
+                dbSet(`/users/${currentUser.uid}/settings/gradientLeft`, null);
+                dbSet(`/users/${currentUser.uid}/settings/gradientRight`, null);
+                dbSet(`/users/${currentUser.uid}/settings/headerColor`, null);
+            }
         });
     });
     const colorInputEl = document.getElementById('colorInput');
@@ -1222,26 +1242,85 @@ window.addEventListener('DOMContentLoaded', () => {
         db.close();
         return result;
     }
-    async function exportAllData(includeFirebase = true) {
+    const SONG_DB_NAME = 'dryPlayerDB';
+    const EXPORT_KEY_GROUPS = {
+        theme: ['color', 'gradientLeft', 'gradientRight', 'headerColor', 'useGradient', 'globalDarkTheme', 'globalTextColor', 'customBackground', 'customFont', 'showClockBar', 'betterWeather'],
+        searchEngine: ['searchEngineId', 'searchEngineUrl', 'searchEngineCustomUrl'],
+        backend: ['backendUrl'],
+        tabCloaking: ['panicKey', 'panicUrl', 'pageTitle', 'customFavicon'],
+        timer: ['countdownTarget']
+    };
+    function collectLocalStorageKeys(keys) {
+        const out = {};
+        keys.forEach((k) => {
+            const v = localStorage.getItem(k);
+            if (v !== null) out[k] = v;
+        });
+        return out;
+    }
+    async function getIndexedDBNames() {
+        if (!indexedDB.databases) return [];
+        try {
+            const dbs = await indexedDB.databases();
+            return dbs.map((d) => d.name).filter(Boolean);
+        } catch (e) {
+            return [];
+        }
+    }
+    async function checkSongDataExists(existingNames) {
+        if (!existingNames.includes(SONG_DB_NAME)) return false;
+        try {
+            const db = await new Promise((resolve, reject) => {
+                const req = indexedDB.open(SONG_DB_NAME);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+            if (!db.objectStoreNames.contains('songs')) { db.close(); return false; }
+            const count = await new Promise((resolve, reject) => {
+                const tx = db.transaction('songs', 'readonly');
+                const req = tx.objectStore('songs').count();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+            db.close();
+            return count > 0;
+        } catch (e) {
+            return false;
+        }
+    }
+    async function exportSelectedData(selection) {
         const data = {
             exportedAt: new Date().toISOString(),
             localStorage: {},
             sessionStorage: {},
             indexedDB: {}
         };
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            data.localStorage[key] = localStorage.getItem(key);
+        if (selection.localStorage) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                data.localStorage[key] = localStorage.getItem(key);
+            }
+        } else {
+            if (selection.theme) Object.assign(data.localStorage, collectLocalStorageKeys(EXPORT_KEY_GROUPS.theme));
+            if (selection.searchEngine) Object.assign(data.localStorage, collectLocalStorageKeys(EXPORT_KEY_GROUPS.searchEngine));
+            if (selection.backend) Object.assign(data.localStorage, collectLocalStorageKeys(EXPORT_KEY_GROUPS.backend));
+            if (selection.tabCloaking) Object.assign(data.localStorage, collectLocalStorageKeys(EXPORT_KEY_GROUPS.tabCloaking));
+            if (selection.timer) Object.assign(data.localStorage, collectLocalStorageKeys(EXPORT_KEY_GROUPS.timer));
         }
-        for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
-            data.sessionStorage[key] = sessionStorage.getItem(key);
+        if (selection.sessionStorage) {
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                data.sessionStorage[key] = sessionStorage.getItem(key);
+            }
         }
-        if (indexedDB.databases) {
+        if (indexedDB.databases && (selection.indexedDB || selection.songData || selection.loginData)) {
             const dbs = await indexedDB.databases();
             for (const dbInfo of dbs) {
                 if (!dbInfo.name) continue;
-                if (!includeFirebase && dbInfo.name.toLowerCase().startsWith('firebase')) continue;
+                const isFirebase = dbInfo.name.toLowerCase().startsWith('firebase');
+                const isSongDb = dbInfo.name === SONG_DB_NAME;
+                const include = selection.indexedDB || (selection.songData && isSongDb) || (selection.loginData && isFirebase);
+                if (!include) continue;
                 try {
                     data.indexedDB[dbInfo.name] = await exportIndexedDBDatabase(dbInfo.name);
                 } catch (err) {
@@ -1260,6 +1339,106 @@ window.addEventListener('DOMContentLoaded', () => {
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
+    }
+    function buildExportToggleRow(key, label, checked) {
+        return `
+            <div class="setting-row export-select-row" data-key="${key}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 4px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <label style="flex:1;">${label}</label>
+                <label class="switch">
+                    <input type="checkbox" class="export-select-toggle" data-key="${key}" ${checked ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        `;
+    }
+    async function openExportSelectionModal() {
+        const existing = document.getElementById('exportSelectOverlay');
+        if (existing) existing.remove();
+        const [idbNames, hasLoginData] = await Promise.all([
+            getIndexedDBNames(),
+            Promise.resolve(!!currentUser)
+        ]);
+        const hasSongData = await checkSongDataExists(idbNames);
+        const hasBackend = !!localStorage.getItem('backendUrl');
+        const hasTimer = !!localStorage.getItem('countdownTarget');
+        const hasLocalStorage = localStorage.length > 0;
+        const hasSessionStorage = sessionStorage.length > 0;
+        const hasIndexedDB = idbNames.length > 0;
+        const rows = [
+            { key: 'theme', label: 'Theme Data', default: true },
+            { key: 'searchEngine', label: 'Search Engine Preferences', default: true }
+        ];
+        if (hasBackend) rows.push({ key: 'backend', label: 'Custom Backend URL', default: true });
+        rows.push({ key: 'tabCloaking', label: 'Tab Cloaking Settings', default: true });
+        if (hasTimer) rows.push({ key: 'timer', label: 'Timer Settings', default: false });
+        if (hasSongData) rows.push({ key: 'songData', label: 'Song Data', default: false });
+        if (hasLocalStorage) rows.push({ key: 'localStorage', label: 'LocalStorage', default: false });
+        if (hasSessionStorage) rows.push({ key: 'sessionStorage', label: 'SessionStorage', default: false });
+        if (hasIndexedDB) rows.push({ key: 'indexedDB', label: 'IndexedDB', default: false });
+        if (hasLoginData) rows.push({ key: 'loginData', label: 'Login Data', default: false });
+        const overlay = document.createElement('div');
+        overlay.id = 'exportSelectOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        const box = document.createElement('div');
+        box.style.cssText = 'background:#222;color:white;padding:16px;border-radius:10px;width:320px;max-width:90vw;max-height:80vh;overflow-y:auto;border:1px solid #666;box-shadow:0 0 15px rgba(0,0,0,0.4);';
+        box.innerHTML = `
+            <p class="btxt" style="text-align:center;margin-top:0;">Choose What To Export</p>
+            ${rows.map((r) => buildExportToggleRow(r.key, r.label, r.default)).join('')}
+            <div class="row-actions" style="margin-top:14px;display:flex;gap:8px;">
+                <button class="button" id="exportSelectCancelBtn" style="flex:1;">Cancel</button>
+                <button class="button" id="exportSelectConfirmBtn" style="flex:1;">Export</button>
+            </div>
+        `;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        const getToggle = (key) => box.querySelector(`.export-select-toggle[data-key="${key}"]`);
+        function lockRows(keys, locked) {
+            keys.forEach((k) => {
+                const t = getToggle(k);
+                if (!t) return;
+                if (locked) t.checked = true;
+                t.disabled = locked;
+            });
+        }
+        const lsToggle = getToggle('localStorage');
+        if (lsToggle) {
+            const lsDependents = ['theme', 'searchEngine', 'backend', 'tabCloaking', 'timer'];
+            lsToggle.addEventListener('change', () => lockRows(lsDependents, lsToggle.checked));
+            lockRows(lsDependents, lsToggle.checked);
+        }
+        const idbToggle = getToggle('indexedDB');
+        if (idbToggle) {
+            const idbDependents = ['songData', 'loginData'];
+            idbToggle.addEventListener('change', () => lockRows(idbDependents, idbToggle.checked));
+            lockRows(idbDependents, idbToggle.checked);
+        }
+        function closeOverlay() { overlay.remove(); }
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+        box.querySelector('#exportSelectCancelBtn').addEventListener('click', closeOverlay);
+        box.querySelector('#exportSelectConfirmBtn').addEventListener('click', () => {
+            const selection = {};
+            rows.forEach((r) => { selection[r.key] = !!getToggle(r.key)?.checked; });
+            const runExport = async () => {
+                closeOverlay();
+                try {
+                    if (dataStatus) dataStatus.textContent = 'Exporting...';
+                    await exportSelectedData(selection);
+                    if (dataStatus) dataStatus.textContent = '';
+                    showSuccess('Data Exported Successfully');
+                } catch (err) {
+                    if (dataStatus) dataStatus.textContent = '';
+                    console.error('Export Failed:', err);
+                    showError('Failed To Export Data');
+                }
+            };
+            if (selection.loginData) {
+                showConfirm('This Export Will Include Your Login Data. Anyone Who Gets This File Will Be Able To Log In As You. Continue?', (confirmed) => {
+                    if (confirmed) runExport();
+                }, true);
+            } else {
+                runExport();
+            }
+        });
     }
     async function importIndexedDBDatabase(name, dbData) {
         const storeNames = Object.keys(dbData.stores || {});
@@ -1331,38 +1510,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     const exportDataBtn = document.getElementById('exportDataBtn');
-    const exportDataFullBtn = document.getElementById('exportDataFullBtn');
     const importDataInput = document.getElementById('importDataInput');
     const dataStatus = document.getElementById('dataStatus');
     if (exportDataBtn) {
-        exportDataBtn.addEventListener('click', async () => {
-            try {
-                if (dataStatus) dataStatus.textContent = 'Exporting...';
-                await exportAllData(false);
-                if (dataStatus) dataStatus.textContent = '';
-                showSuccess('Data Exported Successfully');
-            } catch (err) {
-                if (dataStatus) dataStatus.textContent = '';
-                console.error('Export Failed:', err);
-                showError('Failed To Export Data');
-            }
-        });
-    }
-    if (exportDataFullBtn) {
-        exportDataFullBtn.addEventListener('click', async () => {
-            showConfirm('This Export Will Include Your Login Data (Firebase). Do Not Share This File With Anyone. Continue?', async (confirmed) => {
-                if (!confirmed) return;
-                try {
-                    if (dataStatus) dataStatus.textContent = 'Exporting...';
-                    await exportAllData(true);
-                    if (dataStatus) dataStatus.textContent = '';
-                    showSuccess('Data Exported Successfully');
-                } catch (err) {
-                    if (dataStatus) dataStatus.textContent = '';
-                    console.error('Export Failed:', err);
-                    showError('Failed To Export Data');
-                }
-            });
+        exportDataBtn.addEventListener('click', () => {
+            openExportSelectionModal();
         });
     }
     if (importDataInput) {
@@ -1446,6 +1598,9 @@ window.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('showClockBar', isEnabled ? 'true' : 'false');
             if (clockBar) {
                 clockBar.style.display = isEnabled ? '' : 'none';
+            }
+            if (currentUser) {
+                dbSet(`/users/${currentUser.uid}/settings/showClockBar`, isEnabled);
             }
         });
     }
@@ -1653,6 +1808,9 @@ window.addEventListener('DOMContentLoaded', () => {
             showSuccess('Background Image Saved');
             bgLabel.style.display='none';
             bgPreview.style.height = '70%';
+            // if (currentUser) {
+            //     dbSet(`/users/${currentUser.uid}/settings/customBackground`, bgPendingDataUrl);
+            // }
         });
     }
     if (resetBgBtn) {
@@ -1666,6 +1824,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             updateBackground('');
             bgLabel.style.display='block';
+            // if (currentUser) {
+            //     await dbSet(`/users/${currentUser.uid}/settings/customBackground`, null);
+            // }
         });
     }
     function updateTime() {

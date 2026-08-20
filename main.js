@@ -265,7 +265,7 @@ function showSuccess(success) {
     });
     document.body.insertBefore(successDiv, document.body.firstChild);
 }
-function showConfirm(message, callback) {
+function showConfirm(message, callback, swapButtons = false) {
     const existing = document.getElementById("confirmDiv");
     if (existing) existing.remove();
     const confirmDiv = document.createElement("div");
@@ -282,7 +282,7 @@ function showConfirm(message, callback) {
     confirmDiv.style.transform = "translateX(-50%)";
     confirmDiv.style.textAlign = "center";
     confirmDiv.style.fontWeight = "bold";
-    confirmDiv.style.zIndex = "9999";
+    confirmDiv.style.zIndex = "999999";
     confirmDiv.style.transition = "top 0.4s ease";
     confirmDiv.style.display = "flex";
     confirmDiv.style.flexDirection = "column";
@@ -307,8 +307,13 @@ function showConfirm(message, callback) {
         confirmDiv.remove();
         callback(false);
     });
-    buttonContainer.appendChild(noBtn);
-    buttonContainer.appendChild(yesBtn);
+    if (swapButtons) {
+        buttonContainer.appendChild(yesBtn);
+        buttonContainer.appendChild(noBtn);
+    } else {
+        buttonContainer.appendChild(noBtn);
+        buttonContainer.appendChild(yesBtn);
+    }
     confirmDiv.appendChild(buttonContainer);
     document.body.insertBefore(confirmDiv, document.body.firstChild);
     setTimeout(() => {
@@ -330,7 +335,7 @@ function customPrompt(message, hidden = false, value) {
         overlay.style.display = "flex";
         overlay.style.alignItems = "center";
         overlay.style.justifyContent = "center";
-        overlay.style.zIndex = "9999";
+        overlay.style.zIndex = "999999";
         const box = document.createElement("div");
         box.style.background = "#333";
         box.style.color = "white";

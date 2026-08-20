@@ -123,6 +123,18 @@ this sucks because if i wanted to open a file like data.json which currently has
 
 the new server dir would look like this:
 ICSERVER
+    attachmenttracker.js
+    channelsstore.js
+    datastore.js
+    emailtemplates.js
+    gamesstore.js
+    groupsstore.js
+    partnersstore.js
+    privatestore.js
+    rules.json
+    server.js
+    usersstore.js
+    zonesstore.js
     data (folder)
         articles (folder)
             slug id (folder)
@@ -198,64 +210,8 @@ it may have more folders, but it is more organized which is way better.
 
 ---------------------------------------------------------------------------------------
 
-for the exporting different data types i want it so in the data tab of the settings when the export button is clicked it will open a popup like this
----------------------------------------------------------------
-|                      Export Your data                       |
-|            ------------------------------------             |
-|    Theme Data                                  (   O)       |
-|    Cloaking Settings                           (   O)       |
-|    Search Engine                               (   O)       |
-|    Backend URL                                 (   O)       |
-|    Timer Settings                              (   O)       |
-|    Song Data                                   (O   )       |
-|    Session Storage                             (O   )       |
-|    Local Storage                               (O   )       |
-|    Indexxed DB                                 (O   )       |
-|    Login Data                                  (O   )       |
-|_____________________________________________________________|
 
-it will only show the options for things like custom backend url, timer settings, and song data if you have that data.
-the theme data, cloaking settings, search engine, backend url, and timer settings should be on by default.
-when you click something like localstorage, all the settings that use localstorage will also toggle automaticcly (see below)
----------------------------------------------------------------
-|                      Export Your data                       |
-|            ------------------------------------             |
-|    Theme Data                                  (   O)       |
-|    Cloaking Settings                           (   O)       |
-|    Search Engine                               (   O)       |
-|    Backend URL                                 (   O)       |
-|    Timer Settings                              (   O)       |
-|    Song Data                                   (O   )       |
-|    Session Storage                             (O   )       |
-|    Local Storage                               (   O)       |
-|    Indexxed DB                                 (O   )       |
-|    Login Data                                  (O   )       |
-|_____________________________________________________________|
-same with indexxed DB
----------------------------------------------------------------
-|                      Export Your data                       |
-|            ------------------------------------             |
-|    Theme Data                                  (O   )       |
-|    Cloaking Settings                           (O   )       |
-|    Search Engine                               (O   )       |
-|    Backend URL                                 (O   )       |
-|    Timer Settings                              (O   )       |
-|    Song Data                                   (   O)       |
-|    Session Storage                             (O   )       |
-|    Local Storage                               (O   )       |
-|    Indexxed DB                                 (   O)       |
-|    Login Data                                  (   O)       |
-|_____________________________________________________________|
-if you have the login data option checked, before it lets you actually export the data it will make you confirm like this:
---------------------------------------------------------------
-|                         WARNING!!                          |
-|  Sharing This file With Others Will Let Them Login As You  |
-|                                                            |
-|   OK                                            CANCEL     |
-|____________________________________________________________|
-the cancel button is in the spot where the ok button should be on this because i actually care about my users
-
-I may do a similar system for importing data with a menu
+I may do a similar system for exporting data for importing data with a menu
 just a hypothetical so this makes sense.
 if you have already exported your data using the new system and are now importing data to infinite campus on another url.
 lets say you had everything selected and had every option available, here is what the import menu would look like:

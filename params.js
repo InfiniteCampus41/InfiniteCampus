@@ -1722,7 +1722,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             const plNow = playlists.find(p => p.id === openPlaylistId);
             if (plNow) renderPlaylistTracks(plNow);
         });
-        el.downloadLibBtn.addEventListener('click', () => downloadLibraryAsZip());
+        el.downloadLibBtn.addEventListener('click', () => downloadLibraryDataAsZip());
         async function loadJSZip() {
             if (window.JSZip) return window.JSZip;
             return new Promise((resolve, reject) => {
@@ -1733,23 +1733,88 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 document.head.appendChild(s);
             });
         }
-        async function downloadLibraryAsZip() {
+        function trackExt(blob) {
+            return blob.type.includes('ogg') ? 'ogg' : blob.type.includes('wav') ? 'wav' : blob.type.includes('flac') ? 'flac' : 'mp3';
+        }
+        async function downloadLibraryDataAsZip() {
             if (!localTracks.length) { showError('Library is empty'); return; }
-            showSaved('Preparing download…');
+            showSaved('Preparing library backup…');
             try {
                 const JSZip = await loadJSZip();
                 const zip = new JSZip();
+                const manifest = {
+                    type: 'library',
+                    exportedAt: new Date().toISOString(),
+                    tracks: [],
+                    playlists: playlists.map(pl => ({
+                        id: pl.id,
+                        name: pl.name,
+                        tracks: pl.tracks.map(t => t.source === 'local'
+                            ? { source: 'local', localId: t.localId, title: t.title, artUrl: t.artUrl }
+                            : { source: t.source, title: t.title, artUrl: t.artUrl, streamData: t.streamData })
+                    }))
+                };
                 for (const t of localTracks) {
                     const buf = await t.blob.arrayBuffer();
-                    const ext = t.blob.type.includes('ogg') ? 'ogg' : t.blob.type.includes('wav') ? 'wav' : t.blob.type.includes('flac') ? 'flac' : 'mp3';
-                    zip.file(`${sanitizeFilename(t.title||'track')}.${ext}`, buf);
+                    const ext = trackExt(t.blob);
+                    const file = `songs/${t.id}.${ext}`;
+                    zip.file(file, buf);
+                    manifest.tracks.push({
+                        id: t.id, title: t.title, artist: t.artist || '',
+                        artworkDataUrl: t.artworkDataUrl, position: t.position,
+                        _sourceStreamId: t._sourceStreamId || null, file
+                    });
                 }
+                zip.file('manifest.json', JSON.stringify(manifest, null, 2));
                 const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
                 triggerDownload(blob, 'My Library.zip');
                 showSaved('Download started');
             } catch(e) {
                 showSaved('Download failed', true);
                 console.error(e);
+            }
+        }
+        async function importLibraryDataFromZip(file) {
+            try {
+                const JSZip = await loadJSZip();
+                const zip = await JSZip.loadAsync(file);
+                const manifestFile = zip.file('manifest.json');
+                if (!manifestFile) { showError('Not A Valid Library Backup'); return; }
+                const manifest = JSON.parse(await manifestFile.async('string'));
+                if (manifest.type !== 'library') { showError('Not A Valid Library Backup'); return; }
+                showSaved('Importing library…');
+                for (const entry of manifest.tracks || []) {
+                    const zf = zip.file(entry.file);
+                    if (!zf) continue;
+                    const blob = await zf.async('blob');
+                    const existingIdx = localTracks.findIndex(lt => lt.id === entry.id);
+                    const track = {
+                        id: entry.id, title: entry.title, artist: entry.artist || '',
+                        blob, artworkDataUrl: entry.artworkDataUrl,
+                        position: existingIdx >= 0 ? localTracks[existingIdx].position : localTracks.length,
+                        _sourceStreamId: entry._sourceStreamId || null
+                    };
+                    if (existingIdx >= 0) localTracks[existingIdx] = track;
+                    else localTracks.push(track);
+                }
+                localTracks.forEach((t, i) => { if (!Number.isFinite(t.position)) t.position = i; });
+                for (const plEntry of manifest.playlists || []) {
+                    const existing = playlists.find(p => p.id === plEntry.id);
+                    if (existing) {
+                        existing.name = plEntry.name;
+                        existing.tracks = plEntry.tracks;
+                    } else {
+                        playlists.push({ id: plEntry.id, name: plEntry.name, tracks: plEntry.tracks });
+                    }
+                }
+                await saveAll();
+                savePlaylists();
+                refreshLibraryUI();
+                refreshPlaylistsHome();
+                showSaved('Library Imported');
+            } catch (e) {
+                console.error(e);
+                showError('Failed To Import Library Backup');
             }
         }
         async function downloadPlaylistAsZip(plId) {
@@ -1759,32 +1824,87 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             try {
                 const JSZip = await loadJSZip();
                 const zip = new JSZip();
+                const manifest = { type: 'playlist', exportedAt: new Date().toISOString(), playlist: { name: pl.name }, tracks: [] };
                 let idx = 1;
                 for (const t of pl.tracks) {
-                    let buf, ext = 'mp3';
+                    let buf = null, ext = 'mp3', file = null;
+                    let artist = '', artworkDataUrl = t.artUrl || FALLBACK_ART;
                     if (t.source === 'local') {
                         const local = localTracks.find(lt => lt.id === t.localId);
-                        if (!local) continue;
-                        buf = await local.blob.arrayBuffer();
-                        ext = local.blob.type.includes('ogg') ? 'ogg' : local.blob.type.includes('wav') ? 'wav' : local.blob.type.includes('flac') ? 'flac' : 'mp3';
+                        if (local) {
+                            buf = await local.blob.arrayBuffer();
+                            ext = trackExt(local.blob);
+                            file = `songs/${String(idx).padStart(2,'0')} - ${sanitizeFilename(local.title||'track')}.${ext}`;
+                            artist = local.artist || '';
+                            artworkDataUrl = local.artworkDataUrl || FALLBACK_ART;
+                        }
                     } else {
                         const sd = t.streamData;
-                        if (!sd?.downloadUrl) continue;
-                        try {
-                            const res = await fetch(sd.downloadUrl);
-                            if (!res.ok) continue;
-                            buf = await res.arrayBuffer();
-                        } catch { continue; }
+                        if (sd?.downloadUrl) {
+                            try {
+                                const res = await fetch(sd.downloadUrl);
+                                if (res.ok) {
+                                    buf = await res.arrayBuffer();
+                                    file = `songs/${String(idx).padStart(2,'0')} - ${sanitizeFilename(t.title||'track')}.${ext}`;
+                                }
+                            } catch {}
+                        }
                     }
-                    zip.file(`${String(idx).padStart(2,'0')} - ${sanitizeFilename(t.title||'track')}.${ext}`, buf);
+                    if (buf && file) zip.file(file, buf);
+                    manifest.tracks.push({
+                        source: t.source, title: t.title, artUrl: t.artUrl,
+                        artist, artworkDataUrl,
+                        streamData: t.streamData || null, file: buf ? file : null
+                    });
                     idx++;
                 }
+                zip.file('manifest.json', JSON.stringify(manifest, null, 2));
                 const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
                 triggerDownload(blob, `${sanitizeFilename(pl.name)}.zip`);
                 showSaved('Download started');
             } catch(e) {
                 showSaved('Download failed', true);
                 console.error(e);
+            }
+        }
+        async function importPlaylistDataFromZip(file) {
+            try {
+                const JSZip = await loadJSZip();
+                const zip = await JSZip.loadAsync(file);
+                const manifestFile = zip.file('manifest.json');
+                if (!manifestFile) { showError('Not A Valid Playlist Backup'); return; }
+                const manifest = JSON.parse(await manifestFile.async('string'));
+                if (manifest.type !== 'playlist') { showError('Not A Valid Playlist Backup'); return; }
+                showSaved('Importing playlist…');
+                let name = manifest.playlist?.name || 'Imported Playlist';
+                if (playlists.some(p => p.name === name)) name = `${name} (Imported)`;
+                const pl = { id: makeUUID(), name, tracks: [] };
+                for (const entry of manifest.tracks || []) {
+                    if (entry.source === 'local' && entry.file) {
+                        const zf = zip.file(entry.file);
+                        if (!zf) continue;
+                        const blob = await zf.async('blob');
+                        const newId = makeUUID();
+                        const title = entry.title || 'Untitled';
+                        const artworkDataUrl = entry.artworkDataUrl || entry.artUrl || FALLBACK_ART;
+                        localTracks.push({
+                            id: newId, title, artist: entry.artist || '',
+                            blob, artworkDataUrl, position: localTracks.length
+                        });
+                        pl.tracks.push({ source: 'local', localId: newId, title, artUrl: artworkDataUrl });
+                    } else if (entry.streamData) {
+                        pl.tracks.push({ source: entry.source || 'stream', title: entry.title, artUrl: entry.artUrl, streamData: entry.streamData });
+                    }
+                }
+                playlists.push(pl);
+                await saveAll();
+                savePlaylists();
+                refreshLibraryUI();
+                refreshPlaylistsHome();
+                showSaved(`Playlist "${pl.name}" Imported ✓`);
+            } catch (e) {
+                console.error(e);
+                showError('Failed To Import Playlist Backup');
             }
         }
         function sanitizeFilename(name) {
@@ -1797,6 +1917,58 @@ if (x3tfypage == '/InfiniteAbouts.html') {
             document.body.appendChild(a); a.click();
             setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
         }
+        function injectLibraryImportControls() {
+            if (el.downloadLibBtn && !document.getElementById('spImportLibInput')) {
+                const importLibInput = document.createElement('input');
+                importLibInput.type = 'file';
+                importLibInput.id = 'spImportLibInput';
+                importLibInput.accept = '.zip,application/zip';
+                importLibInput.hidden = true;
+                const importLibLabel = document.createElement('label');
+                importLibLabel.id = 'spImportLibBtn';
+                importLibLabel.className = el.downloadLibBtn.className;
+                importLibLabel.setAttribute('for', 'spImportLibInput');
+                importLibLabel.title = 'Import Library Backup (.zip)';
+                importLibLabel.innerHTML = el.downloadLibBtn.innerHTML.includes('<i')
+                    ? '<i class="ic ic-upload"></i>'
+                    : 'Import Library';
+                el.downloadLibBtn.insertAdjacentElement('afterend', importLibInput);
+                importLibInput.insertAdjacentElement('afterend', importLibLabel);
+                importLibInput.addEventListener('change', () => {
+                    const file = importLibInput.files && importLibInput.files[0];
+                    importLibInput.value = '';
+                    if (!file) return;
+                    showConfirm('Importing Will Merge These Songs And Playlists Into Your Library. Continue?', async (confirmed) => {
+                        if (!confirmed) return;
+                        await importLibraryDataFromZip(file);
+                    });
+                });
+            }
+            if (el.plDownloadBtn && !document.getElementById('spImportPlInput')) {
+                const importPlInput = document.createElement('input');
+                importPlInput.type = 'file';
+                importPlInput.id = 'spImportPlInput';
+                importPlInput.accept = '.zip,application/zip';
+                importPlInput.hidden = true;
+                const importPlLabel = document.createElement('label');
+                importPlLabel.id = 'spImportPlBtn';
+                importPlLabel.className = el.plDownloadBtn.className;
+                importPlLabel.setAttribute('for', 'spImportPlInput');
+                importPlLabel.title = 'Import Playlist Backup (.zip)';
+                importPlLabel.innerHTML = el.plDownloadBtn.innerHTML.includes('<i')
+                    ? '<i class="ic ic-upload"></i>'
+                    : 'Import Playlist';
+                el.plDownloadBtn.insertAdjacentElement('afterend', importPlInput);
+                importPlInput.insertAdjacentElement('afterend', importPlLabel);
+                importPlInput.addEventListener('change', () => {
+                    const file = importPlInput.files && importPlInput.files[0];
+                    importPlInput.value = '';
+                    if (!file) return;
+                    importPlaylistDataFromZip(file);
+                });
+            }
+        }
+        injectLibraryImportControls();
         async function resolveSCPermalinks(artistName, title) {
             const key = `${artistName}||${title}`;
             if (scCache[key]) return scCache[key];
