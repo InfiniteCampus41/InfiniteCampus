@@ -290,6 +290,19 @@ body.light-bg .y {
 #channels li:hover, #privateList li:hover {
     background: #2a2a2a;
 }
+#channelTopBarName {
+    color: #eee;
+    font-weight: 600;
+    font-size: 1.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#channelTopBarName:not(:empty)::before {
+    content: "#";
+    color: #777;
+    margin-right: 4px;
+}
 .chat-img{
     max-height:500px;
     max-width:500px;
@@ -1888,6 +1901,10 @@ main {
         width: 60% !important;
         margin: 10px auto !important;
     }
+    #channelTopBarName {
+        left:60px;
+        position:relative;
+    }
     .controls-group {
         width:100%;
     }
@@ -2228,10 +2245,19 @@ main {
 }
 #messagesTopBar {
     display: flex;
-    justify-content: flex-end;
-    padding: 0;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
     min-height: 0;
     background: #222;
+    border-bottom: 1px solid #333;
+    gap: 10px;
+}
+#messagesTopBarRight {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
 }
 .meta {
     display: flex;
@@ -2657,6 +2683,119 @@ main {
     margin-bottom:20px;
     font-size: 18px;
     opacity: 0.9;
+}
+#pinnedMessagesBtn {
+    background: none !important;
+    border: none !important;
+    color: #ccc !important;
+    font-size: 1.2em;
+    padding: 2px 8px !important;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+#pinnedMessagesBtn:hover {
+    color: #fff !important;
+}
+#pinnedMessagesList {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+}
+#pinnedMessagesList .pinnedMsgEmpty {
+    color: #888;
+    border:none;
+    border-radius:10px;
+    background:none;
+    text-align: center;
+    padding: 24px 10px;
+    font-size: 0.9em;
+}
+#pinnedMessagesList li.pinnedMsgItem {
+    display: flex;
+    gap: 10px;
+    padding: 8px;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+#pinnedMessagesList li.pinnedMsgItem:hover {
+    background: #262626;
+}
+#pinnedMessagesList li.pinnedMsgItem img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+#pinnedMessagesPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    max-width: 85vw;
+    max-height: 420px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#pinnedMessagesPanelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid #333;
+    color: #eee;
+    font-weight: 700;
+}
+#pinnedMessagesPanelHeader span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#pinnedMessagesWrap {
+    position: relative;
+}
+.pinnedMsgAuthor {
+    color: #eee;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+.pinnedMsgBody {
+    min-width: 0;
+    flex: 1;
+}
+.pinnedMsgHeader {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.pinnedMsgText {
+    color: #ccc;
+    font-size: 0.88em;
+    overflow-wrap: anywhere;
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.pinnedMsgTime {
+    color: #888;
+    font-size: 0.75em;
 }
 #planet-loader {
     position: fixed;

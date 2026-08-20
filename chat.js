@@ -45,6 +45,12 @@ const groupNameInput = document.getElementById("groupNameInput");
 const groupCreateBtn = document.getElementById("groupCreateBtn");
 const groupInviteInput = document.getElementById("groupInviteInput");
 const groupJoinBtn = document.getElementById("groupJoinBtn");
+const channelTopBarName = document.getElementById("channelTopBarName");
+const pinnedMessagesWrap = document.getElementById("pinnedMessagesWrap");
+const pinnedMessagesBtn = document.getElementById("pinnedMessagesBtn");
+const pinnedMessagesPanel = document.getElementById("pinnedMessagesPanel");
+const pinnedMessagesList = document.getElementById("pinnedMessagesList");
+const pinnedMessagesCloseBtn = document.getElementById("pinnedMessagesCloseBtn");
 const groupInfoBtn = document.getElementById("groupInfoBtn");
 const groupInfoPanel = document.getElementById("groupInfoPanel");
 const groupInfoCloseBtn = document.getElementById("groupInfoCloseBtn");
@@ -2349,6 +2355,9 @@ async function openPrivateChat(uid, name) {
     if (groupInfoBtn) groupInfoBtn.style.display = "none";
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (privateMenu) privateMenu.style.display = "none";
+    if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
+    togglePinnedMessagesPanel(false);
+    if (channelTopBarName) channelTopBarName.textContent = name || "";
     chatLog.style.display = "";
     chatMsgFunctions.style.display = "";
     sendBtn.style.display = "";
@@ -2748,6 +2757,8 @@ async function switchChannel(ch) {
     currentPrivateName = null;
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
+    if (channelTopBarName) channelTopBarName.textContent = ch;
+    refreshPinnedMessagesBar(ch);
     if (isGuest) {
         const chData = await dbGet(`channels/${ch}`);
         const canRead  = !!(chData?.guestRead  || !chData);
@@ -2807,6 +2818,83 @@ async function switchChannel(ch) {
     clearChannelMention(ch);
     renderChannelsFromDB();
 }
+let currentPinnedChannel = null;
+async function refreshPinnedMessagesBar(channelName) {
+    currentPinnedChannel = channelName;
+    if (!pinnedMessagesWrap) return;
+    togglePinnedMessagesPanel(false);
+    pinnedMessagesWrap.style.display = "";
+    try {
+        const pinned = await dbGet(`pinned/${channelName}`);
+        if (currentPinnedChannel !== channelName) return;
+        renderPinnedMessagesList(pinned || {});
+    } catch (e) {
+        if (currentPinnedChannel === channelName) renderPinnedMessagesList({});
+    }
+}
+function renderPinnedMessagesList(pinnedObj) {
+    const entries = Object.entries(pinnedObj || {}).sort((a, b) => Number(b[0]) - Number(a[0]));
+    if (!pinnedMessagesList) return;
+    pinnedMessagesList.innerHTML = "";
+    if (entries.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "pinnedMsgEmpty";
+        empty.textContent = "No Pinned Messages In This Channel Yet.";
+        pinnedMessagesList.appendChild(empty);
+        return;
+    }
+    for (const [ts, msg] of entries) {
+        const li = document.createElement("li");
+        li.className = "pinnedMsgItem";
+        const img = document.createElement("img");
+        img.src = msg.a ? `${BACKEND}${msg.a}` : "/res/discord.png";
+        img.onerror = () => { img.src = "/res/discord.png"; };
+        const body = document.createElement("div");
+        body.className = "pinnedMsgBody";
+        const header = document.createElement("div");
+        header.className = "pinnedMsgHeader";
+        const author = document.createElement("span");
+        author.className = "pinnedMsgAuthor";
+        author.textContent = msg.u || "Unknown";
+        const time = document.createElement("span");
+        time.className = "pinnedMsgTime";
+        time.textContent = formatTimestamp(Number(ts));
+        header.appendChild(author);
+        header.appendChild(time);
+        const textEl = document.createElement("div");
+        textEl.className = "pinnedMsgText";
+        textEl.textContent = buildReplyPreviewText(msg.t || "") || "[Attachment]";
+        body.appendChild(header);
+        body.appendChild(textEl);
+        li.appendChild(img);
+        li.appendChild(body);
+        li.onclick = () => {
+            togglePinnedMessagesPanel(false);
+            scrollToMessage(String(ts));
+        };
+        pinnedMessagesList.appendChild(li);
+    }
+}
+function togglePinnedMessagesPanel(forceState) {
+    if (!pinnedMessagesPanel) return;
+    const show = forceState !== undefined ? forceState : pinnedMessagesPanel.style.display !== "flex";
+    pinnedMessagesPanel.style.display = show ? "flex" : "none";
+}
+if (pinnedMessagesBtn) {
+    pinnedMessagesBtn.onclick = (e) => {
+        e.stopPropagation();
+        togglePinnedMessagesPanel();
+    };
+}
+if (pinnedMessagesCloseBtn) {
+    pinnedMessagesCloseBtn.onclick = () => togglePinnedMessagesPanel(false);
+}
+document.addEventListener("click", (e) => {
+    if (!pinnedMessagesWrap || !pinnedMessagesPanel) return;
+    if (pinnedMessagesPanel.style.display === "flex" && !pinnedMessagesWrap.contains(e.target)) {
+        togglePinnedMessagesPanel(false);
+    }
+});
 function startMetadataListener() {
     if (metadataListenerRef) return;
     const path = `metadata/${currentUser.uid}/privateChats`;
@@ -3707,6 +3795,9 @@ function showPrivateMenu() {
     if (privateMenu) privateMenu.style.display = "flex";
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (groupInfoBtn) groupInfoBtn.style.display = "none";
+    if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
+    togglePinnedMessagesPanel(false);
+    if (channelTopBarName) channelTopBarName.textContent = "";
     chatMsgFunctions.style.display = "none";
     sendBtn.style.display = "none";
     adminControls.style.display = "none";
@@ -3806,6 +3897,8 @@ async function openGroupChat(groupId) {
     hidePrivateMenu();
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (groupInfoBtn) groupInfoBtn.style.display = "";
+    if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
+    togglePinnedMessagesPanel(false);
     chatLog.style.display = "";
     chatLog.innerHTML = "";
     if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
@@ -3833,6 +3926,7 @@ async function pollGroupOnce(groupId, isInitialLoad) {
     if (currentGroupId !== groupId) return;
     currentGroupOwnerUid = group.ownerUid;
     currentGroupName = group.name;
+    if (channelTopBarName && isInitialLoad) channelTopBarName.textContent = group.name || "";
     const entries = Object.entries(group.messages || {}).sort((x, y) => {
         return Number(x[1].timestamp || x[0]) - Number(y[1].timestamp || y[0]);
     });

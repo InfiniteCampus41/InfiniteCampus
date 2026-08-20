@@ -298,6 +298,10 @@ i {
     mask-image: url('/icons/people-fill.svg');
     -webkit-mask-image: url('/icons/people-fill.svg');
 }
+.ic-pin-angle-fill {
+    mask-image: url('/icons/pin-angle-fill.svg');
+    -webkit-mask-image: url('/icons/pin-angle-fill.svg');
+}
 .ic-pip {
     mask-image: url('/icons/pip.svg');
     -webkit-mask-image: url('/icons/pip.svg');

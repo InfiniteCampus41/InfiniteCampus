@@ -164,9 +164,35 @@
                 </div>
                 <div id="messages">
                     <div id="messagesTopBar">
-                        <button id="groupInfoBtn" style="display:none;" type="button" title="Group Info">
-                            <i class="ic ic-info-circle"></i>
-                        </button>
+                        <span id="channelTopBarName">
+                        </span>
+                        <div id="messagesTopBarRight">
+                            <div id="pinnedMessagesWrap" style="display:none;">
+                                <button id="pinnedMessagesBtn" type="button" title="Pinned Messages">
+                                    <i class="ic ic-pin-angle-fill">
+                                    </i>
+                                </button>
+                                <div id="pinnedMessagesPanel" style="display:none;">
+                                    <div id="pinnedMessagesPanelHeader">
+                                        <span>
+                                            <i class="ic ic-pin-angle-fill">
+                                            </i>
+                                             Pinned Messages
+                                        </span>
+                                        <button id="pinnedMessagesCloseBtn" class="closeBtn" type="button">
+                                            <i class="ic ic-x-lg">
+                                            </i>
+                                        </button>
+                                    </div>
+                                    <ul id="pinnedMessagesList">
+                                    </ul>
+                                </div>
+                            </div>
+                            <button id="groupInfoBtn" style="display:none;" type="button" title="Group Info">
+                                <i class="ic ic-info-circle">
+                                </i>
+                            </button>
+                        </div>
                     </div>
                     <div id="privateMenu" style="display:none;">
                         <fieldset>
