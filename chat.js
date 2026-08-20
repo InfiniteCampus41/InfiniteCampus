@@ -1630,7 +1630,7 @@ async function renderMessageInstant(id, msg) {
                     editBtn.onclick = () => {
                         if (div.querySelector("textarea")) return;
                         const textarea = document.createElement("textarea");
-                        textarea.value = rawText;
+                        textarea.value = textDiv.dataset.rawText ?? rawText;
                         textarea.style.cssText = "width:100%;box-sizing:border-box;resize:vertical;background:#121212;color:#fff;border:1px solid #555;border-radius:4px;padding:4px;margin-top:4px;";
                         const textDivHeight = textDiv.offsetHeight;
                         if (textDivHeight > 0) textarea.style.height = textDivHeight + "px";
@@ -1654,6 +1654,7 @@ async function renderMessageInstant(id, msg) {
                             cancelBtn.remove();
                             textDiv.style.display = "block";
                             textDiv.innerHTML = buildSafeText(newText);
+                            textDiv.dataset.rawText = newText;
                         };
                         cancelBtn.onclick = () => { 
                             textarea.remove(); 
@@ -1661,9 +1662,20 @@ async function renderMessageInstant(id, msg) {
                             cancelBtn.remove(); 
                             textDiv.style.display = "block";
                         };
+                        textarea.onkeydown = (e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                saveBtn.click();
+                            } else if (e.key === "Escape") {
+                                e.preventDefault();
+                                cancelBtn.click();
+                            }
+                        };
                         textDiv.after(textarea);
                         textarea.after(saveBtn);
                         saveBtn.after(cancelBtn);
+                        textarea.focus();
+                        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
                     };
                     msgBtns.insertBefore(editBtn, reactBtn);
                 }
@@ -3184,7 +3196,7 @@ onAuthStateChanged(auth, async user => {
         } else {
             switchChannel("General");
         }
-        if (_dmUid || _channel || _msgId || _joinCode) {
+        if (_dmUid || _msgId || _joinCode) {
             history.replaceState(null, "", window.location.pathname);
         }
     }

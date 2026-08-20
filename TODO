@@ -9,3 +9,77 @@ TODO
         Here Are The Steps To Do So:
             Add User Pagnation To Chat, Admin Chat Panel, Articles, Movies, Movie Applicants, Poll Results, And Partners List
             Add Pagnation To Movies, Movie Applicants, Articles, Partners, Future Updates, Updates, Poll Results, And Games List (When Added)
+
+
+--- most important ---
+
+IN PROGRESS    
+1: separate data into different json files  and server folders. ex for channel message data:
+channels (folder)
+    channelname (folder)
+        messages.json
+        cache.json
+        otherdata.json
+        attachments.json
+
+2: make it so data for messages sent from the website chat into the discord by the bot besides the message id and attachment data are not stored. (no data of these messages should be in the messages.json besides the discord message id on the website chat message).
+
+3: add a discord chat lockdown feature that will disable chatting for all non admin users on the chat and disable file uploading to the discord
+
+4: make it so when a data set is null, it gets deleted
+
+
+
+
+
+--- less important but still needs done ---
+
+5: make it so every anon user gets a unique id maybe based on a combination of ip and hardware
+
+6: add the banning system and make it work with the anon ids
+
+7: make it so when a user signs up, their displayname is set to the next user's name if not taken. if it is taken then go up to the next number
+
+8: fix discord message deleting for admin users deleting anon users
+
+9: Allow admins to edit anon user's messages
+
+10: add alternitave link options if the main one goes down in the zonesstore logic
+
+
+
+
+
+--- minor bugs and stuff but still will be added ---
+
+11: make it so profile pics can be uploaded to the api and are stored on the api
+
+12: make it so partner pics are stored on the api and served from the api
+
+FIXED        13: fix message editing glitch where if you edit a message twice it goes back to how it used to be.
+
+14: Add idle, dnd, and invisible statuses
+
+15: different games sources
+
+16: remove updates page and replace with patch notes page that will get from a discord channel for the messages.
+
+
+
+
+
+--- even less important. might not be added ---
+
+17: hardcode endpoints for everything instead of the current rules system
+
+18: in the admin chat panel, add a online user viewer
+
+19: youtube to mp3 and mp4 converter
+
+20: mp3 file tag editor like tagmp3
+
+IN PROGRESS     21: just playlist export and imports
+
+IN PROGRESS     22: export data without music if music exists option
+
+i put the idea framework in the progress.txt file

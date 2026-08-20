@@ -1,0 +1,279 @@
+this is for the first todo entry its going to take a while to do so im putting the idea here
+
+data (main data folder in root of server)
+	articles (folder)
+		slug num (folder)
+			data.json (stores the author, desc, title, and views)
+	channels (folder)
+		channel name (folder) (or assign an id to each channel when created or if it doesn't have one and use the id as the folder name)
+			messages.json (stores all message data for this channel)
+			cache.json (stores all pending edits, deletes, reacts, username changes that need a bit to go through)
+			misc.json (stores the read/write data, channel name if ids are used, the typing data, the pinned messages, the discord channel map, etc)
+			attachments.json (stores the attachment urls just like the current attachments.json for this channel)
+	donations (folder)
+		data.json (stores the donation data)
+	private (folder)
+		chat id (each private chat will have an id assigned to it and used as the folder name) (folder)
+			metadata.json (the metadata for each user in this private chat including lastread and unreadcount and lastmessagetime)
+			messages.json (the messages between the two users in this private chat)
+			misc.json (any other data of the private chat like attachments)
+	notes (folder)
+		data.json (stores the data for the notes)
+	partners (folder)
+		partner id (folder) (each partner will be assigned an id which will be the name of the folder)
+			data.json (will store the data for the partner including the user id that has it, the name, the desc, the link, and the photo)
+	notifications (folder)
+		user id (folder)
+			tokens.json (will store the user's pushtokens for notifications)
+			settings.json (will store the user's settings for notifications)
+	restrictedwords (folder)
+		data.json (will store the restricted words)
+	users (folder)
+		user id (folder)
+			profile (folder)
+				roles.json (will store the user's roles) the roles are: isOwner, isTester, isCoOwner, isHAdmin, isAdmin, isDev, isUploader, premuim3, premium2, premium1, milestone, isPartner, verified, isSus, isDonater, isGuesser, isLink, blocksi, guardian, lanschool,linewize, secure, FortiGuard, lightspeed, cisco, contentkeeper, deledao, iboss, barracuda, and isUploader
+				data.json (will store the other data of the user including the bio, dUsername, displayName, pic, uploads, votes, subbed, and online)
+			settings (folder)
+				data.json (will store the user's color, showMentions, theme preferences, betterWeather, etc)
+	games (folder)
+		games.json (will have the existing games.json logic)
+		hidden.json (the hidden games will go here now)
+	movies (folder)
+		apply (folder)
+			apply.json (will be where the apply data is stored now)
+			movieaccepts (folder)
+				the json files for pending movie accepts will now go here
+			applychunks (folder)
+				existing logic for applicant chunks will go here if there is any logic
+			uploads_temp (folder)
+				existing uploads temp logic will go here
+			applicants (folder)
+				existing applicant logic will go here
+		accepted (folder)
+			movies.json will be here now
+			subtitles (folder)
+				subtitles will go here
+			movies (folder)
+				movie files will go here
+	logs (folder)
+		acclogs.json will go here now
+		report.json will go here now
+		archive (folder)
+			archive for reports json is here now
+	groups (folder)
+		group id (folder)
+			data.json (will store data for id, name, owner uid, members, invcode, invlink, createdat, welcomemsgid, and lastread)
+			messages.json (will store message data for the group chat)
+			misc.json (will store other data for the group chat like attachments)
+		data.json (will store the next id)
+	uploads (folder)
+		using the uploadthis logis, this is where that folder is now.
+	templates (folder)
+		the email templates will go here now
+
+for reference this is what the server dir looks like now:
+ICSERVER
+    apply (folder)
+    apply_chunks (folder)
+    archive (folder)
+        apr2026report.json
+        may2026report.json
+        jun2026report.json
+        jul2026report.json
+    movieaccepts (folder)
+    movies (folder)
+        the movies are stored here
+    subtitles (folder)
+        the subtitles are stored here
+    templates (folder)
+        email_change.html
+        email_verify.html
+        password_reset.html
+        premium_expire.html
+        premium_notice.html
+        premuim_purchased.html
+        two_factor.html
+    uploads (folder)
+    uploads_temp (folder)
+    .env
+    acclogs.json
+    admin.json
+    apply.json
+    attachments.json
+    attachmentTracker.js
+    data.json
+    discord_channel_map.json
+    discordids.json
+    emailTemplates.js
+    games.json
+    gamesStore.js
+    groups.json
+    groupsStore.js
+    movies.json
+    package.json
+    package-lock.json
+    report.json
+    restrictedwords.json
+    rules.json
+    server.js
+    users.json
+    zonesStore.js
+
+this sucks because if i wanted to open a file like data.json which currently has all message data it takes almost a minute to open.
+
+the new server dir would look like this:
+ICSERVER
+    data (folder)
+        articles (folder)
+            slug id (folder)
+                data.json
+        channels (folder)
+            channel id (folder)
+                messages.json
+                cache.json
+                misc.json
+                attachments.json
+        donations (folder)
+            data.json
+        private (folder)
+            chat id (folder)
+                metadata.json
+                messages.json
+                misc.json
+        notes (folder)
+            data.json
+        partners (folder)
+            partner id (folder)
+                data.json
+        notifications (folder)
+            user id (folder)
+                tokens.json
+                settings.json
+        restrictedwords (folder)
+            data.json
+        users (folder)
+            user id (folder)
+                profile (folder)
+                    roles.json
+                    data.json
+                settings (folder)
+                    data.json
+        games (folder)
+            games.json
+            hidden.json
+        movies (folder)
+            apply (folder)
+                apply.json
+                movieaccepts (folder)
+                applychunks (folder)
+            accepted (folder)
+                movies.json
+                subtitles (folder)
+                movies (folder)
+        logs (folder)
+            acclogs.json
+            report.json
+            archive (folder)
+                apr2026report.json
+                may2026report.json
+                jun2026report.json
+                jul2026report.json
+        groups (folder)
+            data.json
+            group id (folder)
+                data.json
+                messages.json
+                misc.json
+        uploads (folder)
+        templates (folder)
+            email_change.html
+            email_verify.html
+            password_reset.html
+            premium_expire.html
+            premium_notice.html
+            premuim_purchased.html
+            two_factor.html
+
+it may have more folders, but it is more organized which is way better.
+
+---------------------------------------------------------------------------------------
+
+for the exporting different data types i want it so in the data tab of the settings when the export button is clicked it will open a popup like this
+---------------------------------------------------------------
+|                      Export Your data                       |
+|            ------------------------------------             |
+|    Theme Data                                  (   O)       |
+|    Cloaking Settings                           (   O)       |
+|    Search Engine                               (   O)       |
+|    Backend URL                                 (   O)       |
+|    Timer Settings                              (   O)       |
+|    Song Data                                   (O   )       |
+|    Session Storage                             (O   )       |
+|    Local Storage                               (O   )       |
+|    Indexxed DB                                 (O   )       |
+|    Login Data                                  (O   )       |
+|_____________________________________________________________|
+
+it will only show the options for things like custom backend url, timer settings, and song data if you have that data.
+the theme data, cloaking settings, search engine, backend url, and timer settings should be on by default.
+when you click something like localstorage, all the settings that use localstorage will also toggle automaticcly (see below)
+---------------------------------------------------------------
+|                      Export Your data                       |
+|            ------------------------------------             |
+|    Theme Data                                  (   O)       |
+|    Cloaking Settings                           (   O)       |
+|    Search Engine                               (   O)       |
+|    Backend URL                                 (   O)       |
+|    Timer Settings                              (   O)       |
+|    Song Data                                   (O   )       |
+|    Session Storage                             (O   )       |
+|    Local Storage                               (   O)       |
+|    Indexxed DB                                 (O   )       |
+|    Login Data                                  (O   )       |
+|_____________________________________________________________|
+same with indexxed DB
+---------------------------------------------------------------
+|                      Export Your data                       |
+|            ------------------------------------             |
+|    Theme Data                                  (O   )       |
+|    Cloaking Settings                           (O   )       |
+|    Search Engine                               (O   )       |
+|    Backend URL                                 (O   )       |
+|    Timer Settings                              (O   )       |
+|    Song Data                                   (   O)       |
+|    Session Storage                             (O   )       |
+|    Local Storage                               (O   )       |
+|    Indexxed DB                                 (   O)       |
+|    Login Data                                  (   O)       |
+|_____________________________________________________________|
+if you have the login data option checked, before it lets you actually export the data it will make you confirm like this:
+--------------------------------------------------------------
+|                         WARNING!!                          |
+|  Sharing This file With Others Will Let Them Login As You  |
+|                                                            |
+|   OK                                            CANCEL     |
+|____________________________________________________________|
+the cancel button is in the spot where the ok button should be on this because i actually care about my users
+
+I may do a similar system for importing data with a menu
+just a hypothetical so this makes sense.
+if you have already exported your data using the new system and are now importing data to infinite campus on another url.
+lets say you had everything selected and had every option available, here is what the import menu would look like:
+---------------------------------------------------------------
+|                        Import Data                          |
+|            ------------------------------------             |
+|    Select All                                  (   O)       |
+|    --------------------------------------------------       |                   
+|    Theme Data                                  (   O)       |
+|    Cloaking Settings                           (   O)       |
+|    Search Engine                               (   O)       |
+|    Backend URL                                 (   O)       |
+|    Timer Settings                              (   O)       |
+|    Song Data                                   (   O)       |
+|    Session Storage                             (   O)       |
+|    Local Storage                               (   O)       |
+|    Indexxed DB                                 (   O)       |
+|    Login Data                                  (   O)       |
+|                          IMPORT                             |
+|_____________________________________________________________|
+you would be able to customize what gets overwritten in your settings and now there is a select all option
