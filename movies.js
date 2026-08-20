@@ -12,9 +12,22 @@ let currentlyOpenActions = null;
 let finishingWatcher = null;
 let currentSubtitleBlobUrl = null;
 let autoOpenedMovie = false;
+let moviesStatusPoll = null;
 const currentfile = document.getElementById("currentFile");
 const movies = document.getElementById("movies");
 const section = document.getElementById("section");
+document.getElementById("watchVideo")?.addEventListener("error", () => {
+    if (document.getElementById("watchPanel")?.style.display !== "flex") return;
+    fetch(BACKEND + "/api/movies_status_x9a7b2", { headers: { "ngrok-skip-browser-warning": "true" } })
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.disabled) {
+                showError("Movies Have Been Taken Down By An Admin");
+                closeWatchPanel();
+            }
+        })
+        .catch(() => {});
+});
 async function fetchAPI(endpoint, body) {
     const token = null;
     const headers = { "Content-Type": "application/json" };
@@ -898,11 +911,36 @@ async function openWatchPanel(name, subtitleUrl = null) {
     vpUpdateVolIcon();
     vpUpdateVolSlider();
     vpUpdatePlayIcon();
+    startMoviesStatusPoll();
+}
+function startMoviesStatusPoll() {
+    stopMoviesStatusPoll();
+    moviesStatusPoll = setInterval(async () => {
+        try {
+            const res = await fetch(BACKEND + "/api/movies_status_x9a7b2", {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (data && data.disabled) {
+                stopMoviesStatusPoll();
+                showError("Movies Have Been Taken Down By An Admin");
+                closeWatchPanel();
+            }
+        } catch (err) {
+        }
+    }, 4000);
+}
+function stopMoviesStatusPoll() {
+    if (moviesStatusPoll) {
+        clearInterval(moviesStatusPoll);
+        moviesStatusPoll = null;
+    }
 }
 function closeWatchPanel() {
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
     const before = document.getElementById("before");
+    stopMoviesStatusPoll();
     updateMovieURL(null);
     autoOpenedMovie = false;
     player.pause();
