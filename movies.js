@@ -13,6 +13,9 @@ let finishingWatcher = null;
 let currentSubtitleBlobUrl = null;
 let autoOpenedMovie = false;
 let moviesStatusPoll = null;
+let MOVIES_LOCKED_DOWN = false;
+let movieLockdownSource = null;
+let manuallySelectedMovie = false;
 const currentfile = document.getElementById("currentFile");
 const movies = document.getElementById("movies");
 const section = document.getElementById("section");
@@ -28,6 +31,30 @@ document.getElementById("watchVideo")?.addEventListener("error", () => {
         })
         .catch(() => {});
 });
+function handleMovieLockdownUpdate(disabled) {
+    MOVIES_LOCKED_DOWN = !!disabled;
+    if (!MOVIES_LOCKED_DOWN) return;
+    if (document.getElementById("watchPanel")?.style.display === "flex") {
+        showError("Movies Have Been Taken Down By An Admin");
+        closeWatchPanel();
+    }
+}
+function initMovieLockdownListener() {
+    if (movieLockdownSource || typeof EventSource === "undefined") return;
+    try {
+        movieLockdownSource = new EventSource(BACKEND + "/api/movies_lockdown_stream_x9a7b2");
+        movieLockdownSource.onmessage = (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                handleMovieLockdownUpdate(data?.disabled);
+            } catch {}
+        };
+        movieLockdownSource.onerror = () => {
+        };
+    } catch (err) {
+        console.warn("Movie Lockdown Live Listener Unavailable:", err);
+    }
+}
 async function fetchAPI(endpoint, body) {
     const token = null;
     const headers = { "Content-Type": "application/json" };
@@ -310,6 +337,7 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
         });
         movieDiv.querySelector(".watch-btn").addEventListener("click", (e) => {
             e.stopPropagation();
+            manuallySelectedMovie = true;
             openWatchPanel(v.name, v.subtitleUrl || null);
         });
         box.appendChild(movieDiv);
@@ -848,6 +876,10 @@ document.addEventListener("fullscreenchange", () => {
     vpShowUI();
 });
 async function openWatchPanel(name, subtitleUrl = null) {
+    if (MOVIES_LOCKED_DOWN) {
+        showError("Movies Have Been Taken Down By An Admin");
+        return;
+    }
     updateMovieURL(name);
     const panel = document.getElementById("watchPanel");
     const player = document.getElementById("watchVideo");
@@ -964,12 +996,13 @@ function closeWatchPanel() {
 window.openWatchPanel = openWatchPanel;
 window.closeWatchPanel = closeWatchPanel;
 loadMovies().then(() => {
+    if (manuallySelectedMovie) return;
     const movie = getMovieFromURL();
     if (!movie) return;
     const found = MOVIE_CACHE.find(
         m => m.name.toLowerCase() === decodeURIComponent(movie).toLowerCase()
     );
-    if (found) {
+    if (found && !manuallySelectedMovie) {
         autoOpenedMovie = true;
         openWatchPanel(found.name, found.subtitleUrl || null);
     }
@@ -999,3 +1032,4 @@ window.filterMovies = filterMovies;
 window.uploadApply = uploadApply;
 checkNetworkSpeed();
 setInterval(checkNetworkSpeed, 5000);
+initMovieLockdownListener();
