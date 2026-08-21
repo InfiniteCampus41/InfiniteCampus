@@ -534,6 +534,71 @@ typingIndicator.style.color = "#aaa";
 typingIndicator.style.marginTop = "4px";
 typingIndicator.style.display = "none";
 reply.insertAdjacentElement("beforebegin", typingIndicator);
+const chatLockdownNotice = document.createElement("div");
+chatLockdownNotice.id = "chatLockdownNotice";
+chatLockdownNotice.style.display = "none";
+chatLockdownNotice.style.flex = "1";
+chatLockdownNotice.style.flexDirection = "column";
+chatLockdownNotice.style.alignItems = "center";
+chatLockdownNotice.style.justifyContent = "center";
+chatLockdownNotice.style.textAlign = "center";
+chatLockdownNotice.style.padding = "20px";
+chatLockdownNotice.innerHTML = `
+    <div style="font-weight:bold;font-size:1.15em;color:#eee;">The Chat Has Been Locked Down</div>
+    <div style="margin-top:6px;color:#aaa;">Please Come Back Later</div>
+`;
+chatLog.insertAdjacentElement("afterend", chatLockdownNotice);
+let chatLockedDown = false;
+function setChatLockdownUI(locked) {
+    chatLockedDown = !!locked;
+    if (chatLockedDown) {
+        chatLog.style.display = "none";
+        chatLockdownNotice.style.display = "flex";
+        if (!sendBtn.disabled) sendBtn.dataset.lockdownDisabled = "1";
+        sendBtn.disabled = true;
+        if (!chatInput.disabled) chatInput.dataset.lockdownDisabled = "1";
+        chatInput.disabled = true;
+    } else {
+        chatLog.style.display = "";
+        chatLockdownNotice.style.display = "none";
+        if (sendBtn.dataset.lockdownDisabled === "1") {
+            sendBtn.disabled = false;
+            delete sendBtn.dataset.lockdownDisabled;
+        }
+        if (chatInput.dataset.lockdownDisabled === "1") {
+            chatInput.disabled = false;
+            delete chatInput.dataset.lockdownDisabled;
+        }
+    }
+}
+(async function initChatLockdownStatus() {
+    try {
+        const res = await fetch(`${BACKEND}/api/discord_chat_lockdown_status_x9a7b2`);
+        const json = await res.json();
+        setChatLockdownUI(!!json?.locked);
+    } catch (e) {
+        console.warn("Failed To Load Chat Lockdown Status:", e);
+    }
+    try {
+        const lockdownStream = new EventSource(`${BACKEND}/api/discord_chat_lockdown_stream_x9a7b2`);
+        lockdownStream.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                setChatLockdownUI(!!data?.locked);
+            } catch {}
+        };
+        lockdownStream.onerror = () => {};
+    } catch (e) {
+        console.warn("Failed To Connect To Chat Lockdown Stream:", e);
+    }
+    setInterval(async () => {
+        try {
+            const res = await fetch(`${BACKEND}/api/discord_chat_lockdown_status_x9a7b2`);
+            const json = await res.json();
+            setChatLockdownUI(!!json?.locked);
+        } catch (e) {}
+    }, 15000);
+})();
 chatLog.addEventListener("scroll", () => {
     const distanceFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
     autoScrollEnabled = distanceFromBottom < 40;
@@ -2389,7 +2454,12 @@ async function openPrivateChat(uid, name) {
     if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
     togglePinnedMessagesPanel(false);
     if (channelTopBarName) channelTopBarName.textContent = name || "";
-    chatLog.style.display = "";
+    if (chatLockedDown) {
+        chatLog.style.display = "none";
+        return;
+    } else {
+        chatLog.style.display = "";
+    }
     chatMsgFunctions.style.display = "";
     sendBtn.style.display = "";
     currentPrivateUid = uid;
@@ -2780,7 +2850,12 @@ async function switchChannel(ch) {
     if (groupInfoBtn) groupInfoBtn.style.display = "none";
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (privateMenu) privateMenu.style.display = "none";
-    chatLog.style.display = "";
+    if (chatLockedDown) {
+        chatLog.style.display = "none";
+        return;
+    } else {
+        chatLog.style.display = "";
+    }
     chatMsgFunctions.style.display = "";
     sendBtn.style.display = "";
     {
@@ -2942,6 +3017,10 @@ function startMetadataListener() {
     }, "privateChats");
 }
 sendBtn.onclick = async () => {
+    if (chatLockedDown) {
+        showError("The Chat Is Currently Locked Down. Please Come Back Later.");
+        return;
+    }
     if (currentGroupId) {
         if (!currentUser || isGuest) { showError("You Must Be Logged In To Use Group Chats."); return; }
         const text = chatInput.value.trim();
@@ -3843,8 +3922,14 @@ function switchSidebarTab(tab) {
 }
 function showPrivateMenu() {
     chatLog.innerHTML = "";
+    if (chatLockedDown) {
+        if (privateMenu) privateMenu.style.display = "none";
+        chatLog.style.display = "none";
+        return;
+    } else {
+        if (privateMenu) privateMenu.style.display = "flex";
+    }
     chatLog.style.display = "";
-    if (privateMenu) privateMenu.style.display = "flex";
     if (groupInfoPanel) groupInfoPanel.style.display = "none";
     if (groupInfoBtn) groupInfoBtn.style.display = "none";
     if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
@@ -3951,7 +4036,12 @@ async function openGroupChat(groupId) {
     if (groupInfoBtn) groupInfoBtn.style.display = "";
     if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
     togglePinnedMessagesPanel(false);
-    chatLog.style.display = "";
+    if (chatLockedDown) {
+        chatLog.style.display = "none";
+        return;
+    } else {
+        chatLog.style.display = "";
+    }
     chatLog.innerHTML = "";
     if (sidebar.classList.contains("open")) sidebar.classList.toggle("open");
     let attachBtn = document.getElementById("chatAttachBtn");

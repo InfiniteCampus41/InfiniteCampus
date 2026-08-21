@@ -1,213 +1,106 @@
-this is for the first todo entry its going to take a while to do so im putting the idea here
+this was for the first todo entry
 
-data (main data folder in root of server)
-	articles (folder)
-		slug num (folder)
-			data.json (stores the author, desc, title, and views)
-	channels (folder)
-		channel name (folder) (or assign an id to each channel when created or if it doesn't have one and use the id as the folder name)
-			messages.json (stores all message data for this channel)
-			cache.json (stores all pending edits, deletes, reacts, username changes that need a bit to go through)
-			misc.json (stores the read/write data, channel name if ids are used, the typing data, the pinned messages, the discord channel map, etc)
-			attachments.json (stores the attachment urls just like the current attachments.json for this channel)
-	donations (folder)
-		data.json (stores the donation data)
-	private (folder)
-		chat id (each private chat will have an id assigned to it and used as the folder name) (folder)
-			metadata.json (the metadata for each user in this private chat including lastread and unreadcount and lastmessagetime)
-			messages.json (the messages between the two users in this private chat)
-			misc.json (any other data of the private chat like attachments)
-	notes (folder)
-		data.json (stores the data for the notes)
-	partners (folder)
-		partner id (folder) (each partner will be assigned an id which will be the name of the folder)
-			data.json (will store the data for the partner including the user id that has it, the name, the desc, the link, and the photo)
-	notifications (folder)
-		user id (folder)
-			tokens.json (will store the user's pushtokens for notifications)
-			settings.json (will store the user's settings for notifications)
-	restrictedwords (folder)
-		data.json (will store the restricted words)
-	users (folder)
-		user id (folder)
-			profile (folder)
-				roles.json (will store the user's roles) the roles are: isOwner, isTester, isCoOwner, isHAdmin, isAdmin, isDev, isUploader, premuim3, premium2, premium1, milestone, isPartner, verified, isSus, isDonater, isGuesser, isLink, blocksi, guardian, lanschool,linewize, secure, FortiGuard, lightspeed, cisco, contentkeeper, deledao, iboss, barracuda, and isUploader
-				data.json (will store the other data of the user including the bio, dUsername, displayName, pic, uploads, votes, subbed, and online)
-			settings (folder)
-				data.json (will store the user's color, showMentions, theme preferences, betterWeather, etc)
-	games (folder)
-		games.json (will have the existing games.json logic)
-		hidden.json (the hidden games will go here now)
-	movies (folder)
-		apply (folder)
-			apply.json (will be where the apply data is stored now)
-			movieaccepts (folder)
-				the json files for pending movie accepts will now go here
-			applychunks (folder)
-				existing logic for applicant chunks will go here if there is any logic
-			uploads_temp (folder)
-				existing uploads temp logic will go here
-			applicants (folder)
-				existing applicant logic will go here
-		accepted (folder)
-			movies.json will be here now
-			subtitles (folder)
-				subtitles will go here
-			movies (folder)
-				movie files will go here
-	logs (folder)
-		acclogs.json will go here now
-		report.json will go here now
-		archive (folder)
-			archive for reports json is here now
-	groups (folder)
-		group id (folder)
-			data.json (will store data for id, name, owner uid, members, invcode, invlink, createdat, welcomemsgid, and lastread)
-			messages.json (will store message data for the group chat)
-			misc.json (will store other data for the group chat like attachments)
-		data.json (will store the next id)
-	uploads (folder)
-		using the uploadthis logis, this is where that folder is now.
-	templates (folder)
-		the email templates will go here now
+the server dir looks beautiful here it is
 
-for reference this is what the server dir looks like now:
-ICSERVER
-    apply (folder)
-    apply_chunks (folder)
-    archive (folder)
-        apr2026report.json
-        may2026report.json
-        jun2026report.json
-        jul2026report.json
-    movieaccepts (folder)
-    movies (folder)
-        the movies are stored here
-    subtitles (folder)
-        the subtitles are stored here
-    templates (folder)
-        email_change.html
-        email_verify.html
-        password_reset.html
-        premium_expire.html
-        premium_notice.html
-        premuim_purchased.html
-        two_factor.html
-    uploads (folder)
-    uploads_temp (folder)
+ICSERVER (root folder)
+    data (folder)
+        articles (folder)
+            slug id (folder) each slug id has its own folder
+                data.json
+        channels (folder)
+            channel name (folder) each channel name has its own folder
+                attachments.json
+                cache.json
+                messages.json
+                misc.json
+        discord (folder)
+            discordids.json
+        donations (folder)
+            data.json
+        games (folder)
+            games.json
+            hidden.json
+        groups (folder)
+            group id (folder) each group has its own folder
+                data.json
+                messages.json
+                misc.json
+            data.json
+        logs (folder)
+            archive (folder)
+                all the old report.json files go here
+            acclogs.json
+            report.json
+        movies (folder)
+            accepted (folder)
+                movies (folder)
+                    all the mp4 files go here
+                subtitles (folder)
+                    all the .vtt files go here
+                movies.json
+            apply (folder)
+                applicants (folder)
+                    movie applicants go here
+                applychunks (folder)
+                    when chunks are going into an mp4 they go here
+                movieaccepts (folder)
+                    backup data for when the server restarts while accepting
+                uploads_temp (folder)
+                    when uploading a movie chunks are stored here
+                apply.json
+        notes (folder)
+            data.json
+        notifications (folder)
+            user id (folder) each user id gets their own folder
+                settings.json
+                tokens.json
+        partners (folder)
+            partner id (folder) each partner gets their own folder
+                data.json
+            _index.json
+        private (folder)
+            private chat id (folder) each private chat gets it's own id
+                messages.json
+                metadata.json
+                misc.json
+            _index.json
+        restrictedwords (folder)
+            data.json
+        site (folder)
+            data.json
+        templates (folder)
+            the email templates go here
+        updates (folder)
+            data.json
+        uploads (folder)
+            when using the 10 min file upload feature, uploads will be stored here
+            tmp (folder)
+                upload chunks get stored here
+        users (folder)
+            user id (folder) each user gets their own folder
+                profile (folder)
+                    data.json
+                    roles.json
+                settings (folder)
+                    data.json
+    node_modules (folder)
+    public (folder)
+        index.html
     .env
-    acclogs.json
     admin.json
-    apply.json
-    attachments.json
-    attachmentTracker.js
-    data.json
-    discord_channel_map.json
-    discordids.json
-    emailTemplates.js
-    games.json
-    gamesStore.js
-    groups.json
-    groupsStore.js
-    movies.json
-    package.json
-    package-lock.json
-    report.json
-    restrictedwords.json
-    rules.json
-    server.js
-    users.json
-    zonesStore.js
-
-this sucks because if i wanted to open a file like data.json which currently has all message data it takes almost a minute to open.
-
-the new server dir would look like this:
-ICSERVER
     attachmenttracker.js
     channelsstore.js
     datastore.js
     emailtemplates.js
-    gamesstore.js
     groupsstore.js
+    package.json
+    package-lock.json
     partnersstore.js
     privatestore.js
     rules.json
     server.js
     usersstore.js
     zonesstore.js
-    data (folder)
-        articles (folder)
-            slug id (folder)
-                data.json
-        channels (folder)
-            channel id (folder)
-                messages.json
-                cache.json
-                misc.json
-                attachments.json
-        donations (folder)
-            data.json
-        private (folder)
-            chat id (folder)
-                metadata.json
-                messages.json
-                misc.json
-        notes (folder)
-            data.json
-        partners (folder)
-            partner id (folder)
-                data.json
-        notifications (folder)
-            user id (folder)
-                tokens.json
-                settings.json
-        restrictedwords (folder)
-            data.json
-        users (folder)
-            user id (folder)
-                profile (folder)
-                    roles.json
-                    data.json
-                settings (folder)
-                    data.json
-        games (folder)
-            games.json
-            hidden.json
-        movies (folder)
-            apply (folder)
-                apply.json
-                movieaccepts (folder)
-                applychunks (folder)
-            accepted (folder)
-                movies.json
-                subtitles (folder)
-                movies (folder)
-        logs (folder)
-            acclogs.json
-            report.json
-            archive (folder)
-                apr2026report.json
-                may2026report.json
-                jun2026report.json
-                jul2026report.json
-        groups (folder)
-            data.json
-            group id (folder)
-                data.json
-                messages.json
-                misc.json
-        uploads (folder)
-        templates (folder)
-            email_change.html
-            email_verify.html
-            password_reset.html
-            premium_expire.html
-            premium_notice.html
-            premuim_purchased.html
-            two_factor.html
-
-it may have more folders, but it is more organized which is way better.
-
 ---------------------------------------------------------------------------------------
 
 

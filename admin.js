@@ -3050,6 +3050,29 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 showError("Failed To Toggle Movie Endpoints");
             }
         });
+        (function ensureChatLockdownBtn() {
+            const movieBtn = document.getElementById("movieToggleBtn");
+            if (!movieBtn || document.getElementById("chatLockdownBtn")) return;
+            const chatLockdownBtn = document.createElement("button");
+            chatLockdownBtn.id = "chatLockdownBtn";
+            chatLockdownBtn.textContent = "Chat Lockdown";
+            chatLockdownBtn.className = movieBtn.className;
+            movieBtn.insertAdjacentElement("afterend", chatLockdownBtn);
+        })();
+        document.getElementById("chatLockdownBtn").addEventListener("click", async () => {
+            if (!await checkPermissions()) return;
+            const res = await adminFetch(`${a}/admin/discord_chat_lockdown_toggle`, {
+                method: "POST",
+                headers: NGROK_HEADERS
+            });
+            if (res.ok) {
+                const state = await res.json();
+                showSuccess("Chat Lockdown Is Now " + (state.chatLocked ? "ENABLED" : "DISABLED"));
+                document.getElementById("chatLockdownBtn").textContent = "Chat Lockdown " + (state.chatLocked ? "ON" : "OFF");
+            } else {
+                showError("Failed To Toggle Chat Lockdown");
+            }
+        });
         document.getElementById("restartServerBtn").addEventListener("click", async () => {
             if (!await checkPermissions()) return;
             showConfirm("Restart the server? Active accepts will be waited on first.", async function(result) {

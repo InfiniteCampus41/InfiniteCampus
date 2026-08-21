@@ -13,8 +13,7 @@ TODO
 
 --- most important ---
 
-IN PROGRESS    
-1: separate data into different json files  and server folders. ex for channel message data:
+DONE       separate data into different json files  and server folders. ex for channel message data:
 channels (folder)
     channelname (folder)
         messages.json
@@ -22,9 +21,9 @@ channels (folder)
         otherdata.json
         attachments.json
 
-2: make it so data for messages sent from the website chat into the discord by the bot besides the message id and attachment data are not stored. (no data of these messages should be in the messages.json besides the discord message id on the website chat message).
+DONE  make it so data for messages sent from the website chat into the discord by the bot besides the message id and attachment data are not stored. (no data of these messages should be in the messages.json besides the discord message id on the website chat message).
 
-3: add a discord chat lockdown feature that will disable chatting for all non admin users on the chat and disable file uploading to the discord
+DONE: add a discord chat lockdown feature that will disable chatting for all non admin users on the chat and disable file uploading to the discord
 
 4: make it so when a data set is null, it gets deleted
 
@@ -83,3 +82,9 @@ DONE     21: just playlist export and imports
 DONE    22: export data without music if music exists option
 
 i put the idea framework in the progress.txt file
+
+
+
+make it so the website chat message shows up if the pinned message on the discord is from the website chat.
+
+allow for higher role message editing and deleting in group chats
