@@ -425,10 +425,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 	let existingContent = "";
 	let currentSlug = null;
 	let renderArticle = null;
-	let pfpDomain = "/pfps";
-	if (!(e.includes(window.location.host))) {
-		pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
-	}
+	const pfpDomain = `${a}/pfps`;
 	const ROLE_CONFIG = [
 		{key: "isOwner",innerHTML: `<i class="ic ic-shield-plus" style="color:lime" title="Owner"></i>`},
 		{key: "isTester",innerHTML: `<i class="ic ic-cogs" style="color:darkgoldenrod" title="Tester"></i>`},
@@ -469,18 +466,6 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 			}
 		}
 	});
-	let profilePics = [];
-	async function loadProfilePics() {
-		const pfpDate = Date.now();
-		try {
-			const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
-			const files = await res.json();
-			profilePics = files.map(file => `${pfpDomain}/${file}?t=${pfpDate}`);
-		} catch (e) {
-			console.error("Failed to load profile pics:", e);
-			profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
-		}
-	}
 	function slugify(text) {
 		return text.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
@@ -571,7 +556,6 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 	}
 	document.addEventListener("DOMContentLoaded", async () => {
 		await authReadyPromise;
-		await loadProfilePics();
 		const container = document.getElementById("articles-container");
 		const searchInput = document.getElementById("search");
 		if (container) {
@@ -626,15 +610,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 													break;
 												}
 											}
-											const picValue = profile.pic;
-											let picSrc = "";
-											if (picValue && !isNaN(picValue) && profilePics[picValue]) {
-												picSrc = profilePics[picValue];
-											} else if (picValue && picValue.startsWith("http")) {
-												picSrc = picValue;
-											} else {
-												picSrc = profilePics[0] || "";
-											}
+											const picSrc = `${pfpDomain}/${article.author}?t=${Date.now()}`;
 											return `
 												<img src="${picSrc}" width="30" height="30">
 													<span style="color:${userData?.settings.color || ''}">
@@ -710,15 +686,7 @@ if (x3tfypage === '/InfiniteUpdaters.html') {
 							break;
 						}
 					}
-					const picValue = profile.pic;
-					let picSrc = "";
-					if (picValue && !isNaN(picValue) && profilePics[picValue]) {
-						picSrc = profilePics[picValue];
-					} else if (picValue && picValue.startsWith("http")) {
-						picSrc = picValue;
-					} else {
-						picSrc = profilePics[0] || "";
-					}
+					const picSrc = `${pfpDomain}/${currentArticleData.author}?t=${Date.now()}`;
 					return `
 						<img src="${picSrc}" width="40" height="40">
 						<a href='InfiniteAccounts.html?user=${currentArticleData.author}&ref=news'>

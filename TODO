@@ -37,27 +37,27 @@ DONE: make it so every anon user gets a unique id maybe based on a combination o
 
 DONE: add the banning system and make it work with the anon ids
 
-7: make it so when a user signs up, their displayname is set to the next user's name if not taken. if it is taken then go up to the next number
+DONE: make it so when a user signs up, their displayname is set to the next user's name if not taken. if it is taken then go up to the next number
 
-8: fix discord message deleting for admin users deleting anon users
+DONE: fix discord message deleting for admin users deleting anon users
 
-9: Allow admins to edit anon user's messages
+DONE: Allow admins to edit anon user's messages
 
-10: add alternitave link options if the main one goes down in the zonesstore logic
-
-
+DONE: add alternitave link options if the main one goes down in the zonesstore logic
 
 
 
---- minor bugs and stuff but still will be added ---
 
-11: make it so profile pics can be uploaded to the api and are stored on the api
 
-12: make it so partner pics are stored on the api and served from the api
+--- minor bugs and stuff but still may be added ---
+
+DONE: make it so profile pics can be uploaded to the api and are stored on the api
+
+DONE: make it so partner pics are stored on the api and served from the api
 
 DONE: fix message editing glitch where if you edit a message twice it goes back to how it used to be.
 
-14: Add idle, dnd, and invisible statuses
+DONE: Add idle, dnd, and invisible statuses
 
 15: different games sources
 
@@ -71,15 +71,15 @@ DONE: fix message editing glitch where if you edit a message twice it goes back 
 
 17: hardcode endpoints for everything instead of the current rules system
 
-18: in the admin chat panel, add a online user viewer
+DONE: in the admin chat panel, add a online user viewer
 
 19: youtube to mp3 and mp4 converter
 
 20: mp3 file tag editor like tagmp3
 
-DONE     21: just playlist export and imports
+DONE: just playlist export and imports
 
-DONE    22: export data without music if music exists option
+DONE: export data without music if music exists option
 
 i put the idea framework in the progress.txt file
 
@@ -90,3 +90,28 @@ make it so the website chat message shows up if the pinned message on the discor
 allow for higher role message editing and deleting in group chats
 
 DONE: fix movies apply system
+
+DONE: make it so if a linked channel is mentioned in the chat, clicking on it will take you to that channel
+
+DONE: make left click on links just do the default thing
+
+
+
+final things:
+    1: different games sources
+
+    2: remove updates page and replace with patch notes page that will get from a discord channel for the messages.
+
+    3: hardcode endpoints for everything instead of the current rules system
+
+    4: youtube to mp3 and mp4 converter
+
+    5: mp3 file tag editor like tagmp3
+
+    6: make it so the website chat message shows up if the pinned message on the discord is from the website chat.
+
+    7: allow for higher role message editing and deleting in group chats
+
+    DONE: make it so if a linked channel is mentioned in the chat, clicking on it will take you to that channel
+
+    DONE: make left click on links just do the default thing

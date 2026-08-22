@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged, forceWebSockets, io, getToken, signOut, signInWithCustomToken } from "./imports.js";
+import { displayStatusFor } from "./statusutils.js";
 const kdsuhPage = window.location.pathname;
 const kdsuhParams = new URLSearchParams(window.location.search);
 if (kdsuhPage == "/InfiniteAdmins.html") {
@@ -171,12 +172,8 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         let userSettings = {};
         let activeChatListener = null;
         let currentIsOwner = false;
-        let profilePics = [];
-        let pfpDomain = "/pfps";
+        const pfpDomain = `${a}/pfps`;
         let ADMIN_PASS = localStorage.getItem("a_pass") || null;
-        if (!(e.includes(window.location.host))) {
-            pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
-        }
         const imgViewer = document.createElement("div");
         imgViewer.style.position = "fixed";
         imgViewer.style.top = "0";
@@ -264,17 +261,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
             return fetch(url, options);
         }
-        async function loadProfilePics() {
-            try {
-                const res = await fetch(`${pfpDomain}/index.json?${Date.now()}`);
-                const files = await res.json();
-                profilePics = files.map(f => `${pfpDomain}/${f}?t=${Date.now()}`);
-                console.log("Loaded Profile Pics:", profilePics);
-            } catch (err) {
-                console.error("Failed To Load Profile Pics:", err);
-                profilePics = [`${pfpDomain}/1.jpeg?t=${Date.now()}`];
-            }
-        }
         async function preloadUsers() {
             const snap = await dbGet("users");
             if (snap !== null && snap !== undefined) return;
@@ -303,13 +289,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 muteSection.textContent = "Muted Users";
                 for (const uid of Object.keys(mutedData)) {
                     const userData = usersData[uid] || {};
-                    const picVal = userData.profile?.pic || "0";
                     const nameVal = userData.profile?.displayName || "User";
                     const colorVal = userData.settings?.color || "white";
                     const emailVal = userData.settings?.userEmail || "No Email";
                     const userDiv = document.createElement('div');
-                    let picIndex = parseInt(picVal);
-                    let picSrc = profilePics[picIndex] || profilePics[0];
+                    const picSrc = `${pfpDomain}/${uid}?t=${Date.now()}`;
                     userDiv.innerHTML = `
                         <img src="${picSrc}" style="height:30px;width:30px;border-radius:50%;">
                         <span style="color:${colorVal};margin-left:10px;">${nameVal}</span>
@@ -397,7 +381,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const user = userProfiles[uid] || {};
                     const name = user.displayName || uid;
                     const color = user.color || "white";
-                    const pic = profilePics[user.pic] || profilePics[0];
+                    const pic = `${pfpDomain}/${uid}?t=${Date.now()}`;
                     const div = document.createElement("div");
                     div.innerHTML = `
                         <img src="${pic}" style="height:30px;width:30px;border-radius:50%;">
@@ -454,8 +438,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             header.style.display = "flex";
             header.style.alignItems = "center";
             header.style.gap = "10px";
-            const picNum = parseInt(profile.pic);
-            const picSrc = (!isNaN(picNum) && picNum > 0 && picNum <= profilePics.length) ? profilePics[picNum] : (profile.pic || profilePics[0]);
+            const picSrc = `${pfpDomain}/${uid}?t=${Date.now()}`;
             const img = document.createElement("img");
             img.src = picSrc;
             img.width = 64;
@@ -640,7 +623,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             };
         }
         onAuthStateChanged(auth, async (user) => {
-            await loadProfilePics();
             if (!user) {
                 showError("You Must Be Logged In To View This Page.");
                 return;
@@ -852,11 +834,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         populateSendAsOptions();
                     }
                     const senderProfile = userProfiles[senderUid];
-                    let picNum = parseInt(senderProfile.pic);
-                    if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
-                        picNum = 0;
-                    }
-                    const senderPic = profilePics[picNum];
+                    const senderPic = `${pfpDomain}/${senderUid}?t=${Date.now()}`;
                     const senderName = (senderUid === "jiEcu7wSifMalQxVupmQXRchA9k1")
                         ? "Hacker41"
                         : (senderProfile.displayName || "Unknown");
@@ -1059,16 +1037,12 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             userListDiv.innerHTML = "";
             sorted.forEach(([uid, info]) => {
                 const name = info.profile?.displayName || uid;
-                let picNum = parseInt(info.profile?.pic);
-                if (isNaN(picNum) || picNum <= 0 || picNum > profilePics.length) {
-                    picNum = 0;
-                }
-                const pic = profilePics[Math.max(0, picNum)];
+                const pic = `${pfpDomain}/${uid}?t=${Date.now()}`;
                 const isBanned = bannedUidSet.has(uid);
                 const x3FColor = isBanned ? "white" : (info.settings?.color || "white");
-                userProfiles[uid] = { displayName: name, pic: picNum.toString() };
+                userProfiles[uid] = { displayName: name, pic: info.profile?.pic || "" };
                 const div = document.createElement("div");
-                div.className = "user-item" + (info.profile?.online ? " online" : "") + (isBanned ? " banned" : "");
+                div.className = "user-item" + (isBanned ? " banned" : " " + displayStatusFor(info.profile?.status));
                 div.style.color = `${x3FColor}`;
                 div.innerHTML = `
                     <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
@@ -1076,8 +1050,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 `;
                 div.onclick = () => editUser(uid, info);
                 userListDiv.appendChild(div);
-                dbListen(`users/${uid}/profile/online`, (isOnline) => {
-                    div.classList.toggle("online", !!isOnline);
+                dbListen(`users/${uid}/profile/status`, (status) => {
+                    const s = displayStatusFor(status);
+                    div.classList.remove("online", "idle", "dnd", "offline");
+                    div.classList.add(s);
                 });
             });
             populateSendAsOptions();

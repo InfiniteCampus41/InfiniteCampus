@@ -67,14 +67,14 @@ i {
     -webkit-mask-image: url('/icons/balloon-heart.svg');
 }
 .ic-barracuda {
-    background-image: url('/res/barracuda.webp');
+    background-image: url('/icons/barracuda.webp');
 }
 .ic-bell-fill {
     mask-image: url('/icons/bell-fill.svg');
     -webkit-mask-image: url('/icons/bell-fill.svg');
 }
 .ic-blocksi {
-    background-image: url('/res/blocksi.webp');
+    background-image: url('/icons/blocksi.webp');
 }
 .ic-box-arrow-up-right {
     mask-image: url('/icons/box-arrow-up-right.svg');
@@ -105,7 +105,7 @@ i {
     -webkit-mask-image: url('/icons/chevron-up.svg');
 }
 .ic-cisco {
-    background-image: url('/res/cisco.webp');
+    background-image: url('/icons/cisco.webp');
 }
 .ic-cloud-arrow-down {
     mask-image: url('/icons/cloud-arrow-down.svg');
@@ -132,7 +132,7 @@ i {
     -webkit-mask-image: url('/icons/compass.svg');
 }
 .ic-contentkeeper {
-    background-image: url('/res/contentkeeper.webp');
+    background-image: url('/icons/contentkeeper.webp');
 }
 .ic-controller {
     mask-image: url('/icons/controller.svg');
@@ -146,16 +146,19 @@ i {
     mask-image: url('/icons/dash.svg');
     -webkit-mask-image: url('/icons/dash.svg');
 }
-.ic-discord {
-    mask-image: url('/icons/discord.svg');
-    -webkit-mask-image: url('/icons/discord.svg');
-}
 .ic-database-fill {
     mask-image: url('/icons/database-fill.svg');
     -webkit-mask-image: url('/icons/database-fill.svg');
 }
 .ic-deledao {
-    background-image: url('/res/deledao.webp');
+    background-image: url('/icons/deledao.webp');
+}
+.ic-discord {
+    mask-image: url('/icons/discord.svg');
+    -webkit-mask-image: url('/icons/discord.svg');
+}
+.ic-dnd {
+    background-image: url('/icons/dnd.png');
 }
 .ic-dot {
     mask-image: url('/icons/dot.svg');
@@ -198,7 +201,7 @@ i {
     -webkit-mask-image: url('/icons/film.svg');
 }
 .ic-fortiguard {
-    background-image: url('/res/fortiguard.webp');
+    background-image: url('/icons/fortiguard.webp');
 }
 .ic-fullscreen-exit {
     mask-image: url('/icons/fullscreen-exit.svg');
@@ -217,7 +220,7 @@ i {
     -webkit-mask-image: url('/icons/globe2.svg');
 }
 .ic-goguardian {
-    background-image: url('/res/goguardian.webp');
+    background-image: url('/icons/goguardian.webp');
 }
 .ic-grip-vertical {
     mask-image: url('/icons/grip-vertical.svg');
@@ -252,7 +255,10 @@ i {
     -webkit-mask-image: url('/icons/hourglass-split.svg');
 }
 .ic-iboss {
-    background-image: url('/res/iboss.webp');
+    background-image: url('/icons/iboss.webp');
+}
+.ic-idle {
+    background-image: url('/icons/idle.png');
 }
 .ic-image-fill {
     mask-image: url('/icons/image-fill.svg');
@@ -263,17 +269,17 @@ i {
     -webkit-mask-image: url('/icons/info-circle.svg');
 }
 .ic-lanschool {
-    background-image: url('/res/lanschool.webp');
+    background-image: url('/icons/lanschool.webp');
 }
 .ic-leaf-fill {
     mask-image: url('/icons/leaf-fill.svg');
     -webkit-mask-image: url('/icons/leaf-fill.svg');
 }
 .ic-lightspeed {
-    background-image: url('/res/lightspeed.webp');
+    background-image: url('/icons/lightspeed.webp');
 }
 .ic-linewize {
-    background-image: url('/res/linewize.webp');
+    background-image: url('/icons/linewize.webp');
 }
 .ic-link {
     mask-image: url('/icons/link.svg');
@@ -351,7 +357,7 @@ i {
     -webkit-mask-image: url('/icons/search.svg');
 }
 .ic-securely {
-    background-image: url('/res/securely.webp');
+    background-image: url('/icons/securely.webp');
 }
 .ic-send {
     mask-image: url('/icons/send.svg');

@@ -1,4 +1,5 @@
 import { messaging, getToken, auth, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, applyActionCode, confirmPasswordReset } from './imports.js';
+import { STATUS_META, SELECTABLE_STATUSES, normalizeStatus, postStatus, createIdleWatcher } from './statusutils.js';
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode');
 const oobCode = urlParams.get('oobCode');
@@ -9,10 +10,11 @@ const settingsPage = document.getElementById('settingsPage');
 const profileView = document.getElementById('profileView');
 const authcontainer = document.getElementById('authContainer');
 const enableNotifBtn = document.getElementById('enableNotifBtn');
-let pfpDomain = "/pfps";
-if (!(e.includes(window.location.host))) {
-    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
-}
+const statusRow = document.getElementById('statusRow');
+const statusIcon = document.getElementById('statusIcon');
+const statusLabel = document.getElementById('statusLabel');
+const statusDropdown = document.getElementById('statusDropdown');
+const pfpDomain = `${a}/pfps`;
 try {
     if (Notification) {
         if (Notification.permission === "granted") {
@@ -21,18 +23,6 @@ try {
     }   
 } catch {
     console.error("Notification System Error")
-}
-let profileImages = [];
-async function loadProfileImages() {
-    try {
-        const res = await fetch(`${pfpDomain}/index.json`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const files = await res.json();
-        return files.map(f => `${pfpDomain}/` + f);
-    } catch (e) {
-        console.error("Failed To Load Profile Images:", e);
-        return [`${pfpDomain}/1.jpeg`];
-    }
 }
 let currentUser = null;
 let authReady = false;
@@ -167,6 +157,78 @@ function dbListen(path, callback) {
 }
 const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isInStandaloneMode = window.navigator.standalone === true;
+let currentUserStatus = "online";
+let statusIdleWatcher = null;
+function renderStatusUI(status) {
+    if (!statusIcon || !statusLabel || !statusDropdown) return;
+    const meta = STATUS_META[normalizeStatus(status)];
+    statusIcon.className = meta.icon;
+    statusIcon.style.color = meta.color;
+    statusLabel.textContent = meta.label;
+    statusDropdown.querySelectorAll(".statusOption").forEach(opt => {
+        const isSelected = opt.dataset.status === status;
+        opt.classList.toggle("selected", isSelected);
+        const check = opt.querySelector(".statusCheck");
+        if (check) check.style.visibility = isSelected ? "visible" : "hidden";
+    });
+}
+async function selectAccountStatus(status) {
+    if (!currentUser || !SELECTABLE_STATUSES.includes(status)) return;
+    currentUserStatus = status;
+    renderStatusUI(status);
+    if (statusDropdown) statusDropdown.style.display = "none";
+    await postStatus(a, getAuthToken, status);
+}
+if (statusRow) {
+    statusRow.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!statusDropdown) return;
+        statusDropdown.style.display = statusDropdown.style.display === "block" ? "none" : "block";
+    });
+}
+if (statusDropdown) {
+    statusDropdown.querySelectorAll(".statusOption").forEach(opt => {
+        opt.addEventListener("click", (e) => {
+            e.stopPropagation();
+            selectAccountStatus(opt.dataset.status);
+        });
+    });
+}
+document.addEventListener("click", (e) => {
+    if (!statusDropdown || statusDropdown.style.display !== "block") return;
+    if (!statusDropdown.contains(e.target) && !statusRow?.contains(e.target)) {
+        statusDropdown.style.display = "none";
+    }
+});
+async function initAccountStatusUI(user) {
+    if (!statusRow) return;
+    try {
+        const status = await dbGet(`users/${user.uid}/profile/status`);
+        currentUserStatus = SELECTABLE_STATUSES.includes(status) ? status : "online";
+    } catch {
+        currentUserStatus = "online";
+    }
+    renderStatusUI(currentUserStatus);
+    statusRow.style.display = "";
+    dbListen(`users/${user.uid}/profile/status`, (val) => {
+        if (SELECTABLE_STATUSES.includes(val)) {
+            currentUserStatus = val;
+            renderStatusUI(val);
+        }
+    });
+    if (statusIdleWatcher) statusIdleWatcher.stop();
+    statusIdleWatcher = createIdleWatcher({
+        getManualStatus: () => currentUserStatus,
+        onAutoIdle: () => {
+            renderStatusUI("idle");
+            postStatus(a, getAuthToken, "idle");
+        },
+        onAutoResume: () => {
+            renderStatusUI("online");
+            postStatus(a, getAuthToken, "online");
+        }
+    });
+}
 async function enableNotifications() {
     if (!("Notification" in window)) {
         showError("Your Browser Does Not Support Notifications.");
@@ -529,10 +591,7 @@ if (unsub) {
             const displayName = displayNameRaw?.trim() ? displayNameRaw : "Spam Account";
             const bio = foundUser.profile?.bio || "No Bio Set.";
             const email = foundUser.settings?.userEmail || "(Hidden)";
-            const picValue = foundUser.profile?.pic ?? 0;
-            const profileImages = await loadProfileImages();
-            const rawSrc = profileImages[picValue] || profileImages[0];
-            const imgSrc = rawSrc.split("?")[0] + "?t=" + Date.now();
+            const imgSrc = `${pfpDomain}/${uid}?t=${Date.now()}`;
             loadingEl.style.display = "none";
             errorEl.style.display = "none";
             profileContent.style.display = "block";
@@ -815,14 +874,22 @@ if (unsub) {
                     showError("Upload Failed");
                     return;
                 }
-                const newUrl = `${pfpDomain}/` + data.file;
+                const newUrl = `${pfpDomain}/${currentUser.uid}`;
                 panelPic.src = newUrl + "?t=" + Date.now();
                 currentServerPicUrl = newUrl;
                 showSuccess("Profile Picture Updated!");
             }
             if (removeRequested) {
-                await dbSet(`users/${currentUser.uid}/profile/pic`, 0);
-                panelPic.src = `${pfpDomain}/1.jpeg?t=${Date.now()}`;
+                const token = await getAuthToken();
+                await fetch(`${a}/remove-pfp`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ uid: currentUser.uid })
+                });
+                panelPic.src = `${pfpDomain}/${currentUser.uid}?t=${Date.now()}`;
                 showSuccess("Profile Picture Removed!");
             }
             pfpModalBg.style.display = "none";
@@ -1294,16 +1361,7 @@ if (unsub) {
     });
     async function loadUserProfilePic(uid) {
         try {
-            const snap = await dbGet(`users/${uid}/profile/pic`);
-            let picIndex = 0;
-            if (snap != null) {
-                picIndex = snap;
-            }
-            if (!profileImages || profileImages.length === 0) {
-                profileImages = await loadProfileImages();
-            }
-            const baseUrl = profileImages[picIndex] || profileImages[0] || `${pfpDomain}/1.jpeg`;
-            const cleanBase = baseUrl.split("?")[0];
+            const cleanBase = `${pfpDomain}/${uid}`;
             panelPic.src = cleanBase + "?t=" + Date.now();
             setSetting("pic", cleanBase);
         } catch (err) {
@@ -1342,7 +1400,6 @@ if (unsub) {
             await loadDisplayName(user.uid);
             await loadUserBio(user.uid);
             await loadUserDis(user.uid);
-            profileImages = await loadProfileImages();
             await loadUserProfilePic(user.uid);
             function applyProfile(profile) {
                 if (!profile) return;
@@ -1515,6 +1572,7 @@ if (unsub) {
             await loadUserDis(user.uid);
             await loadUserProfilePic(user.uid);
             await applyBanStatusToAccountPage();
+            await initAccountStatusUI(user);
             window.__appResolve();
         }
     });

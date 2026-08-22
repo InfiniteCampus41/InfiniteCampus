@@ -120,6 +120,51 @@
                                         Show Mentions
                                     </span>
                                 </label>
+                                <div id="statusRow" style="display:none;" onclick="event.stopPropagation()">
+                                    <i id="statusIcon" class="ib ic ic-online">
+                                    </i>
+                                    <span id="statusLabel">
+                                        Online
+                                    </span>
+                                    <div id="statusDropdown">
+                                        <div class="statusOption" data-status="online">
+                                            <i class="ib ic ic-online">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Online
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="idle">
+                                            <i class="ib ic ic-idle">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Idle
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="dnd">
+                                            <i class="ib ic ic-dnd">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Do Not Disturb
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="invisible">
+                                            <i class="ib ic ic-offline">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Invisible
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="mentionsContainer" class="mt-2">

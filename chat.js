@@ -65,6 +65,25 @@ const groupResetInviteBtn = document.getElementById("groupResetInviteBtn");
 const groupTransferBtn = document.getElementById("groupTransferBtn");
 const groupDeleteBtn = document.getElementById("groupDeleteBtn");
 const groupLeaveBtn = document.getElementById("groupLeaveBtn");
+const statusRow = document.getElementById("statusRow");
+const statusIcon = document.getElementById("statusIcon");
+const statusLabel = document.getElementById("statusLabel");
+const statusDropdown = document.getElementById("statusDropdown");
+const statusOptions = document.querySelectorAll(".statusOption");
+const STATUS_META = {
+    online: { icon: "ib ic ic-online", label: "Online" },
+    idle: { icon: "ib ic ic-idle", label: "Idle" },
+    dnd: { icon: "ib ic ic-dnd", label: "Do Not Disturb" },
+    invisible: { icon: "ib ic ic-offline", label: "Invisible" }
+};
+const PRESENCE_META = {
+    online: { icon: "ib ic ic-online", title: "Online" },
+    idle: { icon: "ib ic ic-idle", title: "Idle" },
+    dnd: { icon: "ib ic ic-dnd", title: "Do Not Disturb" },
+    offline: { icon: "ib ic ic-offline", title: "Offline" }
+};
+let currentStatus = "online";
+if (statusDropdown) statusDropdown.style.display = "none";
 let activeListenersCount = 0;
 let allUsernames = [];
 let mentionableUsernames = [];
@@ -140,7 +159,7 @@ let loadingOlderMessages = false;
 let mentionActive = false;
 let metadataListenerRef = null;
 let oldestLoadedTimestamp = null;
-let pfpDomain = "/pfps";
+const pfpDomain = `${a}/pfps`;
 let renderingChannels = false;
 let replyMsgId = null;
 let replyMsgName = null;
@@ -282,6 +301,12 @@ const MAX_REACTIONS_PER_USER = 20;
         }
         .channel-mention {
             cursor: pointer;
+        }
+        .discord-channel-mention[data-website-channel] {
+            cursor: pointer;
+        }
+        .discord-channel-mention[data-website-channel]:hover {
+            text-decoration: underline;
         }
         .discord-timestamp {
             background: rgba(255,255,255,0.06);
@@ -532,9 +557,6 @@ downloadBtn.style.cursor = "pointer";
 imgViewer.appendChild(viewerImg);
 imgViewer.appendChild(downloadBtn);
 document.body.appendChild(imgViewer);
-if (!(e.includes(window.location.host))) {
-    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps"; 
-}
 viewerImg.addEventListener("click", () => {
     zoomed = !zoomed;
     viewerImg.style.transform = zoomed ? "scale(2)" : "scale(1)";
@@ -890,32 +912,15 @@ async function getUserMeta(uid) {
         deledao: !!p.deledao,
         iboss: !!p.iboss,
         barracuda: !!p.barracuda,
-        online: !!p.online
+        online: !!p.online,
+        status: (p.status && STATUS_META[p.status]) ? p.status : "online"
     };
     userMetaCache[uid] = data;
     return data;
 }
-let _profilePicsListCache = null;
-async function getProfilePicsList() {
-    if (_profilePicsListCache) return _profilePicsListCache;
-    try {
-        const res = await fetch(`${pfpDomain}/index.json?t=${Date.now()}`);
-        const files = await res.json();
-        _profilePicsListCache = files.map(file => `${pfpDomain}/${file}`);
-    } catch {
-        _profilePicsListCache = [`${pfpDomain}/1.jpeg`];
-    }
-    return _profilePicsListCache;
-}
 async function getProfilePicUrl(uid) {
-    try {
-        const meta = await getUserMeta(uid);
-        const pics = await getProfilePicsList();
-        const idx = (meta.pic >= 0 && meta.pic < pics.length) ? meta.pic : 0;
-        return (pics[idx] || `${pfpDomain}/1.jpeg`) + "?t=" + Date.now();
-    } catch {
-        return `${pfpDomain}/1.jpeg`;
-    }
+    if (!uid) return `${pfpDomain}/1.jpeg`;
+    return `${pfpDomain}/${uid}?t=${Date.now()}`;
 }
 function resortPrivateList() {
     const items = Array.from(privateList.children);
@@ -995,6 +1000,73 @@ async function loadMentionSetting(user) {
         showError("Failed To Load Mention Setting:", err);
         mentionToggle.checked = true;
     }
+}
+function applyStatusUI(status) {
+    const meta = STATUS_META[status] || STATUS_META.online;
+    if (statusIcon) statusIcon.className = meta.icon;
+    if (statusLabel) statusLabel.textContent = meta.label;
+    statusOptions.forEach(opt => {
+        const match = opt.dataset.status === status;
+        opt.classList.toggle("active", match);
+        const check = opt.querySelector(".statusCheck");
+        if (check) check.style.visibility = match ? "visible" : "hidden";
+    });
+}
+function toggleStatusDropdown(forceState) {
+    if (!statusDropdown) return;
+    const isOpen = typeof forceState === "boolean" ? forceState : statusDropdown.style.display === "none";
+    statusDropdown.style.display = isOpen ? "block" : "none";
+}
+function effectivePresence(online, status) {
+    if (!online) return "offline";
+    if (status === "invisible") return "offline";
+    return STATUS_META[status] ? status : "online";
+}
+if (statusRow) {
+    statusRow.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!currentUser || isGuest) return;
+        toggleStatusDropdown();
+    });
+}
+statusOptions.forEach(opt => {
+    opt.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!currentUser || isGuest) return;
+        const newStatus = opt.dataset.status;
+        if (!STATUS_META[newStatus]) return;
+        toggleStatusDropdown(false);
+        if (newStatus === currentStatus) return;
+        currentStatus = newStatus;
+        applyStatusUI(newStatus);
+        try {
+            await dbSet(`users/${currentUser.uid}/profile/status`, newStatus);
+        } catch (err) {
+            showError("Failed To Save Status:", err);
+        }
+    });
+});
+document.addEventListener("click", (e) => {
+    if (statusDropdown && statusDropdown.style.display !== "none" && !statusDropdown.contains(e.target) && e.target !== statusIcon && e.target !== statusLabel) {
+        toggleStatusDropdown(false);
+    }
+});
+async function loadUserStatus(user) {
+    if (!statusRow) return;
+    try {
+        const val = await dbGet(`users/${user.uid}/profile/status`);
+        if (val && STATUS_META[val]) {
+            currentStatus = val;
+        } else {
+            currentStatus = "online";
+            await dbSet(`users/${user.uid}/profile/status`, "online");
+        }
+    } catch (err) {
+        showError("Failed To Load Status:", err);
+        currentStatus = "online";
+    }
+    applyStatusUI(currentStatus);
+    statusRow.style.display = "flex";
 }
 async function getDisplayName(uid) {
     let dn = await dbGet(`users/${uid}/profile/displayName`);
@@ -1182,6 +1254,9 @@ async function processDiscordMentions(htmlText) {
             htmlText = htmlText.replace(channelMentionRegex, (match, id) => {
                 const ch = discordChannelLookupCache[id];
                 if (!ch || !ch.name) return match;
+                if (ch.websiteChannel) {
+                    return `<span class="mention discord-channel-mention" data-discord-channel-id="${id}" data-website-channel="${ch.websiteChannel}" title="Go To The ${ch.websiteChannel} Channel">#${ch.name}</span>`;
+                }
                 return `<span class="mention discord-channel-mention" data-discord-channel-id="${id}" title="Discord Channel">#${ch.name}</span>`;
             });
         }
@@ -1339,6 +1414,13 @@ async function renderMessageInstant(id, msg) {
                 if (typeof switchChannel === "function") switchChannel(ch);
             });
         });
+        textDivEl.querySelectorAll(".discord-channel-mention[data-website-channel]").forEach(span => {
+            span.style.cursor = "pointer";
+            span.addEventListener("click", () => {
+                const ch = span.dataset.websiteChannel;
+                if (ch && typeof switchChannel === "function") switchChannel(ch);
+            });
+        });
         textDivEl.querySelectorAll(".chat-img").forEach(img => {
             img.style.cursor = "pointer";
             img.addEventListener("click", () => {
@@ -1426,7 +1508,6 @@ async function renderMessageInstant(id, msg) {
                 const close = () => { menu.remove(); document.removeEventListener("click", close); };
                 setTimeout(() => { document.addEventListener("click", close); }, 0);
             };
-            link.addEventListener("contextmenu", (e) => { e.preventDefault(); showLinkMenu(e.clientX, e.clientY); });
             let pressTimer = null;
             link.addEventListener("touchstart", (e) => { pressTimer = setTimeout(() => { const t = e.touches[0]; showLinkMenu(t.clientX, t.clientY); }, 500); });
             link.addEventListener("touchend", () => clearTimeout(pressTimer));
@@ -1560,6 +1641,70 @@ async function renderMessageInstant(id, msg) {
             })();
         }
         if (isOwner || isCoOwner || isTester || isHAdmin) {
+            const anonEditBtn = document.createElement("button");
+            anonEditBtn.innerHTML = "<i class='ic ic-pencil-square'></i>";
+            anonEditBtn.title = "Edit Guest Message";
+            anonEditBtn.onclick = () => {
+                if (div.querySelector("textarea")) return;
+                const textarea = document.createElement("textarea");
+                textarea.value = textDiv.dataset.rawText ?? rawText;
+                textarea.style.cssText = "width:100%;box-sizing:border-box;resize:vertical;background:#121212;color:#fff;border:1px solid #555;border-radius:4px;padding:4px;margin-top:4px;";
+                const textDivHeight = textDiv.offsetHeight;
+                if (textDivHeight > 0) textarea.style.height = textDivHeight + "px";
+                textDiv.style.display = "none";
+                const saveBtn = document.createElement("button");
+                saveBtn.textContent = "Save";
+                saveBtn.style.marginRight = "6px";
+                const cancelBtn = document.createElement("button");
+                cancelBtn.textContent = "Cancel";
+                saveBtn.onclick = async () => {
+                    const newText = textarea.value.trim();
+                    if (!newText) return;
+                    try {
+                        await dbSet(`${currentPath}/${id}/t`, newText);
+                        await dbSet(`${currentPath}/${id}/e`, "edited");
+                    } catch (err) {
+                        showError(err?.message || "Failed To Edit Message.");
+                        return;
+                    }
+                    textarea.remove();
+                    saveBtn.remove();
+                    cancelBtn.remove();
+                    textDiv.style.display = "block";
+                    textDiv.innerHTML = buildSafeText(newText);
+                    textDiv.dataset.rawText = newText;
+                    if (!div.querySelector(".edited-label")) {
+                        const newEditedSpan = document.createElement("span");
+                        newEditedSpan.className = "edited-label";
+                        newEditedSpan.style.fontSize = "0.72em";
+                        newEditedSpan.style.color = "#888";
+                        newEditedSpan.style.marginLeft = "40px";
+                        newEditedSpan.textContent = "(Edited)";
+                        textDiv.after(newEditedSpan);
+                    }
+                };
+                cancelBtn.onclick = () => {
+                    textarea.remove();
+                    saveBtn.remove();
+                    cancelBtn.remove();
+                    textDiv.style.display = "block";
+                };
+                textarea.onkeydown = (e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        saveBtn.click();
+                    } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        cancelBtn.click();
+                    }
+                };
+                textDiv.after(textarea);
+                textarea.after(saveBtn);
+                saveBtn.after(cancelBtn);
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            };
+            msgBtns.appendChild(anonEditBtn);
             const anonDelBtn = document.createElement("button");
             anonDelBtn.innerHTML = "<i class='ic ic-trash'></i>";
             anonDelBtn.title = "Delete Guest Message";
@@ -1579,6 +1724,7 @@ async function renderMessageInstant(id, msg) {
         }
         div.appendChild(topRow);
         div.appendChild(textDiv);
+        if (editedSpan) div.appendChild(editedSpan);
         const reactionsRow = document.createElement("div");
         reactionsRow.className = "reactions-row";
         reactionsRow.dataset.msgid = id;
@@ -1664,18 +1810,7 @@ async function renderMessageInstant(id, msg) {
             const meta = await getUserMeta(senderId);
             let displayName = meta.displayName;
             if (!displayName || displayName.trim() === "") displayName = "Spam Account";
-            let profilePics = [];
-            try {
-                const pfpDate = Date.now();
-                const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
-                const files = await res.json();
-                profilePics = files.map(file => `${pfpDomain}/${file}`);
-            } catch {
-                profilePics = [`${pfpDomain}/1.jpeg`];
-            }
-            const picVal = meta.pic;
-            const picIndex = (picVal >= 0 && picVal < profilePics.length) ? picVal : 0;
-            profilePic.src = profilePics[picIndex] + "?t=" + Date.now();
+            profilePic.src = `${pfpDomain}/${senderId}?t=${Date.now()}`;
             profilePic.style.border = `2px solid ${meta.color}`;
             nameSpan.textContent = displayName;
             nameSpan.style.color = meta.color;
@@ -1790,12 +1925,17 @@ async function renderMessageInstant(id, msg) {
                 inlineExtras = []; popoverExtras = extraBadges;
             }
             const onlineBadge = document.createElement("i");
-            const setOnlineStatus = (isOnline) => {
-                onlineBadge.className = isOnline ? "ib ic ic-online" : "ib ic ic-offline";
-                onlineBadge.title = isOnline ? "Online" : "Offline";
+            let livePresenceOnline = !!meta.online;
+            let livePresenceStatus = meta.status || "online";
+            const refreshPresenceBadge = () => {
+                const eff = effectivePresence(livePresenceOnline, livePresenceStatus);
+                const badgeMeta = PRESENCE_META[eff] || PRESENCE_META.offline;
+                onlineBadge.className = badgeMeta.icon;
+                onlineBadge.title = badgeMeta.title;
             };
-            setOnlineStatus(meta.online);
-            dbListen(`users/${senderId}/profile/online`, (val) => setOnlineStatus(!!val));
+            refreshPresenceBadge();
+            dbListen(`users/${senderId}/profile/online`, (val) => { livePresenceOnline = !!val; refreshPresenceBadge(); });
+            dbListen(`users/${senderId}/profile/status`, (val) => { livePresenceStatus = (val && STATUS_META[val]) ? val : "online"; refreshPresenceBadge(); });
             inlinePrimaries.forEach(({ cls, color, title }) => {
                 const span = document.createElement("span");
                 span.innerHTML = `<i class="${cls}" style="color:${color}" title="${title}"></i>`;
@@ -2308,6 +2448,13 @@ async function attachMessageListeners(path) {
                     let safeText = buildSafeText(val.t || val.text);
                     safeText = await processDiscordMentions(safeText);
                     textDiv.innerHTML = safeText;
+                    textDiv.querySelectorAll(".discord-channel-mention[data-website-channel]").forEach(span => {
+                        span.style.cursor = "pointer";
+                        span.addEventListener("click", () => {
+                            const ch = span.dataset.websiteChannel;
+                            if (ch && typeof switchChannel === "function") switchChannel(ch);
+                        });
+                    });
                     if (editedSpan) editedSpan.textContent = (val.e || val.edited) ? "(Edited)" : "";
                 }
                 const reactRow = existing.querySelector(".reactions-row");
@@ -3359,6 +3506,8 @@ onAuthStateChanged(auth, async user => {
         if (roleSpan) { roleSpan.textContent = "Guest"; roleSpan.style.color = "#aaa"; }
         if (bioSpan) { bioSpan.textContent = "Guest User"; bioSpan.style.color = "gray"; }
         mentionToggleLabel.style.display = "none";
+        if (statusRow) statusRow.style.display = "none";
+        toggleStatusDropdown(false);
         adminControls.style.display = "none";
         addChannelBtn.style.display = "none";
         _injectGuestNameButton();
@@ -3405,6 +3554,7 @@ onAuthStateChanged(auth, async user => {
     addChannelBtn.style.display = (isCoOwner || isOwner || isTester) ? "inline-block" : "none";
     await ensureDisplayName(user);
     await loadMentionSetting(user);
+    await loadUserStatus(user);
     await loadAllUsernames(); 
     startChannelListeners();
     await renderChannelsFromDB();
@@ -3471,25 +3621,10 @@ onAuthStateChanged(auth, async user => {
     bioSpan.style.fontSize = "60%";
     usernameSpan.textContent = displayName;
     usernameSpan.style.color = DNC;
-    const pfpIndex = (p.pic !== undefined && p.pic !== null) ? p.pic : 0;
-    let profilePics = [];
-    async function loadProfilePics() {
-        const pfpDate = Date.now();
-        try {
-            const res = await fetch(`${pfpDomain}/index.json?t=${pfpDate}`);
-            const files = await res.json();
-            profilePics = files.map(file => `${pfpDomain}/${file}`);
-        } catch (e) {
-            console.error("Failed To Load Profile Pics:", e);
-            profilePics = [`${pfpDomain}/1.jpeg?t=${pfpDate}`];
-        }
-    }
-    await loadProfilePics();
     const sidebarPfp = document.getElementById("sidebarPfp");
     sidebarPfp.style.border = `2px solid ${DNC}`;
     if (sidebarPfp) {
-        const safeIndex = pfpIndex >= 0 && pfpIndex < profilePics.length ? pfpIndex : 0;
-        sidebarPfp.src = profilePics[safeIndex] + "?t=" + Date.now();    
+        sidebarPfp.src = `${pfpDomain}/${user.uid}?t=${Date.now()}`;
     }
 });
 function _injectGuestNameButton() {
@@ -4325,20 +4460,10 @@ async function openGroupInfoPanel(groupId) {
     const amOwner = data.ownerUid === currentUser?.uid;
     groupInfoOwnerActions.style.display = amOwner ? "flex" : "none";
     groupInfoLeaveActions.style.display = amOwner ? "none" : "flex";
-    groupInfoMembers.innerHTML = "";
-    let profilePics = [];
-    try {
-        const res = await fetch(`${pfpDomain}/index.json?t=${Date.now()}`);
-        const files = await res.json();
-        profilePics = files.map(file => `${pfpDomain}/${file}`);
-    } catch {
-        profilePics = [`${pfpDomain}/1.jpeg`];
-    }
     for (const member of data.members) {
         const li = document.createElement("li");
         const img = document.createElement("img");
-        const picIndex = (member.pic >= 0 && member.pic < profilePics.length) ? member.pic : 0;
-        img.src = profilePics[picIndex] || `${pfpDomain}/1.jpeg`;
+        img.src = member.uid ? `${pfpDomain}/${member.uid}?t=${Date.now()}` : `${pfpDomain}/1.jpeg`;
         const nameWrap = document.createElement("div");
         const nameSpan = document.createElement("span");
         nameSpan.textContent = member.displayName;

@@ -96,7 +96,74 @@ function canEdit(partnerUid) {
 function getMetadataImage(url) {
     return `https://api.microlink.io/?url=${encodeURIComponent(url)}&meta=false&embed=image.url`;
 }
+async function createPartnerRecord(uid, name, link, desc) {
+    const token = await getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/partners/create`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ uid, name, link, desc })
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Failed To Create Partner");
+    }
+    return json;
+}
+async function uploadPartnerPhotoFile(file, uid, name) {
+    const token = await getAuthToken();
+    const formData = new FormData();
+    formData.append("uid", uid);
+    formData.append("name", name);
+    formData.append("file", file);
+    const headers = {};
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(`${a}/upload-partner-photo`, {
+        method: "POST",
+        headers,
+        body: formData
+    });
+    const json = await res.json();
+    if (!res.ok) {
+        throw new Error(json?.error || "Upload Failed");
+    }
+    return json.url;
+}
+function buildPhotoUploadField(initialUrl) {
+    const photoDiv = document.createElement("div");
+    photoDiv.style.display = "flex";
+    photoDiv.style.flexDirection = "column";
+    photoDiv.innerHTML = `
+        <label class="btxt">Photo:</label>
+        <img class="ptnPhotoPreview" src="${initialUrl ? a + initialUrl : "https://api.infinitecampus.xyz/pfps/1.jpeg"}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;">
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/x-icon" class="button ptnPhotoFileInput">
+        <span class="ptnPhotoStatus" style="font-size:12px;opacity:0.8;"></span>
+    `;
+    const photoFileInput = photoDiv.querySelector(".ptnPhotoFileInput");
+    const photoPreview = photoDiv.querySelector(".ptnPhotoPreview");
+    const photoStatus = photoDiv.querySelector(".ptnPhotoStatus");
+    let selectedFile = null;
+    photoFileInput.onclick = (e) => e.stopPropagation();
+    photoFileInput.onchange = () => {
+        const file = photoFileInput.files[0] || null;
+        selectedFile = file;
+        if (file) {
+            photoPreview.src = URL.createObjectURL(file);
+            photoStatus.textContent = "Will Upload On Save";
+        } else {
+            photoStatus.textContent = "";
+        }
+    };
+    return {
+        element: photoDiv,
+        currentUrl: initialUrl || "",
+        getSelectedFile: () => selectedFile,
+        setStatus: (text) => { photoStatus.textContent = text; }
+    };
+}
 function createPartnerBox(uid, partnerName, data) {
+    if (!data) return;
     const box = document.createElement("div");
     box.className = "partner-box";
     const name = document.createElement("span");
@@ -104,11 +171,11 @@ function createPartnerBox(uid, partnerName, data) {
     const img = document.createElement("img");
     name.textContent = partnerName;
     if (data.photo) {
-        img.src = data.photo;
+        img.src = a + data.photo;
     } else if (data.link) {
         img.src = getMetadataImage(data.link);
     } else {
-        img.src = "https://via.placeholder.com/300x200?text=No+Image";
+        img.src = "https://api.infinitecampus.xyz/pfps/1.jpeg";
     }
     box.appendChild(img);
     box.appendChild(name);
@@ -164,10 +231,7 @@ function createPartnerBox(uid, partnerName, data) {
         linkDiv.style.display = "flex";
         linkDiv.style.flexDirection = "column";
         linkDiv.innerHTML = `<label class="btxt">Link:</label><input class="button ptnLinkInput" value="${data.link || ""}" placeholder="Enter Link Here">`;        
-        const photoDiv = document.createElement("div");
-        photoDiv.style.display = "flex";
-        photoDiv.style.flexDirection = "column";
-        photoDiv.innerHTML = `<label class="btxt">Photo URL:</label><input class="button ptnPhotoInput" value="${data.photo || ""}" placeholder="Enter Icon URL Here">`;        
+        const photoField = buildPhotoUploadField(data.photo);
         const descDiv = document.createElement("div");
         descDiv.style.display = "flex";
         descDiv.style.flexDirection = "column";
@@ -179,7 +243,6 @@ function createPartnerBox(uid, partnerName, data) {
             e.stopPropagation();
             const nameInput = panel.querySelector(".ptnNameInput");
             const linkInput = panel.querySelector(".ptnLinkInput");
-            const photoInput = panel.querySelector(".ptnPhotoInput");
             const descInput = panel.querySelector(".ptnDescInput");
             const newName = nameInput.value.trim();
             const isEditing = box.classList.toggle("editing");
@@ -194,9 +257,19 @@ function createPartnerBox(uid, partnerName, data) {
             }
             await dbSet(`/partners/${uid}/${newName}`, {
                 link: linkInput.value,
-                photo: photoInput.value,
+                photo: photoField.currentUrl,
                 desc: descInput.value
             });
+            const selectedFile = photoField.getSelectedFile();
+            if (selectedFile) {
+                try {
+                    photoField.setStatus("Uploading Photo...");
+                    const url = await uploadPartnerPhotoFile(selectedFile, uid, newName);
+                    await dbSet(`/partners/${uid}/${newName}/photo`, url);
+                } catch (err) {
+                    showError(err.message || "Photo Upload Failed");
+                }
+            }
             panel.style.display = "none";
             box.classList.remove("editing");
         };
@@ -214,7 +287,7 @@ function createPartnerBox(uid, partnerName, data) {
         };
         panel.appendChild(nameDiv);
         panel.appendChild(linkDiv);
-        panel.appendChild(photoDiv);
+        panel.appendChild(photoField.element);
         panel.appendChild(descDiv);
         panel.appendChild(saveBtn);
         box.appendChild(editBtn);
@@ -228,6 +301,7 @@ function loadPartners() {
         partnerContainer.innerHTML = "";
         Object.entries(data || {}).forEach(([uid, userData]) => {
             Object.entries(userData || {}).forEach(([partnerName, partnerData]) => {
+                if (!partnerData) return;
                 createPartnerBox(uid, partnerName, partnerData);
             });
         });
@@ -235,7 +309,7 @@ function loadPartners() {
 }
 async function createAddPartnerButton() {
     if (!currentUser || !profileData) return;
-    if (!profileData.isOwner && !profileData.isTester) return;
+    if (!profileData.isOwner) return;
     const addBtn = document.createElement("button");
     addBtn.textContent = "Add Partner";
     addBtn.className = "button add-partner-btn";
@@ -268,7 +342,6 @@ async function createAddPartnerButton() {
     const fields = [
         {label: "Partner Name", class: "ptnNameInput"},
         {label: "Link", class: "ptnLinkInput"},
-        {label: "Photo URL", class: "ptnPhotoInput"},
         {label: "Description", class: "ptnDescInput"}
     ];
     fields.forEach(f => {
@@ -278,6 +351,8 @@ async function createAddPartnerButton() {
         div.innerHTML = `<label>${f.label}:</label><input class="button ${f.class}" placeholder="Enter ${f.label}">`;
         form.appendChild(div);
     });
+    const photoField = buildPhotoUploadField("");
+    form.appendChild(photoField.element);
     const btnDiv = document.createElement("div");
     btnDiv.style.display = "flex"; 
     btnDiv.style.justifyContent = "space-between";
@@ -309,11 +384,23 @@ async function createAddPartnerButton() {
         if (!selectedUid) return showError("Select A User");
         const name = form.querySelector(".ptnNameInput").value.trim();
         const link = form.querySelector(".ptnLinkInput").value.trim();
-        const photo = form.querySelector(".ptnPhotoInput").value.trim();
         const desc = form.querySelector(".ptnDescInput").value.trim();
         if (!name) return showError("Partner Name Cannot Be Empty");
-        await dbUpdate(`/partners/${selectedUid}/${name}`, { link, photo, desc });
-        await dbUpdate(`users/${selectedUid}/profile`, { isPartner: true });
+        try {
+            await createPartnerRecord(selectedUid, name, link, desc);
+        } catch (err) {
+            return showError(err.message || "Failed To Create Partner");
+        }
+        const selectedFile = photoField.getSelectedFile();
+        if (selectedFile) {
+            try {
+                photoField.setStatus("Uploading Photo...");
+                const url = await uploadPartnerPhotoFile(selectedFile, selectedUid, name);
+                await dbSet(`/partners/${selectedUid}/${name}/photo`, url);
+            } catch (err) {
+                showError(err.message || "Photo Upload Failed");
+            }
+        }
         overlay.style.display = "none";
         showSuccess("Added Partner");
         loadPartners();

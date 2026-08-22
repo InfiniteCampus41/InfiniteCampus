@@ -1,4 +1,5 @@
 import { auth, onAuthStateChanged } from "./imports.js";
+import { postStatus, createIdleWatcher } from "./statusutils.js";
 let authReady = false;
 let isLoggedInMsg = "Login";
 let isLoggedInClass = "button";
@@ -66,27 +67,31 @@ async function dbSet(path, value) {
         value
     });
 }
+let manualStatus = "online";
+function getManualStatus() {
+    return manualStatus;
+}
 async function sendOnlineHeartbeat() {
     if (!currentUser) return;
     if (document.visibilityState !== "visible") return;
-    try {
-        const token = await getAuthToken();
-        const res = await fetch(`${BACKEND}/online`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-        });
-        if (!res.ok) {
-            throw new Error("Online Indicator Post Failed");
-        }
-    } catch (e) {
-        console.warn("Online Heartbeat Failed:", e);
+    const ok = await postStatus(BACKEND, getAuthToken, manualStatus);
+    if (!ok) {
+        console.warn("Online Heartbeat Failed");
     }
+}
+let idleWatcherStarted = false;
+function startIdleWatcher() {
+    if (idleWatcherStarted) return;
+    idleWatcherStarted = true;
+    createIdleWatcher({
+        getManualStatus,
+        onAutoIdle: () => postStatus(BACKEND, getAuthToken, "idle"),
+        onAutoResume: () => postStatus(BACKEND, getAuthToken, manualStatus)
+    });
 }
 authReadyPromise.then(() => {
     sendOnlineHeartbeat();
+    if (currentUser) startIdleWatcher();
 });
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -94,33 +99,10 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 setInterval(sendOnlineHeartbeat, 20000);
-let pfpDomain = "/pfps";
-if (!(e.includes(window.location.host))) {
-    pfpDomain = "https://raw.githubusercontent.com/InfiniteCampus41/InfiniteCampus/refs/heads/main/pfps";
-}
-let profileImages = [];
-async function loadProfileImages() {
-    try {
-        const res = await fetch(`${pfpDomain}/index.json`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const files = await res.json();
-        return files.map(f => `${pfpDomain}/` + f);
-    } catch (e) {
-        console.error("Failed To Load Profile Images:", e);
-        return [`${pfpDomain}/1.jpeg`];
-    }
-}
-async function resolveProfilePicUrl(picIndex) {
-    try {
-        if (!profileImages || profileImages.length === 0) {
-            profileImages = await loadProfileImages();
-        }
-        const baseUrl = profileImages[picIndex || 0] || profileImages[0] || `${pfpDomain}/1.jpeg`;
-        return baseUrl.split("?")[0];
-    } catch (err) {
-        console.error("Failed To Resolve Profile Picture:", err);
-        return `${pfpDomain}/1.jpeg`;
-    }
+const pfpDomain = `${a}/pfps`;
+async function resolveProfilePicUrl(uid) {
+    if (!uid) return `${pfpDomain}/1.jpeg`;
+    return `${pfpDomain}/${uid}`;
 }
 let accountDisplayName = "";
 let accountNameColor = "#ffffff";
@@ -164,7 +146,7 @@ onAuthStateChanged(auth, async (user) => {
         accountDisplayName = displayName || user.email || "Account";
         accountNameColor = nameColor || localStorage.getItem('color') || "#ffffff";
         if (nameColor) localStorage.setItem('color', nameColor);
-        accountPicUrl = await resolveProfilePicUrl(picIndex);
+        accountPicUrl = await resolveProfilePicUrl(user.uid);
         window.dispatchEvent(new Event("settingsLoaded"));
         applySettingsToUI();
     } catch (error) {

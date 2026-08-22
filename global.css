@@ -4914,6 +4914,62 @@ select {
 #stats small {
     margin-bottom:10px;
 }
+#statusDropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 6px;
+    z-index: 9999;
+    min-width: 170px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    flex-direction: column;
+    gap: 2px;
+}
+#statusLabel {
+    font-size: 0.85em;
+    color: #ccc;
+}
+.statusOption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.88em;
+    color: #eee;
+}
+.statusOption:hover {
+    background: rgba(255,255,255,0.08);
+}
+.statusOption.selected .statusCheck {
+    visibility: visible;
+}
+.statusOption .statusCheck {
+    visibility: hidden;
+    color: #4fa3ff;
+}
+.statusOption .statusOptionLabel {
+    flex: 1;
+}
+#statusRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    position: relative;
+    width: fit-content;
+    padding: 2px 4px;
+    border-radius: 6px;
+    margin-top: 2px;
+}
+#statusRow:hover {
+    background: rgba(255,255,255,0.06);
+}
 .subtext {
     font-size: 0.85em;
     color: #888;
@@ -5237,8 +5293,17 @@ th, td {
 .user-item.banned * {
     color: #fff !important;
 }
+.user-item.dnd {
+	border: 2px solid darkred !important;
+}
 .user-item:hover {
     background: #333;
+}
+.user-item.idle {
+	border: 2px solid darkgoldenrod !important;
+}
+.user-item.offline {
+	border: 2px solid grey !important;
 }
 .user-item.online {
 	border: 2px solid #69a84f !important;
