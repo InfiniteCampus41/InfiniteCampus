@@ -65,6 +65,47 @@ async function fetchAPI(endpoint, body) {
     }
     return json;
 }
+async function applyBanStatusToAccountPage() {
+    const editableIds = [
+        "editDisplayBtn", "saveDisplayBtn", "cancelDisplayBtn",
+        "editBioBtn", "saveBioBtn", "cancelBioBtn",
+        "editDisBtn", "saveDisBtn", "cancelDisBtn",
+        "saveNameColorBtn", "nameColorInput",
+        "resetPasswordBtnAcc", "verifyEmailBtn", "enableNotifBtn"
+    ];
+    const noticeEl = document.getElementById("bannedAccountNotice");
+    const reasonEl = document.getElementById("bannedAccountReason");
+    const expiresEl = document.getElementById("bannedAccountExpires");
+    try {
+        const token = await getAuthToken();
+        if (!token) return;
+        const res = await fetch(`${a}/api/ban-status`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const json = await res.json();
+        if (!json?.banned) {
+            if (noticeEl) noticeEl.style.display = "none";
+            return;
+        }
+        for (const id of editableIds) {
+            const el = document.getElementById(id);
+            if (el) el.style.setProperty("display", "none", "important");
+        }
+        const extSection = document.getElementById("extCheckContainer");
+        if (extSection) extSection.style.setProperty("display", "none", "important");
+        if (noticeEl) {
+            noticeEl.style.display = "block";
+            if (reasonEl) reasonEl.textContent = json.reason ? `Reason: ${json.reason}` : "";
+            if (expiresEl) {
+                expiresEl.textContent = json.expiresAt
+                    ? `Expires: ${new Date(json.expiresAt).toLocaleString()}`
+                    : "This Ban Does Not Expire.";
+            }
+        }
+    } catch (err) {
+        console.warn("Failed To Load Ban Status:", err);
+    }
+}
 function pathToArray(path) {
     return path.split("/").filter(Boolean);
 }
@@ -1473,6 +1514,7 @@ if (unsub) {
             await loadUserBio(user.uid);
             await loadUserDis(user.uid);
             await loadUserProfilePic(user.uid);
+            await applyBanStatusToAccountPage();
             window.__appResolve();
         }
     });

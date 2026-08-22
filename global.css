@@ -136,6 +136,41 @@ a {
     border-radius: 6px;
     cursor: pointer;
 }
+#bannedAccountNotice {
+    display: none;
+    background: firebrick;
+    border: 2px solid #fff;
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin: 10px auto;
+    max-width: 500px;
+    text-align: center;
+}
+#banOverlay {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+#banOverlay .banExpires {
+    margin-top: 8px;
+    color: #aaa;
+    font-size: 0.9em;
+}
+#banOverlay .banReason {
+    margin-top: 10px;
+    color: #ddd;
+    max-width: 500px;
+}
+#banOverlay .banTitle {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: firebrick;
+}
 .blocked-item {
     background: #222;
     padding: 10px;
@@ -5193,6 +5228,14 @@ th, td {
     border-radius: 6px;
     cursor: pointer;
     margin-bottom: 12px;
+}
+.user-item.banned {
+    background: firebrick !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+}
+.user-item.banned * {
+    color: #fff !important;
 }
 .user-item:hover {
     background: #333;

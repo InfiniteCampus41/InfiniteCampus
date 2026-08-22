@@ -1045,6 +1045,17 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const nameB = b[1]?.profile?.displayName?.toLowerCase() || "";
                 return nameA.localeCompare(nameB);
             });
+            let bannedUidSet = new Set();
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const bansRes = await adminFetch(BACKEND + "/api/moderation/bans", {
+                    headers: { "Authorization": "Bearer " + idToken }
+                });
+                const bansJson = await bansRes.json();
+                bannedUidSet = new Set((bansJson.bans || []).filter(b => b.type === "user").map(b => b.id));
+            } catch (err) {
+                console.warn("Failed To Load Bans List:", err);
+            }
             userListDiv.innerHTML = "";
             sorted.forEach(([uid, info]) => {
                 const name = info.profile?.displayName || uid;
@@ -1053,14 +1064,15 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     picNum = 0;
                 }
                 const pic = profilePics[Math.max(0, picNum)];
-                const x3FColor = info.settings?.color || "white";
+                const isBanned = bannedUidSet.has(uid);
+                const x3FColor = isBanned ? "white" : (info.settings?.color || "white");
                 userProfiles[uid] = { displayName: name, pic: picNum.toString() };
                 const div = document.createElement("div");
-                div.className = "user-item" + (info.profile?.online ? " online" : "");
+                div.className = "user-item" + (info.profile?.online ? " online" : "") + (isBanned ? " banned" : "");
                 div.style.color = `${x3FColor}`;
                 div.innerHTML = `
                     <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
-                    ${name}
+                    ${name}${isBanned ? ' <i class="ic ic-slash-circle" title="Banned"></i>' : ''}
                 `;
                 div.onclick = () => editUser(uid, info);
                 userListDiv.appendChild(div);
@@ -1146,6 +1158,25 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 };
                 btnContainer.appendChild(loginBtn);
             }
+            const banBtn = document.createElement("button");
+            banBtn.textContent = "Ban User";
+            banBtn.className = "button action-btn";
+            banBtn.disabled = true;
+            btnContainer.appendChild(banBtn);
+            (async () => {
+                try {
+                    const idToken = await auth.currentUser.getIdToken();
+                    const statusRes = await adminFetch(BACKEND + `/api/moderation/ban-status/${encodeURIComponent(uid)}`, {
+                        headers: { "Authorization": "Bearer " + idToken }
+                    });
+                    const statusResult = await statusRes.json();
+                    setBanButtonState(banBtn, uid, !!statusResult.banned, statusResult.ban || null);
+                } catch (err) {
+                    console.error("Failed To Load Ban Status:", err);
+                } finally {
+                    banBtn.disabled = false;
+                }
+            })();
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "Delete User";
             deleteBtn.className = "button action-btn";
@@ -1165,6 +1196,72 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             };
             btnContainer.appendChild(deleteBtn);
             userEditDiv.appendChild(btnContainer);
+        }
+        function setBanButtonState(btn, uid, isBanned, banInfo) {
+            btn.textContent = isBanned ? "Unban User" : "Ban User";
+            btn.style.background = isBanned ? "#444" : "#7a0000";
+            btn.style.color = "white";
+            btn.onclick = null;
+            if (isBanned) {
+                btn.onclick = () => {
+                    showConfirm(`Unban User "${uid}"?`, async function(result) {
+                        if (!result) { showSuccess("Canceled"); return; }
+                        try {
+                            const idToken = await auth.currentUser.getIdToken();
+                            const res = await adminFetch(BACKEND + "/api/moderation/unban", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer " + idToken
+                                },
+                                body: JSON.stringify({ targetUid: uid })
+                            });
+                            const out = await res.json();
+                            if (!out.success) {
+                                showError("Failed: " + (out.error || "Unknown Error"));
+                                return;
+                            }
+                            showSuccess("User Unbanned");
+                            setBanButtonState(btn, uid, false, null);
+                        } catch (err) {
+                            console.error(err);
+                            showError("Error Occurred");
+                        }
+                    });
+                };
+            } else {
+                btn.onclick = async () => {
+                    const reason = await customPrompt("Reason For Ban:", false, "");
+                    if (reason === null || reason === undefined || !String(reason).trim()) {
+                        showSuccess("Canceled");
+                        return;
+                    }
+                    showConfirm(`Ban User "${uid}"? They Will Be Unable To Send Or Read Messages Until Unbanned.`, async function(result) {
+                        if (!result) { showSuccess("Canceled"); return; }
+                        try {
+                            const idToken = await auth.currentUser.getIdToken();
+                            const res = await adminFetch(BACKEND + "/api/moderation/ban", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": "Bearer " + idToken
+                                },
+                                body: JSON.stringify({ targetUid: uid, reason: String(reason).trim() })
+                            });
+                            const out = await res.json();
+                            if (!out.success) {
+                                showError("Failed: " + (out.error || "Unknown Error"));
+                                return;
+                            }
+                            showSuccess("User Banned");
+                            setBanButtonState(btn, uid, true, out.ban);
+                        } catch (err) {
+                            console.error(err);
+                            showError("Error Occurred");
+                        }
+                    });
+                };
+            }
         }
         async function deleteEntireUser(uid) {
             const [privateSnap, metadataSnap, messagesSnap] = await Promise.all([

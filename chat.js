@@ -410,6 +410,9 @@ async function fetchAPI(endpoint, body) {
     });
     const json = await res.json();
     if (!res.ok) {
+        if (json?.banned) {
+            setBannedUI(true, json.reason, json.expiresAt);
+        }
         throw new Error(json?.error || "Request failed");
     }
     return json;
@@ -452,7 +455,8 @@ function dbListen(path, callback, type = "others") {
     return getAuthToken().then(token => {
         const pathArray = path.split("/");
         const tokenParam = token ? `&token=${token}` : "";
-        const wsUrl = `${h}/?path=${encodeURIComponent(JSON.stringify(pathArray))}${tokenParam}`;
+        const anonParam = (!token && anonSessionToken) ? `&anonSession=${encodeURIComponent(anonSessionToken)}` : "";
+        const wsUrl = `${h}/?path=${encodeURIComponent(JSON.stringify(pathArray))}${tokenParam}${anonParam}`;
         const ws = new WebSocket(wsUrl);
         ws.onmessage = (event) => {
             if (!event.data) return;
@@ -572,6 +576,8 @@ function setChatLockdownUI(locked) {
         sendBtn.disabled = true;
         if (!chatInput.disabled) chatInput.dataset.lockdownDisabled = "1";
         chatInput.disabled = true;
+    } else if (isBanned)  {
+        chatLog.style.display = "none";
     } else {
         chatLog.style.display = "";
         chatLockdownNotice.style.display = "none";
@@ -612,6 +618,66 @@ function setChatLockdownUI(locked) {
             setChatLockdownUI(!!json?.locked);
         } catch (e) {}
     }, 15000);
+})();
+const banOverlay = document.createElement("div");
+banOverlay.id = "banOverlay";
+banOverlay.innerHTML = `
+    <div class="banTitle">You Have Been Banned</div>
+    <div class="banReason" id="banReasonText"></div>
+    <div class="banExpires" id="banExpiresText"></div>
+`;
+chatLog.insertAdjacentElement("afterend", banOverlay);
+let isBanned = false;
+function formatBanExpiry(expiresAt) {
+    if (!expiresAt) return "This Ban Does Not Expire.";
+    const ms = expiresAt - Date.now();
+    if (ms <= 0) return "";
+    const hours = Math.ceil(ms / 3600000);
+    return `This Ban Expires In About ${hours} Hour${hours === 1 ? "" : "s"}.`;
+}
+function setBannedUI(banned, reason, expiresAt) {
+    isBanned = !!banned;
+    if (isBanned) {
+        chatLog.style.display = "none";
+        chatLockdownNotice.style.display = "none";
+        banOverlay.style.display = "flex";
+        document.getElementById("banReasonText").textContent = reason ? `Reason: ${reason}` : "";
+        document.getElementById("banExpiresText").textContent = formatBanExpiry(expiresAt);
+        if (!sendBtn.disabled) sendBtn.dataset.lockdownDisabled = "1";
+        sendBtn.disabled = true;
+        if (!chatInput.disabled) chatInput.dataset.lockdownDisabled = "1";
+        chatInput.disabled = true;
+    } else {
+        banOverlay.style.display = "none";
+        if (!chatLockedDown) {
+            chatLog.style.display = "";
+            if (sendBtn.dataset.lockdownDisabled === "1") {
+                sendBtn.disabled = false;
+                delete sendBtn.dataset.lockdownDisabled;
+            }
+            if (chatInput.dataset.lockdownDisabled === "1") {
+                chatInput.disabled = false;
+                delete chatInput.dataset.lockdownDisabled;
+            }
+        }
+    }
+}
+(async function initBanStatus() {
+    async function checkBanStatus() {
+        try {
+            const token = await getAuthToken();
+            const headers = {};
+            if (token) headers["Authorization"] = "Bearer " + token;
+            else if (anonSessionToken) headers["x-anon-session"] = anonSessionToken;
+            const res = await fetch(`${BACKEND}/api/ban-status`, { headers });
+            const json = await res.json();
+            setBannedUI(!!json?.banned, json?.reason, json?.expiresAt);
+        } catch (e) {
+            console.warn("Failed To Load Ban Status:", e);
+        }
+    }
+    await checkBanStatus();
+    setInterval(checkBanStatus, 15000);
 })();
 chatLog.addEventListener("scroll", () => {
     const distanceFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
@@ -718,6 +784,68 @@ async function unmuteUser(uid) {
     await fetchAPI("delete", { path: ["mutedUsers", uid] });
     delete userMetaCache[uid];
     showSuccess("User Unmuted.");
+}
+async function adminGetBanStatus(banId) {
+    try {
+        const token = await getAuthToken();
+        const res = await fetch(`${BACKEND}/api/moderation/ban-status/${encodeURIComponent(banId)}`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        return await res.json();
+    } catch {
+        return { banned: false };
+    }
+}
+async function adminBanTarget(banId, { anon = false } = {}) {
+    const reason = await customPrompt(anon ? "Reason For Ban (12 Hours):" : "Reason For Ban:", false, "");
+    if (reason === null || reason === undefined || !String(reason).trim()) {
+        showSuccess("Canceled");
+        return false;
+    }
+    try {
+        const token = await getAuthToken();
+        const body = anon
+            ? { anonSessionToken: banId.replace(/^anon:/, ""), reason: String(reason).trim() }
+            : { targetUid: banId, reason: String(reason).trim() };
+        const res = await fetch(`${BACKEND}/api/moderation/ban`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify(body)
+        });
+        const out = await res.json();
+        if (!out.success) {
+            showError("Failed: " + (out.error || "Unknown Error"));
+            return false;
+        }
+        showSuccess(anon ? "Anonymous User Banned For 12 Hours." : "User Banned.");
+        return true;
+    } catch (err) {
+        console.error(err);
+        showError("Error Occurred");
+        return false;
+    }
+}
+async function adminUnbanTarget(banId, { anon = false } = {}) {
+    try {
+        const token = await getAuthToken();
+        const body = anon ? { anonSessionToken: banId.replace(/^anon:/, "") } : { targetUid: banId };
+        const res = await fetch(`${BACKEND}/api/moderation/unban`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify(body)
+        });
+        const out = await res.json();
+        if (!out.success) {
+            showError("Failed: " + (out.error || "Unknown Error"));
+            return false;
+        }
+        showSuccess("User Unbanned.");
+        return true;
+    } catch (err) {
+        console.error(err);
+        showError("Error Occurred");
+        return false;
+    }
 }
 async function getUserMeta(uid) {
     if (userMetaCache[uid]) return userMetaCache[uid];
@@ -1459,6 +1587,7 @@ async function renderMessageInstant(id, msg) {
         return div;
     }
     const senderId = msg.sender || msg.s;
+    const banTargetId = isAnonMsg ? (msg.anonId ? `anon:${msg.anonId}` : null) : senderId;
     if (!senderId) return null;
     nameSpan.textContent = "Loading...";
     nameSpan.style.color = "#aaa";
@@ -1558,27 +1687,46 @@ async function renderMessageInstant(id, msg) {
                     e.preventDefault();
                     const freshMeta = await getUserMeta(senderId);
                     const alreadyMuted = freshMeta.muted;
+                    const banStatus = banTargetId ? await adminGetBanStatus(banTargetId) : { banned: false };
                     const menu = document.createElement("div");
                     menu.style.cssText = "position:absolute;background:#222;border:1px solid #555;border-radius:6px;padding:6px 10px;color:#fff;cursor:pointer;z-index:9999;";
                     menu.style.left = e.pageX + "px";
                     menu.style.top = e.pageY + "px";
-                    if (alreadyMuted) {
-                        menu.textContent = "Unmute User";
-                        menu.onclick = async () => { await unmuteUser(senderId); closeMenu(); };
-                    } else {
-                        menu.textContent = "Mute User";
-                        const options = document.createElement("div");
-                        options.style.cssText = "display:flex;flex-direction:column;margin-top:4px;";
-                        const mkOpt = (label, fn) => {
-                            const d = document.createElement("div");
-                            d.textContent = label; d.style.cursor = "pointer";
-                            d.onclick = fn; options.appendChild(d);
+                    if (!isAnonMsg) {
+                        if (alreadyMuted) {
+                            menu.textContent = "Unmute User";
+                            menu.onclick = async () => { await unmuteUser(senderId); closeMenu(); };
+                        } else {
+                            menu.textContent = "Mute User";
+                            const options = document.createElement("div");
+                            options.style.cssText = "display:flex;flex-direction:column;margin-top:4px;";
+                            const mkOpt = (label, fn) => {
+                                const d = document.createElement("div");
+                                d.textContent = label; d.style.cursor = "pointer";
+                                d.onclick = fn; options.appendChild(d);
+                            };
+                            mkOpt("Toggle", async () => { await dbSet(`mutedUsers/${senderId}`, { expires: "Never" }); delete userMetaCache[senderId]; showSuccess("User Muted"); closeMenu(); });
+                            mkOpt("Minutes", async () => { let m = parseInt(await customPrompt("Minutes?", false, "5")); if (!isNaN(m) && m > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + m * 60000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${m}m`); } closeMenu(); });
+                            mkOpt("Hours", async () => { let h = parseInt(await customPrompt("Hours?", false, "1")); if (!isNaN(h) && h > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + h * 3600000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${h}h`); } closeMenu(); });
+                            mkOpt("Days", async () => { let d = parseInt(await customPrompt("Days?", false, "1")); if (!isNaN(d) && d > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + d * 86400000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${d}d`); } closeMenu(); });
+                            menu.appendChild(options);
+                        }
+                    }
+                    if (banTargetId) {
+                        const banRow = document.createElement("div");
+                        banRow.style.cssText = "margin-top:6px;padding-top:6px;border-top:1px solid #444;color:#ff5c5c;";
+                        banRow.textContent = banStatus.banned
+                            ? (isAnonMsg ? "Unban Anonymous User" : "Unban User")
+                            : (isAnonMsg ? "Ban Anonymous User (12h)" : "Ban User");
+                        banRow.onclick = async () => {
+                            if (banStatus.banned) {
+                                await adminUnbanTarget(banTargetId, { anon: isAnonMsg });
+                            } else {
+                                await adminBanTarget(banTargetId, { anon: isAnonMsg });
+                            }
+                            closeMenu();
                         };
-                        mkOpt("Toggle", async () => { await dbSet(`mutedUsers/${senderId}`, { expires: "Never" }); delete userMetaCache[senderId]; showSuccess("User Muted"); closeMenu(); });
-                        mkOpt("Minutes", async () => { let m = parseInt(await customPrompt("Minutes?", false, "5")); if (!isNaN(m) && m > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + m * 60000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${m}m`); } closeMenu(); });
-                        mkOpt("Hours", async () => { let h = parseInt(await customPrompt("Hours?", false, "1")); if (!isNaN(h) && h > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + h * 3600000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${h}h`); } closeMenu(); });
-                        mkOpt("Days", async () => { let d = parseInt(await customPrompt("Days?", false, "1")); if (!isNaN(d) && d > 0) { await dbSet(`mutedUsers/${senderId}`, { expires: Date.now() + d * 86400000 }); delete userMetaCache[senderId]; showSuccess(`Muted ${d}d`); } closeMenu(); });
-                        menu.appendChild(options);
+                        menu.appendChild(banRow);
                     }
                     document.body.appendChild(menu);
                     const closeMenu = () => { menu.remove(); document.removeEventListener("click", closeMenu); };
@@ -2471,6 +2619,8 @@ async function openPrivateChat(uid, name) {
     if (chatLockedDown) {
         chatLog.style.display = "none";
         return;
+    } else if (isBanned)  {
+        chatLog.style.display = "none";
     } else {
         chatLog.style.display = "";
     }
@@ -2867,6 +3017,8 @@ async function switchChannel(ch) {
     if (chatLockedDown) {
         chatLog.style.display = "none";
         return;
+    } else if (isBanned)  {
+        chatLog.style.display = "none";
     } else {
         chatLog.style.display = "";
     }
@@ -3940,6 +4092,9 @@ function showPrivateMenu() {
         if (privateMenu) privateMenu.style.display = "none";
         chatLog.style.display = "none";
         return;
+    } else if (isBanned)  {
+        if (privateMenu) privateMenu.style.display = "none";
+        chatLog.style.display = "none";
     } else {
         if (privateMenu) privateMenu.style.display = "flex";
     }
@@ -4053,6 +4208,8 @@ async function openGroupChat(groupId) {
     if (chatLockedDown) {
         chatLog.style.display = "none";
         return;
+    } else if (isBanned)  {
+        chatLog.style.display = "none";
     } else {
         chatLog.style.display = "";
     }
