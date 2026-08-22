@@ -35,7 +35,7 @@ DONE: make it so when a data set is null, it gets deleted
 
 DONE: make it so every anon user gets a unique id maybe based on a combination of ip and hardware
 
-IN PROGRESS: add the banning system and make it work with the anon ids
+DONE: add the banning system and make it work with the anon ids
 
 7: make it so when a user signs up, their displayname is set to the next user's name if not taken. if it is taken then go up to the next number
 
@@ -55,7 +55,7 @@ IN PROGRESS: add the banning system and make it work with the anon ids
 
 12: make it so partner pics are stored on the api and served from the api
 
-FIXED        13: fix message editing glitch where if you edit a message twice it goes back to how it used to be.
+DONE: fix message editing glitch where if you edit a message twice it goes back to how it used to be.
 
 14: Add idle, dnd, and invisible statuses
 
@@ -89,4 +89,4 @@ make it so the website chat message shows up if the pinned message on the discor
 
 allow for higher role message editing and deleting in group chats
 
-fix movies apply system
+DONE: fix movies apply system

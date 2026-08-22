@@ -7,6 +7,9 @@ ICSERVER (root folder)
         articles (folder)
             slug id (folder) each slug id has its own folder
                 data.json
+        bans (folder)
+            ban user id (folder) each user id that is banned gets their own folder
+                data.json
         channels (folder)
             channel name (folder) each channel name has its own folder
                 attachments.json
@@ -89,6 +92,7 @@ ICSERVER (root folder)
     .env
     admin.json
     attachmenttracker.js
+    bansstore.js
     channelsstore.js
     datastore.js
     emailtemplates.js
