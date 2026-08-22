@@ -6,6 +6,21 @@ let isLoggedInLink = "/InfiniteLogins.html";
 const DEFAULT_BACKEND = a;
 let BACKEND = localStorage.getItem('backendUrl') || DEFAULT_BACKEND;
 let currentUser = null;
+function getOrCreateAnonDeviceId() {
+    const STORAGE_KEY = "anonSessionToken";
+    try {
+        let id = localStorage.getItem(STORAGE_KEY);
+        if (id) return id;
+        id = (typeof crypto !== "undefined" && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : "anon-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+        localStorage.setItem(STORAGE_KEY, id);
+        return id;
+    } catch (e) {
+        return "anon-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    }
+}
+let anonSessionToken = getOrCreateAnonDeviceId();
 const authReadyPromise = new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
@@ -1132,7 +1147,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const resetAllBtn = document.getElementById('resetAllBtn');
     if (resetAllBtn) {
         resetAllBtn.addEventListener('click', async () => {
+            const preservedAnonId = localStorage.getItem('anonSessionToken');
             localStorage.clear();
+            if (preservedAnonId) {
+                localStorage.setItem('anonSessionToken', preservedAnonId);
+            }
             sessionStorage.clear();
             if (indexedDB.databases) {
                 const dbs = await indexedDB.databases();

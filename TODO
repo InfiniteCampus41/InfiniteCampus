@@ -13,7 +13,7 @@ TODO
 
 --- most important ---
 
-DONE       separate data into different json files  and server folders. ex for channel message data:
+DONE:       separate data into different json files  and server folders. ex for channel message data:
 channels (folder)
     channelname (folder)
         messages.json
@@ -21,11 +21,11 @@ channels (folder)
         otherdata.json
         attachments.json
 
-DONE  make it so data for messages sent from the website chat into the discord by the bot besides the message id and attachment data are not stored. (no data of these messages should be in the messages.json besides the discord message id on the website chat message).
+DONE:  make it so data for messages sent from the website chat into the discord by the bot besides the message id and attachment data are not stored. (no data of these messages should be in the messages.json besides the discord message id on the website chat message).
 
 DONE: add a discord chat lockdown feature that will disable chatting for all non admin users on the chat and disable file uploading to the discord
 
-4: make it so when a data set is null, it gets deleted
+DONE: make it so when a data set is null, it gets deleted
 
 
 
@@ -33,9 +33,9 @@ DONE: add a discord chat lockdown feature that will disable chatting for all non
 
 --- less important but still needs done ---
 
-5: make it so every anon user gets a unique id maybe based on a combination of ip and hardware
+DONE: make it so every anon user gets a unique id maybe based on a combination of ip and hardware
 
-6: add the banning system and make it work with the anon ids
+IN PROGRESS: add the banning system and make it work with the anon ids
 
 7: make it so when a user signs up, their displayname is set to the next user's name if not taken. if it is taken then go up to the next number
 
@@ -88,3 +88,5 @@ i put the idea framework in the progress.txt file
 make it so the website chat message shows up if the pinned message on the discord is from the website chat.
 
 allow for higher role message editing and deleting in group chats
+
+fix movies apply system

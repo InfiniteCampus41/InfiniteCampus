@@ -99,7 +99,21 @@ document.getElementById("profileRow").addEventListener("click", () => {
         window.location.href = "InfiniteAccounts.html?chat=true";
     }
 });
-let anonSessionToken = localStorage.getItem("anonSessionToken") || null;
+function getOrCreateAnonDeviceId() {
+    const STORAGE_KEY = "anonSessionToken";
+    try {
+        let id = localStorage.getItem(STORAGE_KEY);
+        if (id) return id;
+        id = (typeof crypto !== "undefined" && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : "anon-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+        localStorage.setItem(STORAGE_KEY, id);
+        return id;
+    } catch (e) {
+        return "anon-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    }
+}
+let anonSessionToken = getOrCreateAnonDeviceId();
 let anonDisplayName = localStorage.getItem("anonDisplayName") || "Anonymous";
 let hasMoreMessages = true;
 let isAdmin = false;
