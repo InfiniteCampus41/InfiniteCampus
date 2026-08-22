@@ -1250,18 +1250,18 @@ if (unsub) {
         }
     });
     const BLOCKING_EXTENSIONS = [
-        { key: "secure", label: "Securely", img: "/res/securely.webp" },
-        { key: "guardian", label: "GoGuardian", img: "/res/goguardian.webp" },
-        { key: "lanschool", label: "Lanschool", img: "/res/lanschool.webp" },
-        { key: "linewize", label: "Linewize", img: "/res/linewize.webp" },
-        { key: "blocksi", label: "Blocksi", img: "/res/blocksi.webp" },
-        { key: "fortiguard", label: "FortiGuard", img: "/res/fortiguard.webp" },
-        { key: "lightspeed", label: "LightSpeed", img: "/res/lightspeed.webp" },
-        { key: "cisco", label: "Cisco Umbrella", img: "/res/cisco.webp" },
-        { key: "contentkeeper", label: "ContentKeeper", img: "/res/contentkeeper.webp" },
-        { key: "deledao", label: "Deledao", img: "/res/deledao.webp" },
-        { key: "iboss", label: "IBoss", img: "/res/iboss.webp" },
-        { key: "barracuda", label: "Barracuda", img: "/res/barracuda.webp" }
+        { key: "secure", label: "Securely", img: "/icons/securely.webp" },
+        { key: "guardian", label: "GoGuardian", img: "/icons/goguardian.webp" },
+        { key: "lanschool", label: "Lanschool", img: "/icpns/lanschool.webp" },
+        { key: "linewize", label: "Linewize", img: "/icons/linewize.webp" },
+        { key: "blocksi", label: "Blocksi", img: "/icons/blocksi.webp" },
+        { key: "fortiguard", label: "FortiGuard", img: "/icons/fortiguard.webp" },
+        { key: "lightspeed", label: "LightSpeed", img: "/icons/lightspeed.webp" },
+        { key: "cisco", label: "Cisco Umbrella", img: "/icons/cisco.webp" },
+        { key: "contentkeeper", label: "ContentKeeper", img: "/icons/contentkeeper.webp" },
+        { key: "deledao", label: "Deledao", img: "/icons/deledao.webp" },
+        { key: "iboss", label: "IBoss", img: "/icons/iboss.webp" },
+        { key: "barracuda", label: "Barracuda", img: "/icons/barracuda.webp" }
     ];
     const extCheckContainer = document.getElementById("extCheckContainer");
     let extCheckboxes = [];
