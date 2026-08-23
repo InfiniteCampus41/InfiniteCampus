@@ -50,7 +50,7 @@ export function createIdleWatcher({ getManualStatus, onAutoIdle, onAutoResume, t
         }
         schedule();
     }
-    const events = ["mousedown", "keydown", "touchstart", "scroll"];
+    const events = ["click"];
     events.forEach(evt => document.addEventListener(evt, onActivity, { passive: true }));
     schedule();
     return {
