@@ -1526,7 +1526,7 @@ async function renderMessageInstant(id, msg) {
     leftWrapper.appendChild(profilePic);
     leftWrapper.appendChild(nameSpan);
     if (isAnonMsg) {
-        profilePic.src = "/pfps/1.jpeg";
+        profilePic.src = `${pfpDomain}/1.jpeg`;
         profilePic.onerror = () => { profilePic.src = ""; profilePic.style.display = "none"; };
         nameSpan.textContent = msg.u || "Anonymous";
         nameSpan.style.color = "#aaa";
@@ -3624,7 +3624,7 @@ onAuthStateChanged(auth, async user => {
     const sidebarPfp = document.getElementById("sidebarPfp");
     sidebarPfp.style.border = `2px solid ${DNC}`;
     if (sidebarPfp) {
-        sidebarPfp.src = `${pfpDomain}/${user.uid}?t=${Date.now()}`;
+        sidebarPfp.src = isGuest ? `${pfpDomain}/1.jpeg` : `${pfpDomain}/${user.uid}?t=${Date.now()}`;
     }
 });
 function _injectGuestNameButton() {
