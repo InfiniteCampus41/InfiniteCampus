@@ -1252,7 +1252,7 @@ if (unsub) {
     const BLOCKING_EXTENSIONS = [
         { key: "secure", label: "Securely", img: "/icons/securely.webp" },
         { key: "guardian", label: "GoGuardian", img: "/icons/goguardian.webp" },
-        { key: "lanschool", label: "Lanschool", img: "/icpns/lanschool.webp" },
+        { key: "lanschool", label: "Lanschool", img: "/icons/lanschool.webp" },
         { key: "linewize", label: "Linewize", img: "/icons/linewize.webp" },
         { key: "blocksi", label: "Blocksi", img: "/icons/blocksi.webp" },
         { key: "fortiguard", label: "FortiGuard", img: "/icons/fortiguard.webp" },
