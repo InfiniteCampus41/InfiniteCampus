@@ -3274,10 +3274,21 @@ async function switchChannel(ch) {
         } else {
         }
     });
+    if (pinnedRef) {
+        try {
+            if (pinnedRef.close) pinnedRef.close();
+        } catch (e) {}
+        pinnedRef = null;
+    }
+    pinnedRef = await dbListen(`pinned/${ch}`, (pinned) => {
+        if (currentPinnedChannel !== ch) return;
+        renderPinnedMessagesList(pinned || {});
+    });
     clearChannelMention(ch);
     renderChannelsFromDB();
 }
 let currentPinnedChannel = null;
+let pinnedRef = null;
 async function refreshPinnedMessagesBar(channelName) {
     currentPinnedChannel = channelName;
     if (!pinnedMessagesWrap) return;

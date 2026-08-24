@@ -525,10 +525,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             verifyBtn.style.cursor = "pointer";
             verifyBtn.onclick = async () => {
                 if (hasSettingsDisplayName || missingEmail) {
-                    showConfirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`, function(result) {
+                    showConfirm(`User ${displayNameToShow} Appears To Be A Spam Account Verify Anyway?`, async function(result) {
                         if (result) {
                             try {
-                                dbSet(`users/${uid}/profile/verified`, true);
+                                await dbSet(`users/${uid}/profile/verified`, true);
                                 showSuccess("User Verified.");
                                 unverifiedUsers.splice(unverifiedIndex, 1);
                                 if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
