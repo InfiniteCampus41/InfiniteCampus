@@ -748,6 +748,15 @@ window.addEventListener('DOMContentLoaded', () => {
                                     </span>
                                 </div>
                             </div>
+                            <br>
+                            <p class="btxt">
+                                Legal
+                            </p>
+                            <hr>
+                            <p class="btxt">
+                                Infinite Campus Games is not accociated with Infinite Campus LLC or infinitecampus.com
+                            </p>
+                            <br>
                         </div>
                     </div>
                 </div>
