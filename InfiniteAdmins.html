@@ -397,6 +397,8 @@
                 </div>
                 <div id="hiddengames-section" class="editor-section">
                     <div id="hiddengames-toolbar" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                        <select id="hiddengames-source-select" class="form-select" style="width:auto;min-width:140px;">
+                        </select>
                         <button id="hiddengames-save-btn" class="button">
                             Save
                         </button>
@@ -408,7 +410,7 @@
                         </span>
                     </div>
                     <p style="color:#aaa;font-size:0.85rem;max-width:60ch;">
-                        Enter one game ID per line. Games listed here are hidden from the game library.
+                        Enter one game ID per line. Games listed here are hidden from the game library for the selected source.
                     </p>
                     <textarea id="hiddengames-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="1042&#10;1057&#10;1099" style="width:100%;min-height:300px;max-height:60vh;background:#1e1e2e;color:#cdd6f4;border:1px solid #3e3e3e;border-radius:6px;padding:0.75rem 1rem;font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:0.85rem;line-height:1.6;"></textarea>
                 </div>

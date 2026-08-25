@@ -1293,6 +1293,37 @@ footer {
     padding: 4px 8px;
     margin-left: 6px;
 }
+.glSourceBtn {
+    background: #111;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: 0.2s all;
+}
+.glSourceBtn.active {
+    background: #3a3a3a;
+    border-color: #8cbe37;
+    color: #fff;
+}
+.glSourceBtn:hover {
+    background: #262626;
+}
+#glSourceButtons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+#glSourceWrap {
+    margin-bottom: 20px;
+    color: #aaa;
+    font-size: 0.9em;
+}
 #gradientLeft, #gradientRight, #colorInput {
     width:50px;
 }

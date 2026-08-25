@@ -2709,12 +2709,48 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             });
         }
         let _hiddenGamesLoaded = false;
+        let _hiddenGamesSources = [];
+        let _hiddenGamesSourceId = null;
+        const HIDDENGAMES_SOURCE_STORAGE_KEY = "icAdminHiddenGamesSource_v1";
+        async function loadHiddenGamesSources() {
+            const select = document.getElementById("hiddengames-source-select");
+            const statusEl = document.getElementById("hiddengames-status");
+            try {
+                const res = await fetch(BACKEND + "/api/game-sources", {
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const data = await res.json();
+                _hiddenGamesSources = (data && data.ok && Array.isArray(data.sources) && data.sources.length)
+                    ? data.sources
+                    : [{ id: "zone", name: "Zone" }];
+            } catch (e) {
+                _hiddenGamesSources = [{ id: "zone", name: "Zone" }];
+            }
+            const saved = localStorage.getItem(HIDDENGAMES_SOURCE_STORAGE_KEY);
+            _hiddenGamesSourceId = (saved && _hiddenGamesSources.some(s => s.id === saved))
+                ? saved
+                : _hiddenGamesSources[0].id;
+            if (select) {
+                select.innerHTML = "";
+                for (const src of _hiddenGamesSources) {
+                    const opt = document.createElement("option");
+                    opt.value = src.id;
+                    opt.textContent = src.name;
+                    if (src.id === _hiddenGamesSourceId) opt.selected = true;
+                    select.appendChild(opt);
+                }
+            }
+        }
         async function fetchHiddenGames() {
             const statusEl = document.getElementById("hiddengames-status");
+            if (!_hiddenGamesSourceId) {
+                statusEl.textContent = "Loading Sources...";
+                await loadHiddenGamesSources();
+            }
             statusEl.textContent = "Loading...";
             statusEl.style.color = "";
             try {
-                const res = await adminFetch(BACKEND + "/admin/hidden-games", {
+                const res = await adminFetch(BACKEND + "/admin/hidden-games/" + encodeURIComponent(_hiddenGamesSourceId), {
                     method: "GET",
                     headers: { "ngrok-skip-browser-warning": "true" }
                 });
@@ -2731,12 +2767,16 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         async function saveHiddenGames() {
             const statusEl = document.getElementById("hiddengames-status");
+            if (!_hiddenGamesSourceId) {
+                statusEl.textContent = "Loading Sources...";
+                await loadHiddenGamesSources();
+            }
             const raw = document.getElementById("hiddengames-editor").value;
             const hidden = raw.split("\n").map(s => s.trim()).filter(Boolean);
             statusEl.textContent = "Saving...";
             statusEl.style.color = "";
             try {
-                const res = await adminFetch(BACKEND + "/admin/hidden-games", {
+                const res = await adminFetch(BACKEND + "/admin/hidden-games/" + encodeURIComponent(_hiddenGamesSourceId), {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                     body: JSON.stringify({ hidden })
@@ -2783,7 +2823,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 }
                 if (target === "hiddengames" && !_hiddenGamesLoaded) {
                     _hiddenGamesLoaded = true;
-                    fetchHiddenGames();
+                    (async () => {
+                        await loadHiddenGamesSources();
+                        fetchHiddenGames();
+                    })();
                 }
             });
         });
@@ -2893,6 +2936,13 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         });
         document.getElementById("hiddengames-save-btn").onclick = saveHiddenGames;
         document.getElementById("hiddengames-refresh-btn").onclick = fetchHiddenGames;
+        document.getElementById("hiddengames-source-select").addEventListener("change", (e) => {
+            const next = e.target.value;
+            if (!next || next === _hiddenGamesSourceId) return;
+            _hiddenGamesSourceId = next;
+            localStorage.setItem(HIDDENGAMES_SOURCE_STORAGE_KEY, _hiddenGamesSourceId);
+            fetchHiddenGames();
+        });
         document.getElementById("hiddengames-editor").addEventListener("keydown", (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === "s") {
                 e.preventDefault();

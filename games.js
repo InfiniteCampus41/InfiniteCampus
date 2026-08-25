@@ -3,6 +3,7 @@
     if (!grid) return;
     const searchInput = document.getElementById("glSearch");
     const sortSelect = document.getElementById("glSort");
+    const sourceButtonsWrap = document.getElementById("glSourceButtons");
     const prevBtn = document.getElementById("glPrevPage");
     const nextBtn = document.getElementById("glNextPage");
     const PAGE_SIZE = 100;
@@ -10,10 +11,16 @@
     let sortBy = "popularity";
     let searchTerm = "";
     let page = 0;
-    const GAMES_CACHE_KEY = "icZoneGamesCache_v1";
-    function readGamesCache() {
+    const SOURCE_STORAGE_KEY = "icGameSource_v1";
+    const GAMES_CACHE_PREFIX = "icZoneGamesCache_v1";
+    let sources = [];
+    let currentSource = null;
+    function gamesCacheKey(source) {
+        return `${GAMES_CACHE_PREFIX}:${source}`;
+    }
+    function readGamesCache(source) {
         try {
-            const raw = localStorage.getItem(GAMES_CACHE_KEY);
+            const raw = localStorage.getItem(gamesCacheKey(source));
             if (!raw) return null;
             const parsed = JSON.parse(raw);
             if (!parsed || !Array.isArray(parsed.games)) return null;
@@ -22,27 +29,85 @@
             return null;
         }
     }
-    function writeGamesCache(games) {
+    function writeGamesCache(source, games) {
         try {
-            localStorage.setItem(GAMES_CACHE_KEY, JSON.stringify({ games, savedAt: Date.now() }));
+            localStorage.setItem(gamesCacheKey(source), JSON.stringify({ games, savedAt: Date.now() }));
         } catch {}
     }
     function canonicalize(list) {
-        return JSON.stringify(list.slice().sort((x, y) => x.id - y.id));
+        return JSON.stringify(list.slice().sort((x, y) => String(x.id).localeCompare(String(y.id))));
+    }
+    async function loadSources() {
+        try {
+            const res = await fetch(`${a}/api/game-sources`);
+            const data = await res.json();
+            if (data && data.ok && Array.isArray(data.sources) && data.sources.length) {
+                sources = data.sources;
+            } else {
+                sources = [{ id: "zone", name: "Zone" }];
+            }
+        } catch (e) {
+            console.error("Failed To Load Game Sources:", e);
+            sources = [{ id: "zone", name: "Zone" }];
+        }
+        const saved = localStorage.getItem(SOURCE_STORAGE_KEY);
+        currentSource = (saved && sources.some((s) => s.id === saved)) ? saved : sources[0].id;
+        renderSourceButtons();
+    }
+    function renderSourceButtons() {
+        if (!sourceButtonsWrap) return;
+        sourceButtonsWrap.innerHTML = "";
+        for (const src of sources) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "glSourceBtn" + (src.id === currentSource ? " active" : "");
+            btn.textContent = src.name;
+            btn.dataset.source = src.id;
+            btn.addEventListener("click", () => selectSource(src.id));
+            sourceButtonsWrap.appendChild(btn);
+        }
+        sourceButtonsWrap.style.display = sources.length > 1 ? "" : "none";
+    }
+    function updateSourceButtonsActive() {
+        if (!sourceButtonsWrap) return;
+        for (const btn of sourceButtonsWrap.children) {
+            btn.classList.toggle("active", btn.dataset.source === currentSource);
+        }
+    }
+    function selectSource(next) {
+        if (!next || next === currentSource) return;
+        currentSource = next;
+        localStorage.setItem(SOURCE_STORAGE_KEY, currentSource);
+        updateSourceButtonsActive();
+        searchTerm = "";
+        if (searchInput) searchInput.value = "";
+        page = 0;
+        allGames = [];
+        render();
+        const newUrl = window.location.pathname;
+        window.history.replaceState(null, "", newUrl);
+        loadGamesData();
+    }
+    function updateSearchPlaceholder() {
+        if (!searchInput) return;
+        const count = allGames.length;
+        searchInput.placeholder = count > 0 ? `Search ${count - 1}+ Games` : "Search Games";
     }
     async function loadGamesData() {
-        const cached = readGamesCache();
-        if (cached && cached.length) {
+        const source = currentSource;
+        const cached = readGamesCache(source);
+        if (cached && cached.length && source === currentSource) {
             allGames = cached;
             render();
         }
         try {
-            const res = await fetch(`${a}/api/zone-games`);
+            const res = await fetch(`${a}/api/games/${encodeURIComponent(source)}`);
             const data = await res.json();
             const fresh = (data && data.ok && Array.isArray(data.games)) ? data.games : null;
+            if (source !== currentSource) return; // user switched sources while this was in flight
             if (fresh) {
                 const changed = !cached || canonicalize(fresh) !== canonicalize(cached);
-                writeGamesCache(fresh);
+                writeGamesCache(source, fresh);
                 if (changed) {
                     allGames = fresh;
                     render();
@@ -53,6 +118,7 @@
             }
         } catch (e) {
             console.error("Failed To Load Games:", e);
+            if (source !== currentSource) return;
             if (!cached) {
                 allGames = [];
                 render();
@@ -76,7 +142,7 @@
     }
     function thumbUrlFor(game) {
         if (!game.hasThumbnail) return null;
-        return `${a}/zonegames/${encodeURIComponent(game.id)}/thumbnail`;
+        return `${a}/games/${encodeURIComponent(currentSource)}/${encodeURIComponent(game.id)}/thumbnail`;
     }
     let gameLoadInProgress = false;
     let thumbQueue = [];
@@ -94,6 +160,7 @@
         for (const run of queued) run();
     }
     function render() {
+        updateSearchPlaceholder();
         const filtered = getFiltered();
         const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
         if (page >= totalPages) page = totalPages - 1;
@@ -147,9 +214,9 @@
     const metaDesc = document.getElementById("glMetaDesc");
     let currentGameUrl = "";
     let scrollLocked = false;
-    async function bumpPopularity(id) {
+    async function bumpPopularity(source, id) {
         try {
-            await fetch(`${a}/api/zone-games/${encodeURIComponent(id)}/popularity`, { method: "POST" });
+            await fetch(`${a}/api/games/${encodeURIComponent(source)}/${encodeURIComponent(id)}/popularity`, { method: "POST" });
         } catch {}
     }
     function setAuthor(game) {
@@ -163,9 +230,10 @@
         }
     }
     async function openGame(game) {
+        const gameSource = currentSource;
         gameLoadInProgress = true;
-        currentGameUrl = `${a}/games/${encodeURIComponent(game.id)}?id=${game.id}`;
-        window.history.replaceState(null, null, `?play=${game.id}`);
+        currentGameUrl = `${a}/games/${encodeURIComponent(gameSource)}/${encodeURIComponent(game.id)}?id=${game.id}`;
+        window.history.replaceState(null, null, `?source=${encodeURIComponent(gameSource)}&play=${game.id}`);
         if ("fetchPriority" in frame) frame.fetchPriority = "high";
         frame.src = currentGameUrl;
         overlay.style.display = "flex";
@@ -174,30 +242,36 @@
         metaDate.textContent = game.dateAdded ? new Date(game.dateAdded).toLocaleDateString() : "Unknown";
         metaDesc.textContent = "";
         setAuthor(game);
-        bumpPopularity(game.id);
+        bumpPopularity(gameSource, game.id);
         const flushTimeout = setTimeout(() => {
             flushThumbQueue();
         }, 8000);
-        const wait = setInterval(() => {
-            try {
-                const outerDoc = frame.contentDocument;
-                if (!outerDoc) return;
-                const zoneFrame = outerDoc.getElementById("zoneFrame");
-                if (!zoneFrame) return;
-                const innerDoc = zoneFrame.contentDocument;
-                if (!innerDoc) return;
-                const content = innerDoc.getElementById("content");
-                if (!content) return;
-                content.style.maxHeight = "100%";
-                const canvas = content.querySelector("canvas");
-                if (canvas) canvas.style.maxHeight = "100%";
-                clearInterval(wait);
+        if (game.frameType === "zone") {
+            const wait = setInterval(() => {
+                try {
+                    const outerDoc = frame.contentDocument;
+                    if (!outerDoc) return;
+                    const zoneFrame = outerDoc.getElementById("zoneFrame");
+                    if (!zoneFrame) return;
+                    const innerDoc = zoneFrame.contentDocument;
+                    if (!innerDoc) return;
+                    const content = innerDoc.getElementById("content");
+                    if (!content) return;
+                    content.style.maxHeight = "100%";
+                    const canvas = content.querySelector("canvas");
+                    if (canvas) canvas.style.maxHeight = "100%";
+                    clearInterval(wait);
+                    clearTimeout(flushTimeout);
+                    flushThumbQueue();
+                } catch (e) {
+                }
+            }, 100);
+        } else {
+            frame.addEventListener("load", () => {
                 clearTimeout(flushTimeout);
                 flushThumbQueue();
-                console.log("Content found!");
-            } catch (e) {
-            }
-        }, 100);
+            }, { once: true });
+        }
     }
     function closeGame() {
         const newUrl = window.location.pathname;
@@ -221,9 +295,16 @@
         scrollLockBtn.style.color = scrollLocked ? "#8cbe37" : "white";
     });
     async function loadGamesDataAndMaybeAutoOpen() {
+        await loadSources();
+        const params = new URLSearchParams(window.location.search);
+        const requestedSource = params.get("source");
+        if (requestedSource && sources.some((s) => s.id === requestedSource)) {
+            currentSource = requestedSource;
+            localStorage.setItem(SOURCE_STORAGE_KEY, currentSource);
+            updateSourceButtonsActive();
+        }
         await loadGamesData();
         try {
-            const params = new URLSearchParams(window.location.search);
             const playId = params.get("play");
             if (playId) {
                 const target = allGames.find(g => String(g.id) === playId);

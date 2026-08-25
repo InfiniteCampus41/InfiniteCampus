@@ -59,7 +59,7 @@ DONE: fix message editing glitch where if you edit a message twice it goes back 
 
 DONE: Add idle, dnd, and invisible statuses
 
-15: different games sources
+DONE: different games sources
 
 16: remove updates page and replace with patch notes page that will get from a discord channel for the messages.
 
@@ -98,7 +98,7 @@ DONE: make left click on links just do the default thing
 
 
 final things:
-    1: different games sources
+    DONE: different games sources
 
     2: remove updates page and replace with patch notes page that will get from a discord channel for the messages.
 
@@ -108,7 +108,7 @@ final things:
 
     5: mp3 file tag editor like tagmp3
 
-    6: make it so the website chat message shows up if the pinned message on the discord is from the website chat.
+    DONE: make it so the website chat message shows up if the pinned message on the discord is from the website chat.
 
     7: allow for higher role message editing and deleting in group chats
 
