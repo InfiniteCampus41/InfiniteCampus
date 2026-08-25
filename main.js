@@ -184,6 +184,10 @@ if (isMobile) {
     });
 }
 let isFahrenheit = true;
+let lastWeatherFetchTime = 0;
+let lastWeatherFetchFailed = false;
+let lastWeatherData = null;
+let weatherToggleListenerAttached = false;
 try {
     localStorage.setItem("replit-pill-preference", "hidden");
 } catch {}
@@ -860,37 +864,56 @@ function initSettingsUI(apply) {
         }
         if (resolve) resolve();
     }
+    const WEATHER_RETRY_AFTER_FAILURE_MS = 5 * 60 * 1000;
+    const WEATHER_REFRESH_INTERVAL_MS = 15 * 60 * 1000; 
+    function renderWeatherDisplay(data, useFahrenheit) {
+        const temp = useFahrenheit ? `${data.temperature.fahrenheit}°F` : `${data.temperature.celsius}°C`;
+        const display = `${data.location}: ${data.emoji} ${temp}`;
+        const toggleEl = document.getElementById("toggle");
+        const weatherEl = document.getElementById("weather");
+        if (weatherEl) {
+            weatherEl.textContent = display;
+            weatherEl.classList.add("show");
+        }
+        if (toggleEl) toggleEl.classList.add("show");
+        applyDarkModeClass();
+    }
     async function getWeather(city, state, useFahrenheit) {
         if (!city || !state) return;
+        lastWeatherFetchTime = Date.now();
         try {
             const res = await fetch(
                 `${a}/weather?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`
             );
             if (!res.ok) {
                 throw new Error("Weather Request Failed");
-                document.getElementById("weather").classList.add("show");
-                document.getElementById("weather").textContent = "Unable To Get Weather";
-                return;
             }
             const data = await res.json();
             if (!data.temperature) {
                 console.error("Temperature Unavailable");
+                lastWeatherFetchFailed = true;
                 return;
             }
-            const temp = useFahrenheit ? `${data.temperature.fahrenheit}°F` : `${data.temperature.celsius}°C`;
-            const display = `${data.location}: ${data.emoji} ${temp}`;
-            const toggleEl = document.getElementById("toggle");
-            const weatherEl = document.getElementById("weather");
-            if (weatherEl) {
-                weatherEl.textContent = display;
-                weatherEl.classList.add("show");
-            }
-            toggleEl.classList.add("show");
-            applyDarkModeClass();
+            lastWeatherFetchFailed = false;
+            lastWeatherData = data;
+            renderWeatherDisplay(data, useFahrenheit);
         } catch (err) {
             console.error("Weather Error:", err);
+            lastWeatherFetchFailed = true;
             document.getElementById("weather").classList.add("show");
             if (document.getElementById("weather")) document.getElementById("weather").textContent = "Unable To Get Weather";
+        }
+    }
+    function scheduleWeatherFetch(city, state) {
+        if (!city || !state) return;
+        const now = Date.now();
+        const elapsed = now - lastWeatherFetchTime;
+        const retryInterval = lastWeatherFetchFailed ? WEATHER_RETRY_AFTER_FAILURE_MS : WEATHER_REFRESH_INTERVAL_MS;
+        const dueForFetch = lastWeatherFetchTime === 0 || elapsed >= retryInterval;
+        if (dueForFetch) {
+            getWeather(city, state, isFahrenheit);
+        } else if (lastWeatherData) {
+            renderWeatherDisplay(lastWeatherData, isFahrenheit);
         }
     }
     function removePlusSignsFromPage() {
@@ -900,22 +923,25 @@ function initSettingsUI(apply) {
             node.nodeValue = node.nodeValue.replace(/\+/g, "");
         }
     }
-    document.getElementById("toggle")?.addEventListener("click", () => {
-        if (isFahrenheit === true) {
-            isFahrenheit = false;
-        } else {
-            isFahrenheit = true;
-        }
-        document.getElementById("toggle").innerText = isFahrenheit ? "°C" : "°F";
-        const city = sessionStorage.getItem("city");
-        const state = sessionStorage.getItem("state");
-        getWeather(city, state, isFahrenheit);
-    });
+    if (!weatherToggleListenerAttached) {
+        document.getElementById("toggle")?.addEventListener("click", () => {
+            isFahrenheit = !isFahrenheit;
+            document.getElementById("toggle").innerText = isFahrenheit ? "°C" : "°F";
+            if (lastWeatherData) {
+                renderWeatherDisplay(lastWeatherData, isFahrenheit);
+            } else {
+                const city = sessionStorage.getItem("city");
+                const state = sessionStorage.getItem("state");
+                getWeather(city, state, isFahrenheit);
+            }
+        });
+        weatherToggleListenerAttached = true;
+    }
     async function initWeather() {
         await getLocation();
         const city = sessionStorage.getItem("city");
         const state = sessionStorage.getItem("state");
-        getWeather(city, state, isFahrenheit);
+        scheduleWeatherFetch(city, state);
         removePlusSignsFromPage();
         applyDarkModeClass();
     }
