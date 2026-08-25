@@ -924,9 +924,11 @@ function initSettingsUI(apply) {
         }
     }
     if (!weatherToggleListenerAttached) {
-        document.getElementById("toggle")?.addEventListener("click", () => {
+        document.addEventListener("click", (e) => {
+            const toggleBtn = e.target.closest("#toggle");
+            if (!toggleBtn) return;
             isFahrenheit = !isFahrenheit;
-            document.getElementById("toggle").innerText = isFahrenheit ? "°C" : "°F";
+            toggleBtn.innerText = isFahrenheit ? "°C" : "°F";
             if (lastWeatherData) {
                 renderWeatherDisplay(lastWeatherData, isFahrenheit);
             } else {
