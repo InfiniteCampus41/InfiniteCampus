@@ -8,32 +8,48 @@ firebase.initializeApp({
   	appId: "1:424229778181:web:fa531219ed165346fa7d6c"
 });
 const messaging = firebase.messaging();
+const VERIFY_ICON = "/icons/shield-check.svg";
 messaging.onBackgroundMessage((payload) => {
-  	self.registration.showNotification(payload.notification.title, {
+  	const isVerify = payload.data?.type === "verifyUser";
+  	const tag = payload.data?.tag || (payload.data?.uid ? `${payload.data.type || "notif"}-${payload.data.uid}` : undefined);
+  	const options = {
   		body: payload.notification.body,
-  		icon: "/res/192icon.png",
-  		actions: [
+  		icon: isVerify ? VERIFY_ICON : "/res/192icon.png",
+  		data: {
+            url: payload.data?.url || "/"
+        }
+	};
+  	if (tag) {
+  		options.tag = tag;
+  		options.renotify = true;
+  	}
+  	if (isVerify) {
+  		options.actions = [
    	 		{
       			action: "verify",
       			title: "Verify User"
     		}
-  		],
-  		data: {
-            url: payload.data?.url || "/"
-        }
-	});
+  		];
+  	}
+  	self.registration.showNotification(payload.notification.title, options);
 });
 self.addEventListener("push", function(event) {
   	const data = event.data.json();
+  	const isVerify = data.type === "verifyUser" || data.data?.type === "verifyUser";
+  	const tag = data.tag || data.data?.tag;
   	const options = {
 		title: data.title,
     	body: data.body,
-    	icon: data.icon,
+    	icon: isVerify ? VERIFY_ICON : data.icon,
 		image: data.image,
     	data: {
       		url: data.data?.url || "/"
     	}
   	};
+  	if (tag) {
+  		options.tag = tag;
+  		options.renotify = true;
+  	}
   	event.waitUntil(
     	self.registration.showNotification(data.title, options)
   	);

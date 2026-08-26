@@ -412,6 +412,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         unverifiedUsers.push({ uid, data });
                     }
                 }
+                if (unverifiedIndex >= unverifiedUsers.length) unverifiedIndex = 0;
                 renderUnverifiedViewer();
             });
         }
@@ -644,7 +645,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 window.location.href = "InfiniteChatters.html";
                 return;
             }
-            if (isCoOwner || isHAdmin && !isOwner && !isTester) {
+            if ((isCoOwner || isHAdmin) && !isOwner && !isTester) {
                 userListDiv.style.display = "none";
                 userEditDiv.style.display = "none";
                 privateChatsDiv.style.display = "none";
@@ -654,6 +655,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 adminMsgInput.style.display = "none";
                 deleteChatBtn.style.display = "none";
                 listenForTyping();
+                listenForUnverifiedUsers();
                 return;
             }
             await preloadUsers();

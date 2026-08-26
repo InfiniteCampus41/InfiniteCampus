@@ -8,14 +8,27 @@ firebase.initializeApp({
   	appId: "1:424229778181:web:fa531219ed165346fa7d6c"
 });
 const messaging = firebase.messaging();
+const VERIFY_ICON = "/icons/shield-check.svg";
 messaging.onBackgroundMessage((payload) => {
-  	self.registration.showNotification(payload.notification.title, {
+  	const isVerify = payload.data?.type === "verifyUser";
+  	const tag = payload.data?.tag || (payload.data?.uid ? `${payload.data.type || "notif"}-${payload.data.uid}` : undefined);
+  	const options = {
     	body: payload.notification.body,
-    	icon: "/icon.png",
+    	icon: isVerify ? VERIFY_ICON : "/icon.png",
 		data: {
             url: payload.data?.url || payload.notification?.url || "/"
         }
-  	});
+  	};
+  	if (tag) {
+  		options.tag = tag;
+  		options.renotify = true;
+  	}
+  	if (isVerify) {
+  		options.actions = [
+  			{ action: "verify", title: "Verify User" }
+  		];
+  	}
+  	self.registration.showNotification(payload.notification.title, options);
 });
 self.addEventListener("notificationclick", function(event) {
     event.notification.close();
