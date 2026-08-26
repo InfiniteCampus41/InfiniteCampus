@@ -828,7 +828,23 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         let currentTrack = null;
         let isPlaying = false;
         let streamNavStack = [];
-        const scCache = {};
+        const SC_CACHE_MAX = 200;
+        const scCache = new Map();
+        function scCacheGet(key) {
+            if (!scCache.has(key)) return undefined;
+            const val = scCache.get(key);
+            scCache.delete(key);
+            scCache.set(key, val);
+            return val;
+        }
+        function scCacheSet(key, val) {
+            if (scCache.has(key)) scCache.delete(key);
+            scCache.set(key, val);
+            if (scCache.size > SC_CACHE_MAX) {
+                const oldestKey = scCache.keys().next().value;
+                scCache.delete(oldestKey);
+            }
+        }
         let playerMode = 'local';
         let playlists = [];
         let openPlaylistId = null;
@@ -1971,12 +1987,13 @@ if (x3tfypage == '/InfiniteAbouts.html') {
         injectLibraryImportControls();
         async function resolveSCPermalinks(artistName, title) {
             const key = `${artistName}||${title}`;
-            if (scCache[key]) return scCache[key];
+            const cached = scCacheGet(key);
+            if (cached) return cached;
             try {
                 const res  = await fetch(`${a}/music/resolve?artist=${encodeURIComponent(artistName)}&title=${encodeURIComponent(title)}`);
                 if (!res.ok) return null;
                 const data = await res.json();
-                scCache[key] = data;
+                scCacheSet(key, data);
                 return data;
             } catch { return null; }
         }
