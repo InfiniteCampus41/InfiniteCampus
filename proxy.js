@@ -433,9 +433,9 @@ async function loadIntoActiveTab(input) {
         return;
     }
     let wispUrl =
-        (location.protocol === "http:" ? "wss" : "ws") +
+        (location.protocol === "https:" ? "wss" : "ws") +
         "://" +
-        "www.infinitecampus.xyz" +
+        location.host +
         "/wisp/";
     console.log("connection", connection);
     console.log("worker path", "/baremux/worker.js");
