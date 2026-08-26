@@ -19,38 +19,65 @@ const broken = document.getElementById("brokenPxy");
 let fullscreenBtn = null;
 let isFullscreen = false;
 let scramjet = null;
+const n = location.hostname;
+console.log("[proxy] location.hostname (n) =", n);
+console.log("[proxy] location.href =", location.href);
+console.log("[proxy] $scramjetLoadController available:", typeof $scramjetLoadController !== "undefined");
 if (typeof $scramjetLoadController !== "undefined") {
-    const { ScramjetController } = $scramjetLoadController();
-    scramjet = new ScramjetController({
-        files: {
+    try {
+        const { ScramjetController } = $scramjetLoadController();
+        const scramjetFiles = {
             wasm: `https://${n}/scram/scramjet.wasm.wasm`,
             all: `https://${n}/scram/scramjet.all.js`,
             sync: `https://${n}/scram/scramjet.sync.js`,
-        },
-    });
-    scramjet.init();
+        };
+        console.log("[proxy] scramjet file URLs:", scramjetFiles);
+        scramjet = new ScramjetController({ files: scramjetFiles });
+        scramjet.init();
+        console.log("[proxy] scramjet initialized successfully");
+    } catch (err) {
+        console.error("[proxy] scramjet initialization FAILED:", err);
+        scramjet = null;
+    }
+} else {
+    console.warn("[proxy] $scramjetLoadController is undefined — scramjet.all.js probably didn't load. Check network tab for a failed/404 request to /scram/scramjet.all.js");
 }
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 let blockedUrls = [];
 async function loadBlockedUrls() {
+    const endpoint = `https://${n}/edit-urls`;
+    console.log("[proxy] fetching blocked urls from", endpoint);
     try {
-        const res = await fetch(`https://${n}/edit-urls`);
+        const res = await fetch(endpoint);
+        console.log("[proxy] /edit-urls response status:", res.status);
         if (!res.ok) throw new Error("Failed To Fetch URLs");
         const data = await res.json();
         blockedUrls = Object.entries(data).map(([url, reason]) => ({
             url,
             reason
         }));
-    } catch {
+        console.log("[proxy] loaded", blockedUrls.length, "blocked url entries");
+    } catch (err) {
+        console.error("[proxy] loadBlockedUrls FAILED:", err);
         blockedUrls = [];
     }
 }
 async function registerSW() {
 	if (!navigator.serviceWorker) {
+		console.error("[proxy] navigator.serviceWorker is unavailable (page not served over https/localhost, or unsupported browser)");
 		throw new Error("Service Workers Cannot Be Registered Without https.");
-		throw new Error("Your Browser Doesn't Support Service Workers.");
 	}
-	await navigator.serviceWorker.register(stockSW);
+	console.log("[proxy] registering service worker:", stockSW);
+	try {
+		const reg = await navigator.serviceWorker.register(stockSW);
+		console.log("[proxy] service worker registered, scope:", reg.scope);
+		if (reg.installing) console.log("[proxy] sw state: installing");
+		if (reg.waiting) console.log("[proxy] sw state: waiting");
+		if (reg.active) console.log("[proxy] sw state: active");
+	} catch (err) {
+		console.error("[proxy] service worker registration FAILED:", err);
+		throw err;
+	}
 }
 function getBaseDomain(input) {
     try {
@@ -426,6 +453,7 @@ async function loadIntoActiveTab(input) {
     try {
         await registerSW();
     } catch (err) {
+        console.error("[proxy] aborting load — service worker failed:", err);
         pxyErr.style.display = "block";
         error.textContent = "Service Worker failed.";
         errorCode.textContent = err.toString();
@@ -437,16 +465,35 @@ async function loadIntoActiveTab(input) {
         "://" +
         location.host +
         "/wisp/";
-    console.log("connection", connection);
-    console.log("worker path", "/baremux/worker.js");
-    if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
-        await connection.setTransport("/libcurl/index.mjs", [
-            { websocket: wispUrl },
-        ]);
+    console.log("[proxy] wispUrl =", wispUrl);
+    console.log("[proxy] bare-mux connection object:", connection);
+    try {
+        const currentTransport = await connection.getTransport();
+        console.log("[proxy] current bare-mux transport:", currentTransport);
+        if (currentTransport !== "/libcurl/index.mjs") {
+            console.log("[proxy] setting bare-mux transport to /libcurl/index.mjs with websocket:", wispUrl);
+            await connection.setTransport("/libcurl/index.mjs", [
+                { websocket: wispUrl },
+            ]);
+            console.log("[proxy] transport set successfully");
+        } else {
+            console.log("[proxy] transport already set, skipping");
+        }
+    } catch (err) {
+        console.error("[proxy] setting bare-mux transport FAILED:", err);
+        pxyErr.style.display = "block";
+        error.textContent = "Proxy transport failed.";
+        errorCode.textContent = err.toString();
+        hidePxyLoader();
+        return;
+    }
+    if (!scramjet) {
+        console.error("[proxy] scramjet is null — cannot navigate frame. See earlier [proxy] logs for why scramjet failed to initialize.");
     }
     tab.displayUrl = input;
     addressBar.value = input;
     const url = search(input, searchEngine.value);
+    console.log("[proxy] navigating tab", tab.id, "to resolved url:", url);
     tab.tabBtn.querySelector(".tab-title").textContent = "Loading...";
     tab.isLoading = true;
     showPxyLoader();
@@ -478,7 +525,12 @@ async function loadIntoActiveTab(input) {
             createFullscreenButton();
         }    
     };
-    tab.frameObj.go(url);
+    try {
+        tab.frameObj.go(url);
+        console.log("[proxy] tab.frameObj.go() called successfully for", url);
+    } catch (err) {
+        console.error("[proxy] tab.frameObj.go() threw:", err);
+    }
 }
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -527,7 +579,7 @@ if ("getBattery" in navigator) {
 }
 const hosturl = window.location.host;
 function setRandomPhrase() { 
-    const phrases = [ 
+        const phrases = [ 
         "Walking By The Wall",
         "The Shadows Will Not Fall",
         "Is Silently Ignored",
@@ -635,6 +687,7 @@ document.querySelectorAll("#pxyApps div").forEach(app => {
 });
 createTab(true);
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("[proxy] DOMContentLoaded — scramjet is", scramjet ? "initialized" : "NULL (showing broken screen)");
     if (!scramjet) {
         working.style.display = "none";
         broken.style.display = "block";
