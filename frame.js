@@ -591,6 +591,7 @@ if (!isChattersPage) {
         localStorage.setItem("loadingScreensDisabled", loadingScreensDisabled.toString());
         if (loadingScreensDisabled) {
             hideLoader();
+            hidePxyLoader();
         }
     });
     let isLoaded = false;
@@ -630,14 +631,17 @@ if (!isChattersPage) {
         }, 600);
     }
     function showPxyLoader() {
+        if (loadingScreensDisabled) return;
         if (!document.getElementById("planet-loader")) {
             document.body.prepend(loader);
         }
         loader.style.display = "flex";
         loader.style.top = "134.8px";
         loader.style.opacity = "1";
+        startSlowTimer();
     }
     function hidePxyLoader() {
+        cancelSlowTimer();
         loader.style.opacity = "0";
         loader.style.top = '60px';
         setTimeout(() => {

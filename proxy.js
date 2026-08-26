@@ -19,7 +19,6 @@ const broken = document.getElementById("brokenPxy");
 let fullscreenBtn = null;
 let isFullscreen = false;
 let scramjet = null;
-const n = location.hostname;
 console.log("[proxy] location.hostname (n) =", n);
 console.log("[proxy] location.href =", location.href);
 console.log("[proxy] $scramjetLoadController available:", typeof $scramjetLoadController !== "undefined");
