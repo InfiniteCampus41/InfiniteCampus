@@ -157,14 +157,7 @@ function dbListen(path, callback) {
 }
 const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isInStandaloneMode = window.navigator.standalone === true;
-// True when this tab is running as the installed/home-screen app rather than a
-// plain browser tab. Used so the server can prefer this device's installed-app
-// token over a browser-tab token when both exist, and only show one notification.
 const isPWA = isInStandaloneMode || window.matchMedia("(display-mode: standalone)").matches;
-// A stable per-browser id (persists across tabs/reloads since it lives in
-// localStorage, which an installed PWA shares with the site it was installed
-// from) so the server can tell which push tokens belong to the same physical
-// device/browser and only send one notification to it.
 function getDeviceId() {
     try {
         let id = localStorage.getItem("icDeviceId");
@@ -1294,29 +1287,22 @@ if (unsub) {
         BLOCKING_EXTENSIONS.forEach(ext => {
             const item = document.createElement("div");
             item.className = "extCheckItem";
-
             const img = document.createElement("img");
             img.src = ext.img;
-
             const label = document.createElement("label");
             label.htmlFor = `extCheck_${ext.key}`;
             label.textContent = ext.label;
-
             const switchLabel = document.createElement("label");
             switchLabel.className = "switch";
-
             const cb = document.createElement("input");
             cb.type = "checkbox";
             cb.className = "extCheck";
             cb.id = `extCheck_${ext.key}`;
             cb.dataset.key = ext.key;
-
             const slider = document.createElement("span");
             slider.className = "slider";
-
             switchLabel.appendChild(cb);
             switchLabel.appendChild(slider);
-
             item.appendChild(img);
             item.appendChild(label);
             item.appendChild(switchLabel);
