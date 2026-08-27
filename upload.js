@@ -264,9 +264,6 @@ if (fileParam) {
         }
         const fileName = finalFileUrl.split("/").pop();
         const link = `${f}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
-        const link2 = `${b}/InfiniteUploaders.html?file=${encodeURIComponent(fileName)}`;
-        const hiddenlinkdomains = g;
-        const hideSecondLink = hiddenlinkdomains.includes(window.location.host);
         output.innerHTML = `
             <center>
                 <p class="btxt">
@@ -278,26 +275,15 @@ if (fileParam) {
                 </button>
                 <br>
                 <br>
-                ${!hideSecondLink ? `
-                    <input type="text" class="button mbInp2" id="fileLink2" value="${link2}" readonly style="width:80%">
-                    <button class="button apbtn" onclick="copyLink2()">
-                        Copy
-                    </button>
-                    <br>
-                    <br>
-                ` : ``}
-                <a href="${link}" target="_blank">
-                    <button class="button apbtn">
-                        Go To Download Page (This Site)
-                    </button>
+                <input type="text" class="button mbInp2" id="fileLink2" value="${link}" readonly style="width:80%">
+                <button class="button apbtn" onclick="copyLink2()">
+                    Copy
+                </button>
+                <br>
+                <br>
+                <a href="${link}" target="_blank" class="apbtn button">
+                    Go To Download Page
                 </a>
-                ${!hideSecondLink ? `
-                    <a href="${link2}" target="_blank">
-                        <button class="button apbtn">
-                            Go To Download Page (Official)
-                        </button>
-                    </a>
-                ` : ``}
             </center>
         `;
         progressBar.style.width = "100%";
