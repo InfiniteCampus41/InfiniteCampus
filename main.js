@@ -62,6 +62,8 @@ function safeSetItem(key, value) {
 }
 const DEFAULT_BACKEND_URL = window.location.origin + "/api";
 const DEFAULT_WS_URL = "wss://" + window.location.host + "/api";
+const FALLBACK_BACKEND_URL = "https://api.infinitecampus.xyz";
+const FALLBACK_WS_URL = "wss://api.infinitecampus.xyz";
 let a = localStorage.getItem('backendUrl') || DEFAULT_BACKEND_URL;
 function getModifiedUrl(key) {
     let url = localStorage.getItem('backendUrl');
@@ -84,6 +86,25 @@ window.addEventListener('storage', (e) => {
         a = e.newValue || DEFAULT_BACKEND_URL;
     }
 });
+function verifyBackendUrl() {
+    if (localStorage.getItem('backendUrl')) return Promise.resolve();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    return fetch(a, { method: "GET", cache: "no-store", signal: controller.signal })
+        .then((res) => {
+            if (!res.ok) throw new Error("Backend Responded With Status " + res.status);
+        })
+        .catch((err) => {
+            console.warn(`Default Backend Unreachable (${a}), Falling Back To ${FALLBACK_BACKEND_URL}`, err);
+            a = FALLBACK_BACKEND_URL;
+            h = FALLBACK_WS_URL;
+            document.dispatchEvent(new CustomEvent('backendUrlFallback', {
+                detail: { backendUrl: a, wsUrl: h }
+            }));
+        })
+        .finally(() => clearTimeout(timeout));
+}
+const backendReadyPromise = verifyBackendUrl();
 const i = "https://discord.gg/Fq2gUZvRr3";
 const m = "https://discord.com/api/guilds/1002698920809463808/widget.json";
 const n = location.hostname;
