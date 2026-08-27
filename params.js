@@ -2,7 +2,7 @@ const x3tfypage = window.location.pathname;
 const x3tfyparams = new URLSearchParams(window.location.search);
 if (x3tfypage == '/InfiniteAbouts.html') {
     const roleParams = x3tfyparams.get("role");
-    const allowedHosts = ["infinitecampus.xyz", "www.infinitecampus.xyz", "instructure.space", "localhost:2000"];
+    const allowedHosts = [window.location.host, "localhost"];
     const before = document.getElementById("before");
     const toptext = document.getElementById("tptxt");
     const rolecontainer = document.getElementById('rolesContainer');

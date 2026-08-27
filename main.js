@@ -74,22 +74,9 @@ function getModifiedUrl(key) {
     }
     return url;
 }
-const b = "https://www.infinitecampus.xyz";
 const c = "Infinite Campus";
-const d = "https://included-touched-joey.ngrok-free.app";
-const e = [
-    "infinitecampus.xyz", 
-    "www.infinitecampus.xyz", 
-    "instructure.space"
-];
+const e = [window.location.origin];
 const f = window.location.host;
-const g = [
-    "backup.infinitecampus.xyz",
-    "backup.instructure.space",
-    "www.infinitecampus.xyz",
-    "infinitecampus.xyz",
-    "instructure.space"
-];
 let h = getModifiedUrl(localStorage.getItem('backendUrl')) || DEFAULT_WS_URL;
 window.addEventListener('storage', (e) => {
     if (e.key === 'backendUrl') {

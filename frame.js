@@ -217,6 +217,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (discordBtn) {
             discordBtn.href = i;
         }
+        let hostlink = document.getElementById("hostname");
+        if (hostlink) {
+            hostlink.innerText = window.location.origin;
+        }
     }
     applyDiscordLink();
     const THEME_PARTICLES = {

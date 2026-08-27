@@ -2073,7 +2073,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         adminPages.style.display = 'none';
         forceWebSockets();
         const BACKEND = `${a}`;
-        const bk2 = `https://infinitecampus.xyz`;
+        const bk2 = window.location.origin;
         let currentUser = null;
         let authReady = false;
         const authReadyPromise = new Promise((resolve) => {
@@ -4246,7 +4246,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                                         </tr>
                                         <tr>
                                             <td style="color:lime;text-decoration:underline;">
-                                                <a href="https://www.infinitecampus.xyz/InfiniteAccounts.html?unsub=true">
+                                                <a href="/InfiniteAccounts.html?unsub=true">
                                                     Unsubscribe
                                                 </a>
                                             </td>
