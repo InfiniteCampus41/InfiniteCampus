@@ -2323,7 +2323,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             return syntaxHighlightCollapsible(json, "rules-editor");
         }
         function updateLineNumbers(editorId) {
-            const gutterMap = { "rules-editor": "rules-gutter", "data-editor": "data-gutter", "words-editor": "words-gutter", "users-editor": "users-gutter" };
+            const gutterMap = { "rules-editor": "rules-gutter", "data-editor": "data-gutter", "words-editor": "words-gutter", "trackedurls-editor": "trackedurls-gutter", "users-editor": "users-gutter" };
             const editor = document.getElementById(editorId);
             const gutter = document.getElementById(gutterMap[editorId]);
             if (!editor || !gutter) return;
@@ -2559,6 +2559,43 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         let _dataLoaded = false;
         let _wordsLoaded = false;
+        let _trackedUrlsLoaded = false;
+        async function fetchTrackedUrls() {
+            document.getElementById("trackedurls-status").textContent = "Loading...";
+            try {
+                const res = await adminFetch(BACKEND + "/admin/modify-tracked-urls", { method: "GET" });
+                if (!res.ok) throw new Error(await res.text());
+                const store = await res.json();
+                const pretty = JSON.stringify(store, null, 2);
+                document.getElementById("trackedurls-editor").textContent = pretty;
+                updateLineNumbers("trackedurls-editor");
+                document.getElementById("trackedurls-status").textContent = "Loaded ✓";
+            } catch (err) {
+                document.getElementById("trackedurls-status").textContent = "Error: " + err.message;
+            }
+        }
+        async function saveTrackedUrls() {
+            document.getElementById("trackedurls-status").textContent = "Saving...";
+            const raw = document.getElementById("trackedurls-editor").innerText || document.getElementById("trackedurls-editor").textContent;
+            let parsed;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (e) {
+                document.getElementById("trackedurls-status").textContent = "Invalid JSON: " + e.message;
+                return;
+            }
+            try {
+                const res = await adminFetch(BACKEND + "/admin/modify-tracked-urls", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ visited: parsed.visited, allowedHosts: parsed.allowedHosts })
+                });
+                if (!res.ok) throw new Error(await res.text());
+                document.getElementById("trackedurls-status").textContent = "Saved ✓";
+            } catch (err) {
+                document.getElementById("trackedurls-status").textContent = "Error: " + err.message;
+            }
+        }
         let _usersLoaded = false;
         let _usersOriginal = "";
         let _isUsersOwner = false;
@@ -2804,6 +2841,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 document.getElementById("rules-section").classList.toggle("visible", target === "rules");
                 document.getElementById("data-section").classList.toggle("visible", target === "data");
                 document.getElementById("words-section").classList.toggle("visible", target === "words");
+                document.getElementById("trackedurls-section").classList.toggle("visible", target === "trackedurls");
                 document.getElementById("users-section").classList.toggle("visible", target === "users");
                 document.getElementById("gamesjson-section").classList.toggle("visible", target === "gamesjson");
                 document.getElementById("hiddengames-section").classList.toggle("visible", target === "hiddengames");
@@ -2814,6 +2852,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 if (target === "words" && !_wordsLoaded) {
                     _wordsLoaded = true;
                     fetchWords();
+                }
+                if (target === "trackedurls" && !_trackedUrlsLoaded) {
+                    _trackedUrlsLoaded = true;
+                    fetchTrackedUrls();
                 }
                 if (target === "users" && !_usersLoaded) {
                     _usersLoaded = true;
@@ -2900,6 +2942,23 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 saveWords();
             }
         });
+        document.getElementById("trackedurls-save-btn").onclick = saveTrackedUrls;
+        document.getElementById("trackedurls-refresh-btn").onclick = fetchTrackedUrls;
+        document.getElementById("trackedurls-editor").addEventListener("input", () => {
+            updateLineNumbers("trackedurls-editor");
+        });
+        document.getElementById("trackedurls-editor").addEventListener("keydown", (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                document.execCommand("insertText", false, "  ");
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                saveTrackedUrls();
+            }
+        });
+        document.getElementById("trackedurls-collapse-all-btn").onclick = () => collapseAll("trackedurls-editor");
+        document.getElementById("trackedurls-expand-all-btn").onclick = () => expandAll("trackedurls-editor");
         document.getElementById("users-save-btn").onclick = saveUsers;
         document.getElementById("users-refresh-btn").onclick = fetchUsers;
         document.getElementById("users-editor").addEventListener("input", () => {
@@ -4327,10 +4386,10 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     const data = await res.json();
                     if (!res.ok || !data.success) throw new Error(data.error || 'Send Failed');
                     sent++;
-                    addLog(progLog, `✓ ${user.displayName} <${user.email}>`, 'ok');
+                    addLog(progLog, `${user.displayName} <${user.email}>`, 'ok');
                 } catch (e) {
                     failed++;
-                    addLog(progLog, `✗ ${user.displayName}: ${e.message}`, 'err');
+                    addLog(progLog, `${user.displayName}: ${e.message}`, 'err');
                 }
                 if (i < recipients.length - 1) {
                     for (let s = 5; s > 0; s--) {

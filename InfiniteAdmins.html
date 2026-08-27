@@ -258,6 +258,9 @@
                     <span class="editor-tab" data-tab="words">
                         Restricted Words
                     </span>
+                    <span class="editor-tab" data-tab="trackedurls">
+                        Tracked URLs
+                    </span>
                     <span class="editor-tab" data-tab="users">
                         User Data
                     </span>
@@ -340,6 +343,34 @@
                         <div id="words-gutter" style="min-width:2.8rem;padding:0.75rem 0.5rem;text-align:right;color:#555;background:#181825;border-right:1px solid #313145;user-select:none;line-height:1.6;font-size:0.78rem;">
                         </div>
                         <div id="words-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="trackedurls-section" class="editor-section">
+                    <div id="trackedurls-toolbar" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                        <button id="trackedurls-save-btn" class="button">
+                            Save
+                        </button>
+                        <button id="trackedurls-refresh-btn" class="button">
+                            Refresh
+                        </button>
+                        <button id="trackedurls-collapse-all-btn" class="button">
+                            Collapse All
+                        </button>
+                        <button id="trackedurls-expand-all-btn" class="button">
+                            Expand All
+                        </button>
+                        <span id="trackedurls-status" style="font-size:0.85rem;opacity:0.85;margin-left:auto;">
+                            Loading
+                        </span>
+                    </div>
+                    <div id="trackedurls-hint" style="font-size:0.78rem;opacity:0.7;margin-bottom:0.5rem;">
+                        visited = tracked pages, allowedHosts = stop tracking that host and its subdomains.
+                    </div>
+                    <div id="trackedurls-wrap" style="display:flex;border:1px solid #3e3e3e;border-radius:6px;overflow:auto;background:#1e1e2e;font-family:'Fira Code','Cascadia Code','Consolas',monospace;font-size:0.82rem;line-height:1.6;min-height:420px;max-height:70vh;">
+                        <div id="trackedurls-gutter" style="min-width:2.8rem;padding:0.75rem 0.5rem;text-align:right;color:#555;background:#181825;border-right:1px solid #313145;user-select:none;line-height:1.6;font-size:0.78rem;">
+                        </div>
+                        <div id="trackedurls-editor" contenteditable="true" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" style="flex:1;padding:0.75rem 1rem;outline:none;overflow:visible;white-space:pre;word-break:break-all;overflow-wrap:anywhere;color:#cdd6f4;caret-color:#cdd6f4;min-height:420px;">
                         </div>
                     </div>
                 </div>
