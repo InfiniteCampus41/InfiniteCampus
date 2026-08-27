@@ -60,12 +60,12 @@ function safeSetItem(key, value) {
         console.warn(`LocalStorage Unavailable For Key: ${key}`, err);
     }
 }
-const DEFAULT_BACKEND_URL = "https://api.infinitecampus.xyz";
-const DEFAULT_WS_URL = "wss://api.infinitecampus.xyz";
+const DEFAULT_BACKEND_URL = window.location.origin + "/api";
+const DEFAULT_WS_URL = "wss://" + window.location.host + "/api";
 let a = localStorage.getItem('backendUrl') || DEFAULT_BACKEND_URL;
 function getModifiedUrl(key) {
     let url = localStorage.getItem('backendUrl');
-    if (!url) return "wss://api.infinitecampus.xyz";
+    if (!url) return "wss://" + window.location.host + "/api";
     if (url.startsWith("http://")) {
         return "ws://" + url.slice(7);
     }

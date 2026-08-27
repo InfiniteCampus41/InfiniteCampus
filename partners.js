@@ -136,7 +136,7 @@ function buildPhotoUploadField(initialUrl) {
     photoDiv.style.flexDirection = "column";
     photoDiv.innerHTML = `
         <label class="btxt">Photo:</label>
-        <img class="ptnPhotoPreview" src="${initialUrl ? a + initialUrl : "https://api.infinitecampus.xyz/pfps/1.jpeg"}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;">
+        <img class="ptnPhotoPreview" src="${initialUrl ? a + initialUrl : window.location.origin + "/api/pfps/1.jpeg"}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;">
         <input type="file" accept="image/png,image/jpeg,image/webp,image/x-icon" class="button ptnPhotoFileInput">
         <span class="ptnPhotoStatus" style="font-size:12px;opacity:0.8;"></span>
     `;
@@ -175,7 +175,7 @@ function createPartnerBox(uid, partnerName, data) {
     } else if (data.link) {
         img.src = getMetadataImage(data.link);
     } else {
-        img.src = "https://api.infinitecampus.xyz/pfps/1.jpeg";
+        img.src = window.location.origin + "/api/pfps/1.jpeg";
     }
     box.appendChild(img);
     box.appendChild(name);
