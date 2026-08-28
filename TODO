@@ -30,6 +30,6 @@ final things:
 
     DONE: make left click on links just do the default thing
 
-    10: Custom Imports
+    DONE: Custom Imports
 
-    11: make it so every url can route to the api so the api cant be blocked.
+    DONE: make it so every url can route to the api so the api cant be blocked.

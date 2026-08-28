@@ -639,7 +639,7 @@ window.addEventListener('DOMContentLoaded', () => {
                                 <a class="button" href="InfiniteChatters.html?channel=Suggestions">
                                     Suggest A Feature
                                 </a>
-                                <a class="discord button" href="${i}" target="_blank">
+                                <a class="discord button apbtn" href="${i}" target="_blank" style="text-align:center;">
                                     Join The Discord
                                 </a>
                                 <a class="button" href="InfiniteDonaters.html">
@@ -749,13 +749,15 @@ window.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             </div>
                             <br>
-                            <p class="btxt">
-                                Legal
-                            </p>
-                            <hr>
-                            <p class="btxt">
-                                Infinite Campus Games is not accociated with Infinite Campus LLC or infinitecampus.com
-                            </p>
+                            <div style="text-align:center;">
+                                <p class="btxt">
+                                    Legal
+                                </p>
+                                <hr>
+                                <p class="btxt">
+                                    Infinite Campus Games is not accociated with Infinite Campus LLC or infinitecampus.com
+                                </p>
+                            </div>
                             <br>
                         </div>
                     </div>
@@ -1496,28 +1498,153 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         db.close();
     }
-    async function importAllData(file) {
-        const text = await file.text();
-        const data = JSON.parse(text, importJsonReviver);
-        if (data.localStorage) {
-            for (const [k, v] of Object.entries(data.localStorage)) {
-                try { localStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set LocalStorage Key', k, e); }
+    const IMPORT_GROUP_LABELS = {
+        theme: 'Theme Data',
+        searchEngine: 'Search Engine Preferences',
+        backend: 'Custom Backend URL',
+        tabCloaking: 'Tab Cloaking Settings',
+        timer: 'Timer Settings'
+    };
+    function getImportGroups(data) {
+        const groups = [];
+        const lsData = data.localStorage || {};
+        const lsKeys = Object.keys(lsData);
+        const categorizedKeys = new Set();
+        Object.keys(EXPORT_KEY_GROUPS).forEach((groupKey) => {
+            const keys = EXPORT_KEY_GROUPS[groupKey].filter((k) => Object.prototype.hasOwnProperty.call(lsData, k));
+            if (keys.length) {
+                groups.push({ key: groupKey, label: IMPORT_GROUP_LABELS[groupKey], type: 'localStorage', keys });
+                keys.forEach((k) => categorizedKeys.add(k));
+            }
+        });
+        const idbData = data.indexedDB || {};
+        const idbNames = Object.keys(idbData);
+        const categorizedDbs = new Set();
+        if (idbData[SONG_DB_NAME]) {
+            groups.push({ key: 'songData', label: 'Song Data', type: 'indexedDB', dbNames: [SONG_DB_NAME] });
+            categorizedDbs.add(SONG_DB_NAME);
+        }
+        const leftoverLsKeys = lsKeys.filter((k) => !categorizedKeys.has(k));
+        if (leftoverLsKeys.length) {
+            groups.push({ key: 'localStorage', label: 'LocalStorage', type: 'localStorage', keys: leftoverLsKeys });
+        }
+        const ssKeys = data.sessionStorage ? Object.keys(data.sessionStorage) : [];
+        if (ssKeys.length) {
+            groups.push({ key: 'sessionStorage', label: 'SessionStorage', type: 'sessionStorage', keys: ssKeys });
+        }
+        const firebaseNames = idbNames.filter((n) => n.toLowerCase().startsWith('firebase'));
+        const leftoverIdbNames = idbNames.filter((n) => !categorizedDbs.has(n) && !firebaseNames.includes(n));
+        if (leftoverIdbNames.length) {
+            groups.push({ key: 'indexedDB', label: 'IndexedDB', type: 'indexedDB', dbNames: leftoverIdbNames });
+        }
+        if (firebaseNames.length) {
+            groups.push({ key: 'loginData', label: 'Login Data', type: 'indexedDB', dbNames: firebaseNames });
+        }
+        return groups;
+    }
+    async function importSelectedData(data, groups, selection) {
+        const filtered = { localStorage: {}, sessionStorage: {}, indexedDB: {} };
+        for (const g of groups) {
+            if (!selection[g.key]) continue;
+            if (g.type === 'localStorage') {
+                g.keys.forEach((k) => { filtered.localStorage[k] = data.localStorage[k]; });
+            } else if (g.type === 'sessionStorage') {
+                g.keys.forEach((k) => { filtered.sessionStorage[k] = data.sessionStorage[k]; });
+            } else if (g.type === 'indexedDB') {
+                g.dbNames.forEach((name) => { filtered.indexedDB[name] = data.indexedDB[name]; });
             }
         }
-        if (data.sessionStorage) {
-            for (const [k, v] of Object.entries(data.sessionStorage)) {
-                try { sessionStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set SessionStorage Key', k, e); }
+        for (const [k, v] of Object.entries(filtered.localStorage)) {
+            try { localStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set LocalStorage Key', k, e); }
+        }
+        for (const [k, v] of Object.entries(filtered.sessionStorage)) {
+            try { sessionStorage.setItem(k, v); } catch (e) { console.warn('Failed To Set SessionStorage Key', k, e); }
+        }
+        for (const [dbName, dbData] of Object.entries(filtered.indexedDB)) {
+            try {
+                await importIndexedDBDatabase(dbName, dbData);
+            } catch (err) {
+                console.warn(`Failed To Import IndexedDB "${dbName}":`, err);
             }
         }
-        if (data.indexedDB) {
-            for (const [dbName, dbData] of Object.entries(data.indexedDB)) {
+    }
+    function buildImportSelectAllRow(checked) {
+        return `
+            <div class="setting-row export-select-row" data-key="selectAll" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 4px;border-bottom:2px solid rgba(255,255,255,0.25);margin-bottom:4px;">
+                <label style="flex:1;font-weight:bold;">Select All</label>
+                <label class="switch">
+                    <input type="checkbox" id="importSelectAllToggle" ${checked ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        `;
+    }
+    function openImportSelectionModal(data, groups) {
+        const existing = document.getElementById('importSelectOverlay');
+        if (existing) existing.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'importSelectOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        const box = document.createElement('div');
+        box.style.cssText = 'background:#222;color:white;padding:16px;border-radius:10px;width:320px;max-width:90vw;max-height:80vh;overflow-y:auto;border:1px solid #666;box-shadow:0 0 15px rgba(0,0,0,0.4);';
+        box.innerHTML = `
+            <p class="btxt" style="text-align:center;margin-top:0;">Choose What To Overwrite</p>
+            ${buildImportSelectAllRow(true)}
+            ${groups.map((g) => buildExportToggleRow(g.key, g.label, true)).join('')}
+            <div class="row-actions" style="margin-top:14px;display:flex;gap:8px;">
+                <button class="button" id="importSelectCancelBtn" style="flex:1;">Cancel</button>
+                <button class="button" id="importSelectConfirmBtn" style="flex:1;">Import</button>
+            </div>
+        `;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        const getToggle = (key) => box.querySelector(`.export-select-toggle[data-key="${key}"]`);
+        const selectAllToggle = box.querySelector('#importSelectAllToggle');
+        function syncSelectAllState() {
+            if (!selectAllToggle) return;
+            selectAllToggle.checked = groups.every((g) => getToggle(g.key)?.checked);
+        }
+        groups.forEach((g) => {
+            const t = getToggle(g.key);
+            if (t) t.addEventListener('change', syncSelectAllState);
+        });
+        if (selectAllToggle) {
+            selectAllToggle.addEventListener('change', () => {
+                groups.forEach((g) => {
+                    const t = getToggle(g.key);
+                    if (t) t.checked = selectAllToggle.checked;
+                });
+            });
+        }
+        function closeOverlay() { overlay.remove(); }
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+        box.querySelector('#importSelectCancelBtn').addEventListener('click', closeOverlay);
+        box.querySelector('#importSelectConfirmBtn').addEventListener('click', () => {
+            const selection = {};
+            groups.forEach((g) => { selection[g.key] = !!getToggle(g.key)?.checked; });
+            const anySelected = Object.values(selection).some(Boolean);
+            if (!anySelected) {
+                showError('Select At Least One Item To Import');
+                return;
+            }
+            const runImport = async () => {
+                closeOverlay();
                 try {
-                    await importIndexedDBDatabase(dbName, dbData);
+                    if (dataStatus) dataStatus.textContent = 'Importing...';
+                    await importSelectedData(data, groups, selection);
+                    if (dataStatus) dataStatus.textContent = '';
+                    showSuccess('Data Imported Successfully. Reloading...');
+                    setTimeout(() => location.reload(), 1200);
                 } catch (err) {
-                    console.warn(`Failed To Import IndexedDB "${dbName}":`, err);
+                    if (dataStatus) dataStatus.textContent = '';
+                    console.error('Import Failed:', err);
+                    showError('Failed To Import Data.');
                 }
-            }
-        }
+            };
+            showConfirm('Importing Will Overwrite Your Current Data For The Selected Items. Continue?', (confirmed) => {
+                if (confirmed) runImport();
+            }, true);
+        });
     }
     const exportDataBtn = document.getElementById('exportDataBtn');
     const importDataInput = document.getElementById('importDataInput');
@@ -1531,25 +1658,23 @@ window.addEventListener('DOMContentLoaded', () => {
         importDataInput.addEventListener('change', () => {
             const file = importDataInput.files && importDataInput.files[0];
             if (!file) return;
-            showConfirm('Importing Will Overwrite Your Current Local Data With The Contents Of This File. Continue?', async (confirmed) => {
-                if (!confirmed) {
-                    importDataInput.value = '';
-                    return;
-                }
+            (async () => {
                 try {
-                    if (dataStatus) dataStatus.textContent = 'Importing...';
-                    await importAllData(file);
-                    if (dataStatus) dataStatus.textContent = '';
-                    showSuccess('Data Imported Successfully. Reloading...');
-                    setTimeout(() => location.reload(), 1200);
+                    const text = await file.text();
+                    const data = JSON.parse(text, importJsonReviver);
+                    const groups = getImportGroups(data);
+                    if (!groups.length) {
+                        showError('No Importable Data Found In This File.');
+                        return;
+                    }
+                    openImportSelectionModal(data, groups);
                 } catch (err) {
-                    if (dataStatus) dataStatus.textContent = '';
-                    console.error('Import Failed:', err);
+                    console.error('Failed To Read Import File:', err);
                     showError('Failed To Import Data. Make Sure The File Is A Valid Export.');
                 } finally {
                     importDataInput.value = '';
                 }
-            });
+            })();
         });
     }
     if (clearPanicBtn) {
