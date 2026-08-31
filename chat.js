@@ -1661,14 +1661,39 @@ async function renderMessageInstant(id, msg) {
                 try {
                     const rData = await dbGet(`${currentPath}/${replyId}`);
                     if (rData) {
-                        const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : "Unknown");
-                        const rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
-                        const replyBar = document.createElement("div");
-                        replyBar.className = "reply-bar";
-                        replyBar.style.cssText = "border-left:3px solid #aaa;padding-left:6px;color:#aaa;font-size:0.82em;margin-bottom:3px;cursor:pointer;";
-                        replyBar.innerHTML = `↩ ${rName}: ${rText}`;
-                        replyBar.onclick = () => scrollToMessage(String(replyId));
-                        textDiv.prepend(replyBar);
+                        const rName = rData.u || (rData.s ? await getDisplayName(rData.s) : (rData.sender ? await getDisplayName(rData.sender) : "Unknown"));
+                        let rText;
+                        if (rData.file || rData.fileUrl || rData.attachment) {
+                            rText = '<span style="color:#4fa3ff;">Click To View Attachment</span>';
+                        } else {
+                            rText = buildReplyPreviewText((rData.t || rData.text || "").substring(0, 120));
+                        }
+                        const replyPreview = document.createElement("div");
+                        replyPreview.style.display = "flex";
+                        replyPreview.style.cursor = "pointer";
+                        replyPreview.style.gap = "5px";
+                        replyPreview.onclick = () => scrollToMessage(String(replyId));
+                        const arrow = document.createElement("span");
+                        arrow.style.width = "30px";
+                        arrow.style.marginLeft = "15px";
+                        arrow.style.height = "8px";
+                        arrow.style.marginTop = "11px";
+                        arrow.style.borderTop = "1px solid #aaa";
+                        arrow.style.borderLeft = "1px solid #aaa";
+                        arrow.style.borderTopLeftRadius = "10px";
+                        const replySpan = document.createElement("span");
+                        replySpan.style.fontSize = "0.8em";
+                        reply.style.marginRight = "44px";
+                        replySpan.style.color = "#aaa";
+                        reply.style.marginTop = "-5px";
+                        replySpan.style.whiteSpace = "nowrap";
+                        replySpan.style.overflow = "hidden";
+                        replySpan.style.textOverflow = "ellipsis";
+                        replySpan.style.maxWidth = "100%";
+                        replySpan.innerHTML = `Replying To: @${rName}: ${rText}`;
+                        replyPreview.appendChild(arrow);
+                        replyPreview.appendChild(replySpan);
+                        div.prepend(replyPreview);
                     }
                 } catch {}
             })();
