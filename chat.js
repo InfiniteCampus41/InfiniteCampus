@@ -618,14 +618,14 @@ function setChatLockdownUI(locked) {
 }
 (async function initChatLockdownStatus() {
     try {
-        const res = await fetch(`${BACKEND}/api/discord_chat_lockdown_status_x9a7b2`);
+        const res = await fetch(`${BACKEND}/discord_chat_lockdown_status_x9a7b2`);
         const json = await res.json();
         setChatLockdownUI(!!json?.locked);
     } catch (e) {
         console.warn("Failed To Load Chat Lockdown Status:", e);
     }
     try {
-        const lockdownStream = new EventSource(`${BACKEND}/api/discord_chat_lockdown_stream_x9a7b2`);
+        const lockdownStream = new EventSource(`${BACKEND}/discord_chat_lockdown_stream_x9a7b2`);
         lockdownStream.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
@@ -638,7 +638,7 @@ function setChatLockdownUI(locked) {
     }
     setInterval(async () => {
         try {
-            const res = await fetch(`${BACKEND}/api/discord_chat_lockdown_status_x9a7b2`);
+            const res = await fetch(`${BACKEND}/discord_chat_lockdown_status_x9a7b2`);
             const json = await res.json();
             setChatLockdownUI(!!json?.locked);
         } catch (e) {}
@@ -694,7 +694,7 @@ function setBannedUI(banned, reason, expiresAt) {
             const headers = {};
             if (token) headers["Authorization"] = "Bearer " + token;
             else if (anonSessionToken) headers["x-anon-session"] = anonSessionToken;
-            const res = await fetch(`${BACKEND}/api/ban-status`, { headers });
+            const res = await fetch(`${BACKEND}/ban-status`, { headers });
             const json = await res.json();
             setBannedUI(!!json?.banned, json?.reason, json?.expiresAt);
         } catch (e) {
@@ -813,7 +813,7 @@ async function unmuteUser(uid) {
 async function adminGetBanStatus(banId) {
     try {
         const token = await getAuthToken();
-        const res = await fetch(`${BACKEND}/api/moderation/ban-status/${encodeURIComponent(banId)}`, {
+        const res = await fetch(`${BACKEND}/moderation/ban-status/${encodeURIComponent(banId)}`, {
             headers: { "Authorization": "Bearer " + token }
         });
         return await res.json();
@@ -832,7 +832,7 @@ async function adminBanTarget(banId, { anon = false } = {}) {
         const body = anon
             ? { anonSessionToken: banId.replace(/^anon:/, ""), reason: String(reason).trim() }
             : { targetUid: banId, reason: String(reason).trim() };
-        const res = await fetch(`${BACKEND}/api/moderation/ban`, {
+        const res = await fetch(`${BACKEND}/moderation/ban`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify(body)
@@ -854,7 +854,7 @@ async function adminUnbanTarget(banId, { anon = false } = {}) {
     try {
         const token = await getAuthToken();
         const body = anon ? { anonSessionToken: banId.replace(/^anon:/, "") } : { targetUid: banId };
-        const res = await fetch(`${BACKEND}/api/moderation/unban`, {
+        const res = await fetch(`${BACKEND}/moderation/unban`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify(body)
@@ -3723,7 +3723,7 @@ async function _promptGuestName() {
     const name = await customPrompt("Enter Your Anonymous Display Name (Max 32 Chars):", false, anonDisplayName);
     if (!name || !name.trim()) return;
     try {
-        const res = await fetch(`${BACKEND}/api/anon-name`, {
+        const res = await fetch(`${BACKEND}/anon-name`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: name.trim(), sessionToken: anonSessionToken })
@@ -3759,7 +3759,7 @@ async function loadMentionableUsers() {
         return;
     }
     try {
-        const res = await fetchAPI("api/mentionable-users", body);
+        const res = await fetchAPI("mentionable-users", body);
         if (token !== mentionLoadToken) return;
         mentionableUsernames = (res.users || []).map(u => u.displayName).filter(Boolean);
     } catch (e) {

@@ -21,7 +21,7 @@ const movies = document.getElementById("movies");
 const section = document.getElementById("section");
 document.getElementById("watchVideo")?.addEventListener("error", () => {
     if (document.getElementById("watchPanel")?.style.display !== "flex") return;
-    fetch(BACKEND + "/api/movies_status_x9a7b2", { headers: { "ngrok-skip-browser-warning": "true" } })
+    fetch(BACKEND + "/movies_status_x9a7b2", { headers: { "ngrok-skip-browser-warning": "true" } })
         .then(r => r.json())
         .then(data => {
             if (data && data.disabled) {
@@ -42,7 +42,7 @@ function handleMovieLockdownUpdate(disabled) {
 function initMovieLockdownListener() {
     if (movieLockdownSource || typeof EventSource === "undefined") return;
     try {
-        movieLockdownSource = new EventSource(BACKEND + "/api/movies_lockdown_stream_x9a7b2");
+        movieLockdownSource = new EventSource(BACKEND + "/movies_lockdown_stream_x9a7b2");
         movieLockdownSource.onmessage = (e) => {
             try {
                 const data = JSON.parse(e.data);
@@ -113,7 +113,7 @@ function sanitizeUsername(name) {
 async function uploadApply() {
     const file = document.getElementById("applyFile").files[0];
     if (!file) return showError("Choose A File");
-    const uploadURL = applyBK + "/api/upload_apply_x9a7b2";
+    const uploadURL = applyBK + "/upload_apply_x9a7b2";
     const chunkSize = 1024 * 1024;
     const totalChunks = Math.ceil(file.size / chunkSize);
     const fileId = Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
@@ -213,7 +213,7 @@ function setSortMode(mode) {
 }
 window.setSortMode = setSortMode;
 async function loadMovies() {
-    const url = BACKEND + "/api/list_videos_x9a7b2";
+    const url = BACKEND + "/list_videos_x9a7b2";
     const box = document.getElementById("movies");
     const loadId = ++MOVIE_LOAD_ID;
     isLoadingMovies = true;
@@ -925,7 +925,7 @@ async function openWatchPanel(name, subtitleUrl = null) {
         player.muted = true;
     }
     player.play();
-    fetch(BACKEND + "/api/watch_x9a7b2/" + name, {
+    fetch(BACKEND + "/watch_x9a7b2/" + name, {
         method: "POST",
         headers: { "ngrok-skip-browser-warning": "true" }
     }).then(async (res) => {
@@ -949,7 +949,7 @@ function startMoviesStatusPoll() {
     stopMoviesStatusPoll();
     moviesStatusPoll = setInterval(async () => {
         try {
-            const res = await fetch(BACKEND + "/api/movies_status_x9a7b2", {
+            const res = await fetch(BACKEND + "/movies_status_x9a7b2", {
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
             const data = await res.json();

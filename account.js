@@ -69,7 +69,7 @@ async function applyBanStatusToAccountPage() {
     try {
         const token = await getAuthToken();
         if (!token) return;
-        const res = await fetch(`${a}/api/ban-status`, {
+        const res = await fetch(`${a}/ban-status`, {
             headers: { "Authorization": "Bearer " + token }
         });
         const json = await res.json();

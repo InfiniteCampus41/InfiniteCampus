@@ -39,7 +39,7 @@
     }
     async function loadSources() {
         try {
-            const res = await fetch(`${a}/api/game-sources`);
+            const res = await fetch(`${a}/game-sources`);
             const data = await res.json();
             if (data && data.ok && Array.isArray(data.sources) && data.sources.length) {
                 sources = data.sources;
@@ -101,7 +101,7 @@
             render();
         }
         try {
-            const res = await fetch(`${a}/api/games/${encodeURIComponent(source)}`);
+            const res = await fetch(`${a}/games/${encodeURIComponent(source)}`);
             const data = await res.json();
             const fresh = (data && data.ok && Array.isArray(data.games)) ? data.games : null;
             if (source !== currentSource) return; // user switched sources while this was in flight
@@ -216,7 +216,7 @@
     let scrollLocked = false;
     async function bumpPopularity(source, id) {
         try {
-            await fetch(`${a}/api/games/${encodeURIComponent(source)}/${encodeURIComponent(id)}/popularity`, { method: "POST" });
+            await fetch(`${a}/games/${encodeURIComponent(source)}/${encodeURIComponent(id)}/popularity`, { method: "POST" });
         } catch {}
     }
     function setAuthor(game) {

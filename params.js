@@ -1044,10 +1044,6 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                 return null;
             }
             try {
-                // First read just the 10-byte ID3v2 header so we know the tag's real
-                // size. Embedded cover art (APIC) is very often larger than a fixed
-                // 512KB window on its own, which was silently truncating the frame
-                // and causing artwork to fall back to the placeholder.
                 const headerBuf = await file.slice(0, 10).arrayBuffer();
                 const headerView = new DataView(headerBuf);
                 if (String.fromCharCode(headerView.getUint8(0), headerView.getUint8(1), headerView.getUint8(2)) !== 'ID3')
@@ -1116,8 +1112,6 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                         const textEnc = apic[p++];
                         let declaredMime;
                         if (isV2) {
-                            // ID3v2.2 "PIC" frames use a fixed 3-char image format code
-                            // (e.g. "JPG"/"PNG") instead of a null-terminated MIME string.
                             const fmt = String.fromCharCode(apic[p]||0, apic[p+1]||0, apic[p+2]||0).toUpperCase();
                             p += 3;
                             declaredMime = fmt === 'PNG' ? 'image/png'
@@ -1130,7 +1124,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                             declaredMime = new TextDecoder('iso-8859-1').decode(apic.subarray(p, mimeEnd));
                             p = mimeEnd + 1;
                         }
-                        p += 1; // picture type byte
+                        p += 1;
                         if (textEnc === 1 || textEnc === 2) {
                             while (p+1 < apic.length && !(apic[p]===0 && apic[p+1]===0)) p+=2;
                             p+=2;
@@ -1138,17 +1132,11 @@ if (x3tfypage == '/InfiniteAbouts.html') {
                             while (p < apic.length && apic[p] !== 0) p++;
                             p++;
                         }
-                        // "-->" means the frame holds a URL to the image rather than
-                        // embedded binary data, so there's nothing here to decode as a blob.
                         if (declaredMime === '-->') {
                             offset += fsize;
                             continue;
                         }
                         const imgBytes = apic.subarray(p);
-                        // Trust the actual image bytes over whatever MIME string the
-                        // tagger wrote (taggers frequently write bogus/odd values like
-                        // "image/jpg", "JFIF", or leave it blank), falling back to a
-                        // normalized version of the declared type, then a safe default.
                         const finalMime = sniffImageMime(imgBytes) || normalizeMime(declaredMime) || 'image/jpeg';
                         const blob = new Blob([imgBytes], { type: finalMime });
                         result.artworkDataUrl = await new Promise(res => {

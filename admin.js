@@ -1028,7 +1028,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             let bannedUidSet = new Set();
             try {
                 const idToken = await auth.currentUser.getIdToken();
-                const bansRes = await adminFetch(BACKEND + "/api/moderation/bans", {
+                const bansRes = await adminFetch(BACKEND + "/moderation/bans", {
                     headers: { "Authorization": "Bearer " + idToken }
                 });
                 const bansJson = await bansRes.json();
@@ -1144,7 +1144,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             (async () => {
                 try {
                     const idToken = await auth.currentUser.getIdToken();
-                    const statusRes = await adminFetch(BACKEND + `/api/moderation/ban-status/${encodeURIComponent(uid)}`, {
+                    const statusRes = await adminFetch(BACKEND + `/moderation/ban-status/${encodeURIComponent(uid)}`, {
                         headers: { "Authorization": "Bearer " + idToken }
                     });
                     const statusResult = await statusRes.json();
@@ -1186,7 +1186,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         if (!result) { showSuccess("Canceled"); return; }
                         try {
                             const idToken = await auth.currentUser.getIdToken();
-                            const res = await adminFetch(BACKEND + "/api/moderation/unban", {
+                            const res = await adminFetch(BACKEND + "/moderation/unban", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
@@ -1218,7 +1218,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         if (!result) { showSuccess("Canceled"); return; }
                         try {
                             const idToken = await auth.currentUser.getIdToken();
-                            const res = await adminFetch(BACKEND + "/api/moderation/ban", {
+                            const res = await adminFetch(BACKEND + "/moderation/ban", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
@@ -1481,7 +1481,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const isAuthenticated = await checkUserAuthentication();
             if (!isAuthenticated) return;
             const box = document.getElementById("applyList");
-            const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
+            const res = await adminFetch(BACKEND + `/list_apply_x9a7b2?t=${Date.now()}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
             const data = await res.json();
@@ -1597,7 +1597,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         }
         async function updateSizesFromListApply() {
             try {
-                const res = await adminFetch(BACKEND + `/api/list_apply_x9a7b2?t=${Date.now()}`, {
+                const res = await adminFetch(BACKEND + `/list_apply_x9a7b2?t=${Date.now()}`, {
                     headers: { "ngrok-skip-browser-warning": "true" }
                 });
                 const data = await res.json();
@@ -1622,7 +1622,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (!isAuthenticated) return;
             showConfirm("Delete" + filename + "?", function(result) {
                 if (result) {
-                    const res = adminFetch(BACKEND + "/api/delete_apply_x9a7b2", {
+                    const res = adminFetch(BACKEND + "/delete_apply_x9a7b2", {
                         method: "POST",
                         headers: { 
                             "Content-Type": "application/json",
@@ -1793,7 +1793,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             if (!container) return;
             container.innerHTML = "Loading Movies...";
             try {
-                const res = await adminFetch(BACKEND + "/api/movies-json", {
+                const res = await adminFetch(BACKEND + "/movies-json", {
                     headers: { "ngrok-skip-browser-warning": "true" }
                 });
                 const rawData = await res.json();
@@ -1898,7 +1898,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 const name = stripMp4Ext(filename);
                 const formData = new FormData();
                 formData.append("subtitle", file);
-                const res = await adminFetch(BACKEND + `/api/upload_subtitle_x9a7b2/${encodeURIComponent(name)}`, {
+                const res = await adminFetch(BACKEND + `/upload_subtitle_x9a7b2/${encodeURIComponent(name)}`, {
                     method: "POST",
                     body: formData
                 });
@@ -2038,7 +2038,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                         uploadedBy: movie.uploadedBy || "jiEcu7wSifMalQxVupmQXRchA9k1"
                     };
                 });
-                const res = await adminFetch(BACKEND + "/api/movies-json", {
+                const res = await adminFetch(BACKEND + "/movies-json", {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
@@ -2755,7 +2755,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
             const select = document.getElementById("hiddengames-source-select");
             const statusEl = document.getElementById("hiddengames-status");
             try {
-                const res = await fetch(BACKEND + "/api/game-sources", {
+                const res = await fetch(BACKEND + "/game-sources", {
                     headers: { "ngrok-skip-browser-warning": "true" }
                 });
                 const data = await res.json();

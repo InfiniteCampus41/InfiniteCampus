@@ -1156,7 +1156,7 @@ setInterval(() => {
     }
     async function loadPopularGames() {
         try {
-            const res = await fetch(`${getApiBase()}/api/games/popular`, { cache: "no-store" });
+            const res = await fetch(`${getApiBase()}/games/popular`, { cache: "no-store" });
             if (!res.ok) throw new Error("Bad Status " + res.status);
             const data = await res.json();
             if (!data.ok || !Array.isArray(data.games)) throw new Error("Bad Response");
