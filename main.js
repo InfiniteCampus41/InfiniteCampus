@@ -1109,17 +1109,8 @@ setInterval(() => {
     });
 }, 100);
 (function () {
-    function getApiBase() {
-        const base = (typeof a !== "undefined" && a) ? a : (window.location.origin + "/api");
-        return base.replace(/(\/api)+\/?$/, "");
-    }
-    function isFallbackBase(base) {
-        return base.replace(/\/$/, "") === FALLBACK_BACKEND_URL.replace(/\/$/, "");
-    }
     function gameThumbnailUrl(sourceId, id) {
-        const base = getApiBase();
-        const apiSegment = isFallbackBase(base) ? "" : "/api";
-        return `${base}${apiSegment}/games/${encodeURIComponent(sourceId)}/${encodeURIComponent(id)}/thumbnail`;
+        return `${a}/games/${encodeURIComponent(sourceId)}/${encodeURIComponent(id)}/thumbnail`;
     }
     function gamePlayUrl(sourceId, id) {
         return `/InfiniteGamers.html?source=${encodeURIComponent(sourceId)}&play=${encodeURIComponent(id)}`;
@@ -1156,7 +1147,7 @@ setInterval(() => {
     }
     async function loadPopularGames() {
         try {
-            const res = await fetch(`${getApiBase()}/games/popular`, { cache: "no-store" });
+            const res = await fetch(`${a}/games/popular`, { cache: "no-store" });
             if (!res.ok) throw new Error("Bad Status " + res.status);
             const data = await res.json();
             if (!data.ok || !Array.isArray(data.games)) throw new Error("Bad Response");
@@ -1166,11 +1157,7 @@ setInterval(() => {
         }
     }
     function start() {
-        if (typeof backendReadyPromise !== "undefined" && backendReadyPromise?.then) {
-            backendReadyPromise.finally(loadPopularGames);
-        } else {
-            loadPopularGames();
-        }
+        Promise.resolve(backendReadyPromise).then(loadPopularGames, loadPopularGames);
     }
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", start);

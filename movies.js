@@ -349,11 +349,6 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
 }
 function filterMovies() {
     if (isLoadingMovies) {
-        // A load is still in flight. Bumping MOVIE_LOAD_ID inside loadMovies()
-        // invalidates that in-progress load's render loop (it checks loadId
-        // against MOVIE_LOAD_ID and bails out), effectively stopping it. The
-        // fresh load kicked off here will apply the current search term once
-        // its data arrives.
         loadMovies();
         return;
     }

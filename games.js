@@ -104,7 +104,7 @@
             const res = await fetch(`${a}/games/${encodeURIComponent(source)}`);
             const data = await res.json();
             const fresh = (data && data.ok && Array.isArray(data.games)) ? data.games : null;
-            if (source !== currentSource) return; // user switched sources while this was in flight
+            if (source !== currentSource) return;
             if (fresh) {
                 const changed = !cached || canonicalize(fresh) !== canonicalize(cached);
                 writeGamesCache(source, fresh);
