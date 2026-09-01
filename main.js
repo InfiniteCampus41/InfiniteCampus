@@ -90,7 +90,7 @@ function verifyBackendUrl() {
     if (localStorage.getItem('backendUrl')) return Promise.resolve();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    return fetch(a, { method: "GET", cache: "no-store", signal: controller.signal })
+    return fetch(a + "/ping", { method: "GET", cache: "no-store", signal: controller.signal })
         .then((res) => {
             if (!res.ok) throw new Error("Backend Responded With Status " + res.status);
         })
