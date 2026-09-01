@@ -33,3 +33,9 @@ final things:
     DONE: Custom Imports
 
     DONE: make it so every url can route to the api so the api cant be blocked.
+
+
+
+Updated Ui:
+    1: Fix transparent theme logo
+    2: combine themed elements with accent

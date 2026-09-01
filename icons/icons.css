@@ -168,6 +168,10 @@ i {
     mask-image: url('/icons/download.svg');
     -webkit-mask-image: url('/icons/download.svg');
 }
+.ic-egg-fried {
+    mask-image: url('/icons/egg-fried.svg');
+    -webkit-mask-image: url('/icons/egg-fried.svg');
+}
 .ic-emoji-smile {
     mask-image: url('/icons/emoji-smile.svg');
     -webkit-mask-image: url('/icons/emoji-smile.svg');
@@ -199,6 +203,10 @@ i {
 .ic-film {
     mask-image: url('/icons/film.svg');
     -webkit-mask-image: url('/icons/film.svg');
+}
+.ic-fire {
+    mask-image: url('/icons/fire.svg');
+    -webkit-mask-image: url('/icons/fire.svg');
 }
 .ic-fortiguard {
     background-image: url('/icons/fortiguard.webp');
@@ -250,6 +258,10 @@ i {
     mask-image: url('/icons/hearts.svg');
     -webkit-mask-image: url('/icons/hearts.svg');
 }
+.ic-hexagon {
+    mask-image: url('/icons/hexagon.svg');
+    -webkit-mask-image: url('/icons/hexagon.svg');
+}
 .ic-hourglass-split {
     mask-image: url('/icons/hourglass-split.svg');
     -webkit-mask-image: url('/icons/hourglass-split.svg');
@@ -268,12 +280,20 @@ i {
     mask-image: url('/icons/info-circle.svg');
     -webkit-mask-image: url('/icons/info-circle.svg');
 }
+.ic-joystick {
+    mask-image: url('/icons/joystick.svg');
+    -webkit-mask-image: url('/icons/joystick.svg');
+}
 .ic-lanschool {
     background-image: url('/icons/lanschool.webp');
 }
 .ic-leaf-fill {
     mask-image: url('/icons/leaf-fill.svg');
     -webkit-mask-image: url('/icons/leaf-fill.svg');
+}
+.ic-lightning-charge-fill {
+    mask-image: url('/icons/lightning-charge-fill.svg');
+    -webkit-mask-image: url('/icons/lightning-charge-fill.svg');
 }
 .ic-lightspeed {
     background-image: url('/icons/lightspeed.webp');
@@ -433,6 +453,10 @@ i {
 .ic-trash {
     mask-image: url('/icons/trash.svg');
     -webkit-mask-image: url('/icons/trash.svg');
+}
+.ic-trophy {
+    mask-image: url('/icons/trophy.svg');
+    -webkit-mask-image: url('/icons/trophy.svg');
 }
 .ic-upload {
     mask-image: url('/icons/upload.svg');

@@ -401,6 +401,105 @@ function customPrompt(message, hidden = false, value) {
 }
 let themedElements = null;
 let lastAppliedThemeKey;
+const ACCENT_FALLBACK = '#8cbe37';
+function resolveCssColorToRgb(cssColor) {
+    const probe = document.createElement('span');
+    probe.style.color = cssColor;
+    probe.style.display = 'none';
+    document.body.appendChild(probe);
+    const computed = getComputedStyle(probe).color;
+    document.body.removeChild(probe);
+    const nums = computed.match(/\d+(\.\d+)?/g);
+    return nums ? nums.slice(0, 3).map(Number) : null;
+}
+function relativeLuminance([r, g, b]) {
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function rgbToHex([r, g, b]) {
+    return '#' + [r, g, b]
+        .map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0'))
+        .join('');
+}
+function darkenRgb(rgb, amount = 0.55) {
+    return rgb.map(v => v * amount);
+}
+function rgbToHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    const d = max - min;
+    if (d !== 0) {
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            default: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return [h * 360, s * 100, l * 100];
+}
+function hslToRgb(h, s, l) {
+    h = ((h % 360) + 360) % 360 / 360;
+    s = Math.max(0, Math.min(100, s)) / 100;
+    l = Math.max(0, Math.min(100, l)) / 100;
+    if (s === 0) {
+        const v = l * 255;
+        return [v, v, v];
+    }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+    };
+    return [
+        hue2rgb(p, q, h + 1 / 3) * 255,
+        hue2rgb(p, q, h) * 255,
+        hue2rgb(p, q, h - 1 / 3) * 255
+    ];
+}
+const ACCENT_MIN_LIGHTNESS = 42;
+const ACCENT_MAX_LIGHTNESS = 72;
+const ACCENT_MIN_SATURATION = 12;
+function extractAccentFromBackground(bg) {
+    if (!bg || bg === 'transparent') return null;
+    const tokens = bg.match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-zA-Z]+/g) || [];
+    const skip = new Set(['linear', 'gradient', 'to', 'right', 'left', 'top', 'bottom', 'transparent']);
+    let bestColorful = null;
+    let bestNeutral = null;
+    tokens.forEach(tok => {
+        if (skip.has(tok.toLowerCase())) return;
+        const rgb = resolveCssColorToRgb(tok);
+        if (!rgb) return;
+        const [h, s, l] = rgbToHsl(rgb);
+        if (s >= ACCENT_MIN_SATURATION) {
+            if (!bestColorful || s > bestColorful.s) bestColorful = { h, s, l };
+        } else if (!bestNeutral || Math.abs(l - 60) < Math.abs(bestNeutral.l - 60)) {
+            bestNeutral = { h, s, l };
+        }
+    });
+    const pick = bestColorful || bestNeutral;
+    if (!pick) return null;
+    const clampedL = Math.max(ACCENT_MIN_LIGHTNESS, Math.min(ACCENT_MAX_LIGHTNESS, pick.l));
+    return hslToRgb(pick.h, pick.s, clampedL);
+}
+function applyHeroAccent(bg) {
+    const home = document.querySelector('.ic-home');
+    if (!home) return;
+    const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
+    home.style.setProperty('--ic-accent', rgbToHex(accentRgb));
+    home.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
+    const logo = home.querySelector('.ic-logo-mark');
+    if (logo) {
+        logo.style.background = (bg && bg !== 'transparent') ? bg : '';
+    }
+}
 setInterval(() => {
     themedElements = document.querySelectorAll('.themed');
     initSettingsUI("apply");
@@ -616,6 +715,7 @@ function initSettingsUI(apply) {
                 });
             }
         }
+        applyHeroAccent(bg);
         const textColor = isDark ? 'white' : '';
         localStorage.setItem('globalDarkTheme', isDark);
         const themeKey = gradientSetting || null;
@@ -997,9 +1097,81 @@ function initSettingsUI(apply) {
 })();
 document.addEventListener('DOMContentLoaded', initSettingsUI);
 document.addEventListener('settingsLoaded', initSettingsUI);
+window.addEventListener('storage', (e) => {
+    if (['useGradient', 'headerColor', 'gradientLeft', 'gradientRight'].includes(e.key)) {
+        initSettingsUI('apply');
+    }
+});
 setInterval(() => {
     const headerHeight = getComputedStyle(document.documentElement).getPropertyValue('--headerheight').trim();
     document.querySelectorAll('iframe:not([id])').forEach(iframe => {
         iframe.style.top = headerHeight;
     });
 }, 100);
+(function () {
+    function getApiBase() {
+        return (typeof a !== "undefined" && a) ? a : (window.location.origin + "/api");
+    }
+    function getGameOrigin() {
+        return getApiBase().replace(/\/api\/?$/, "");
+    }
+    function gameThumbnailUrl(sourceId, id) {
+        return `${getGameOrigin()}/games/${encodeURIComponent(sourceId)}/${encodeURIComponent(id)}/thumbnail`;
+    }
+    function gamePlayUrl(sourceId, id) {
+        return `/InfiniteGamers.html?source=${encodeURIComponent(sourceId)}&play=${encodeURIComponent(id)}`;
+    }
+    function buildGameCard(game) {
+        const card = document.createElement("a");
+        card.className = "glCard niceTitle";
+        card.title = game.name;
+        card.href = gamePlayUrl(game.sourceId, game.id);
+        const thumb = document.createElement("div");
+        thumb.className = "glCardThumb";
+        const thumbImg = document.createElement("img");
+        if (game.hasThumbnail) {
+            thumbImg.src = `${gameThumbnailUrl(game.sourceId, game.id)}`;
+        } else {
+            thumb.style.background = "linear-gradient(135deg,#3a3f52,#1c1f2b)";
+            const icon = document.createElement("i");
+            icon.className = "ic ic-joystick";
+            thumb.appendChild(icon);
+        }
+        const name = document.createElement("p");
+        name.className = "glCardTitle";
+        name.textContent = game.name;
+        card.appendChild(thumb);
+        thumb.appendChild(thumbImg);
+        card.appendChild(name);
+        return card;
+    }
+    function renderPopularGames(games) {
+        const grid = document.getElementById("popularGamesGrid");
+        if (!grid || !Array.isArray(games) || games.length === 0) return;
+        grid.innerHTML = "";
+        games.forEach((game) => grid.appendChild(buildGameCard(game)));
+    }
+    async function loadPopularGames() {
+        try {
+            const res = await fetch(`${getApiBase()}/api/games/popular`, { cache: "no-store" });
+            if (!res.ok) throw new Error("Bad Status " + res.status);
+            const data = await res.json();
+            if (!data.ok || !Array.isArray(data.games)) throw new Error("Bad Response");
+            renderPopularGames(data.games);
+        } catch (err) {
+            console.warn("Failed To Load Popular Games, Keeping Placeholders:", err);
+        }
+    }
+    function start() {
+        if (typeof backendReadyPromise !== "undefined" && backendReadyPromise?.then) {
+            backendReadyPromise.finally(loadPopularGames);
+        } else {
+            loadPopularGames();
+        }
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start);
+    } else {
+        start();
+    }
+})();

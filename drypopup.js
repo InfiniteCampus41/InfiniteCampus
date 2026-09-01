@@ -1876,9 +1876,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (url) {
             document.body.style.backgroundRepeat = "no-repeat";
             document.body.style.backgroundSize = "cover";
+            document.documentElement.style.setProperty('--ic-bg-image', `url('${url}')`);
         } else {
             document.body.style.backgroundRepeat = "repeat";
             document.body.style.backgroundSize = "unset";
+            document.documentElement.style.removeProperty('--ic-bg-image');
         }
         bgLabel.style.display = url ? 'none' : 'block';
         applyBrightnessTheme(url || DEFAULT_BG);
