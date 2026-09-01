@@ -1559,7 +1559,6 @@ hr {
     grid-template-columns: repeat(6, 1fr);
     column-gap: 14px;
     row-gap: 0;
-    grid-auto-rows: 0;
     overflow: hidden;
 }
 .ic-games-header {
@@ -2377,6 +2376,14 @@ main.ic-home {
     }
     #partners .partner-box {
         margin-bottom:40px;
+    }
+    #popularGamesGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        flex-wrap: wrap;
+    }
+    #popularGamesGrid > .glCard {
+        flex: initial;
     }
     #privateMenu fieldset {
         flex-direction:column;
@@ -3228,12 +3235,16 @@ main.ic-home {
     padding:5px;
 }
 #popularGamesGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14%, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 24px 18px;
     max-width: 1000px;
     margin: 0 auto;
     padding: 0 20px;
+}
+#popularGamesGrid > .glCard {
+    flex: 1 1 0;
+    min-width: 0;
 }
 .popup-backdrop {
     position: fixed;

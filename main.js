@@ -1110,13 +1110,16 @@ setInterval(() => {
 }, 100);
 (function () {
     function getApiBase() {
-        return (typeof a !== "undefined" && a) ? a : (window.location.origin + "/api");
+        const base = (typeof a !== "undefined" && a) ? a : (window.location.origin + "/api");
+        return base.replace(/(\/api)+\/?$/, "");
     }
-    function getGameOrigin() {
-        return getApiBase().replace(/\/api\/?$/, "");
+    function isFallbackBase(base) {
+        return base.replace(/\/$/, "") === FALLBACK_BACKEND_URL.replace(/\/$/, "");
     }
     function gameThumbnailUrl(sourceId, id) {
-        return `${getGameOrigin()}/games/${encodeURIComponent(sourceId)}/${encodeURIComponent(id)}/thumbnail`;
+        const base = getApiBase();
+        const apiSegment = isFallbackBase(base) ? "" : "/api";
+        return `${base}${apiSegment}/games/${encodeURIComponent(sourceId)}/${encodeURIComponent(id)}/thumbnail`;
     }
     function gamePlayUrl(sourceId, id) {
         return `/InfiniteGamers.html?source=${encodeURIComponent(sourceId)}&play=${encodeURIComponent(id)}`;
