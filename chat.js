@@ -47,6 +47,17 @@ const groupCreateBtn = document.getElementById("groupCreateBtn");
 const groupInviteInput = document.getElementById("groupInviteInput");
 const groupJoinBtn = document.getElementById("groupJoinBtn");
 const channelTopBarName = document.getElementById("channelTopBarName");
+const channelTopBarStatus = document.createElement("span");
+channelTopBarStatus.id = "channelTopBarStatus";
+channelTopBarStatus.style.marginLeft = "8px";
+channelTopBarStatus.style.fontSize = "0.85em";
+channelTopBarStatus.style.opacity = "0.8";
+channelTopBarStatus.style.display = "none";
+channelTopBarStatus.style.alignItems = "center";
+channelTopBarStatus.style.gap = "4px";
+if (channelTopBarName && channelTopBarName.parentNode) {
+    channelTopBarName.parentNode.appendChild(channelTopBarStatus);
+}
 const pinnedMessagesWrap = document.getElementById("pinnedMessagesWrap");
 const pinnedMessagesBtn = document.getElementById("pinnedMessagesBtn");
 const pinnedMessagesPanel = document.getElementById("pinnedMessagesPanel");
@@ -915,8 +926,7 @@ async function getUserMeta(uid) {
         deledao: !!p.deledao,
         iboss: !!p.iboss,
         barracuda: !!p.barracuda,
-        online: !!p.online,
-        status: (p.status && STATUS_META[p.status]) ? p.status : "online"
+        status: (p.status && STATUS_META[p.status]) ? p.status : "offline"    
     };
     userMetaCache[uid] = data;
     return data;
@@ -1020,10 +1030,45 @@ function toggleStatusDropdown(forceState) {
     const isOpen = typeof forceState === "boolean" ? forceState : statusDropdown.style.display === "none";
     statusDropdown.style.display = isOpen ? "block" : "none";
 }
-function effectivePresence(online, status) {
-    if (!online) return "offline";
-    if (status === "invisible") return "offline";
-    return STATUS_META[status] ? status : "online";
+function effectivePresence(status) {
+    if (status === "offline") return "offline";
+    return PRESENCE_META[status] ? status : "offline";
+}
+let topBarStatusValue = "offline";
+let topBarStatusPollTimer = null;
+function renderTopBarStatus() {
+    if (!channelTopBarStatus) return;
+    if (!currentPrivateUid) {
+        channelTopBarStatus.style.display = "none";
+        return;
+    }
+    const meta = PRESENCE_META[topBarStatusValue] || PRESENCE_META.offline;
+    channelTopBarStatus.innerHTML = `<i class="${meta.icon}"></i><span>${meta.title}</span>`;
+    channelTopBarStatus.style.display = "inline-flex";
+}
+async function refreshTopBarStatus(uid) {
+    try {
+        const p = await dbGet(`users/${uid}/profile`);
+        if (currentPrivateUid !== uid) return;
+        const val = p && p.status;
+        topBarStatusValue = (val && PRESENCE_META[val]) ? val : "offline";
+    } catch (e) {
+        if (currentPrivateUid !== uid) return;
+        topBarStatusValue = "offline";
+    }
+    renderTopBarStatus();
+}
+function watchTopBarStatus(uid) {
+    if (topBarStatusPollTimer) {
+        clearInterval(topBarStatusPollTimer);
+        topBarStatusPollTimer = null;
+    }
+    if (!uid) {
+        if (channelTopBarStatus) channelTopBarStatus.style.display = "none";
+        return;
+    }
+    refreshTopBarStatus(uid);
+    topBarStatusPollTimer = setInterval(() => refreshTopBarStatus(uid), 60000);
 }
 if (statusRow) {
     statusRow.addEventListener("click", (e) => {
@@ -1983,17 +2028,18 @@ async function renderMessageInstant(id, msg) {
                 inlineExtras = []; popoverExtras = extraBadges;
             }
             const onlineBadge = document.createElement("i");
-            let livePresenceOnline = !!meta.online;
-            let livePresenceStatus = meta.status || "online";
+            let livePresenceStatus = meta.status || "offline";
             const refreshPresenceBadge = () => {
-                const eff = effectivePresence(livePresenceOnline, livePresenceStatus);
+                const eff = effectivePresence(livePresenceStatus);
                 const badgeMeta = PRESENCE_META[eff] || PRESENCE_META.offline;
                 onlineBadge.className = badgeMeta.icon;
                 onlineBadge.title = badgeMeta.title;
             };
             refreshPresenceBadge();
-            dbListen(`users/${senderId}/profile/online`, (val) => { livePresenceOnline = !!val; refreshPresenceBadge(); });
-            dbListen(`users/${senderId}/profile/status`, (val) => { livePresenceStatus = (val && STATUS_META[val]) ? val : "online"; refreshPresenceBadge(); });
+            dbListen(`users/${senderId}/profile/status`, (val) => {
+                livePresenceStatus = (val && STATUS_META[val]) ? val : "offline";
+                refreshPresenceBadge();
+            });
             inlinePrimaries.forEach(({ cls, color, title }) => {
                 const span = document.createElement("span");
                 span.innerHTML = `<i class="${cls}" style="color:${color}" title="${title}"></i>`;
@@ -2833,6 +2879,7 @@ async function openPrivateChat(uid, name) {
     sendBtn.style.display = "";
     currentPrivateUid = uid;
     currentPrivateName = name || null;
+    watchTopBarStatus(uid);
     chatLog.innerHTML = "";
     let attachBtn = document.getElementById("chatAttachBtn");
     if (attachBtn) attachBtn.style.display = "";
@@ -3239,6 +3286,7 @@ async function switchChannel(ch) {
     }
     currentPrivateUid = null;
     currentPrivateName = null;
+    watchTopBarStatus(null);
     chatLog.innerHTML = "";
     currentPath = `messages/${ch}`;
     if (channelTopBarName) channelTopBarName.textContent = ch;
@@ -4312,6 +4360,7 @@ function showPrivateMenu() {
     if (pinnedMessagesWrap) pinnedMessagesWrap.style.display = "none";
     togglePinnedMessagesPanel(false);
     if (channelTopBarName) channelTopBarName.textContent = "";
+    watchTopBarStatus(null);
     chatMsgFunctions.style.display = "none";
     sendBtn.style.display = "none";
     adminControls.style.display = "none";
@@ -4405,6 +4454,7 @@ async function openGroupChat(groupId) {
     currentPath = null;
     currentPrivateUid = null;
     currentPrivateName = null;
+    watchTopBarStatus(null);
     stopGroupPolling();
     currentGroupId = groupId;
     loadMentionableUsers();
