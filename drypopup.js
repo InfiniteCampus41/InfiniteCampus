@@ -629,6 +629,28 @@ window.addEventListener('DOMContentLoaded', () => {
                                 <span id="dataStatus" class="theme-name">
                                 </span>
                                 <hr style="width:75%;">
+                                <p class="btxt" style="text-align:center">
+                                    Sync Data Directly Between Two Devices Over The Network.
+                                </p>
+                                <div class="row-actions" id="syncConnectRow">
+                                    <button class="button" id="syncConnectBtn">
+                                        Connect To Sync
+                                    </button>
+                                </div>
+                                <div id="syncPanel" style="display:none; flex-direction:column; align-items:center; width:100%;">
+                                    <p class="theme-name" style="margin-bottom:2px;">Your Sync ID</p>
+                                    <p class="sync-id-display" id="syncMyId"></p>
+                                    <div class="row-actions" id="syncActionRow">
+                                        <button class="button" id="syncTransmitBtn">
+                                            Transmit Data
+                                        </button>
+                                        <button class="button" id="syncReceiveBtn">
+                                            Receive Data
+                                        </button>
+                                    </div>
+                                    <div id="syncFlowContainer" style="width:100%; margin-top:10px;"></div>
+                                </div>
+                                <hr style="width:75%;">
                                 <a class="button" id="resetAllBtn">
                                     Clear Data
                                 </a>
@@ -1141,27 +1163,30 @@ window.addEventListener('DOMContentLoaded', () => {
             showSuccess(`Panic Key "${panicKey}" Saved → ${panicUrl}`);
         });
     }
+    async function clearAllLocalData() {
+        const preservedAnonId = localStorage.getItem('anonSessionToken');
+        localStorage.clear();
+        if (preservedAnonId) {
+            localStorage.setItem('anonSessionToken', preservedAnonId);
+        }
+        sessionStorage.clear();
+        if (indexedDB.databases) {
+            const dbs = await indexedDB.databases();
+            dbs.forEach(db => indexedDB.deleteDatabase(db.name));
+        }
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            keys.forEach(key => caches.delete(key));
+        }
+        document.cookie.split(";").forEach(cookie => {
+            const name = cookie.split("=")[0].trim();
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        });
+    }
     const resetAllBtn = document.getElementById('resetAllBtn');
     if (resetAllBtn) {
         resetAllBtn.addEventListener('click', async () => {
-            const preservedAnonId = localStorage.getItem('anonSessionToken');
-            localStorage.clear();
-            if (preservedAnonId) {
-                localStorage.setItem('anonSessionToken', preservedAnonId);
-            }
-            sessionStorage.clear();
-            if (indexedDB.databases) {
-                const dbs = await indexedDB.databases();
-                dbs.forEach(db => indexedDB.deleteDatabase(db.name));
-            }
-            if ('caches' in window) {
-                const keys = await caches.keys();
-                keys.forEach(key => caches.delete(key));
-            }
-            document.cookie.split(";").forEach(cookie => {
-                const name = cookie.split("=")[0].trim();
-                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-            });
+            await clearAllLocalData();
             location.reload();
         });
     }
@@ -1304,7 +1329,7 @@ window.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     }
-    async function exportSelectedData(selection) {
+    async function buildExportData(selection) {
         const data = {
             exportedAt: new Date().toISOString(),
             localStorage: {},
@@ -1345,6 +1370,10 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
         const serializableData = await toSerializable(data);
+        return serializableData;
+    }
+    async function exportSelectedData(selection) {
+        const serializableData = await buildExportData(selection);
         const json = JSON.stringify(serializableData, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -1367,7 +1396,7 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
     }
-    async function openExportSelectionModal() {
+    async function openExportSelectionModal(mode = 'download', onConfirm = null) {
         const existing = document.getElementById('exportSelectOverlay');
         if (existing) existing.remove();
         const [idbNames, hasLoginData] = await Promise.all([
@@ -1392,17 +1421,18 @@ window.addEventListener('DOMContentLoaded', () => {
         if (hasSessionStorage) rows.push({ key: 'sessionStorage', label: 'SessionStorage', default: false });
         if (hasIndexedDB) rows.push({ key: 'indexedDB', label: 'IndexedDB', default: false });
         if (hasLoginData) rows.push({ key: 'loginData', label: 'Login Data', default: false });
+        const isTransmit = mode === 'transmit';
         const overlay = document.createElement('div');
         overlay.id = 'exportSelectOverlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
         const box = document.createElement('div');
         box.style.cssText = 'background:#222;color:white;padding:16px;border-radius:10px;width:320px;max-width:90vw;max-height:80vh;overflow-y:auto;border:1px solid #666;box-shadow:0 0 15px rgba(0,0,0,0.4);';
         box.innerHTML = `
-            <p class="btxt" style="text-align:center;margin-top:0;">Choose What To Export</p>
+            <p class="btxt" style="text-align:center;margin-top:0;">Choose What To ${isTransmit ? 'Transmit' : 'Export'}</p>
             ${rows.map((r) => buildExportToggleRow(r.key, r.label, r.default)).join('')}
             <div class="row-actions" style="margin-top:14px;display:flex;gap:8px;">
                 <button class="button" id="exportSelectCancelBtn" style="flex:1;">Cancel</button>
-                <button class="button" id="exportSelectConfirmBtn" style="flex:1;">Export</button>
+                <button class="button" id="exportSelectConfirmBtn" style="flex:1;">${isTransmit ? 'Transmit' : 'Export'}</button>
             </div>
         `;
         overlay.appendChild(box);
@@ -1430,12 +1460,19 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         function closeOverlay() { overlay.remove(); }
         overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
-        box.querySelector('#exportSelectCancelBtn').addEventListener('click', closeOverlay);
+        box.querySelector('#exportSelectCancelBtn').addEventListener('click', () => {
+            closeOverlay();
+            if (isTransmit && onConfirm) onConfirm(null);
+        });
         box.querySelector('#exportSelectConfirmBtn').addEventListener('click', () => {
             const selection = {};
             rows.forEach((r) => { selection[r.key] = !!getToggle(r.key)?.checked; });
             const runExport = async () => {
                 closeOverlay();
+                if (isTransmit) {
+                    onConfirm(selection);
+                    return;
+                }
                 try {
                     if (dataStatus) dataStatus.textContent = 'Exporting...';
                     await exportSelectedData(selection);
@@ -1450,6 +1487,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (selection.loginData) {
                 showConfirm('This Export Will Include Your Login Data. Anyone Who Gets This File Will Be Able To Log In As You. Continue?', (confirmed) => {
                     if (confirmed) runExport();
+                    else if (isTransmit) onConfirm(null);
                 }, true);
             } else {
                 runExport();
@@ -1679,6 +1717,337 @@ window.addEventListener('DOMContentLoaded', () => {
                     importDataInput.value = '';
                 }
             })();
+        });
+    }
+    function getSyncWsUrl() {
+        let base = BACKEND || DEFAULT_BACKEND;
+        let originStr;
+        try {
+            originStr = new URL(base, window.location.href).origin;
+        } catch (e) {
+            originStr = window.location.origin;
+        }
+        const wsOrigin = originStr.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+        return wsOrigin + '/wireless_sync';
+    }
+    const syncConnectBtn = document.getElementById('syncConnectBtn');
+    const syncConnectRow = document.getElementById('syncConnectRow');
+    const syncPanel = document.getElementById('syncPanel');
+    const syncMyIdEl = document.getElementById('syncMyId');
+    const syncTransmitBtn = document.getElementById('syncTransmitBtn');
+    const syncReceiveBtn = document.getElementById('syncReceiveBtn');
+    const syncFlowContainer = document.getElementById('syncFlowContainer');
+    let syncSocket = null;
+    let syncMyId = null;
+    let syncRole = null;
+    let syncPeerId = null;
+    let syncReceiveState = null;
+    let syncTransmitting = false;
+    function formatEta(seconds) {
+        if (!isFinite(seconds) || seconds < 0) return 'Calculating...';
+        seconds = Math.round(seconds);
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return m > 0 ? `${m}m ${s}s Left` : `${s}s Left`;
+    }
+    const SYNC_CHUNK_SIZE = 250000;
+    const SYNC_MAX_BUFFERED_BYTES = 1.5 * 1024 * 1024;
+    function sendSyncRelay(payload) {
+        if (syncSocket && syncSocket.readyState === WebSocket.OPEN) {
+            syncSocket.send(JSON.stringify({ type: 'relay', data: payload }));
+        }
+    }
+    async function waitForSyncSocketDrain() {
+        while (syncSocket && syncSocket.readyState === WebSocket.OPEN && syncSocket.bufferedAmount > SYNC_MAX_BUFFERED_BYTES) {
+            await new Promise((r) => setTimeout(r, 15));
+        }
+    }
+    function clearSyncFlow() {
+        if (syncFlowContainer) syncFlowContainer.innerHTML = '';
+    }
+    function buildProgressUI(container, label) {
+        container.innerHTML = `
+            <div class="sync-progress-wrap">
+                <p class="btxt sync-progress-label">${label}</p>
+                <div class="sync-progress-track">
+                    <div id="syncProgressBar" class="sync-progress-fill"></div>
+                </div>
+                <p class="theme-name sync-progress-text" id="syncProgressText">0% - Calculating...</p>
+            </div>
+        `;
+        return {
+            bar: container.querySelector('#syncProgressBar'),
+            text: container.querySelector('#syncProgressText')
+        };
+    }
+    function updateProgressUI(ui, sentOrReceived, total, startTime) {
+        if (!ui) return;
+        const pct = total > 0 ? Math.min(100, Math.floor((sentOrReceived / total) * 100)) : 0;
+        const elapsed = (Date.now() - startTime) / 1000;
+        const rate = elapsed > 0 ? sentOrReceived / elapsed : 0;
+        const remaining = total - sentOrReceived;
+        const eta = rate > 0 ? remaining / rate : Infinity;
+        ui.bar.style.width = pct + '%';
+        ui.text.textContent = `${pct}% - ${formatEta(eta)}`;
+    }
+    function renderTransmitSteps() {
+        clearSyncFlow();
+        syncFlowContainer.innerHTML = `
+            <div class="field-group sync-steps" style="text-align:left;">
+                <p class="btxt">Step 1: Select Receive Data On The Receiving Device</p>
+                <p class="btxt">Step 2: Enter The Above Id Into The Id Field On The Receiving Device</p>
+                <p class="btxt">Step 3: Enter The Receiving Device's Id Here</p>
+                <p class="btxt">Step 4: Select Which Data You Would Like To Transmit To The Receiving Device</p>
+                <p class="btxt">Step 5: Wait For Data To Be Received.</p>
+                <input class="button sync-peer-input" type="text" id="syncPeerIdInput" placeholder="Receiving Device's ID" maxlength="6">
+                <div class="row-actions" style="margin-top:8px;">
+                    <button class="button" id="syncPeerIdConfirmBtn">Connect To Receiving Device</button>
+                </div>
+                <p class="theme-name sync-status-text" id="syncPairStatus"></p>
+            </div>
+        `;
+        const input = document.getElementById('syncPeerIdInput');
+        const status = document.getElementById('syncPairStatus');
+        document.getElementById('syncPeerIdConfirmBtn').addEventListener('click', () => {
+            const peerId = (input.value || '').trim().toUpperCase();
+            if (peerId.length !== 6) {
+                showError('Enter A Valid 6 Character ID');
+                return;
+            }
+            syncRole = 'transmit';
+            status.textContent = 'Connecting...';
+            syncSocket.send(JSON.stringify({ type: 'pairAttempt', role: 'transmit', peerId }));
+        });
+    }
+    function renderReceiveSteps() {
+        clearSyncFlow();
+        syncFlowContainer.innerHTML = `
+            <div class="field-group sync-steps" style="text-align:left;">
+                <p class="btxt">Step 1: Select Transmit Data On The Transmitting Device</p>
+                <p class="btxt">Step 2: Enter The Above Id Into The Id Field On The Transmitting Device</p>
+                <p class="btxt">Step 3: Enter The Transmitting Device's Id Here</p>
+                <p class="btxt">Step 4: Wait For The Transmitting Device To Select Data</p>
+                <p class="btxt">Step 5: Wait For Data To Be Received.</p>
+                <input class="button sync-peer-input" type="text" id="syncPeerIdInput" placeholder="Transmitting Device's ID" maxlength="6">
+                <div class="row-actions" style="margin-top:8px;">
+                    <button class="button" id="syncPeerIdConfirmBtn">Connect To Transmitting Device</button>
+                </div>
+                <p class="theme-name sync-status-text" id="syncPairStatus"></p>
+            </div>
+        `;
+        const input = document.getElementById('syncPeerIdInput');
+        const status = document.getElementById('syncPairStatus');
+        document.getElementById('syncPeerIdConfirmBtn').addEventListener('click', () => {
+            const peerId = (input.value || '').trim().toUpperCase();
+            if (peerId.length !== 6) {
+                showError('Enter A Valid 6 Character ID');
+                return;
+            }
+            syncRole = 'receive';
+            status.textContent = 'Connecting...';
+            syncSocket.send(JSON.stringify({ type: 'pairAttempt', role: 'receive', peerId }));
+        });
+    }
+    function beginTransmit(selection) {
+        (async () => {
+            try {
+                clearSyncFlow();
+                const ui = buildProgressUI(syncFlowContainer, 'Transmitting Data...');
+                const data = await buildExportData(selection);
+                const json = JSON.stringify(data);
+                const total = json.length;
+                sendSyncRelay({ kind: 'meta', totalLength: total });
+                let sent = 0;
+                const startTime = Date.now();
+                syncTransmitting = true;
+                for (let i = 0; i < total; i += SYNC_CHUNK_SIZE) {
+                    if (!syncTransmitting) return;
+                    await waitForSyncSocketDrain();
+                    const chunk = json.slice(i, i + SYNC_CHUNK_SIZE);
+                    sendSyncRelay({ kind: 'chunk', text: chunk });
+                    sent += chunk.length;
+                    updateProgressUI(ui, sent, total, startTime);
+                }
+                sendSyncRelay({ kind: 'end' });
+                if (ui) ui.text.textContent = '100% - Waiting For Receiving Device To Finish...';
+            } catch (err) {
+                console.error('Transmit Failed:', err);
+                showError('Failed To Transmit Data');
+                sendSyncRelay({ kind: 'error', message: 'Sender Failed To Prepare Data' });
+            }
+        })();
+    }
+    function handleTransmitComplete(success, message) {
+        syncTransmitting = false;
+        if (success) {
+            clearSyncFlow();
+            showConfirm('Transmission Complete. Delete All Data From This Device?', (confirmed) => {
+                if (confirmed) {
+                    clearAllLocalData().then(() => location.reload());
+                }
+            }, true);
+        } else {
+            showError(message || 'Failed To Complete Transmission');
+        }
+    }
+    function handleIncomingRelay(payload) {
+        if (!payload || typeof payload !== 'object') return;
+        if (syncRole === 'receive') {
+            if (payload.kind === 'meta') {
+                syncReceiveState = { chunks: [], received: 0, total: payload.totalLength || 0, startTime: Date.now() };
+                clearSyncFlow();
+                syncReceiveState.ui = buildProgressUI(syncFlowContainer, 'Receiving Data...');
+                return;
+            }
+            if (payload.kind === 'chunk' && syncReceiveState) {
+                syncReceiveState.chunks.push(payload.text || '');
+                syncReceiveState.received += (payload.text || '').length;
+                updateProgressUI(syncReceiveState.ui, syncReceiveState.received, syncReceiveState.total, syncReceiveState.startTime);
+                return;
+            }
+            if (payload.kind === 'end' && syncReceiveState) {
+                (async () => {
+                    try {
+                        if (syncReceiveState.ui) {
+                            syncReceiveState.ui.text.textContent = '100% - Applying Received Data...';
+                        }
+                        await new Promise((r) => setTimeout(r, 0));
+                        const json = syncReceiveState.chunks.join('');
+                        const data = JSON.parse(json, importJsonReviver);
+                        const groups = getImportGroups(data);
+                        const selection = {};
+                        groups.forEach((g) => { selection[g.key] = true; });
+                        await importSelectedData(data, groups, selection);
+                        sendSyncRelay({ kind: 'ack' });
+                        clearSyncFlow();
+                        showSuccess('Data Received Successfully. Reloading...');
+                        setTimeout(() => location.reload(), 1200);
+                    } catch (err) {
+                        console.error('Failed To Apply Received Data:', err);
+                        sendSyncRelay({ kind: 'ackError', message: 'Receiving Device Failed To Apply Data' });
+                        showError('Failed To Apply Received Data');
+                    } finally {
+                        syncReceiveState = null;
+                    }
+                })();
+                return;
+            }
+            if (payload.kind === 'error') {
+                showError(payload.message || 'Transmitting Device Reported An Error');
+                syncReceiveState = null;
+                return;
+            }
+        }
+        if (syncRole === 'transmit') {
+            if (payload.kind === 'ack') {
+                handleTransmitComplete(true);
+                return;
+            }
+            if (payload.kind === 'ackError') {
+                handleTransmitComplete(false, payload.message);
+                return;
+            }
+        }
+    }
+    function connectSync() {
+        if (syncSocket) return;
+        if (syncConnectBtn) syncConnectBtn.textContent = 'Connecting...';
+        try {
+            syncSocket = new WebSocket(getSyncWsUrl());
+        } catch (err) {
+            console.error('Failed To Connect For Sync:', err);
+            showError('Failed To Connect To Sync Server');
+            syncSocket = null;
+            if (syncConnectBtn) syncConnectBtn.textContent = 'Connect To Sync';
+            return;
+        }
+        syncSocket.addEventListener('open', () => {});
+        syncSocket.addEventListener('message', (ev) => {
+            let msg;
+            try {
+                msg = JSON.parse(ev.data);
+            } catch (e) {
+                return;
+            }
+            if (!msg || typeof msg !== 'object') return;
+            if (msg.type === 'assigned') {
+                syncMyId = msg.id;
+                if (syncMyIdEl) syncMyIdEl.textContent = syncMyId;
+                if (syncConnectRow) syncConnectRow.style.display = 'none';
+                if (syncPanel) syncPanel.style.display = 'flex';
+                return;
+            }
+            if (msg.type === 'pairError') {
+                const status = document.getElementById('syncPairStatus');
+                if (status) status.textContent = '';
+                showError(msg.message || 'Unable To Pair With That Device');
+                return;
+            }
+            if (msg.type === 'pairWaiting') {
+                const status = document.getElementById('syncPairStatus');
+                if (status) status.textContent = 'Waiting For The Other Device To Confirm...';
+                return;
+            }
+            if (msg.type === 'paired') {
+                syncPeerId = msg.peerId;
+                syncRole = msg.role;
+                if (syncRole === 'transmit') {
+                    openExportSelectionModal('transmit', (selection) => {
+                        if (!selection) {
+                            sendSyncRelay({ kind: 'error', message: 'Sender Cancelled Before Transmitting' });
+                            renderTransmitSteps();
+                            return;
+                        }
+                        beginTransmit(selection);
+                    });
+                } else {
+                    clearSyncFlow();
+                    syncFlowContainer.innerHTML = `<p class="btxt sync-status-text">Paired. Waiting For The Transmitting Device To Select Data...</p>`;
+                }
+                return;
+            }
+            if (msg.type === 'relay') {
+                handleIncomingRelay(msg.data);
+                return;
+            }
+            if (msg.type === 'peerDisconnected') {
+                syncPeerId = null;
+                syncReceiveState = null;
+                syncTransmitting = false;
+                showError('The Other Device Disconnected');
+                clearSyncFlow();
+                return;
+            }
+        });
+        syncSocket.addEventListener('close', () => {
+            syncSocket = null;
+            syncMyId = null;
+            syncPeerId = null;
+            syncRole = null;
+            syncReceiveState = null;
+            syncTransmitting = false;
+            if (syncConnectRow) syncConnectRow.style.display = '';
+            if (syncPanel) syncPanel.style.display = 'none';
+            if (syncConnectBtn) syncConnectBtn.textContent = 'Connect To Sync';
+            clearSyncFlow();
+        });
+        syncSocket.addEventListener('error', () => {
+            showError('Sync Connection Error');
+        });
+    }
+    if (syncConnectBtn) {
+        syncConnectBtn.addEventListener('click', () => {
+            connectSync();
+        });
+    }
+    if (syncTransmitBtn) {
+        syncTransmitBtn.addEventListener('click', () => {
+            renderTransmitSteps();
+        });
+    }
+    if (syncReceiveBtn) {
+        syncReceiveBtn.addEventListener('click', () => {
+            renderReceiveSteps();
         });
     }
     if (clearPanicBtn) {

@@ -5654,6 +5654,53 @@ select {
 .switch input:focus + .slider {
     box-shadow: 0 0 1px #4CAF50;
 }
+.sync-id-display {
+    font-size: 1.4em;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: var(--ic-accent-bright);
+    margin: 2px 0 10px;
+    text-align: center;
+}
+.sync-peer-input {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-top: 8px;
+}
+.sync-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--ic-accent-bright);
+    transition: width 0.15s linear;
+}
+.sync-progress-label {
+    text-align: center;
+    margin-bottom: 6px;
+}
+.sync-progress-text {
+    text-align: center;
+    margin-top: 6px;
+}
+.sync-progress-track {
+    width: 100%;
+    background: var(--ic-panel);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 16px;
+}
+.sync-progress-wrap {
+    width: 100%;
+}
+.sync-status-text {
+    text-align: center;
+    margin-top: 8px;
+    color: var(--ic-muted);
+}
+.sync-steps p {
+    margin: 4px 0;
+}
 .szo2 {
     width:25%;
 }

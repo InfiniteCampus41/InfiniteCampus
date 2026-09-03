@@ -424,6 +424,20 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("storage", (e) => {
         if (e.key === "useGradient") refreshParticleTheme();
     });
+    let pausedForVisibility = false;
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            if (snowEnabled) {
+                snowflakes.forEach(flake => flake.stop && flake.stop());
+                pausedForVisibility = true;
+            }
+        } else if (pausedForVisibility) {
+            pausedForVisibility = false;
+            if (snowEnabled) {
+                snowflakes.forEach(flake => flake.start && flake.start());
+            }
+        }
+    });
     const helpToggle = document.getElementById('helpToggle');
     const helpDropdown = document.getElementById('helpDropdown');
     const abtToggle = document.getElementById('abtToggle');
