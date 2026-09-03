@@ -1024,6 +1024,10 @@ window.addEventListener('DOMContentLoaded', () => {
     resetColorsBtn?.addEventListener('click', () => {
         clearThemeSelection();
         clearCustomOptionSelection();
+        if (currentUser) {
+            ['useGradient', 'gradientLeft', 'gradientRight', 'headerColor', 'globalTextColor', 'globalDarkTheme']
+                .forEach((key) => dbSet(`/users/${currentUser.uid}/settings/${key}`, null));
+        }
     });
     const searchEngineItems = wrapper.querySelectorAll('.search-engine-item');
     const customEngineGroup = document.getElementById('customEngineGroup');

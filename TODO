@@ -37,5 +37,6 @@ final things:
 
 
 Updated Ui:
-    1: Fix transparent theme logo
+    DONE: Fix transparent theme logo
     2: combine themed elements with accent
+    3: data sync between devices through switch-like transfer system.

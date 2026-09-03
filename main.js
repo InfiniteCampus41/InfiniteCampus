@@ -489,7 +489,7 @@ function extractAccentFromBackground(bg) {
     const clampedL = Math.max(ACCENT_MIN_LIGHTNESS, Math.min(ACCENT_MAX_LIGHTNESS, pick.l));
     return hslToRgb(pick.h, pick.s, clampedL);
 }
-function applyHeroAccent(bg) {
+function applyHeroAccent(bg, gradientSetting) {
     const home = document.querySelector('.ic-home');
     if (!home) return;
     const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
@@ -497,7 +497,8 @@ function applyHeroAccent(bg) {
     home.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
     const logo = home.querySelector('.ic-logo-mark');
     if (logo) {
-        logo.style.background = (bg && bg !== 'transparent') ? bg : '';
+        const isTransparentTheme = gradientSetting === 'trans';
+        logo.style.background = (bg && bg !== 'transparent' && !isTransparentTheme) ? bg : '';
     }
 }
 setInterval(() => {
@@ -715,7 +716,7 @@ function initSettingsUI(apply) {
                 });
             }
         }
-        applyHeroAccent(bg);
+        applyHeroAccent(bg, gradientSetting);
         const textColor = isDark ? 'white' : '';
         localStorage.setItem('globalDarkTheme', isDark);
         const themeKey = gradientSetting || null;
