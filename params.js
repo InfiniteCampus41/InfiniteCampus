@@ -1,3 +1,25 @@
+const icAppsData = [
+    { title: "Proxy", link: "InfiniteProxies.html", image: "ic ic-shield-lock", type: "Utilities", description: "The Infinite Campus Web Browser" },
+    { title: "Proxy (Legacy)", link: "InfiniteOldProxies.html", image: "ic ic-shield-fill-minus", type: "Legacy", description: "Legacy Infinite Campus Web Browser" },
+    { title: "Watch Movies", link: "InfiniteMovies.html", image: "ic ic-film", type: "Entertainment", description: "Stream Movies Online" },
+    { title: "Hyperbeam VM", link: "InfiniteBrowsers.html", image: "ic ic-lightning-charge-fill", type: "Utilities", description: "Run A Virtual Machine Powered By Hyperbeam" },
+    { title: "Games (Legacy)", link: "InfiniteLegacyGames.html", image: "ic ic-joystick", type: "Legacy", description: "Legacy Version Of The Games Page" },
+    { title: "File Upload/Downloader", link: "InfiniteUploaders.html", image: "ic ic-cloud-arrow-up", type: "Tools", description: "Upload Files And Get A 10 Minute Download Link." },
+    { title: "Music", link: "InfiniteApps.html?listen=true", image: "ic ic-music", type: "Entertainment", description: "Upload, And Discover Songs To Listen To" },
+    { title: "Extension Freezer", link: "InfiniteEmbeds.html?choice=7", image: "ic ic-snow", type: "Tools", description: "ExtPrint3r Embedded" },
+    { title: "Time Until Calculator", link: "InfiniteApps.html?timer=true", image: "ic ic-clock-history", type: "Tools", description: "Calculate The Time Until A Future Date/Time" },
+    { title: "Data URL Generator", link: "InfiniteApps.html?data=true", image: "ic ic-file-earmark-code", type: "Tools", description: "Convert Links To Data URL Versions" },
+    { title: "QR Code Generator", link: "InfiniteApps.html?qr=true", image: "ic ic-qr-code", type: "Tools", description: "Generate QR Codes" },
+    { title: "Algebra Calculator", link: "InfiniteEmbeds.html?choice=6", image: "ic ic-calculator", type: "Tools", description: "Solve Algebra Problems With Graphing" },
+    { title: "How To Unblock YouTube", link: "InfiniteApps.html?youtube=true", image: "ic ic-youtube", type: "Other", description: "Tells You How To Unblock Youtube" },
+    { title: "Cool URLs For Chrome", link: "InfiniteApps.html?chrome=true", image: "ic ic-window-stack", type: "Utilities", description: "Explore Uses Of Chrome URLs" },
+    { title: "Project Scratch Google Doc", link: "https://docs.google.com/document/d/1JqRbzN7JgpXqpUb6u6XvE9ZnfLe4b_MWH3-TLjJxD2o/edit?pli=1&tab=t.0", image: "ic ic-file-earmark-text", type: "Other", description: "Google Doc By Project Scratch" },
+    { title: "Device Stats", link: "InfiniteApps.html?stats=true", image: "ic ic-pc-display", type: "Other", description: "View Info About Your Device" },
+    { title: "R/Place", link: "InfiniteEmbeds.html?choice=4", image: "ic ic-grid-3x3-gap-fill", type: "Other", description: "A Different Version Of R/Place" },
+    { title: "NettleWeb", link: "InfiniteEmbeds.html?choice=2", image: "ib ic ic-nettle", type: "Utilities", description: "Main Nettleweb Link Embedded" },
+    { title: "NettleWeb (2)", link: "InfiniteEmbeds.html?choice=3", image: "ib ic ic-nettle2", type: "Utilities", description: "Second Nettleweb Link Hosted By Us" },
+    { title: "AI", link: "InfiniteAis.html", image: "ic ic-cpu", type: "Tools", description: "Currently Broken" }
+];
 const x3tfypage = window.location.pathname;
 const x3tfyparams = new URLSearchParams(window.location.search);
 if (x3tfypage == '/InfiniteAbouts.html') {
@@ -150,6 +172,88 @@ if (x3tfypage == '/InfiniteAbouts.html') {
     const playerPage = document.getElementById("playerPage");
     const appsPage = document.getElementById("appsPage");
     const listenPage = document.getElementById("listenPage");
+    const appsGrid = document.getElementById("appsGrid");
+    if (appsGrid) {
+        const appsFilters = document.getElementById("appsFilters");
+        const appsSearchInput = document.getElementById("appsSearchInput");
+        const appsLoadMoreBtn = document.getElementById("appsLoadMoreBtn");
+        const appsPerPage = 12;
+        let currentFilter = "All Apps";
+        let currentSearch = "";
+        let visibleCount = appsPerPage;
+        const categories = ["All Apps", ...new Set(icAppsData.map(app => app.type))];
+        function slugifyType(type) {
+            return type.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        }
+        function isImageUrl(str) {
+            return /^(https?:)?\/\//.test(str) || /^\.{0,2}\//.test(str) || /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(str);
+        }
+        function renderFilters() {
+            appsFilters.innerHTML = "";
+            categories.forEach(cat => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "ic-apps-filter-btn" + (cat === currentFilter ? " active" : "");
+                btn.textContent = cat;
+                btn.addEventListener("click", () => {
+                    currentFilter = cat;
+                    visibleCount = appsPerPage;
+                    renderFilters();
+                    renderGrid();
+                });
+                appsFilters.appendChild(btn);
+            });
+        }
+        function getFilteredApps() {
+            return icAppsData.filter(app => {
+                const matchesFilter = currentFilter === "All Apps" || app.type === currentFilter;
+                const haystack = (app.title + " " + app.description).toLowerCase();
+                const matchesSearch = !currentSearch || haystack.includes(currentSearch);
+                return matchesFilter && matchesSearch;
+            });
+        }
+        function renderGrid() {
+            const filtered = getFilteredApps();
+            appsGrid.innerHTML = "";
+            if (!filtered.length) {
+                appsGrid.innerHTML = `<p class="btxt">No Apps Found</p>`;
+                appsLoadMoreBtn.style.display = "none";
+                return;
+            }
+            const toShow = filtered.slice(0, visibleCount);
+            toShow.forEach(app => {
+                const catSlug = slugifyType(app.type);
+                const card = document.createElement("a");
+                card.className = "ic-app-card";
+                card.href = app.link;
+                const iconHtml = isImageUrl(app.image)
+                    ? `<img src="${app.image}" alt="${app.title}">`
+                    : `<i class="${app.image}"></i>`;
+                card.innerHTML = `
+                    <div class="ic-app-icon cat-${catSlug}">${iconHtml}</div>
+                    <div class="ic-app-body">
+                        <h3 class="ic-app-title">${app.title}</h3>
+                        <p class="ic-app-desc">${app.description}</p>
+                        <span class="ic-app-badge cat-${catSlug}">${app.type}</span>
+                    </div>
+                    <span class="ic-app-arrow"><i class="ic ic-arrow-right"></i></span>
+                `;
+                appsGrid.appendChild(card);
+            });
+            appsLoadMoreBtn.style.display = visibleCount < filtered.length ? "inline-flex" : "none";
+        }
+        appsSearchInput.addEventListener("input", () => {
+            currentSearch = appsSearchInput.value.trim().toLowerCase();
+            visibleCount = appsPerPage;
+            renderGrid();
+        });
+        appsLoadMoreBtn.addEventListener("click", () => {
+            visibleCount += appsPerPage;
+            renderGrid();
+        });
+        renderFilters();
+        renderGrid();
+    }
     if (timerParams) {
         timerPage.style.display = "block";
         appsPage.style.display = "none";
@@ -2671,7 +2775,7 @@ if (x3tfypage == '/InfiniteAbouts.html') {
     if (choice == 2) {
         iframe.src = 'https://nettleweb.com';
     } else if (choice == 3) {
-        iframe.src = 'https://sigmasigmatoiletedge.github.io';
+        iframe.src = 'https://net.infinitecampus.xyz';
     } else if (choice == 4) {
         iframe.src = 'https://dfs3rzq44v6as.cloudfront.net/place/';
     } else if(choice == 5) {

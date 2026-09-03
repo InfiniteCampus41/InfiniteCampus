@@ -521,6 +521,10 @@ function appendToMain() {
     }
     const main = document.querySelector("main");
     if (!main) return;
+    const homeTarget = Array.from(main.children).find(
+        (el) => el.classList && el.classList.contains("ic-home") && el.style.display !== "none"
+    );
+    const insertTarget = homeTarget || main;
     const extraHTML = `
         <br>
         <br>
@@ -548,7 +552,7 @@ function appendToMain() {
             <br>
         </center>
     `;
-    main.insertAdjacentHTML("beforeend", extraHTML);
+    insertTarget.insertAdjacentHTML("beforeend", extraHTML);
 }
 const isChattersPage = window.location.pathname
     .toLowerCase()

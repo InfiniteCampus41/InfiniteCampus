@@ -40,3 +40,4 @@ Updated Ui:
     DONE: Fix transparent theme logo
     2: combine themed elements with accent
     3: data sync between devices through switch-like transfer system.
+    4: make it so theme elements dont load when not on tab

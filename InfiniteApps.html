@@ -34,92 +34,43 @@
     </head>
     <body>
         <main>
-            <center id="appsPage">
-                <h1 class="tptxt">
-                    Apps
-                </h1>
-                <hr>
-                <br>
-                <div id="mbBtns">
-                    <a class="button apbtn" href="InfiniteEmbeds.html?choice=2">
-                        NettleWeb (1)
-                    </a>
-                    <a class="button apbtn" href="InfiniteEmbeds.html?choice=3">
-                        NettleWeb (2)
-                    </a>
-                    <a class="button apbtn" href="InfiniteProxies.html">
-                        Proxy
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="InfiniteOldProxies.html">
-                        Proxy (Legacy)
-                    </a>
-                    <a class="button apbtn" href="InfiniteAis.html">
-                        Ai
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?youtube=true">
-                        How To Unblock Youtube
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="InfiniteBrowsers.html">
-                        Hyperbeam VM
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?qr=true">
-                        Qr Code Generator
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?listen=true">
-                        Music
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="InfiniteEmbeds.html?choice=4">
-                        R/Place
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?timer=true">
-                        Time Until Calculator
-                    </a>
-                    <a class="button apbtn" href="InfiniteEmbeds.html?choice=6">
-                        Algebra Calculator
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="https://codehs.com/uploads/449e4f5106c5691fbc739ce9679fb2c3">
-                        Watch The Shrek Movie
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?data=true">
-                        Data URL Generator
-                    </a>
-                    <a class="button apbtn" href="InfiniteApps.html?stats=true">
-                        Device Stats
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="InfiniteApps.html?chrome=true">
-                        Cool URLs For Chrome
-                    </a>
-                    <a class="button apbtn" href="https://docs.google.com/document/d/1JqRbzN7JgpXqpUb6u6XvE9ZnfLe4b_MWH3-TLjJxD2o/edit?pli=1&tab=t.0">
-                        Project Scratch Google Doc
-                    </a>
-                    <a class="button apbtn" href="InfiniteUploaders.html">
-                        File Upload/Downloader 10 Min Link
-                    </a>
-                    <br>
-                    <br>
-                    <a class="button apbtn" href="InfiniteMovies.html">
-                        Movie Streaming Service
-                    </a>
-                    <a class="button apbtn" href="InfiniteEmbeds.html?choice=7">
-                        Extension Freezer
-                    </a>
-                    <a class="button apbtn" href="InfiniteLegacyGames.html">
-                        Games (Legacy)
-                    </a>
-                    <br>
-                    <br>
+            <div id="appsPage" class="ic-home ic-apps-page">
+                <section class="ic-apps-top">
+                    <div class="ic-apps-title-wrap">
+                        <div class="ic-apps-icon-box">
+                            <i class="ic ic-joystick">
+                            </i>
+                        </div>
+                        <div>
+                            <h1 class="ic-apps-h1">
+                                Apps
+                            </h1>
+                            <p class="ic-apps-sub">
+                                Utilities, Tools, Entertainment, And More
+                            </p>
+                        </div>
+                    </div>
+                    <div class="ic-apps-search-wrap">
+                        <input id="appsSearchInput" class="ic-apps-search" type="text" placeholder="Search">
+                        <i class="ic ic-search">
+                        </i>
+                    </div>
+                </section>
+                <nav class="ic-apps-filters" id="appsFilters">
+                </nav>
+                <section class="ic-apps-grid" id="appsGrid">
+                    <p class="btxt">
+                        Loading
+                    </p>
+                </section>
+                <div class="ic-apps-loadmore-wrap">
+                    <button class="ic-btn ic-btn-secondary" id="appsLoadMoreBtn" style="display:none;">
+                        Load More Apps 
+                        <i class="ic ic-chevron-down">
+                        </i>
+                    </button>
                 </div>
-            </center>
+            </div>
             <div id="musicPage" style="display:none">
                 <input id="spFileInput" style="display:none" type="file" accept="audio/*" multiple />
                 <div class="sp-layout">

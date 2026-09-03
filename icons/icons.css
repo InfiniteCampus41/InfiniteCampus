@@ -84,6 +84,10 @@ i {
     mask-image: url('/icons/broadcast.svg');
     -webkit-mask-image: url('/icons/broadcast.svg');
 }
+.ic-calculator {
+    mask-image: url('/icons/calculator.svg');
+    -webkit-mask-image: url('/icons/calculator.svg');
+}
 .ic-check-circle-fill {
     mask-image: url('/icons/check-circle-fill.svg');
     -webkit-mask-image: url('/icons/check-circle-fill.svg');
@@ -91,6 +95,10 @@ i {
 .ic-check2 {
     mask-image: url('/icons/check2.svg');
     -webkit-mask-image: url('/icons/check2.svg');
+}
+.ic-chevron-down {
+    mask-image: url('/icons/chevron-down.svg');
+    -webkit-mask-image: url('/icons/chevron-down.svg');
 }
 .ic-chevron-left {
     mask-image: url('/icons/chevron-left.svg');
@@ -107,9 +115,17 @@ i {
 .ic-cisco {
     background-image: url('/icons/cisco.webp');
 }
+.ic-clock-history {
+    mask-image: url('/icons/clock-history.svg');
+    -webkit-mask-image: url('/icons/clock-history.svg');
+}
 .ic-cloud-arrow-down {
     mask-image: url('/icons/cloud-arrow-down.svg');
     -webkit-mask-image: url('/icons/cloud-arrow-down.svg');
+}
+.ic-cloud-arrow-up {
+    mask-image: url('/icons/cloud-arrow-up.svg');
+    -webkit-mask-image: url('/icons/cloud-arrow-up.svg');
 }
 .ic-cloud-check {
     mask-image: url('/icons/cloud-check.svg');
@@ -141,6 +157,10 @@ i {
 .ic-copy {
     mask-image: url('/icons/copy.svg');
     -webkit-mask-image: url('/icons/copy.svg');
+}
+.ic-cpu {
+    mask-image: url('/icons/cpu.svg');
+    -webkit-mask-image: url('/icons/cpu.svg');
 }
 .ic-dash {
     mask-image: url('/icons/dash.svg');
@@ -229,6 +249,10 @@ i {
 }
 .ic-goguardian {
     background-image: url('/icons/goguardian.webp');
+}
+.ic-grid-3x3-gap-fill {
+    mask-image: url('/icons/grid-3x3-gap-fill.svg');
+    -webkit-mask-image: url('/icons/grid-3x3-gap-fill.svg');
 }
 .ic-grip-vertical {
     mask-image: url('/icons/grip-vertical.svg');
@@ -321,6 +345,12 @@ i {
     mask-image: url('/icons/music-note-list.svg');
     -webkit-mask-image: url('/icons/music-note-list.svg');
 }
+.ic-nettle {
+    background-image: url('/icons/nettle.png');
+}
+.ic-nettle2 {
+    background-image: url('/icons/nettle2.png');
+}
 .ic-offline {
     background-image: url('/icons/offline.png');
 }
@@ -334,6 +364,10 @@ i {
 .ic-pause-fill {
     mask-image: url('/icons/pause-fill.svg');
     -webkit-mask-image: url('/icons/pause-fill.svg');
+}
+.ic-pc-display {
+    mask-image: url('/icons/pc-display.svg');
+    -webkit-mask-image: url('/icons/pc-display.svg');
 }
 .ic-pencil-fill {
     mask-image: url('/icons/pencil-fill.svg');
@@ -372,6 +406,10 @@ i {
     mask-image: url('/icons/pumpkin.svg');
     -webkit-mask-image: url('/icons/pumpkin.svg');
 }
+.ic-qr-code {
+    mask-image: url('/icons/qr-code.svg');
+    -webkit-mask-image: url('/icons/qr-code.svg');
+}
 .ic-search {
     mask-image: url('/icons/search.svg');
     -webkit-mask-image: url('/icons/search.svg');
@@ -395,6 +433,10 @@ i {
     mask-image: url('/icons/shield-fill.svg');
     -webkit-mask-image: url('/icons/shield-fill.svg');
 }
+.ic-shield-fill-minus {
+    mask-image: url('/icons/shield-fill-minus.svg');
+    -webkit-mask-image: url('/icons/shield-fill-minus.svg');
+}
 .ic-shield-plus {
     mask-image: url('/icons/shield-plus.svg');
     -webkit-mask-image: url('/icons/shield-plus.svg');
@@ -413,6 +455,10 @@ i {
 .ic-shield-halved {
     mask-image: url('/icons/shield-halved.svg');
     -webkit-mask-image: url('/icons/shield-halved.svg');
+}
+.ic-shield-lock {
+    mask-image: url('/icons/shield-lock.svg');
+    -webkit-mask-image: url('/icons/shield-lock.svg');
 }
 .ic-shuffle {
     mask-image: url('/icons/shuffle.svg');
@@ -470,6 +516,10 @@ i {
     mask-image: url('/icons/volume-up-fill.svg');
     -webkit-mask-image: url('/icons/volume-up-fill.svg');
 }
+.ic-window-stack {
+    mask-image: url('/icons/window-stack.svg');
+    -webkit-mask-image: url('/icons/window-stack.svg');
+}
 .ic-x {
     mask-image: url('/icons/x.svg');
     -webkit-mask-image: url('/icons/x.svg');
@@ -482,4 +532,8 @@ i {
     mask-image: url('/icons/x-lg.svg');
     -webkit-mask-image: url('/icons/x-lg.svg');
     font-size:large;
+}
+.ic-youtube {
+    mask-image: url('/icons/youtube.svg');
+    -webkit-mask-image: url('/icons/youtube.svg');
 }

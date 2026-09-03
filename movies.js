@@ -126,6 +126,7 @@ async function uploadApply() {
     const dotInterval = setInterval(() => {
         dotCount = (dotCount + 1) % 4;
         uploadingText.innerText = "Uploading" + " .".repeat(dotCount);
+        uploadingText.style.display = "block";
     }, 500);
     finishingWatcher = setInterval(() => {
         const now = Date.now();
