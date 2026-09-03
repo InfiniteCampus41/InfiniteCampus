@@ -15,6 +15,48 @@
     const GAMES_CACHE_PREFIX = "icZoneGamesCache_v1";
     let sources = [];
     let currentSource = null;
+    const RUFFLE_CDN = "https://unpkg.com/@ruffle-rs/ruffle";
+    const JSDOS_CSS = "https://v8.js-dos.com/latest/js-dos.css";
+    const JSDOS_JS = "https://v8.js-dos.com/latest/js-dos.js";
+    function getGameKind(game) {
+        if (game.frameType === "swf" || game.frameType === "jsdos") return game.frameType;
+        const hint = String(game.file || game.url || game.id || "").toLowerCase();
+        if (hint.endsWith(".swf")) return "swf";
+        if (hint.endsWith(".jsdos")) return "jsdos";
+        return "default";
+    }
+    function buildRuffleDoc(swfUrl) {
+        return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#player{width:100%;height:100%}</style>
+</head><body>
+<div id="player"></div>
+<script src="${RUFFLE_CDN}"></script>
+<script>
+  window.RufflePlayer = window.RufflePlayer || {};
+  const ruffle = window.RufflePlayer.newest();
+  const player = ruffle.createPlayer();
+  player.style.width = "100%";
+  player.style.height = "100%";
+  document.getElementById("player").appendChild(player);
+  player.load(${JSON.stringify(swfUrl)});
+</script>
+</body></html>`;
+    }
+
+    function buildJsDosDoc(jsdosUrl) {
+        return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="${JSDOS_CSS}">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#jsdos{width:100%;height:100%}</style>
+</head><body>
+<div id="jsdos"></div>
+<script src="${JSDOS_JS}"></script>
+<script>
+  Dos(document.getElementById("jsdos"), {
+    url: ${JSON.stringify(jsdosUrl)},
+  });
+</script>
+</body></html>`;
+    }
     function gamesCacheKey(source) {
         return `${GAMES_CACHE_PREFIX}:${source}`;
     }
@@ -213,6 +255,7 @@
     const metaUploader = document.getElementById("glMetaUploader");
     const metaDesc = document.getElementById("glMetaDesc");
     let currentGameUrl = "";
+    let currentGameDoc = null;
     let scrollLocked = false;
     async function bumpPopularity(source, id) {
         try {
@@ -220,7 +263,7 @@
         } catch {}
     }
     function setAuthor(game) {
-        metaUploader.textContent = game.author || "Unknown";
+        metaUploader.textContent = game.author || "Anonymous";
         if (game.authorLink) {
             metaUploader.setAttribute("href", game.authorLink);
             metaUploader.classList.add("gl-author-link");
@@ -234,8 +277,33 @@
         gameLoadInProgress = true;
         currentGameUrl = `${a}/games/${encodeURIComponent(gameSource)}/${encodeURIComponent(game.id)}?id=${game.id}`;
         window.history.replaceState(null, null, `?source=${encodeURIComponent(gameSource)}&play=${game.id}`);
-        if ("fetchPriority" in frame) frame.fetchPriority = "high";
-        frame.src = currentGameUrl;
+        const kind = getGameKind(game);
+        if (kind === "swf") {
+            currentGameDoc = buildRuffleDoc(currentGameUrl);
+            frame.removeAttribute("src");
+            frame.srcdoc = currentGameDoc;
+        } else if (kind === "jsdos") {
+            currentGameDoc = buildJsDosDoc(currentGameUrl);
+            frame.removeAttribute("src");
+            frame.srcdoc = currentGameDoc;
+        } else {
+            currentGameDoc = null;
+            if ("fetchPriority" in frame) frame.fetchPriority = "high";
+            let loadedInline = false;
+            if (game.frameType === "dated") {
+                try {
+                    const res = await fetch(`${a}/games/${encodeURIComponent(gameSource)}/${encodeURIComponent(game.id)}/inline`);
+                    const data = await res.json();
+                    if (data && data.ok && typeof data.dataUri === "string") {
+                        frame.src = data.dataUri;
+                        loadedInline = true;
+                    }
+                } catch (e) {
+                    console.error("Failed To Load Inline Game Document:", e);
+                }
+            }
+            if (!loadedInline) frame.src = currentGameUrl;
+        }
         overlay.style.display = "flex";
         metaType.textContent = "GAME";
         metaId.textContent = `ID: ${game.id}`;
@@ -277,6 +345,8 @@
         const newUrl = window.location.pathname;
         window.history.replaceState(null, '', newUrl);
         frame.src = "";
+        frame.removeAttribute("srcdoc");
+        currentGameDoc = null;
         overlay.style.display = "none";
         document.body.classList.remove("gl-scroll-locked");
         scrollLocked = false;
@@ -284,7 +354,12 @@
     }
     closeBtn.addEventListener("click", closeGame);
     newTabBtn.addEventListener("click", () => {
-        if (currentGameUrl) window.open(currentGameUrl, "_blank");
+        if (currentGameDoc) {
+            const blob = new Blob([currentGameDoc], { type: "text/html" });
+            window.open(URL.createObjectURL(blob), "_blank");
+        } else if (currentGameUrl) {
+            window.open(currentGameUrl, "_blank");
+        }
     });
     fullscreenBtn.addEventListener("click", () => {
         if (frame.requestFullscreen) frame.requestFullscreen();
@@ -315,5 +390,9 @@
             }
         } catch {}
     }
-    loadGamesDataAndMaybeAutoOpen();
+    function start() {
+        Promise.resolve(typeof backendReadyPromise !== "undefined" ? backendReadyPromise : null)
+            .then(loadGamesDataAndMaybeAutoOpen, loadGamesDataAndMaybeAutoOpen);
+    }
+    start();
 })();
