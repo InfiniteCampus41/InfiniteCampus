@@ -10,6 +10,8 @@ const adminControls = document.getElementById("adminControls");
 const bioSpan = document.getElementById("bio");
 const channelList = document.getElementById("channels");
 const channelMentionSet = new Set();
+const pollDrawFns = new Map();
+const pollRevealed = new Set();
 const chatInput = document.getElementById("chatInput");
 const chatLog = document.getElementById("chatLog");
 const downloadBtn = document.createElement("a");
@@ -1411,10 +1413,296 @@ function toggleReply(id = null, name = null, text = null) {
     reply.appendChild(rReply);
     isReplyActive = true;
 }
+function openPollCreateModal(channel) {
+    const old = document.querySelector(".poll-create-overlay");
+    if (old) old.remove();
+    const overlay = document.createElement("div");
+    overlay.className = "poll-create-overlay";
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;";
+    const box = document.createElement("div");
+    box.style.cssText = "background:#222;border:1px solid #444;border-radius:10px;padding:20px;width:420px;max-width:92vw;max-height:85vh;overflow-y:auto;color:#fff;";
+    box.innerHTML = `
+        <h2 style="margin:0 0 14px 0;">
+            Create A Poll
+        </h2>
+        <label style="font-size:0.8em;color:#aaa;">
+            Question
+        </label>
+        <input id="pollQuestionInput" type="text" maxlength="300" placeholder="Ask A Question..." style="width:100%;box-sizing:border-box;background:#121212;color:#fff;border:1px solid #555;border-radius:6px;padding:8px;margin:4px 0 14px 0;">
+        <label style="font-size:0.8em;color:#aaa;">
+            Answers
+        </label>
+        <div id="pollAnswersList" style="display:flex;flex-direction:column;gap:6px;margin:4px 0 8px 0;">
+        </div>
+        <button id="pollAddAnswerBtn" type="button" style="background:none;border:1px dashed #555;color:#aaa;border-radius:6px;padding:6px;cursor:pointer;width:100%;margin-bottom:14px;">
+            + Add Answer
+        </button>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;">
+            <input id="pollMultiCheckbox" type="checkbox">
+            Allow Users To Select Multiple Answers
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;">
+            <input id="pollChangeVoteCheckbox" type="checkbox">
+            Allow Users To Change Their Vote
+        </label>
+        <label style="font-size:0.8em;color:#aaa;">Poll Duration</label>
+        <select id="pollDurationSelect" style="width:100%;box-sizing:border-box;background:#121212;color:#fff;border:1px solid #555;border-radius:6px;padding:8px;margin:4px 0 18px 0;">
+            <option value="1800000">
+                30 Minutes
+            </option>
+            <option value="3600000" selected>
+                1 Hour
+            </option>
+            <option value="14400000">
+                4 Hours
+            </option>
+            <option value="28800000">
+                8 Hours
+            </option>
+            <option value="86400000">
+                1 Day
+            </option>
+            <option value="259200000">
+                3 Days
+            </option>
+            <option value="604800000">
+                1 Week
+            </option>
+            <option value="1209600000">
+                2 Weeks
+            </option>
+        </select>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button id="pollCancelBtn" type="button" style="background:none;border:1px solid #555;color:#fff;border-radius:6px;padding:8px 16px;cursor:pointer;">
+                Cancel
+            </button>
+            <button id="pollCreateBtn" class="ic-accent-bg" type="button" style="border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">
+                Create Poll
+            </button>
+        </div>
+    `;
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    const answersList = box.querySelector("#pollAnswersList");
+    const addAnswerBtn = box.querySelector("#pollAddAnswerBtn");
+    const MAX_ANSWERS = 10;
+    function addAnswerRow(prefill) {
+        if (answersList.children.length >= MAX_ANSWERS) return;
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;gap:6px;align-items:center;";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 200;
+        input.placeholder = "Add An Answer (Supports [Label](URL) Links)";
+        input.value = prefill || "";
+        input.style.cssText = "flex:1;background:#121212;color:#fff;border:1px solid #555;border-radius:6px;padding:8px;box-sizing:border-box;";
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.title = "Remove Answer";
+        removeBtn.style.cssText = "background:none;border:none;color:#aaa;font-size:1.2em;cursor:pointer;padding:2px 8px;";
+        removeBtn.onclick = () => {
+            if (answersList.children.length <= 2) return;
+            row.remove();
+            addAnswerBtn.style.display = answersList.children.length >= MAX_ANSWERS ? "none" : "block";
+        };
+        row.appendChild(input);
+        row.appendChild(removeBtn);
+        answersList.appendChild(row);
+        addAnswerBtn.style.display = answersList.children.length >= MAX_ANSWERS ? "none" : "block";
+    }
+    addAnswerRow();
+    addAnswerRow();
+    addAnswerBtn.onclick = () => addAnswerRow();
+    box.querySelector("#pollCancelBtn").onclick = () => overlay.remove();
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    box.querySelector("#pollCreateBtn").onclick = async () => {
+        const question = box.querySelector("#pollQuestionInput").value.trim();
+        if (!question) { showError("Please Enter A Poll Question."); return; }
+        const answers = Array.from(answersList.querySelectorAll("input"))
+            .map(inp => inp.value.trim())
+            .filter(Boolean);
+        if (answers.length < 2) { showError("Please Enter At Least 2 Answers."); return; }
+        const multi = box.querySelector("#pollMultiCheckbox").checked;
+        const allowChangeVote = box.querySelector("#pollChangeVoteCheckbox").checked;
+        const durationMs = Number(box.querySelector("#pollDurationSelect").value);
+        const createBtn = box.querySelector("#pollCreateBtn");
+        createBtn.disabled = true;
+        createBtn.textContent = "Creating...";
+        try {
+            await fetchAPI("poll/create", { channel, question, answers, multi, allowChangeVote, durationMs });
+            overlay.remove();
+        } catch (err) {
+            showError(err?.message || "Failed To Create Poll.");
+            createBtn.disabled = false;
+            createBtn.textContent = "Create Poll";
+        }
+    };
+}
+function renderPollAnswerHtml(raw) {
+    let text = String(raw || "");
+    text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    text = text.replace(/\[([^\[\]]{1,150})\]\((https?:\/\/[^\s()]{1,500})\)/g, (m, label, url) => {
+        const safeUrl = url.replace(/"/g, "&quot;");
+        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;">${label}</a>`;
+    });
+    return text;
+}
+function pollTimeRemainingText(poll) {
+    if (poll.ended) return "Poll Ended";
+    const ms = poll.endsAt - Date.now();
+    if (ms <= 0) return "Poll Ended";
+    const mins = Math.ceil(ms / 60000);
+    if (mins < 60) return `${mins}m Left`;
+    const hours = Math.ceil(mins / 60);
+    if (hours < 24) return `${hours}h Left`;
+    const days = Math.ceil(hours / 24);
+    return `${days}d Left`;
+}
+async function renderPollMessage(id, msg) {
+    const div = document.createElement("div");
+    div.className = "msg msg-poll";
+    div.id = "msg-" + id;
+    div.dataset.timestamp = msg.timestamp || Number(id) || Date.now();
+    const topRow = document.createElement("div");
+    topRow.id = "topRow";
+    const leftWrapper = document.createElement("span");
+    leftWrapper.style.cssText = "display:flex;gap:6px;align-items:center;";
+    const profilePic = document.createElement("img");
+    profilePic.style.cssText = "width:32px;height:32px;border-radius:50%;border:2px solid var(--ic-accent);object-fit:cover;cursor:pointer;";
+    profilePic.src = `${pfpDomain}/1.jpeg`;
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "highlight";
+    nameSpan.textContent = "Loading...";
+    nameSpan.style.cursor = "pointer";
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "timestamp";
+    const tsMs = msg.timestamp || Number(id) || Date.now();
+    timeSpan.textContent = tsMs ? formatTimestamp(tsMs) : "";
+    leftWrapper.appendChild(profilePic);
+    leftWrapper.appendChild(nameSpan);
+    topRow.appendChild(leftWrapper);
+    topRow.appendChild(timeSpan);
+    div.appendChild(topRow);
+    const body = document.createElement("div");
+    body.className = "poll-body";
+    body.style.cssText = "margin-left:40px;margin-top:2px;background:#1b1b1f;border:1px solid #333;border-radius:10px;padding:12px 14px;max-width:420px;";
+    div.appendChild(body);
+    const container = document.getElementById("chatLog");
+    if (container) container.appendChild(div);
+    (async () => {
+        try {
+            const meta = await getUserMeta(msg.s);
+            nameSpan.textContent = meta.displayName || "User";
+            nameSpan.style.color = meta.color;
+            profilePic.src = `${pfpDomain}/${msg.s}?t=${Date.now()}`;
+            profilePic.style.border = `2px solid ${meta.color}`;
+            const openProfile = () => { window.location.href = `InfiniteAccounts.html?user=${msg.s}`; };
+            nameSpan.onclick = openProfile;
+            profilePic.onclick = openProfile;
+        } catch {}
+    })();
+    const isCreator = !!(currentUser && currentUser.uid === msg.s);
+    function draw(poll) {
+        body.innerHTML = "";
+        const qEl = document.createElement("div");
+        qEl.style.cssText = "font-weight:600;margin-bottom:10px;white-space:pre-wrap;overflow-wrap:anywhere;";
+        qEl.innerHTML = `<i class="ic ic-bar-chart-fill" style="margin-right:6px;color:var(--ic-accent);"></i>${renderPollAnswerHtml(poll.question)}`;
+        body.appendChild(qEl);
+        const myVotes = new Set();
+        for (const ans of poll.answers) {
+            if (ans.votes && currentUser && ans.votes[currentUser.uid]) myVotes.add(ans.id);
+        }
+        const hasVoted = myVotes.size > 0;
+        const showResults = poll.ended || hasVoted || pollRevealed.has(id);
+        const counts = {};
+        const voters = new Set();
+        for (const ans of poll.answers) {
+            counts[ans.id] = ans.votes ? Object.keys(ans.votes).length : 0;
+            for (const u of Object.keys(ans.votes || {})) voters.add(u);
+        }
+        const total = voters.size;
+        let max = 0;
+        for (const ans of poll.answers) if (counts[ans.id] > max) max = counts[ans.id];
+        for (const ans of poll.answers) {
+            const row = document.createElement("div");
+            row.className = "poll-answer-row" + (poll.ended ? " ended" : "");
+            row.style.cssText = "position:relative;border:1px solid #444;border-radius:8px;padding:8px 10px;margin-bottom:6px;overflow:hidden;cursor:" + (poll.ended ? "default" : "pointer") + ";transition:border-color 0.15s ease;";
+            const isWinner = poll.ended && max > 0 && counts[ans.id] === max;
+            if (isWinner) row.style.borderColor = "darkgoldenrod";
+            if (myVotes.has(ans.id)) row.style.background = "color-mix(in srgb, var(--ic-accent) 15%, transparent)";
+            if (showResults) {
+                const pct = total ? Math.round((counts[ans.id] / total) * 100) : 0;
+                const fill = document.createElement("div");
+                fill.style.cssText = `position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:${isWinner ? "rgba(245,197,24,0.18)" : "rgba(255,255,255,0.06)"};z-index:0;`;
+                row.appendChild(fill);
+            }
+            const content = document.createElement("div");
+            content.style.cssText = "position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:8px;";
+            const label = document.createElement("span");
+            label.innerHTML = (myVotes.has(ans.id) ? `<i class="ic ic-check-circle-fill" style="color:var(--ic-accent);margin-right:6px;"></i>` : "")
+                + renderPollAnswerHtml(ans.text)
+                + (isWinner ? ' <span title="Winner"><i class="ic ic-trophy" style="color:darkgoldenrod"></i></span>' : "");
+            content.appendChild(label);
+            if (showResults) {
+                const pctSpan = document.createElement("span");
+                pctSpan.style.cssText = "color:#aaa;font-size:0.85em;white-space:nowrap;";
+                const pct = total ? Math.round((counts[ans.id] / total) * 100) : 0;
+                pctSpan.textContent = `${pct}% (${counts[ans.id]})`;
+                content.appendChild(pctSpan);
+            }
+            row.appendChild(content);
+            row.addEventListener("click", async (e) => {
+                if (e.target.closest("a")) return;
+                if (poll.ended) return;
+                if (!currentUser || isGuest) { showError("You Must Be Logged In To Use This Feature."); return; }
+                if (hasVoted && !poll.allowChangeVote) { showError("You Have Already Voted On This Poll."); return; }
+                let answerIds;
+                if (poll.multi) {
+                    const sel = new Set(myVotes);
+                    if (sel.has(ans.id)) sel.delete(ans.id); else sel.add(ans.id);
+                    answerIds = [...sel];
+                    if (!answerIds.length) return;
+                } else {
+                    answerIds = [ans.id];
+                }
+                try {
+                    const ch = currentPath ? currentPath.split("/")[1] : null;
+                    if (!ch) return;
+                    await fetchAPI("poll/vote", { channel: ch, id, answerIds });
+                } catch (err) {
+                    showError(err?.message || "Failed To Vote.");
+                }
+            });
+            body.appendChild(row);
+        }
+        const footer = document.createElement("div");
+        footer.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:0.78em;color:#888;";
+        const infoSpan = document.createElement("span");
+        infoSpan.textContent = `${total} Vote${total === 1 ? "" : "s"} · ${pollTimeRemainingText(poll)}${poll.multi ? " · Multiple Choice" : ""}`;
+        footer.appendChild(infoSpan);
+        if (isCreator && !showResults) {
+            const showVotesBtn = document.createElement("button");
+            showVotesBtn.textContent = "Show Votes";
+            showVotesBtn.style.cssText = "background:none;border:1px solid #555;color:#ccc;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:1em;";
+            showVotesBtn.onclick = (e) => {
+                e.stopPropagation();
+                pollRevealed.add(id);
+                draw(poll);
+            };
+            footer.appendChild(showVotesBtn);
+        }
+        body.appendChild(footer);
+    }
+    pollDrawFns.set(id, draw);
+    draw(msg.poll);
+    return div;
+}
 async function renderMessageInstant(id, msg) {
     if (document.getElementById("msg-" + id)) return null;
     if (id === "sender" || id === "text" || id === "timestamp" || id === "s" || id === "t") return null;
     if (!msg) return null;
+    if (msg.type === "poll" && msg.poll) return renderPollMessage(id, msg);
     const isDiscordMsg = !!(msg.u !== undefined && msg.a !== undefined);
     const isAnonMsg = !!(( msg.anon === true || msg.sender === "anon") && !isDiscordMsg);
     const div = document.createElement("div");
@@ -2546,6 +2834,11 @@ async function attachMessageListeners(path) {
                 initAudioPlayers(newDiv);
                 if (autoScrollEnabled) scrollToBottom(true);
             } else if (lastSnapshot[key] && JSON.stringify(lastSnapshot[key]) !== JSON.stringify(val)) {
+                if (val.type === "poll" && val.poll) {
+                    const drawFn = pollDrawFns.get(key);
+                    if (drawFn) drawFn(val.poll);
+                    continue;
+                }
                 const textDiv = existing.querySelector(".msg-text");
                 const editedSpan = existing.querySelector(".edited-label");
                 if (textDiv) {
@@ -2570,6 +2863,8 @@ async function attachMessageListeners(path) {
                 const el = document.getElementById("msg-" + key);
                 if (el) el.remove();
                 renderedKeys.delete(key);
+                pollDrawFns.delete(key);
+                pollRevealed.delete(key);
             }
         }
         lastSnapshot = { ...newData };
@@ -3544,6 +3839,12 @@ sendBtn.onclick = async () => {
     if (!currentUser) return;
     let text = chatInput.value.trim();
     if (!text) return;
+    if (!currentPrivateUid && /^\/poll(\s|$)/i.test(text) && (isAdmin || isHAdmin || isOwner || isCoOwner || isTester)) {
+        chatInput.value = "";
+        const ch = currentPath.split("/")[1];
+        openPollCreateModal(ch);
+        return;
+    }
     const muted = await isUserMuted(currentUser.uid);
     if (muted) {
         showError("You Are Muted And Cannot Send Messages Right Now.");

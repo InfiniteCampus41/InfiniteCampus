@@ -66,6 +66,10 @@ i {
     mask-image: url('/icons/balloon-heart.svg');
     -webkit-mask-image: url('/icons/balloon-heart.svg');
 }
+.ic-bar-chart-fill {
+    mask-image: url('/icons/bar-chart-fill.svg');
+    -webkit-mask-image: url('/icons/bar-chart-fill.svg');
+}
 .ic-barracuda {
     background-image: url('/icons/barracuda.webp');
 }

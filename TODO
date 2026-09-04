@@ -34,10 +34,14 @@ final things:
 
     DONE: make it so every url can route to the api so the api cant be blocked.
 
+    12: Fix Anonymous File Uploads Sometimes Not Showing Up In The Chat
+
+    DONE: Add Chat Polls
+
 
 
 Updated Ui:
     DONE: Fix transparent theme logo
-    2: combine themed elements with accent
-    3: data sync between devices through switch-like transfer system.
-    4: make it so theme elements dont load when not on tab
+    DONE: combine themed elements with accent
+    DONE: data sync between devices through switch-like transfer system.
+    DONE: make it so theme elements dont load when not on tab

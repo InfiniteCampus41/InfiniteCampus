@@ -3185,6 +3185,9 @@ main.ic-home {
     overflow-x: visible;
     overflow-y: visible;
 }
+.msg-poll .poll-body {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
 .msg-text {
     overflow: hidden;
     max-width: 100%;
@@ -3575,11 +3578,30 @@ main.ic-home {
     width: 200px;
     height: 200px;
 }
+.poll-answer-row a {
+    pointer-events: auto;
+}
+.poll-answer-row:not(.ended):hover {
+    border-color: var(--ic-accent) !important;
+}
 #pollContainer {
     background:#111;
     border-radius:15px;
     width:90%;
     padding:5px;
+}
+.poll-create-overlay input:focus, .poll-create-overlay select:focus {
+    outline: none;
+    border-color: var(--ic-accent) !important;
+}
+.poll-create-overlay input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--ic-accent);
+}
+.poll-create-overlay #pollCreateBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
 }
 #popularGamesGrid {
     display: flex;

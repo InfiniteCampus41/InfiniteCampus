@@ -490,11 +490,13 @@ function extractAccentFromBackground(bg) {
     return hslToRgb(pick.h, pick.s, clampedL);
 }
 function applyHeroAccent(bg, gradientSetting) {
+    const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
+    const accentHex = rgbToHex(accentRgb);
+    document.documentElement.style.setProperty('--ic-accent', accentHex);
+    document.documentElement.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
+    document.querySelectorAll('.ic-accent-bg').forEach(el => el.style.background = accentHex);
     const home = document.querySelector('.ic-home');
     if (!home) return;
-    const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
-    home.style.setProperty('--ic-accent', rgbToHex(accentRgb));
-    home.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
     const logo = home.querySelector('.ic-logo-mark');
     if (logo) {
         const isTransparentTheme = gradientSetting === 'trans';
