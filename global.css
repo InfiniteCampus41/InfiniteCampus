@@ -2313,7 +2313,7 @@ main.ic-home {
 }
 @media (max-width: 560px) {
     .ic-about-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     .ic-about-tag span {
         width: 20px;
