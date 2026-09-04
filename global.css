@@ -1475,6 +1475,82 @@ hr {
 .hr2 {
     max-width:50%;
 }
+.ic-about-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 18px auto;
+    max-width: 360px;
+    color: var(--ic-accent);
+    font-size: 1.1rem;
+}
+.ic-about-divider span {
+    flex: 1;
+    height: 1px;
+    background: var(--ic-border);
+}
+.ic-about-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.ic-about-grid .ic-app-card {
+    text-align: left;
+}
+.ic-about-hero {
+    margin-bottom: 34px;
+}
+.ic-about-page {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 48px 24px 60px;
+    text-align: center;
+}
+.ic-about-panel {
+    background: var(--ic-panel);
+    border: 1px solid var(--ic-border);
+    border-radius: 16px;
+    padding: 26px;
+    margin-bottom: 26px;
+}
+.ic-about-sub {
+    color: var(--ic-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: 620px;
+}
+.ic-about-tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--ic-accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+.ic-about-tag span {
+    display: inline-block;
+    width: 34px;
+    height: 1px;
+    background: color-mix(in srgb, var(--ic-accent) 55%, transparent);
+}
+.ic-about-title {
+    font-family: "Oswald", "Inter", sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    text-transform: uppercase;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    margin: 0;
+    line-height: 1.1;
+}
+.ic-about-title-accent {
+    color: var(--ic-accent);
+}
 .ic-app-arrow {
     position: absolute;
     right: 16px;
@@ -1698,7 +1774,7 @@ hr {
     color: var(--ic-muted);
     pointer-events: none;
 }
-.ic-apps-sub {
+.ic-sub {
     color: var(--ic-muted);
     font-size: 0.95rem;
     margin: 0;
@@ -1986,7 +2062,7 @@ hr {
     margin: 0 0 18px;
     text-transform: uppercase;
 }
-.ic-title .ic-accent {
+.ic-title .ic-accent, .ic-about-title .ic-accent {
     color: var(--ic-accent);
 }
 .ic-title .ic-white {
@@ -2236,6 +2312,12 @@ main.ic-home {
     }
 }
 @media (max-width: 560px) {
+    .ic-about-grid {
+        grid-template-columns: 1fr;
+    }
+    .ic-about-tag span {
+        width: 20px;
+    }
     .ic-apps-grid {
         grid-template-columns: 1fr !important;
     }
@@ -2780,6 +2862,9 @@ main.ic-home {
     }
 }
 @media (max-width: 980px) {
+    .ic-about-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
     .ic-apps-grid {
         grid-template-columns: repeat(2, 1fr);
     }

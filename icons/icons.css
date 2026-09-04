@@ -76,6 +76,10 @@ i {
 .ic-blocksi {
     background-image: url('/icons/blocksi.webp');
 }
+.ic-book-half {
+    mask-image: url('/icons/book-half.svg');
+    -webkit-mask-image: url('/icons/book-half.svg');
+}
 .ic-box-arrow-up-right {
     mask-image: url('/icons/box-arrow-up-right.svg');
     -webkit-mask-image: url('/icons/box-arrow-up-right.svg');
@@ -84,9 +88,17 @@ i {
     mask-image: url('/icons/broadcast.svg');
     -webkit-mask-image: url('/icons/broadcast.svg');
 }
+.ic-bug-fill {
+    mask-image: url('/icons/bug-fill.svg');
+    -webkit-mask-image: url('/icons/bug-fill.svg');
+}
 .ic-calculator {
     mask-image: url('/icons/calculator.svg');
     -webkit-mask-image: url('/icons/calculator.svg');
+}
+.ic-chat-dots-fill {
+    mask-image: url('/icons/chat-dots-fill.svg');
+    -webkit-mask-image: url('/icons/chat-dots-fill.svg');
 }
 .ic-check-circle-fill {
     mask-image: url('/icons/check-circle-fill.svg');
@@ -134,6 +146,10 @@ i {
 .ic-code-square {
     mask-image: url('/icons/code-square.svg');
     -webkit-mask-image: url('/icons/code-square.svg');
+}
+.ic-code {
+    mask-image: url('/icons/code.svg');
+    -webkit-mask-image: url('/icons/code.svg');
 }
 .ic-cogs {
     mask-image: url('/icons/cogs.svg');
@@ -238,6 +254,10 @@ i {
 .ic-fullscreen {
     mask-image: url('/icons/fullscreen.svg');
     -webkit-mask-image: url('/icons/fullscreen.svg');
+}
+.ic-gamepad-modern {
+    mask-image: url('/icons/gamepad-modern.svg');
+    -webkit-mask-image: url('/icons/gamepad-modern.svg');
 }
 .ic-gear {
     mask-image: url('/icons/gear.svg');
@@ -491,6 +511,10 @@ i {
 .ic-stopwatch {
     mask-image: url('/icons/stopwatch.svg');
     -webkit-mask-image: url('/icons/stopwatch.svg');
+}
+.ic-terminal {
+    mask-image: url('/icons/terminal.svg');
+    -webkit-mask-image: url('/icons/terminal.svg');
 }
 .ic-three-dots-vertical {
     mask-image: url('/icons/three-dots-vertical.svg');

@@ -1379,8 +1379,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         });
         let BACKEND = `${a}`;
         let ADMIN_PASS = localStorage.getItem("a_pass") || null;
-        const socket = io(BACKEND, { 
-            path: "/socket_io_realtime_x9a7b2",
+        const backendUrlObj = new URL(BACKEND, window.location.origin);
+        const backendBasePath = backendUrlObj.pathname.replace(/\/+$/, "");
+        const socketIoPath = `${backendBasePath}/socket_io_realtime_x9a7b2`;
+        const socket = io(backendUrlObj.origin, { 
+            path: socketIoPath,
             extraHeaders: {
                 "ngrok-skip-browser-warning": "true",
                 "x-admin-password": ADMIN_PASS || ""
