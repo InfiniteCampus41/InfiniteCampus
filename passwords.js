@@ -9,6 +9,17 @@ const loginBtn = document.getElementById("loginBtn");
 const signup = document.getElementById("signup");
 const resetBtn = document.getElementById("resetBtn");
 const statusEl = document.getElementById("status");
+const togglePasswordBtn = document.getElementById("togglePassword");
+if (togglePasswordBtn && passwordInput) {
+    togglePasswordBtn.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        togglePasswordBtn.innerHTML = isHidden
+            ? '<i class="ic ic-eye-slash" style="position:relative;right:0px;transform:none;"></i>'
+            : '<i class="ic ic-eye" style="position:relative;right:0px;transform:none;"></i>';
+        togglePasswordBtn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+}
 const stillBtn = document.createElement("button");
 stillBtn.textContent = "Still Didn't Get Email?";
 let currentUser = null;

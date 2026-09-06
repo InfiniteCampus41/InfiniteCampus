@@ -30,49 +30,228 @@
         <script src="./drypopup.js" type="module">
         </script>
         <style>
-            input {
-                width: 40%;
-                cursor:text !important;
+            .lp-shell {
+                max-width: 460px;
+                padding-top: 6vh;
+                padding-bottom: 8vh;
+            }
+            .lp-hero {
+                margin-bottom: 30px;
+            }
+            .lp-title {
+                font-size: clamp(1.9rem, 6vw, 2.6rem);
+                margin: 0 0 12px;
+            }
+            .lp-card {
+                max-width: 420px;
+                margin: 0 auto;
+                padding: clamp(24px, 4vw, 34px) clamp(20px, 4vw, 30px) 30px;
+                text-align: center;
+                box-shadow:
+                    0 30px 70px rgba(0,0,0,0.55),
+                    0 0 90px color-mix(in srgb, var(--ic-accent) 20%, transparent);
+            }
+            .ic-glow-ring.lp-badge {
+                width: 84px;
+                height: 84px;
+                margin: 0 auto 14px;
+                box-shadow:
+                    0 0 34px color-mix(in srgb, var(--ic-accent) 28%, transparent),
+                    inset 0 0 24px color-mix(in srgb, var(--ic-accent) 10%, transparent);
+            }
+            .lp-cardTitle {
+                margin: 0;
+                color: var(--ic-text);
+                font-weight: 700;
+                font-size: clamp(1.3rem, 3vw, 1.55rem);
+            }
+            .lp-divider {
+                width: 56px;
+                height: 2px;
+                margin: 12px auto 22px;
+                background: var(--ic-accent);
+                border-radius: 2px;
+            }
+            .lp-fields {
+                text-align: left;
+            }
+            .lp-field {
+                margin-bottom: 16px;
+            }
+            .lp-field label {
+                display: block;
+                margin-bottom: 7px;
+                color: var(--ic-text);
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+            .ic-apps-search-wrap.lp-input-wrap {
+                width: 100%;
+            }
+            .lp-input-wrap i.bi {
+                left: 14px;
+                right: auto;
+            }
+            .ic-apps-search.lp-input {
+                padding-left: 40px;
+                padding-right: 14px;
+            }
+            #password.lp-input {
+                padding-right: 42px;
+            }
+            .lp-eyeBtn {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateX(-30px) translateY(-50%);
+                background: none;
+                border: none;
+                color: var(
+                --ic-muted);
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                border-radius: 8px;
+                transition: color 0.2s ease, background 0.2s ease;
+            }
+            .lp-eyeBtn:hover {
+                color: var(--ic-text);
+                background: rgba(255,255,255,0.06);
+            }
+            .ic-btn.lp-loginBtn, .ic-btn.lp-googleBtn {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            .lp-loginBtn {
+                margin-top: 6px;
+            }
+            .ic-about-divider.lp-orRow {
+                margin: 18px auto;
+            }
+            .lp-belowText {
+                margin: 14px 0 0;
+                color: var(--ic-muted);
+                font-size: 0.9rem;
+            }
+            .lp-link {
+                background: none;
+                border: none;
+                padding: 0;
+                margin-left: 2px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                cursor: pointer;
+                text-decoration: none;
+            }
+            .lp-link:hover {
+                text-decoration: underline;
             }
             #status {
-                margin-top:12px;
-                color:white;
+                margin: 16px 0 0;
+                min-height: 1em;
+                color: var(--ic-text);
+                font-size: 0.9rem;
+            }
+            @media (min-width: 900px) {
+                .lp-shell {
+                    padding-top: 8vh;
+                }
+                .lp-hero {
+                    margin-bottom: 38px;
+                }
             }
         </style>
     </head>
     <body>
         <main>
-            <center>
-                <h2 class="tptxt">
-                    Login
-                </h2>
-                <hr>
-                <br>
-                <div id="mbBtns">
-                    <input class="button mbInp2" type="email" id="email" placeholder="Email">
-                    <br>
-                    <input class="button mbInp2" type="password" id="password" placeholder="Password">
-                </div>
-                <div>
-                    <br>
-                    <br>
-                    <button class="button apbtn" id="googleLoginBtn">
-                        Login With Google
-                    </button>
-                    <br>
-                    <button class="button apbtn" id="loginBtn">
+            <div class="ic-about-page lp-shell">
+                <section class="lp-hero">
+                    <p class="ic-eyebrow">
+                        Welcome Back to
+                    </p>
+                    <h1 class="ic-title lp-title">
+                        <span class="ic-white">
+                            INFINITE
+                        </span>
+                        <span class="ic-accent">
+                            CAMPUS
+                        </span>
+                    </h1>
+                    <p class="ic-subtitle">
+                        Log In To Access Your Account And To Use Certain Features.
+                    </p>
+                </section>
+                <section class="ic-about-panel lp-card">
+                    <div class="ic-glow-ring lp-badge">
+                        <img class="ic-logo-fallback" src="/res/icon.png" alt="Infinite Campus">
+                        <div class="ic-logo-mark">
+                        </div>
+                    </div>
+                    <h2 class="lp-cardTitle">
+                        Login
+                    </h2>
+                    <div class="lp-divider">
+                    </div>
+                    <div id="mbBtns" class="lp-fields">
+                        <div class="lp-field">
+                            <label for="email">
+                                Email
+                            </label>
+                            <div class="ic-apps-search-wrap lp-input-wrap">
+                                <i class="ic ic-envelope">
+                                </i>
+                                <input class="ic-apps-search lp-input" type="email" id="email" placeholder="Enter Your Email" autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="lp-field">
+                            <label for="password">
+                                Password
+                            </label>
+                            <div class="ic-apps-search-wrap lp-input-wrap">
+                                <i class="ic ic-lock">
+                                </i>
+                                <input class="ic-apps-search lp-input" type="password" id="password" placeholder="Enter Your Password" autocomplete="current-password">
+                                <button type="button" class="lp-eyeBtn" id="togglePassword" aria-label="Show Password">
+                                    <i class="ic ic-eye" style="position:relative;right:0px;transform:none;">
+                                    </i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="ic-btn ic-btn-primary lp-loginBtn" id="loginBtn">
+                        <i class="ic ic-box-arrow-in-right">
+                        </i>
                         Login
                     </button>
-                    <button id="signup" class="button apbtn" style="margin-left:10px;">
-                        Sign Up
+                    <div class="ic-about-divider lp-orRow">
+                        <span>
+                        </span>
+                        or
+                        <span>
+                        </span>
+                    </div>
+                    <button class="ic-btn ic-btn-secondary lp-googleBtn" id="googleLoginBtn">
+                        <i class="ib ic ic-google">
+                        </i>
+                        Login With Google
                     </button>
-                </div>
-                <button class="button apbtn" id="resetBtn">
-                    Reset Password
-                </button>
-                <p id="status">
-                </p>
-            </center>
+                    <p class="lp-belowText">
+                        Don't have an account? 
+                        <button type="button" class="lp-link ic-accent" id="signup">
+                            Sign Up
+                        </button>
+                    </p>
+                    <p class="lp-belowText">
+                        Forgot your password? 
+                        <button type="button" class="lp-link ic-accent" id="resetBtn">
+                            Reset Password
+                        </button>
+                    </p>
+                    <p id="status">
+                    </p>
+                </section>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>

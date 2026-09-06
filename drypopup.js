@@ -1721,14 +1721,14 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     function getSyncWsUrl() {
         let base = BACKEND || DEFAULT_BACKEND;
-        let originStr;
         try {
-            originStr = new URL(base, window.location.href).origin;
+            const url = new URL(base, window.location.href);
+            const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+            const path = url.pathname.replace(/\/$/, '') + '/wireless_sync';
+            return wsProtocol + '//' + url.host + path;
         } catch (e) {
-            originStr = window.location.origin;
+            return window.location.origin.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:') + '/api/wireless_sync';
         }
-        const wsOrigin = originStr.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
-        return wsOrigin + '/wireless_sync';
     }
     const syncConnectBtn = document.getElementById('syncConnectBtn');
     const syncConnectRow = document.getElementById('syncConnectRow');

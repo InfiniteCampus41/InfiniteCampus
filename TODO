@@ -45,3 +45,9 @@ Updated Ui:
     DONE: combine themed elements with accent
     DONE: data sync between devices through switch-like transfer system.
     DONE: make it so theme elements dont load when not on tab
+    1: Login Page
+    2: Signup Page
+    3: Donate Message
+    4: Donation Page
+    Second to last: Chat Page
+    Last: Maybe Header

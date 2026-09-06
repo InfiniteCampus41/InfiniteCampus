@@ -495,6 +495,7 @@ function applyHeroAccent(bg, gradientSetting) {
     document.documentElement.style.setProperty('--ic-accent', accentHex);
     document.documentElement.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
     document.querySelectorAll('.ic-accent-bg').forEach(el => el.style.background = accentHex);
+    document.querySelectorAll('.ic-accent').forEach(el => el.style.color = accentHex);
     const home = document.querySelector('.ic-home');
     if (!home) return;
     const logo = home.querySelector('.ic-logo-mark');

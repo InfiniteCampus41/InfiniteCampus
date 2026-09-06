@@ -84,6 +84,10 @@ i {
     mask-image: url('/icons/book-half.svg');
     -webkit-mask-image: url('/icons/book-half.svg');
 }
+.ic-box-arrow-in-right {
+    mask-image: url('/icons/box-arrow-in-right.svg');
+    -webkit-mask-image: url('/icons/box-arrow-in-right.svg');
+}
 .ic-box-arrow-up-right {
     mask-image: url('/icons/box-arrow-up-right.svg');
     -webkit-mask-image: url('/icons/box-arrow-up-right.svg');
@@ -216,6 +220,14 @@ i {
     mask-image: url('/icons/emoji-smile.svg');
     -webkit-mask-image: url('/icons/emoji-smile.svg');
 }
+.ic-envelope {
+    mask-image: url('/icons/envelope.svg');
+    -webkit-mask-image: url('/icons/envelope.svg');
+}
+.ic-eye {
+    mask-image: url('/icons/eye.svg');
+    -webkit-mask-image: url('/icons/eye.svg');
+}
 .ic-eye-fill {
     mask-image: url('/icons/eye-fill.svg');
     -webkit-mask-image: url('/icons/eye-fill.svg');
@@ -273,6 +285,9 @@ i {
 }
 .ic-goguardian {
     background-image: url('/icons/goguardian.webp');
+}
+.ic-google {
+    background-image: url('/icons/google.svg');
 }
 .ic-grid-3x3-gap-fill {
     mask-image: url('/icons/grid-3x3-gap-fill.svg');
