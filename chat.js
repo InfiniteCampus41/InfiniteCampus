@@ -1542,8 +1542,15 @@ function openPollCreateModal(channel) {
 function renderPollAnswerHtml(raw) {
     let text = String(raw || "");
     text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    text = text.replace(/\[([^\[\]]{1,150})\]\((https?:\/\/[^\s()]{1,500})\)/g, (m, label, url) => {
-        const safeUrl = url.replace(/"/g, "&quot;");
+    text = text.replace(/\[([^\[\]]{1,150})\]\(([^\s()]{1,500})\)/g, (m, label, url) => {
+        let safeUrl = url.replace(/"/g, "&quot;");
+        if (/^\//.test(safeUrl)) {
+        } else if (/^https?:\/\//i.test(safeUrl)) {
+        } else if (/^[a-z][a-z0-9+.-]*:/i.test(safeUrl)) {
+            return label;
+        } else {
+            safeUrl = "https://" + safeUrl;
+        }
         return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color:#4fa3ff;">${label}</a>`;
     });
     return text;
