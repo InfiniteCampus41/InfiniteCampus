@@ -9,14 +9,17 @@ firebase.initializeApp({
 });
 const messaging = firebase.messaging();
 const VERIFY_ICON = "/icons/shield-check.svg";
+const BADGE_ICON = "/icons/c-circle.svg";
 messaging.onBackgroundMessage((payload) => {
   	const isVerify = payload.data?.type === "verifyUser";
   	const tag = payload.data?.tag || (payload.data?.uid ? `${payload.data.type || "notif"}-${payload.data.uid}` : undefined);
+  	const title = payload.data?.title || "New Notification";
   	const options = {
-    	body: payload.notification.body,
+    	body: payload.data?.body || "",
     	icon: isVerify ? VERIFY_ICON : "/icon.png",
+    	badge: BADGE_ICON,
 		data: {
-            url: payload.data?.url || payload.notification?.url || "/"
+            url: payload.data?.url || "/"
         }
   	};
   	if (tag) {
@@ -28,7 +31,7 @@ messaging.onBackgroundMessage((payload) => {
   			{ action: "verify", title: "Verify User" }
   		];
   	}
-  	self.registration.showNotification(payload.notification.title, options);
+  	self.registration.showNotification(title, options);
 });
 self.addEventListener("notificationclick", function(event) {
     event.notification.close();

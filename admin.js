@@ -172,6 +172,7 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
         let userSettings = {};
         let activeChatListener = null;
         let currentIsOwner = false;
+        let restrictUserActions = false;
         const pfpDomain = `${a}/pfps`;
         let ADMIN_PASS = localStorage.getItem("a_pass") || null;
         const imgViewer = document.createElement("div");
@@ -646,7 +647,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 return;
             }
             if ((isCoOwner || isHAdmin) && !isOwner && !isTester) {
-                userListDiv.style.display = "none";
                 userEditDiv.style.display = "none";
                 privateChatsDiv.style.display = "none";
                 chatView.style.display = "none";
@@ -656,6 +656,14 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                 deleteChatBtn.style.display = "none";
                 listenForTyping();
                 listenForUnverifiedUsers();
+                if (isHAdmin) {
+                    restrictUserActions = true;
+                    await preloadUsers();
+                    await preloadUserMeta();
+                    await loadUserList();
+                } else {
+                    userListDiv.style.display = "none";
+                }
                 return;
             }
             await preloadUsers();
@@ -1050,7 +1058,11 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                     <img src="${pic}" alt="${name}'s Pic" width="30" height="30" style="border-radius:50%;vertical-align:middle;margin-right:8px;">
                     ${name}${isBanned ? ' <i class="ic ic-slash-circle" title="Banned"></i>' : ''}
                 `;
-                div.onclick = () => editUser(uid, info);
+                if (restrictUserActions) {
+                    div.style.cursor = "default";
+                } else {
+                    div.onclick = () => editUser(uid, info);
+                }
                 userListDiv.appendChild(div);
                 dbListen(`users/${uid}/profile/status`, (status) => {
                     const s = displayStatusFor(status);
@@ -1118,7 +1130,6 @@ if (kdsuhPage == "/InfiniteAdmins.html") {
                                     showError("Failed: " + JSON.stringify(result));
                                     return;
                                 }
-                                await signOut(auth);
                                 await signInWithCustomToken(auth, result.token);
                                 await adminFetch(BACKEND + "/tokenUsed", {
                                     method: "POST",

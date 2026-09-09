@@ -12,6 +12,7 @@ const channelList = document.getElementById("channels");
 const channelMentionSet = new Set();
 const pollDrawFns = new Map();
 const pollRevealed = new Set();
+let activePollVotesModal = null;
 const chatInput = document.getElementById("chatInput");
 const chatLog = document.getElementById("chatLog");
 const downloadBtn = document.createElement("a");
@@ -1566,6 +1567,119 @@ function pollTimeRemainingText(poll) {
     const days = Math.ceil(hours / 24);
     return `${days}d Left`;
 }
+function openPollVotesModal(id, poll) {
+    const old = document.querySelector(".poll-votes-overlay");
+    if (old) old.remove();
+    const overlay = document.createElement("div");
+    overlay.className = "poll-votes-overlay";
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;";
+    const box = document.createElement("div");
+    box.style.cssText = "background:#222;border:1px solid #444;border-radius:10px;width:560px;max-width:94vw;height:440px;max-height:82vh;color:#fff;position:relative;display:flex;flex-direction:column;overflow:hidden;";
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.innerHTML = "&times;";
+    closeBtn.title = "Close";
+    closeBtn.style.cssText = "position:absolute;top:10px;right:10px;background:none;border:none;color:#aaa;font-size:1.4em;line-height:1;cursor:pointer;padding:2px 6px;z-index:1;";
+    const close = () => {
+        overlay.remove();
+        if (activePollVotesModal && activePollVotesModal.id === id) activePollVotesModal = null;
+    };
+    closeBtn.onclick = close;
+    const header = document.createElement("div");
+    header.style.cssText = "padding:16px 44px 12px 20px;border-bottom:1px solid #333;flex-shrink:0;";
+    const heading = document.createElement("h2");
+    heading.style.cssText = "margin:0 0 4px 0;font-size:1.1em;";
+    heading.textContent = "Votes";
+    header.appendChild(heading);
+    const questionEl = document.createElement("div");
+    questionEl.style.cssText = "color:#999;font-size:0.85em;white-space:pre-wrap;overflow-wrap:anywhere;";
+    header.appendChild(questionEl);
+    const mainRow = document.createElement("div");
+    mainRow.style.cssText = "display:flex;flex:1;min-height:0;";
+    const sidebar = document.createElement("div");
+    sidebar.style.cssText = "width:170px;flex-shrink:0;border-right:1px solid #333;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:4px;";
+    const content = document.createElement("div");
+    content.style.cssText = "flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;";
+    mainRow.appendChild(sidebar);
+    mainRow.appendChild(content);
+    box.appendChild(closeBtn);
+    box.appendChild(header);
+    box.appendChild(mainRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    let selectedId = null;
+    function pickDefaultAnswer(currentPoll) {
+        let best = null, bestCount = -1;
+        for (const ans of currentPoll.answers) {
+            const count = ans.votes ? Object.keys(ans.votes).length : 0;
+            if (count > bestCount) { bestCount = count; best = ans.id; }
+        }
+        return best;
+    }
+    function renderSidebar(currentPoll) {
+        sidebar.innerHTML = "";
+        for (const ans of currentPoll.answers) {
+            const count = ans.votes ? Object.keys(ans.votes).length : 0;
+            const isSelected = ans.id === selectedId;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;text-align:left;background:"
+                + (isSelected ? "color-mix(in srgb, var(--ic-accent) 20%, transparent)" : "none")
+                + ";border:1px solid " + (isSelected ? "var(--ic-accent)" : "#444")
+                + ";color:#fff;border-radius:6px;padding:8px 10px;cursor:pointer;font-size:0.85em;";
+            btn.innerHTML = `<span style="overflow-wrap:anywhere;flex:1;min-width:0;">${renderPollAnswerHtml(ans.text)}</span><span style="color:#999;font-size:0.85em;white-space:nowrap;">${count}</span>`;
+            btn.onclick = () => {
+                if (selectedId === ans.id) return;
+                selectedId = ans.id;
+                renderSidebar(currentPoll);
+                renderContent(currentPoll);
+            };
+            sidebar.appendChild(btn);
+        }
+    }
+    function renderContent(currentPoll) {
+        content.innerHTML = "";
+        const ans = currentPoll.answers.find(a => a.id === selectedId);
+        if (!ans) return;
+        const voterUids = Object.keys(ans.votes || {});
+        if (!voterUids.length) {
+            const empty = document.createElement("div");
+            empty.textContent = "No Votes Yet.";
+            empty.style.cssText = "color:#666;font-size:0.9em;font-style:italic;";
+            content.appendChild(empty);
+            return;
+        }
+        for (const uid of voterUids) {
+            const row = document.createElement("div");
+            row.style.cssText = "display:flex;align-items:center;gap:10px;";
+            const img = document.createElement("img");
+            img.style.cssText = "width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #444;flex-shrink:0;";
+            img.src = `${pfpDomain}/1.jpeg`;
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = "Loading...";
+            nameSpan.style.cssText = "font-size:0.95em;overflow-wrap:anywhere;";
+            row.appendChild(img);
+            row.appendChild(nameSpan);
+            content.appendChild(row);
+            getUserMeta(uid).then(meta => {
+                nameSpan.textContent = meta.displayName || "User";
+                nameSpan.style.color = meta.color || "#fff";
+                img.src = `${pfpDomain}/${uid}`;
+                img.style.borderColor = meta.color || "#444";
+            }).catch(() => {});
+        }
+    }
+    function render(currentPoll) {
+        questionEl.innerHTML = renderPollAnswerHtml(currentPoll.question);
+        const stillValid = selectedId != null && currentPoll.answers.some(a => a.id === selectedId);
+        if (!stillValid) selectedId = pickDefaultAnswer(currentPoll);
+        renderSidebar(currentPoll);
+        renderContent(currentPoll);
+    }
+    render(poll);
+    activePollVotesModal = { id, render };
+}
 async function renderPollMessage(id, msg) {
     const div = document.createElement("div");
     div.className = "msg msg-poll";
@@ -1702,7 +1816,9 @@ async function renderPollMessage(id, msg) {
         const infoSpan = document.createElement("span");
         infoSpan.textContent = `${total} Vote${total === 1 ? "" : "s"} · ${pollTimeRemainingText(poll)}${poll.multi ? " · Multiple Choice" : ""}`;
         footer.appendChild(infoSpan);
-        if (isCreator && !showResults) {
+        const footerActions = document.createElement("span");
+        footerActions.style.cssText = "display:flex;gap:6px;align-items:center;";
+        if (isCreator) {
             const showVotesBtn = document.createElement("button");
             showVotesBtn.textContent = "Show Votes";
             showVotesBtn.style.cssText = "background:none;border:1px solid #555;color:#ccc;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:1em;";
@@ -1710,10 +1826,37 @@ async function renderPollMessage(id, msg) {
                 e.stopPropagation();
                 pollRevealed.add(id);
                 draw(poll);
+                openPollVotesModal(id, poll);
             };
-            footer.appendChild(showVotesBtn);
+            footerActions.appendChild(showVotesBtn);
         }
+        if (hasVoted && !poll.ended) {
+            const removeVoteBtn = document.createElement("button");
+            removeVoteBtn.textContent = "Remove Vote";
+            removeVoteBtn.style.cssText = "background:none;border:1px solid #555;color:#ccc;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:1em;";
+            removeVoteBtn.onclick = async (e) => {
+                e.stopPropagation();
+                if (!currentUser || isGuest) { showError("You Must Be Logged In To Use This Feature."); return; }
+                const ch = currentPath ? currentPath.split("/")[1] : null;
+                if (!ch) return;
+                const previousPoll = JSON.parse(JSON.stringify(poll));
+                const uid = currentUser.uid;
+                for (const ans of poll.answers) {
+                    if (ans.votes && ans.votes[uid]) delete ans.votes[uid];
+                }
+                draw(poll);
+                try {
+                    await fetchAPI("poll/remove-vote", { channel: ch, id });
+                } catch (err) {
+                    draw(previousPoll);
+                    showError(err?.message || "Failed To Remove Vote.");
+                }
+            };
+            footerActions.appendChild(removeVoteBtn);
+        }
+        if (footerActions.childNodes.length) footer.appendChild(footerActions);
         body.appendChild(footer);
+        if (activePollVotesModal && activePollVotesModal.id === id) activePollVotesModal.render(poll);
     }
     pollDrawFns.set(id, draw);
     draw(msg.poll);
@@ -2886,6 +3029,7 @@ async function attachMessageListeners(path) {
                 renderedKeys.delete(key);
                 pollDrawFns.delete(key);
                 pollRevealed.delete(key);
+                if (activePollVotesModal && activePollVotesModal.id === key) activePollVotesModal = null;
             }
         }
         lastSnapshot = { ...newData };
