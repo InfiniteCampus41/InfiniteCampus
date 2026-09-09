@@ -1673,11 +1673,25 @@ async function renderPollMessage(id, msg) {
                 } else {
                     answerIds = [ans.id];
                 }
+                const ch = currentPath ? currentPath.split("/")[1] : null;
+                if (!ch) return;
+                const previousPoll = JSON.parse(JSON.stringify(poll));
+                const uid = currentUser.uid;
+                for (const otherAns of poll.answers) {
+                    if (otherAns.votes && otherAns.votes[uid]) delete otherAns.votes[uid];
+                }
+                for (const aid of answerIds) {
+                    const target = poll.answers.find(a2 => a2.id === aid);
+                    if (target) {
+                        if (!target.votes) target.votes = {};
+                        target.votes[uid] = true;
+                    }
+                }
+                draw(poll);
                 try {
-                    const ch = currentPath ? currentPath.split("/")[1] : null;
-                    if (!ch) return;
                     await fetchAPI("poll/vote", { channel: ch, id, answerIds });
                 } catch (err) {
+                    draw(previousPoll);
                     showError(err?.message || "Failed To Vote.");
                 }
             });
