@@ -758,7 +758,15 @@ window.addEventListener('DOMContentLoaded', () => {
                                         GN-Math
                                     </span>
                                     <span class="credit-role">
-                                        Games Source
+                                        Games Source 2
+                                    </span>
+                                </div>
+                                <div class="credits-row">
+                                    <span class="credit-name">
+                                        Truffled
+                                    </span>
+                                    <span class="credit-role">
+                                        Games Source 3
                                     </span>
                                 </div>
                                 <div class="credits-row">

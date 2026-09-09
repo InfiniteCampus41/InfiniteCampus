@@ -11,7 +11,18 @@ const displayNameSection = document.getElementById("displayNameSection");
 const displayNameInput = document.getElementById("displayNameInput");
 const saveDisplayNameBtn = document.getElementById("saveDisplayNameBtn");
 const statusEl = document.getElementById("status");
+const togglePasswordBtn = document.getElementById("togglePassword");
 displayNameInput.setAttribute("maxlength", "20");
+if (togglePasswordBtn && passwordInput) {
+    togglePasswordBtn.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        togglePasswordBtn.innerHTML = isHidden
+            ? '<i class="ic ic-eye-slash" style="position:relative;right:0px;transform:none;"></i>'
+            : '<i class="ic ic-eye" style="position:relative;right:0px;transform:none;"></i>';
+        togglePasswordBtn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+}
 let authReady = false;
 let currentUser = null;
 const authReadyPromise = new Promise((resolve) => {

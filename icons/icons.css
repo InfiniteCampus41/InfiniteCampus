@@ -224,6 +224,10 @@ i {
     mask-image: url('/icons/envelope.svg');
     -webkit-mask-image: url('/icons/envelope.svg');
 }
+.ic-exclamation-triangle {
+    mask-image: url('/icons/exclamation-triangle.svg');
+    -webkit-mask-image: url('/icons/exclamation-triangle.svg');
+}
 .ic-eye {
     mask-image: url('/icons/eye.svg');
     -webkit-mask-image: url('/icons/eye.svg');
@@ -279,6 +283,10 @@ i {
     mask-image: url('/icons/gear.svg');
     -webkit-mask-image: url('/icons/gear.svg');
 }
+.ic-gift {
+    mask-image: url('/icons/gift.svg');
+    -webkit-mask-image: url('/icons/gift.svg');
+}
 .ic-globe2 {
     mask-image: url('/icons/globe2.svg');
     -webkit-mask-image: url('/icons/globe2.svg');
@@ -308,6 +316,10 @@ i {
 .ic-hdd {
     mask-image: url('/icons/hdd.svg');
     -webkit-mask-image: url('/icons/hdd.svg');
+}
+.ic-hdd-rack {
+    mask-image: url('/icons/hdd-rack.svg');
+    -webkit-mask-image: url('/icons/hdd-rack.svg');
 }
 .ic-heart-fill {
     mask-image: url('/icons/heart-fill.svg');

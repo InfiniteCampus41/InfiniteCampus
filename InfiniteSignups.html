@@ -29,49 +29,99 @@
         </script>
         <script src="./drypopup.js" type="module">
         </script>
-        <style>
-            input {
-                width: 40%;
-                cursor:text !important;
-            }
-        </style>
     </head>
     <body>
         <main>
-            <center>
-                <h2 class="tptxt">
-                    Sign Up Page
-                </h2>
-                <hr>
-                <br>
-                <div id="signupSection">
-                    <input class="button mbInp2" type="email" id="email" placeholder="Email">
-                    <br>
-                    <input class="button mbInp2" type="password" id="password" placeholder="Password">
-                    <br>
-                    <br>
-                    <button class="button apbtn" id="signupBtn">
+            <div class="ic-about-page lp-shell">
+                <section class="lp-hero">
+                    <p class="ic-eyebrow">
+                        Join
+                    </p>
+                    <h1 class="ic-title lp-title">
+                        <span class="ic-white">
+                            INFINITE
+                        </span>
+                        <span class="ic-accent">
+                            CAMPUS
+                        </span>
+                    </h1>
+                    <p class="ic-subtitle">
+                        Create An Account To Access Your Account And To Use Certain Features.
+                    </p>
+                </section>
+                <section class="ic-about-panel lp-card">
+                    <div class="ic-glow-ring lp-badge">
+                        <img class="ic-logo-fallback" src="/res/icon.png" alt="Infinite Campus">
+                        <div class="ic-logo-mark">
+                        </div>
+                    </div>
+                    <h2 class="lp-cardTitle">
                         Sign Up
-                    </button>
-                    <br>
-                    <br>
-                    <button id="login" class="button apbtn">
-                        Go To Login
-                    </button>
-                </div>
-                <div id="displayNameSection">
-                    <h3 class="mdtxt">
-                        Set Your Display Name
-                    </h3>
-                    <input class="button mbInp" type="text" id="displayNameInput" placeholder="Display Name">
-                    <br>
-                    <button class="button apbtn" id="saveDisplayNameBtn">
-                        Save
-                    </button>
-                </div>
-            </center>
-            <p id="status">
-            </p>
+                    </h2>
+                    <div class="lp-divider">
+                    </div>
+                    <div id="signupSection">
+                        <div class="lp-fields">
+                            <div class="lp-field">
+                                <label for="email">
+                                    Email
+                                </label>
+                                <div class="ic-apps-search-wrap lp-input-wrap">
+                                    <i class="ic ic-envelope">
+                                    </i>
+                                    <input class="ic-apps-search lp-input" type="email" id="email" placeholder="Enter Your Email" autocomplete="email">
+                                </div>
+                            </div>
+                            <div class="lp-field">
+                                <label for="password">
+                                    Password
+                                </label>
+                                <div class="ic-apps-search-wrap lp-input-wrap">
+                                    <i class="ic ic-lock">
+                                    </i>
+                                    <input class="ic-apps-search lp-input" type="password" id="password" placeholder="Create A Password" autocomplete="new-password">
+                                    <button type="button" class="lp-eyeBtn" id="togglePassword" aria-label="Show Password">
+                                        <i class="ic ic-eye" style="position:relative;right:0px;transform:none;">
+                                        </i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ic-btn ic-btn-primary lp-loginBtn" id="signupBtn">
+                            <i class="ic ic-box-arrow-in-right">
+                            </i>
+                            Sign Up
+                        </button>
+                        <p class="lp-belowText">
+                            Already have an account? 
+                            <button type="button" class="lp-link ic-accent" id="login">
+                                Login
+                            </button>
+                        </p>
+                    </div>
+                    <div id="displayNameSection" style="display:none;">
+                        <div class="lp-fields">
+                            <div class="lp-field">
+                                <label for="displayNameInput">
+                                    Display Name
+                                </label>
+                                <div class="ic-apps-search-wrap lp-input-wrap">
+                                    <i class="ic ic-envelope">
+                                    </i>
+                                    <input class="ic-apps-search lp-input" type="text" id="displayNameInput" placeholder="Choose A Display Name" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ic-btn ic-btn-primary lp-loginBtn" id="saveDisplayNameBtn">
+                            <i class="ic ic-box-arrow-in-right">
+                            </i>
+                            Save
+                        </button>
+                    </div>
+                    <p id="status">
+                    </p>
+                </section>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>

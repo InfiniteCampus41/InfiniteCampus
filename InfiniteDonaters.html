@@ -38,218 +38,264 @@
         </script>
     </head>
     <body>
-        <main>
-            <center style="display:none;">
-                <h1 class="tptxt">
-                    Donate
-                </h1>
-                <hr>
-                <br>
-                <h4 class="mdtxt">
-                    Donation Services Are Not Currently Available. Please Check Back Later.
-                </h4>
-                <br>
-            </center>
-            <center class="donate">
-                <div id="perksContainer" style="display:none">
-                    <h1 class="tptxt">
-                        Perks Of Donating
-                    </h1>
-                    <br>
-                    <hr>
-                    <br>
-                    <h4 class="mdtxt">
-                        Tier 1 ($2 - $4.99)
-                    </h4>
-                    <hr class="szo2">
-                    <br>
-                    <p class="btxt">
-                        Purchasing Infinite Campus Premium Tier 1 Will Get You The Following:
-                    </p>
-                    <ul class="btxt perks">
-                        <li>
-                            Tier 1 Donation Badge For Profile <i class="ic ic-heart-half" style="color:yellow"></i>
-                        </li>
-                        <li>
-                            Access To 500MB File Uploads In 5 Min File Upload App
-                        </li>
-                        <li>
-                            Files Uploaded To 5 Min File Upload Now Last 15 Mins
-                        </li>
-                    </ul>
-                    <br>
-                    <br>
-                    <h4 class="mdtxt">
-                        Tier 2 ($5 - $9.99)
-                    </h4>
-                    <hr class="szo2">
-                    <br>
-                    <p class="btxt">
-                        Purchasing Infinite Campus Premium Tier 2 Will Get You The Following:
-                    </p>
-                    <ul class="btxt perks">
-                        <li>
-                            Perks From Tier 1 (Excluding Badge)
-                        </li>
-                        <li>
-                            Tier 2 Donation Badge For Profile <i class="ic ic-heart-fill" style="color:orange"></i>
-                        </li>
-                        <li>
-                            Access To Premium Chat On Website And In Discord Server
-                        </li>
-                        <li>
-                            Access To Read In Admin Channels On Website Chat And Discord
-                        </li>
-                    </ul>
-                    <br>
-                    <br>
-                    <h4 class="mdtxt">
-                        Tier 3 ($10 - Any)
-                    </h4>
-                    <hr class="szo2">
-                    <br>
-                    <p class="btxt">
-                        Purchasing Infinite Campus Premium Tier 3 Will Get You The Following:
-                    </p>
-                    <ul class="btxt perks">
-                        <li>
-                            Perks From Tier 1 And Tier 2 (Excluding Badges)
-                        </li>
-                        <li>
-                            Tier 3 Donation Badge For Profile <i class="ic ic-hearts" style="color:red"></i>
-                        </li>
-                        <li>
-                            Access To Read And Write In Admin Channels In Discord And Chat
-                        </li>
-                        <li>
-                            Make Your Own Subdomain Of infinitecampus.xyz
-                        </li>
-                        <br>
-                        Example: name.infinitecampus.xyz
-                        <br>
-                        To Claim Your Subdomain, Message The Owner
-                    </ul>
-                    <br>
-                    <a class="button apbtn" id="perks2">
-                        Back To Donate
-                    </a>
-                    <br>
-                    <br>
-                </div>
-                <div id="pollContainer">
-                    <h2 id="title" class="tptxt">
-                        Donate
-                    </h2>
-                    <hr>
-                    <br>
-                    <a class="button apbtn" id="perks1">
-                        Donation Perks
-                    </a>
-                    <br>
-                    <p id="msg" style="color:white;">
-                    </p>
-                    <div id="donateUI">
-                        <input class="button mbInp2" id="amount-input" type="number" min="0" step="0.01" placeholder="Amount (USD)" style="width:50%;">
-                        <br>
-                        <br>
-                        <label for="payment-methos" class="btxt">
-                            Payment Method
-                        </label>
-                        <select id="payment-method" class="button">
-                            <option value="card">
-                                Card
-                            </option>
-                            <option value="applePay">
-                                Apple Pay
-                            </option>
-                            <option value="googlePay">
-                                Google Pay
-                            </option>
-                        </select>
-                        <br>
-                        <br>
-                        <div id="card-container">
-                        </div>
-                        <div id="apple-pay-container">
-                        </div>
-                        <div id="google-pay-container">
-                        </div>
-                        <div id="apple-pay-staging" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
-                        </div>
-                        <div id="google-pay-staging" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
-                        </div>
-                        <br>
-                        <button id="pay-btn" class="button">
+        <main class="donate-page ic-home">
+            <div class="donate-shell">
+                <div class="donate-unavailable" style="display:none;">
+                    <div class="donate-unavailable-card">
+                        <i class="ic ic-exclamation-triangle">
+                        </i>
+                        <h1 class="tptxt">
                             Donate
-                        </button>
-                        <br>
-                        <br>
-                        <div id="donation-progress-container" style="margin-top:10px;">
-                            <div style="background:green; border-radius:10px; overflow:hidden; height:20px;">
-                                <div id="donation-progress-bar" style="height:100%; width:0%; background:lime;justify-self:flex-start"></div>
+                        </h1>
+                        <p class="mdtxt">
+                            Donation Services Are Not Currently Available. Please Check Back Later.
+                        </p>
+                    </div>
+                </div>
+                <div class="donate">
+                    <div id="perksContainer" style="display:none" class="perks-view">
+                        <a class="button apbtn back-btn" id="perks2">
+                            <i class="ic ic-arrow-left">
+                            </i>
+                            Back To Donate
+                        </a>
+                        <div class="donate-header">
+                            <h1 class="tptxt">
+                                Perks Of Donating
+                            </h1>
+                            <p class="donate-subtitle">
+                                Each tier includes everything from the ones below it.
+                            </p>
+                        </div>
+                        <div class="tier-grid">
+                            <div class="tier-card tier-1">
+                                <div class="tier-card-top">
+                                    <i class="ic ic-heart-half tier-icon" style="color:yellow">
+                                    </i>
+                                    <h4 class="mdtxt">
+                                        Tier 1
+                                    </h4>
+                                    <div class="tier-price">
+                                        $2 - $4.99
+                                    </div>
+                                </div>
+                                <ul class="perks-list">
+                                    <li>
+                                        Tier 1 Donation Badge For Profile
+                                    </li>
+                                    <li>
+                                        Access To 500MB File Uploads In 10 Min File Upload App
+                                    </li>
+                                    <li>
+                                        Files Uploaded To 10 Min File Upload Now Last 15 Mins
+                                    </li>
+                                </ul>
                             </div>
-                            <div id="donation-progress-text" class="btxt">
-                                $0.00 / $201.16
+                            <div class="tier-card tier-2">
+                                <div class="tier-card-top">
+                                    <i class="ic ic-heart-fill tier-icon" style="color:orange">
+                                    </i>
+                                    <h4 class="mdtxt">
+                                        Tier 2
+                                    </h4>
+                                    <div class="tier-price">
+                                        $5 - $9.99
+                                    </div>
+                                </div>
+                                <ul class="perks-list">
+                                    <li>
+                                        Everything From Tier 1 (Excluding Badge)
+                                    </li>
+                                    <li>
+                                        Tier 2 Donation Badge For Profile
+                                    </li>
+                                    <li>
+                                        Access To Premium Chat On Website And In Discord Server
+                                    </li>
+                                    <li>
+                                        Access To Read In Admin Channels On Website Chat And Discord
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tier-card tier-3">
+                                <div class="tier-card-top">
+                                    <i class="ic ic-hearts tier-icon" style="color:red">
+                                    </i>
+                                    <h4 class="mdtxt">
+                                        Tier 3
+                                    </h4>
+                                    <div class="tier-price">
+                                        $10 - Any
+                                    </div>
+                                </div>
+                                <ul class="perks-list">
+                                    <li>
+                                        Everything From Tier 1 & Tier 2 (Excluding Badges)
+                                    </li>
+                                    <li>
+                                        Tier 3 Donation Badge For Profile
+                                    </li>
+                                    <li>
+                                        Read And Write Access In Admin Channels In Discord And Chat
+                                    </li>
+                                    <li>
+                                        Your Own Subdomain Of infinitecampus.xyz
+                                    </li>
+                                </ul>
+                                <div class="tier-note">
+                                    Example: 
+                                    <code>
+                                        name.infinitecampus.xyz
+                                    </code>
+                                     - message the owner to claim yours.
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <br>
-                    <br>
-                    <p class="btxt">
-                        Why You Should Donate:
-                        <br>
-                        <br>
-                        <br>
-                        #1. Domain Hosting Costs Money
-                        <br>
-                        <br>
-                        When You Purchase A Website, You Usually Have To Pay An Amount Per Month, Or In My Case, Per Year
-                        <br>
-                        This Website Costs Around $35 Per Year. If This Price Is Not Paid, The Website Goes Down.
-                        <br>
-                        There Are Currently 2 Domains That I Pay For Out Of Pocket: infinitecampus.xyz, And instructure.space
-                        <br>
-                        Combined, This Totals About $70 per Year.
-                        <br>
-                        <br>
-                        <br>
-                        #2. I Can Upgrade Server Hardware
-                        <br>
-                        <br>
-                        I Am Currently Running The Servers For api.infinitecampus.xyz
-                        <br>
-                        And The Infinite Campus Discord Bot On 2 Raspberry Pis: RP3 M:b, And RP5 M:b
-                        <br>
-                        I Am Running The Servers For Some Parts Of The Discord Bot, status.infinitecampus.xyz, And The
-                        <br>
-                        Servers For infinitecampus.xyz And instructure.space On Third Party Systems, Which Can Be Upgraded.
-                        <br>
-                        This Means That Services Like Movie Streaming, Movie Uploading, And Anything Relating To The Database
-                        <br>
-                        Could Be Greatly Improved If I Were Able To Upgrade
-                        <br>
-                        <br>
-                        <br>
-                        #3. This Is A Passion Project.
-                        <br>
-                        <br>
-                        This Site And All Of Its Other Links Are A Passion Project Run By Me Who Is Still In High School.
-                        <br>
-                        I Still Have To Work On School Work, Other Activities, And My Overall Mental Health. Working On This
-                        <br>
-                        Site Is The Way I Use My Freetime, But There Is Usually No Benifit For Me When It Comes To This
-                        <br>
-                        And The Way I See It, Might As Well Make Some Money Where I Can Without Removing Or Restricting Services That
-                        <br>
-                        Would Have Existed Otherwise.
-                        <br>
-                        <br>
-                        <br>
-                    </p>
+                    <div id="pollContainer">
+                        <div class="donate-header">
+                            <h2 id="title" class="tptxt">
+                                Donate
+                            </h2>
+                            <p class="donate-subtitle">
+                                Support the servers, the domains, and the devs keeping it all running.
+                            </p>
+                            <a class="button apbtn perks-link" id="perks1">
+                                <i class="ic ic-gift">
+                                </i>
+                                Donation Perks
+                            </a>
+                        </div>
+                        <p id="msg" class="donate-msg">
+                        </p>
+                        <div class="donate-grid">
+                            <div class="donate-card">
+                                <div id="donateUI">
+                                    <label class="field-label" for="amount-input">
+                                        Amount
+                                    </label>
+                                    <div class="amount-field">
+                                        <span class="amount-prefix">
+                                            $
+                                        </span>
+                                        <input class="amount-input" id="amount-input" type="number" min="0" step="0.01" placeholder="0.00">
+                                    </div>
+                                    <div class="quick-amounts">
+                                        <button type="button" class="quick-amt" data-amt="5">
+                                            $5
+                                        </button>
+                                        <button type="button" class="quick-amt" data-amt="10">
+                                            $10
+                                        </button>
+                                        <button type="button" class="quick-amt" data-amt="25">
+                                            $25
+                                        </button>
+                                        <button type="button" class="quick-amt" data-amt="50">
+                                            $50
+                                        </button>
+                                    </div>
+                                    <label class="field-label" for="payment-method">
+                                        Payment Method
+                                    </label>
+                                    <div class="method-select-wrap">
+                                        <select id="payment-method" class="method-select">
+                                            <option value="card">
+                                                Card
+                                            </option>
+                                            <option value="applePay">
+                                                Apple Pay
+                                            </option>
+                                            <option value="googlePay">
+                                                Google Pay
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div id="card-container" class="pay-widget">
+                                    </div>
+                                    <div id="apple-pay-container" class="pay-widget">
+                                    </div>
+                                    <div id="google-pay-container" class="pay-widget">
+                                    </div>
+                                    <div id="apple-pay-staging" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
+                                    </div>
+                                    <div id="google-pay-staging" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;">
+                                    </div>
+                                    <button id="pay-btn" class="button pay-btn">
+                                        Donate
+                                    </button>
+                                    <div id="donation-progress-container">
+                                        <div class="progress-track">
+                                            <div id="donation-progress-bar" class="progress-fill">
+                                            </div>
+                                        </div>
+                                        <div id="donation-progress-text" class="progress-label">
+                                            $0.00 / $200.00
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="donate-why">
+                                <h3 class="mdtxt">
+                                    Why You Should Donate
+                                </h3>
+                                <div class="why-item">
+                                    <div class="why-icon">
+                                        <i class="ic ic-globe2">
+                                        </i>
+                                    </div>
+                                    <div>
+                                        <h4>
+                                            Domain Hosting Costs Money
+                                        </h4>
+                                        <p>
+                                            Buying a website usually means paying monthly, or in my case yearly. This site runs on two main domains I pay for out of pocket: infinitecampus.xyz and instructure.space - about $70 a year combined. If that's not paid, the site goes down.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="why-item">
+                                    <div class="why-icon">
+                                        <i class="ic ic-hdd-rack">
+                                        </i>
+                                    </div>
+                                    <div>
+                                        <h4>
+                                            Server Hardware Upgrades
+                                        </h4>
+                                        <p>
+                                            api.infinitecampus.xyz and the Infinite Campus Discord bot run on two Raspberry Pis (RP3 and RP5). status.infinitecampus.xyz and the rest of the sites run on third-party systems that could be upgraded - movie streaming, uploads, and anything database-related would all get faster.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="why-item">
+                                    <div class="why-icon">
+                                        <i class="ic ic-heart-fill">
+                                        </i>
+                                    </div>
+                                    <div>
+                                        <h4>
+                                            It's A Passion Project
+                                        </h4>
+                                        <p>
+                                            This site and everything linked from it is built by me in my free time, still in high school, around schoolwork and everything else. There's usually no real benefit to me for running it so might as well make a little money where I can, without cutting or restricting anything that already exists.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </center>
+            </div>
         </main>
         <script type="module" src="./donate.js">
+        </script>
+        <script>
+            document.querySelectorAll(".quick-amt").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const input = document.getElementById("amount-input");
+                    input.value = btn.dataset.amt;
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                });
+            });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>

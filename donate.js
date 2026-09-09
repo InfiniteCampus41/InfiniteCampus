@@ -20,7 +20,7 @@ let authReady = false;
 let applePayInstance = null;
 let googlePayInstance = null;
 let lastAmount = null;
-const GOAL = 201.16;
+const GOAL = 200.00;
 const progressBar = document.getElementById("donation-progress-bar");
 const progressText = document.getElementById("donation-progress-text");
 const authReadyPromise = new Promise((resolve) => {
