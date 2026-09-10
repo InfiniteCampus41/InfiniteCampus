@@ -84,6 +84,11 @@ function dbListen(path, callback) {
         return ws;
     });
 }
+const DEFAULT_ACCENT_COLOR = "#8cbe37";
+const DEFAULT_TEXT_COLOR = "#f2eff0";
+function generateNoUserId() {
+    return "nouser-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
 function canEdit(partnerUid) {
     if (!currentUser || !profileData) return false;
     if (profileData.isOwner === true) return true;
@@ -96,14 +101,14 @@ function canEdit(partnerUid) {
 function getMetadataImage(url) {
     return `https://api.microlink.io/?url=${encodeURIComponent(url)}&meta=false&embed=image.url`;
 }
-async function createPartnerRecord(uid, name, link, desc) {
+async function createPartnerRecord(uid, name, link, desc, color1, color2, noUser) {
     const token = await getAuthToken();
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = "Bearer " + token;
     const res = await fetch(`${a}/partners/create`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ uid, name, link, desc })
+        body: JSON.stringify({ uid, name, link, desc, color1, color2, noUser: !!noUser })
     });
     const json = await res.json();
     if (!res.ok) {
@@ -162,14 +167,45 @@ function buildPhotoUploadField(initialUrl) {
         setStatus: (text) => { photoStatus.textContent = text; }
     };
 }
+function buildColorFields(initialColor1, initialColor2) {
+    const wrap = document.createElement("div");
+    wrap.className = "ptn-color-row";
+    wrap.innerHTML = `
+        <div class="ptn-color-field">
+            <label class="btxt">
+                Accent Color (Glow / Arrow):
+            </label>
+            <input type="color" class="ptnColor1Input" value="${initialColor1 || DEFAULT_ACCENT_COLOR}">
+        </div>
+        <div class="ptn-color-field">
+            <label class="btxt">Text Color:</label>
+            <input type="color" class="ptnColor2Input" value="${initialColor2 || DEFAULT_TEXT_COLOR}">
+        </div>
+    `;
+    const color1Input = wrap.querySelector(".ptnColor1Input");
+    const color2Input = wrap.querySelector(".ptnColor2Input");
+    color1Input.onclick = (e) => e.stopPropagation();
+    color2Input.onclick = (e) => e.stopPropagation();
+    return {
+        element: wrap,
+        getColor1: () => color1Input.value,
+        getColor2: () => color2Input.value
+    };
+}
 function createPartnerBox(uid, partnerName, data) {
     if (!data) return;
+    const color1 = data.color1 || DEFAULT_ACCENT_COLOR;
+    const color2 = data.color2 || DEFAULT_TEXT_COLOR;
     const box = document.createElement("div");
     box.className = "partner-box";
-    const name = document.createElement("span");
-    name.classList = "ptnName";
+    box.style.setProperty("--ptn-accent", color1);
+    box.style.setProperty("--ptn-text", color2);
+    const top = document.createElement("div");
+    top.className = "ptn-top";
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "ptn-icon";
     const img = document.createElement("img");
-    name.textContent = partnerName;
+    img.alt = partnerName;
     if (data.photo) {
         img.src = a + data.photo;
     } else if (data.link) {
@@ -177,33 +213,38 @@ function createPartnerBox(uid, partnerName, data) {
     } else {
         img.src = a + "/pfps/1.jpeg";
     }
-    box.appendChild(img);
-    box.appendChild(name);
-    const content = document.createElement("div");
-    content.className = "partner-content";
-    const desc = document.createElement("div");
+    iconWrap.appendChild(img);
+    const name = document.createElement("span");
+    name.className = "ptnName";
+    name.textContent = partnerName;
+    top.appendChild(iconWrap);
+    top.appendChild(name);
+    const desc = document.createElement("p");
+    desc.className = "ptnDesc";
     desc.textContent = data.desc || "No Description Provided.";
-    const visitLink = document.createElement("a");
-    visitLink.textContent = "Visit Site";
-    visitLink.href = data.link || "#";
-    visitLink.target = "_blank";
-    visitLink.onclick = (e) => e.stopPropagation();
-    content.appendChild(desc);
-    if (data.link) box.appendChild(visitLink);
-    box.appendChild(content);
-    box.onclick = () => {
-        if (box.classList.contains("editing")) return;
-        box.classList.toggle("active");
-        visitLink.classList.toggle("ptnShow");
-    };
+    const arrow = document.createElement("a");
+    arrow.className = "ptn-arrow";
+    arrow.innerHTML = `<i class="ic ic-arrow-right"></i>`;
+    arrow.onclick = (e) => e.stopPropagation();
+    if (data.link) {
+        arrow.href = data.link;
+        arrow.target = "_blank";
+    } else {
+        arrow.href = "#";
+        arrow.classList.add("ptn-arrow-disabled");
+    }
+    box.appendChild(top);
+    box.appendChild(desc);
+    box.appendChild(arrow);
     if (canEdit(uid)) {
         const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
+        editBtn.innerHTML = `<i class="ic ic-pencil-fill"></i>`;
+        editBtn.title = "Edit";
         editBtn.className = "ptnEdit-btn";
         const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
+        deleteBtn.innerHTML = `<i class="ic ic-trash"></i>`;
+        deleteBtn.title = "Delete";
         deleteBtn.className = "ptnDelete-btn";
-        deleteBtn.style.marginLeft = "10px";
         deleteBtn.onclick = (e) => {
             e.stopPropagation();
             showConfirm(
@@ -236,6 +277,7 @@ function createPartnerBox(uid, partnerName, data) {
         descDiv.style.display = "flex";
         descDiv.style.flexDirection = "column";
         descDiv.innerHTML = `<label class="btxt">Description:</label><input class="button ptnDescInput" value="${data.desc || ""}" placeholder="Enter Description Here">`;        
+        const colorFields = buildColorFields(data.color1, data.color2);
         const saveBtn = document.createElement("button");
         saveBtn.textContent = "Save";
         saveBtn.className = "button";
@@ -245,6 +287,8 @@ function createPartnerBox(uid, partnerName, data) {
             const linkInput = panel.querySelector(".ptnLinkInput");
             const descInput = panel.querySelector(".ptnDescInput");
             const newName = nameInput.value.trim();
+            const newColor1 = colorFields.getColor1();
+            const newColor2 = colorFields.getColor2();
             const isEditing = box.classList.toggle("editing");
             if (isEditing != true) {
                 location.reload();
@@ -258,8 +302,12 @@ function createPartnerBox(uid, partnerName, data) {
             await dbSet(`/partners/${uid}/${newName}`, {
                 link: linkInput.value,
                 photo: photoField.currentUrl,
-                desc: descInput.value
+                desc: descInput.value,
+                color1: newColor1,
+                color2: newColor2
             });
+            box.style.setProperty("--ptn-accent", newColor1);
+            box.style.setProperty("--ptn-text", newColor2);
             const selectedFile = photoField.getSelectedFile();
             if (selectedFile) {
                 try {
@@ -289,6 +337,7 @@ function createPartnerBox(uid, partnerName, data) {
         panel.appendChild(linkDiv);
         panel.appendChild(photoField.element);
         panel.appendChild(descDiv);
+        panel.appendChild(colorFields.element);
         panel.appendChild(saveBtn);
         box.appendChild(editBtn);
         box.appendChild(deleteBtn);
@@ -311,8 +360,8 @@ async function createAddPartnerButton() {
     if (!currentUser || !profileData) return;
     if (!profileData.isOwner) return;
     const addBtn = document.createElement("button");
-    addBtn.textContent = "Add Partner";
-    addBtn.className = "button add-partner-btn";
+    addBtn.innerHTML = `Create A Partner <i class="ic ic-arrow-right"></i>`;
+    addBtn.className = "button add-partner-btn ic-partners-apply-btn";
     partnerContainer.parentNode.insertBefore(addBtn, partnerContainer);
     const overlay = document.createElement("div");
     overlay.className = "overlay";
@@ -327,11 +376,14 @@ async function createAddPartnerButton() {
     form.style.cssText = `
         background:#222; color:white; padding:20px; border-radius:10px;
         display:flex; flex-direction:column; gap:10px; width:400px;
+        max-height:90vh; overflow-y:auto; box-sizing:border-box;
     `;
     const userSelectDiv = document.createElement("div");
     userSelectDiv.style.display = "flex";
     userSelectDiv.style.flexDirection = "column";
+    userSelectDiv.style.transition = "opacity 0.2s ease";
     const userSelectLabel = document.createElement("label");
+    userSelectLabel.className = "btxt";
     userSelectLabel.textContent = "Select User:";
     const userSelect = document.createElement("select");
     userSelect.className = "button";
@@ -339,6 +391,20 @@ async function createAddPartnerButton() {
     userSelectDiv.appendChild(userSelectLabel);
     userSelectDiv.appendChild(userSelect);
     form.appendChild(userSelectDiv);
+    const noUserDiv = document.createElement("div");
+    noUserDiv.style.display = "flex";
+    noUserDiv.style.alignItems = "center";
+    noUserDiv.style.gap = "8px";
+    noUserDiv.innerHTML = `
+        <input type="checkbox" class="ptnNoUserCheckbox" id="ptnNoUserCheckbox">
+        <label class="btxt" for="ptnNoUserCheckbox">No User (Don't Assign The Partner Role To Anyone)</label>
+    `;
+    form.appendChild(noUserDiv);
+    const noUserCheckbox = noUserDiv.querySelector(".ptnNoUserCheckbox");
+    noUserCheckbox.onchange = () => {
+        userSelect.disabled = noUserCheckbox.checked;
+        userSelectDiv.style.opacity = noUserCheckbox.checked ? "0.4" : "1";
+    };
     const fields = [
         {label: "Partner Name", class: "ptnNameInput"},
         {label: "Link", class: "ptnLinkInput"},
@@ -348,11 +414,13 @@ async function createAddPartnerButton() {
         const div = document.createElement("div");
         div.style.display = "flex";
         div.style.flexDirection = "column";
-        div.innerHTML = `<label>${f.label}:</label><input class="button ${f.class}" placeholder="Enter ${f.label}">`;
+        div.innerHTML = `<label class="btxt">${f.label}:</label><input class="button ${f.class}" placeholder="Enter ${f.label}">`;
         form.appendChild(div);
     });
     const photoField = buildPhotoUploadField("");
     form.appendChild(photoField.element);
+    const colorFields = buildColorFields(DEFAULT_ACCENT_COLOR, DEFAULT_TEXT_COLOR);
+    form.appendChild(colorFields.element);
     const btnDiv = document.createElement("div");
     btnDiv.style.display = "flex"; 
     btnDiv.style.justifyContent = "space-between";
@@ -380,17 +448,23 @@ async function createAddPartnerButton() {
     addBtn.onclick = () => overlay.style.display = "flex";
     cancelBtn.onclick = () => overlay.style.display = "none";
     saveBtn.onclick = async () => {
-        const selectedUid = userSelect.value;
-        if (!selectedUid) return showError("Select A User");
+        const noUser = noUserCheckbox.checked;
+        let selectedUid = userSelect.value;
+        if (!noUser && !selectedUid) return showError("Select A User, Or Check \"No User\"");
+        if (noUser) selectedUid = generateNoUserId();
         const name = form.querySelector(".ptnNameInput").value.trim();
         const link = form.querySelector(".ptnLinkInput").value.trim();
         const desc = form.querySelector(".ptnDescInput").value.trim();
+        const color1 = colorFields.getColor1();
+        const color2 = colorFields.getColor2();
         if (!name) return showError("Partner Name Cannot Be Empty");
         try {
-            await createPartnerRecord(selectedUid, name, link, desc);
+            await createPartnerRecord(selectedUid, name, link, desc, color1, color2, noUser);
         } catch (err) {
             return showError(err.message || "Failed To Create Partner");
         }
+        await dbSet(`/partners/${selectedUid}/${name}/color1`, color1);
+        await dbSet(`/partners/${selectedUid}/${name}/color2`, color2);
         const selectedFile = photoField.getSelectedFile();
         if (selectedFile) {
             try {

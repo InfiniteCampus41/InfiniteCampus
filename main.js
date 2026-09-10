@@ -882,14 +882,6 @@ function initSettingsUI(apply) {
         if (gradRightInput) gradRightInput.value = defaultColor;
         applyTheme(defaultColor);
     });
-    if (e.includes(window.location.host)) {
-    } else {
-        let showWarn2 = localStorage.getItem("warn");
-        if ( showWarn2 !== '1') {
-            showError("You Are On A Non Official Link. Go To The About Tab To Learn More");
-            localStorage.setItem("warn", "1");
-        }
-    }
     function setPopup2Color(isDark) {
         document.querySelectorAll('.popup2').forEach(el => {
             el.style.color = isDark ? 'white' : 'black';
