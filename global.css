@@ -108,7 +108,7 @@ a {
 .partner-box {
     --ptn-accent: var(--ic-accent);
     --ptn-text: var(--ic-text);
-    flex: 1 1 300px;
+    flex: 1;
     max-width: 380px;
     min-height: 190px;
     display: flex;
@@ -170,7 +170,6 @@ a {
 }
 .ptn-arrow {
     align-self: flex-end;
-    margin-top: 14px;
     width: 34px;
     height: 34px;
     border-radius: 50%;
@@ -274,9 +273,11 @@ a {
     .ic-partners-grid {
         flex-direction: column;
         align-items: stretch;
+        margin-top:10px;
     }
     .partner-box {
         max-width: 100%;
+        width:100%;
     }
     .ic-partners-title {
         font-size: 1.6rem;
@@ -2880,7 +2881,7 @@ main.ic-home {
         margin-bottom: 8px !important;
     }
     .popup2 input, .popup2 .section button, .popup2 .section label.button, .popup2 .section a:not(.discord), #fLabel {
-        width: 100% !important;
+        width: 99% !important;
         box-sizing: border-box !important;
         text-align: center !important;
         padding: 11px 8px !important;
@@ -3220,9 +3221,6 @@ main.ic-home {
     #partners {
         flex-direction:column;
         align-items:center;
-    }
-    #partners .partner-box {
-        margin-bottom:40px;
     }
     #popularGamesGrid {
         display: grid;

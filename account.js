@@ -1206,17 +1206,10 @@ if (unsub) {
         if (!newDis) return showError("Discord Username Cannot Be Empty.");
         if (newDis.length > 50) return showError("Discord Username Cannot Exceed 50 Characters.");
         try {
-            const res = await fetch(`${a}/discordVerify`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username: newDis,
-                    uid: currentUser.uid
-                })
+            const data = await fetchAPI("discordVerify", {
+                username: newDis,
+                uid: currentUser.uid
             });
-            const data = await res.json();
             if (!data.success) {
                 if (data.message === "Not In Server") {
                     return showError("You Are Not In The Discord Server.");
