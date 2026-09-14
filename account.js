@@ -298,7 +298,7 @@ if (enableNotifBtn) {
 (function setupNotifSettings() {
     const notifSettingsBtn = document.createElement("a");
     notifSettingsBtn.id = "notifSettingsBtn";
-    notifSettingsBtn.className = "button apbtn";
+    notifSettingsBtn.className = "button apbtn themed darkbuttons";
     notifSettingsBtn.textContent = "Notification Settings";
     notifSettingsBtn.style.display = "none";
     if (enableNotifBtn && enableNotifBtn.parentNode) {
@@ -1730,6 +1730,7 @@ if (unsub) {
     ];
     const extCheckContainer = document.getElementById("extCheckContainer");
     let extCheckboxes = [];
+    let extSliders = [];
     if (extCheckContainer) {
         extCheckContainer.innerHTML = "";
         BLOCKING_EXTENSIONS.forEach(ext => {
@@ -1737,6 +1738,7 @@ if (unsub) {
             item.className = "extCheckItem";
             const img = document.createElement("img");
             img.src = ext.img;
+            img.alt = ext.label;
             const label = document.createElement("label");
             label.htmlFor = `extCheck_${ext.key}`;
             label.textContent = ext.label;
@@ -1756,20 +1758,58 @@ if (unsub) {
             item.appendChild(switchLabel);
             extCheckContainer.appendChild(item);
         });
-        extCheckboxes = Array.from(extCheckContainer.querySelectorAll(".extCheck"));
+        extCheckboxes = Array.from(
+            extCheckContainer.querySelectorAll(".extCheck")
+        );
+        extSliders = Array.from(
+            extCheckContainer.querySelectorAll(".switch")
+        );
     } else {
         console.error("extCheckContainer Not Found In The Page.");
     }
-    extCheckboxes.forEach(cb => {
-        cb.addEventListener("change", async () => {
+    extCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", async () => {
             if (!currentUser) return;
-            extCheckboxes.forEach(other => {
-                if (other !== cb) other.checked = false;
+            const selectedKey = checkbox.dataset.key;
+            const selectedSlider = checkbox
+                .closest(".switch")
+                ?.querySelector(".slider");
+            extCheckboxes.forEach(otherCheckbox => {
+                if (otherCheckbox !== checkbox) {
+                    otherCheckbox.checked = false;
+                }
+                const otherSlider = otherCheckbox
+                    .closest(".switch")
+                    ?.querySelector(".slider");
+                if (otherSlider) {
+                    otherSlider.classList.toggle(
+                        "themed",
+                        otherCheckbox.checked
+                    );
+                }
             });
+            if (selectedSlider) {
+                selectedSlider.classList.toggle(
+                    "themed",
+                    checkbox.checked
+                );
+                selectedSlider.style.animation = "";
+                selectedSlider.style.background = "";
+            }
             const updates = {};
-            updates[cb.dataset.key] = cb.checked ? true : null;
-            await dbUpdate(`users/${currentUser.uid}/profile`, updates);
-            showSuccess("Extension Updated!");
+            updates[selectedKey] = checkbox.checked
+                ? true
+                : null;
+            try {
+                await dbUpdate(
+                    `users/${currentUser.uid}/profile`,
+                    updates
+                );
+                showSuccess("Extension Updated!");
+            } catch (err) {
+                console.error("Failed To Update Extension:", err);
+                showError("Failed To Update Extension.");
+            }
         });
     });
     resetPasswordBtnAcc.addEventListener("click", async () => {
@@ -1828,8 +1868,16 @@ if (unsub) {
         }
     }
     function loadExtensionCheckbox(profile) {
-        extCheckboxes.forEach(cb => {
-            cb.checked = profile?.[cb.dataset.key] === true;
+        extCheckboxes.forEach(checkbox => {
+            const slider = checkbox
+                .closest(".switch")
+                ?.querySelector(".slider");
+            const isChecked =
+                profile?.[checkbox.dataset.key] === true;
+            checkbox.checked = isChecked;
+            if (slider) {
+                slider.classList.toggle("themed", isChecked);
+            }
         });
     }
     onAuthStateChanged(auth, async (user) => {

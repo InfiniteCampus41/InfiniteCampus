@@ -3124,8 +3124,24 @@ main.ic-home {
     .donate-grid {
         grid-template-columns: 1fr;
     }
+    .donate-header {
+        margin-top:30px;
+    }
+    #perksContainer ul {
+        max-width:75% !important;
+    }
+    .perks-view .back-btn {
+        top:-50px !important;
+        width:100% !important;
+    }
+    #pollContainer {
+        width:100% !important;
+    }
+    .tier-card {
+        align-items:center;
+    }
     .tier-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(1, 1fr) !important;
     }
 }
 @media (active: active) {
