@@ -2977,17 +2977,17 @@ async function attachMessageListeners(path) {
             const existing = document.getElementById("msg-" + key);
             if (!existing) {
                 const newTs = Number(val.timestamp || key);
-                const msgsEls = Array.from(chatLog.querySelectorAll(".msg"));
-                const oldestRenderedTs = msgsEls.length > 0
-                    ? Number(msgsEls[0].dataset.timestamp || 0) : 0;
+                const oldestRenderedTs = chatLog.firstElementChild
+                    ? Number(chatLog.firstElementChild.dataset.timestamp || 0) : 0;
                 if (!renderedKeys.has(key) && newTs < oldestRenderedTs) {
                     continue;
                 }
                 renderedKeys.add(key);
                 const newDiv = await renderMessageInstant(key, val);
                 if (!newDiv) continue;
+                const msgsElsNow = Array.from(chatLog.querySelectorAll(".msg"));
                 let inserted = false;
-                for (const el of msgsEls) {
+                for (const el of msgsElsNow) {
                     if (Number(el.dataset.timestamp || 0) > newTs) {
                         chatLog.insertBefore(newDiv, el);
                         inserted = true;
@@ -3967,8 +3967,9 @@ function isSelfAuthoredMsg(msg) {
 }
 function resolvePendingByContext(contextType, contextKey, msg) {
     if (!isSelfAuthoredMsg(msg)) return;
+    const incomingText = msg.t ?? msg.text;
     for (const [, handle] of pendingMessages) {
-        if (handle.confirmed && handle.contextType === contextType && handle.context === contextKey) {
+        if (handle.contextType === contextType && handle.context === contextKey && handle.text === incomingText) {
             handle.finalize();
             return;
         }

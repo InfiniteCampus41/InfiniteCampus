@@ -876,15 +876,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const FONT_STORE_NAME = 'fonts';
     const FONT_DB_KEY = 'customFontFile';
     function openFontDB() {
-        return new Promise((resolve, reject) => {
-            const req = indexedDB.open(FONT_DB_NAME, 1);
-            req.onupgradeneeded = () => {
-                if (!req.result.objectStoreNames.contains(FONT_STORE_NAME)) {
-                    req.result.createObjectStore(FONT_STORE_NAME);
-                }
-            };
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
+        return openIndexedDBSafe(FONT_DB_NAME, 1, (db) => {
+            if (!db.objectStoreNames.contains(FONT_STORE_NAME)) {
+                db.createObjectStore(FONT_STORE_NAME);
+            }
         });
     }
     async function saveFontFileToDB(name, buffer) {
@@ -1221,6 +1216,30 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         return bytes.buffer;
     }
+    function openIndexedDBSafe(name, version, onUpgrade) {
+        return new Promise((resolve, reject) => {
+            const req = version ? indexedDB.open(name, version) : indexedDB.open(name);
+            let blockedTimer = null;
+            if (onUpgrade) {
+                req.onupgradeneeded = () => onUpgrade(req.result, req.transaction);
+            }
+            req.onblocked = () => {
+                blockedTimer = setTimeout(() => {
+                    reject(new Error(`Database "${name}" Is Blocked By Another Open Tab Or Active Connection (E.g. Music Playback). Please Close Other Tabs Using This Site And Try Again.`));
+                }, 3000);
+            };
+            req.onsuccess = () => {
+                if (blockedTimer) clearTimeout(blockedTimer);
+                const db = req.result;
+                db.onversionchange = () => { db.close(); };
+                resolve(db);
+            };
+            req.onerror = () => {
+                if (blockedTimer) clearTimeout(blockedTimer);
+                reject(req.error);
+            };
+        });
+    }
     async function toSerializable(value) {
         if (value === null || typeof value !== 'object') return value;
         if (value instanceof ArrayBuffer) {
@@ -1268,11 +1287,7 @@ window.addEventListener('DOMContentLoaded', () => {
         return value;
     }
     async function exportIndexedDBDatabase(name) {
-        const db = await new Promise((resolve, reject) => {
-            const req = indexedDB.open(name);
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
-        });
+        const db = await openIndexedDBSafe(name);
         const storeNames = Array.from(db.objectStoreNames);
         const result = { version: db.version, stores: {} };
         for (const storeName of storeNames) {
@@ -1319,11 +1334,7 @@ window.addEventListener('DOMContentLoaded', () => {
     async function checkSongDataExists(existingNames) {
         if (!existingNames.includes(SONG_DB_NAME)) return false;
         try {
-            const db = await new Promise((resolve, reject) => {
-                const req = indexedDB.open(SONG_DB_NAME);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
+            const db = await openIndexedDBSafe(SONG_DB_NAME);
             if (!db.objectStoreNames.contains('songs')) { db.close(); return false; }
             const count = await new Promise((resolve, reject) => {
                 const tx = db.transaction('songs', 'readonly');
@@ -1504,28 +1515,18 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     async function importIndexedDBDatabase(name, dbData) {
         const storeNames = Object.keys(dbData.stores || {});
-        let db = await new Promise((resolve, reject) => {
-            const req = indexedDB.open(name);
-            req.onsuccess = () => resolve(req.result);
-            req.onerror = () => reject(req.error);
-        });
+        let db = await openIndexedDBSafe(name);
         const missingStores = storeNames.filter(s => !db.objectStoreNames.contains(s));
         if (missingStores.length > 0) {
             const newVersion = db.version + 1;
             db.close();
-            db = await new Promise((resolve, reject) => {
-                const req = indexedDB.open(name, newVersion);
-                req.onupgradeneeded = () => {
-                    const upgradeDb = req.result;
-                    missingStores.forEach(storeName => {
-                        const storeInfo = dbData.stores[storeName];
-                        upgradeDb.createObjectStore(storeName, storeInfo.keyPath
-                            ? { keyPath: storeInfo.keyPath, autoIncrement: !!storeInfo.autoIncrement }
-                            : { autoIncrement: !!storeInfo.autoIncrement });
-                    });
-                };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
+            db = await openIndexedDBSafe(name, newVersion, (upgradeDb) => {
+                missingStores.forEach(storeName => {
+                    const storeInfo = dbData.stores[storeName];
+                    upgradeDb.createObjectStore(storeName, storeInfo.keyPath
+                        ? { keyPath: storeInfo.keyPath, autoIncrement: !!storeInfo.autoIncrement }
+                        : { autoIncrement: !!storeInfo.autoIncrement });
+                });
             });
         }
         for (const storeName of storeNames) {
