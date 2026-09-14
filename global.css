@@ -3271,29 +3271,6 @@ main.ic-home {
     #privateMenu fieldset {
         flex-direction:column;
     }
-    #profileCard {
-        display:flex;
-        flex-direction:column;
-        max-width: 95% !important;
-    }
-    #profileContent {
-        display:flex !important;
-        flex-direction:column;
-        background:#333;
-        padding:10px;
-        border-radius:10px;
-    }
-    #profileContent .displayName div {
-        flex-direction:column;
-    }
-    #profileContent .displayName div img {
-        margin:0px !important;
-        height:220px !important;
-        width:220px !important;
-    }
-    #profileView {
-        max-width:90%;
-    }
     .qrDiv {
         display:flex;
         flex-direction:column;
@@ -3404,6 +3381,17 @@ main.ic-home {
     }
     .mobile-menu-btn{
         display:none;
+    }
+    #profileCard {
+        max-width:80vw !important;
+        text-align:center !important;
+    }
+    #profileStats {
+        display:flex;
+        justify-content: center;
+    }
+    #profileContent hr {
+        align-self:center;
     }
 }
 @media (max-width: 980px) {
@@ -4432,10 +4420,6 @@ pre code {
     font-size: 0.95em;
     color: #ccc;
     width: auto;
-}
-#profileCard {
-    padding:20px 30px;
-    max-width:80%;
 }
 #profileContainer {
     justify-content:center;

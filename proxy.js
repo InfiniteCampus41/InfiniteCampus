@@ -623,7 +623,7 @@ function setRandomPhrase() {
         "Dont Believe Everything You See On The Internet - Abraham Lincoln",
         `Greetings, Person On ${hosturl}`,
         "Loading Virus.exe",
-        "Nitrix67 Likes Men",
+        '<span class="discord"><a href="/InfiniteAccounts.html?user=naHm9vCsxvQ5UvzZ3Vt9cdps4oh1">@Nitrix67</a><span class="btxt"> Likes Men</span></span>',
         "Life Is A Highway",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         `${btMsg}`,
@@ -641,7 +641,7 @@ function setRandomPhrase() {
         "EXCUSE ME SIR"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
-    document.getElementById("phrase").textContent = random; 
+    document.getElementById("phrase").innerHTML = random; 
 } 
 function getActiveTab() {
     return tabs.find(t => t.id === activeTabId);

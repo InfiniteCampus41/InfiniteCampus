@@ -2996,6 +2996,7 @@ async function attachMessageListeners(path) {
                 }
                 if (!inserted) chatLog.appendChild(newDiv);
                 initAudioPlayers(newDiv);
+                resolvePendingByContext("path", path, val);
                 if (autoScrollEnabled) scrollToBottom(true);
             } else if (lastSnapshot[key] && JSON.stringify(lastSnapshot[key]) !== JSON.stringify(val)) {
                 if (val.type === "poll" && val.poll) {
@@ -3906,6 +3907,184 @@ function startMetadataListener() {
         updatePrivateListFromSnapshot(val || null);
     }, "privateChats");
 }
+(function injectPendingMessageStyles() {
+    if (document.getElementById("__pending-msg-styles")) return;
+    const style = document.createElement("style");
+    style.id = "__pending-msg-styles";
+    style.textContent = `
+        .msg-pending {
+            opacity: 0.55;
+            transition: opacity 0.2s ease;
+        }
+        .msg-status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 6px;
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+        }
+        .msg-status-spinner {
+            box-sizing: border-box;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(88,101,242,0.25);
+            border-top-color: #5865F2;
+            animation: msgSendSpin 0.7s linear infinite;
+        }
+        @keyframes msgSendSpin { to { transform: rotate(360deg); } }
+        .msg-status-error {
+            color: #ff5c5c;
+            font-size: 1em;
+            line-height: 1;
+        }
+        .retry-send-btn {
+            background: none;
+            border: 1px solid #ff5c5c;
+            color: #ff5c5c;
+            border-radius: 4px;
+            font-size: 0.75em;
+            padding: 2px 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .retry-send-btn:hover { background: rgba(255,92,92,0.12); }
+    `;
+    document.head.appendChild(style);
+})();
+let pendingMsgCounter = 0;
+const pendingMessages = new Map();
+const PENDING_CONFIRM_TIMEOUT = 10000;
+function isSelfAuthoredMsg(msg) {
+    if (!msg) return false;
+    if (isGuest) return msg.sender === "anon" && msg.u === anonDisplayName;
+    const senderId = msg.sender || msg.s;
+    return !!currentUser && senderId === currentUser.uid;
+}
+function resolvePendingByContext(contextType, contextKey, msg) {
+    if (!isSelfAuthoredMsg(msg)) return;
+    for (const [, handle] of pendingMessages) {
+        if (handle.confirmed && handle.contextType === contextType && handle.context === contextKey) {
+            handle.finalize();
+            return;
+        }
+    }
+}
+function createPendingMessage(text, context) {
+    const tempId = "pending-" + Date.now() + "-" + (pendingMsgCounter++);
+    const div = document.createElement("div");
+    div.className = "msg msg-pending";
+    div.id = "msg-" + tempId;
+    const nowTs = Date.now();
+    div.dataset.timestamp = nowTs;
+    const topRow = document.createElement("div");
+    topRow.id = "topRow";
+    const leftWrapper = document.createElement("span");
+    leftWrapper.style.display = "flex";
+    leftWrapper.style.gap = "6px";
+    leftWrapper.style.alignItems = "center";
+    const profilePic = document.createElement("img");
+    profilePic.style.width = "32px";
+    profilePic.style.height = "32px";
+    profilePic.style.borderRadius = "50%";
+    profilePic.style.border = "2px solid #5865F2";
+    profilePic.style.objectFit = "cover";
+    profilePic.src = (currentUser && !isGuest) ? `${pfpDomain}/${currentUser.uid}?t=${nowTs}` : `${pfpDomain}/1.jpeg`;
+    profilePic.onerror = () => { profilePic.src = `${pfpDomain}/1.jpeg`; };
+    const nameSpan = document.createElement("span");
+    nameSpan.id = "msgName";
+    nameSpan.className = "highlight";
+    nameSpan.textContent = isGuest ? anonDisplayName : (currentName || "You");
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "timestamp";
+    timeSpan.textContent = formatTimestamp(nowTs);
+    const badgeContainer = document.createElement("span");
+    badgeContainer.id = "msgBadges";
+    const statusIcon = document.createElement("span");
+    statusIcon.className = "msg-status-icon";
+    const spinner = document.createElement("span");
+    spinner.className = "msg-status-spinner";
+    statusIcon.appendChild(spinner);
+    badgeContainer.appendChild(statusIcon);
+    leftWrapper.appendChild(profilePic);
+    leftWrapper.appendChild(nameSpan);
+    leftWrapper.appendChild(badgeContainer);
+    topRow.appendChild(leftWrapper);
+    topRow.appendChild(timeSpan);
+    const msgBtns = document.createElement("div");
+    msgBtns.id = "msgBtns";
+    const textDiv = document.createElement("div");
+    textDiv.className = "msg-text";
+    textDiv.style.whiteSpace = "pre-wrap";
+    textDiv.style.overflowWrap = "anywhere";
+    textDiv.style.marginLeft = "40px";
+    textDiv.style.marginTop = "-5px";
+    textDiv.innerHTML = buildSafeText(text);
+    div.appendChild(msgBtns);
+    div.appendChild(topRow);
+    div.appendChild(textDiv);
+    chatLog.appendChild(div);
+    if (autoScrollEnabled) chatLog.scrollTop = chatLog.scrollHeight;
+    const handle = {
+        tempId,
+        div,
+        text,
+        context: context?.key,
+        contextType: context?.type,
+        confirmed: false,
+        _timeoutId: null,
+        finalize() {
+            if (handle._timeoutId) { clearTimeout(handle._timeoutId); handle._timeoutId = null; }
+            div.remove();
+            pendingMessages.delete(tempId);
+        },
+        markSent() {
+            handle.confirmed = true;
+            handle._timeoutId = setTimeout(() => handle.finalize(), PENDING_CONFIRM_TIMEOUT);
+        },
+        markFailed(retryFn) {
+            handle.confirmed = false;
+            if (handle._timeoutId) { clearTimeout(handle._timeoutId); handle._timeoutId = null; }
+            statusIcon.innerHTML = "";
+            const errIcon = document.createElement("i");
+            errIcon.className = "ic ic-exclamation-triangle-fill msg-status-error";
+            errIcon.title = "Failed To Send";
+            statusIcon.appendChild(errIcon);
+            msgBtns.innerHTML = "";
+            const retryBtn = document.createElement("button");
+            retryBtn.className = "retry-send-btn";
+            retryBtn.innerHTML = `<i class="ic ic-arrow-clockwise"></i> Retry`;
+            retryBtn.title = "Retry Sending";
+            retryBtn.onclick = () => {
+                statusIcon.innerHTML = "";
+                statusIcon.appendChild(spinner);
+                msgBtns.innerHTML = "";
+                retryFn();
+            };
+            msgBtns.appendChild(retryBtn);
+        }
+    };
+    pendingMessages.set(tempId, handle);
+    return handle;
+}
+function sendTextWithOptimisticUI(text, sendFn, context) {
+    const handle = createPendingMessage(text, context);
+    const attempt = async () => {
+        try {
+            await sendFn();
+            handle.markSent();
+        } catch (e) {
+            handle.markFailed(attempt);
+            showError(e?.message || "Failed To Send Message.");
+        }
+    };
+    attempt();
+    return handle;
+}
 sendBtn.onclick = async () => {
     if (chatLockedDown) {
         showError("The Chat Is Currently Locked Down. Please Come Back Later.");
@@ -3929,9 +4108,20 @@ sendBtn.onclick = async () => {
             const preview = document.getElementById("chatFilePreview");
             if (preview) preview.remove();
         }
-        if (text) await sendGroupTextMessage(text);
-        chatInput.value = "";
-        toggleReply();
+        if (text) {
+            const replyToSend = replyMsgId;
+            const groupIdForSend = currentGroupId;
+            chatInput.value = "";
+            toggleReply();
+            sendTextWithOptimisticUI(
+                text,
+                () => fetchAPI(`groups/${groupIdForSend}/message`, { text, replyTo: replyToSend || undefined }),
+                { type: "group", key: groupIdForSend }
+            );
+        } else {
+            chatInput.value = "";
+            toggleReply();
+        }
         if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
         return;
     }
@@ -3978,27 +4168,25 @@ sendBtn.onclick = async () => {
         const ts = Date.now();
         const headers = { "Content-Type": "application/json" };
         if (anonSessionToken) headers["x-anon-session"] = anonSessionToken;
-        try {
+        const replyToSend = replyMsgId;
+        const pathForSend = currentPath;
+        chatInput.value = "";
+        toggleReply();
+        sendTextWithOptimisticUI(text, async () => {
             const res = await fetch(`${BACKEND}/write`, {
                 method: "POST",
                 headers,
                 body: JSON.stringify({
                     path: ["messages", ch, String(ts)],
-                    value: { u: anonDisplayName, t: text, sender: "anon", r: replyMsgId || undefined },
+                    value: { u: anonDisplayName, t: text, sender: "anon", r: replyToSend || undefined },
                     anonSession: anonSessionToken
                 })
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                showError(err.error || "Failed To Send");
-                return;
+                throw new Error(err.error || "Failed To Send");
             }
-        } catch (e) {
-            showError("Failed to send: " + e.message);
-            return;
-        }
-        chatInput.value = "";
-        toggleReply();
+        }, { type: "path", key: pathForSend });
         return;
     }
     if (!currentUser) return;
@@ -4051,12 +4239,30 @@ sendBtn.onclick = async () => {
         r: replyMsgId || null
     };
     if (!msg.r) delete msg.r;
+    const finishCleanup = () => {
+        chatInput.value = "";
+        if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
+        toggleReply();
+        if (currentUser && currentPath.startsWith("messages/")) {
+            const channelName = currentPath.split("/")[1];
+            dbDelete(`typing/${channelName}/${currentUser.uid}`);
+        }
+    };
     if (currentPrivateUid) {
-        await sendPrivateMessage(currentPrivateUid, outgoingText);
         if (pendingAttachFile) {
+            await sendPrivateMessage(currentPrivateUid, outgoingText);
             const fileMsg = { s: currentUser.uid, t: "", r: replyMsgId || null };
             if (!fileMsg.r) delete fileMsg.r;
             await dbPushWithFile(currentPath, fileMsg, pendingAttachFile);
+            finishCleanup();
+        } else {
+            const pathForSend = currentPath;
+            finishCleanup();
+            sendTextWithOptimisticUI(
+                outgoingText,
+                () => sendPrivateMessage(currentPrivateUid, outgoingText),
+                { type: "path", key: pathForSend }
+            );
         }
     } else {
         const ch = currentPath.split("/")[1];
@@ -4069,16 +4275,16 @@ sendBtn.onclick = async () => {
             await dbPush(currentPath, msg);
             const fileMsg = { s: currentUser.uid, t: "", r: null };
             await dbPushWithFile(currentPath, fileMsg, pendingAttachFile);
+            finishCleanup();
         } else {
-            await dbPushWithFile(currentPath, msg, null);
+            const pathForSend = currentPath;
+            finishCleanup();
+            sendTextWithOptimisticUI(
+                outgoingText,
+                () => dbPushWithFile(pathForSend, msg, null),
+                { type: "path", key: pathForSend }
+            );
         }
-    }
-    chatInput.value = "";
-    if (typeof window._clearChatAttachment === "function") window._clearChatAttachment();
-    toggleReply();
-    if (currentUser && currentPath.startsWith("messages/")) {
-        const channelName = currentPath.split("/")[1];
-        dbDelete(`typing/${channelName}/${currentUser.uid}`);
     }
 };
 onAuthStateChanged(auth, async user => {
@@ -4996,6 +5202,7 @@ async function pollGroupOnce(groupId, isInitialLoad) {
             continue;
         }
         renderedGroupMsgIds.add(id);
+        if (!msg.system) resolvePendingByContext("group", groupId, msg);
         const div = await renderMessageInstant(id, msg.system ? { ...msg, s: "system" } : msg);
         if (div) {
             if (msg.system) {
@@ -5170,11 +5377,7 @@ if (groupLeaveBtn) groupLeaveBtn.onclick = () => {
 };
 async function sendGroupTextMessage(text) {
     if (!currentGroupId) return;
-    try {
-        await fetchAPI(`groups/${currentGroupId}/message`, { text, replyTo: replyMsgId || undefined });
-    } catch (e) {
-        showError(e?.message || "Could Not Send Message.");
-    }
+    await fetchAPI(`groups/${currentGroupId}/message`, { text, replyTo: replyMsgId || undefined });
 }
 async function uploadGroupAttachment(file) {
     if (!currentGroupId || !file) return;
