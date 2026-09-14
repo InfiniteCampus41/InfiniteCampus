@@ -401,6 +401,18 @@ function customPrompt(message, hidden = false, value) {
 }
 let themedElements = null;
 let lastAppliedThemeKey;
+let currentAccentHex = null;
+const RGB_ANIM_DURATION_S = 30;
+const RGB_ANIM_EPOCH = performance.now();
+function applySyncedAnimation(el, animationName) {
+    const elapsedS = (performance.now() - RGB_ANIM_EPOCH) / 1000;
+    const delay = -(elapsedS % RGB_ANIM_DURATION_S);
+    el.style.animation = `${animationName} ${RGB_ANIM_DURATION_S}s infinite linear`;
+    el.style.animationDelay = `${delay}s`;
+}
+function applySyncedRgbAnimation(div) {
+    applySyncedAnimation(div, 'rgbAnimation');
+}
 const ACCENT_FALLBACK = '#8cbe37';
 function resolveCssColorToRgb(cssColor) {
     const probe = document.createElement('span');
@@ -490,12 +502,15 @@ function extractAccentFromBackground(bg) {
     return hslToRgb(pick.h, pick.s, clampedL);
 }
 function applyHeroAccent(bg, gradientSetting) {
-    const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
-    const accentHex = rgbToHex(accentRgb);
-    document.documentElement.style.setProperty('--ic-accent', accentHex);
-    document.documentElement.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
-    document.querySelectorAll('.ic-accent-bg').forEach(el => el.style.background = accentHex);
-    document.querySelectorAll('.ic-accent').forEach(el => el.style.color = accentHex);
+    if (gradientSetting !== 'rgb') {
+        const accentRgb = extractAccentFromBackground(bg) || resolveCssColorToRgb(ACCENT_FALLBACK);
+        const accentHex = rgbToHex(accentRgb);
+        currentAccentHex = accentHex;
+        document.documentElement.style.setProperty('--ic-accent', accentHex);
+        document.documentElement.style.setProperty('--ic-accent-dim', rgbToHex(darkenRgb(accentRgb)));
+        document.querySelectorAll('.ic-accent-bg').forEach(el => el.style.background = accentHex);
+        document.querySelectorAll('.ic-accent').forEach(el => el.style.color = accentHex);
+    }
     const home = document.querySelector('.ic-home');
     if (!home) return;
     const logo = home.querySelector('.ic-logo-mark');
@@ -503,6 +518,54 @@ function applyHeroAccent(bg, gradientSetting) {
         const isTransparentTheme = gradientSetting === 'trans';
         logo.style.background = (bg && bg !== 'transparent' && !isTransparentTheme) ? bg : '';
     }
+}
+function startRgbAccentAnimation() {
+    if (document.documentElement.style.animationName === 'rgbAccentVarAnimation') return;
+    applySyncedAnimation(document.documentElement, 'rgbAccentVarAnimation');
+}
+function stopRgbAccentAnimation() {
+    document.documentElement.style.animation = 'none';
+    document.documentElement.style.animationDelay = '';
+}
+const ACCENT_SELECTOR = '.ic-accent-bg, .ic-accent';
+function themeAccentElement(el) {
+    if (lastAppliedThemeKey === 'rgb') {
+        el.style.background = '';
+        el.style.color = '';
+        return;
+    }
+    if (!currentAccentHex) return;
+    if (el.matches('.ic-accent-bg')) el.style.background = currentAccentHex;
+    if (el.matches('.ic-accent')) el.style.color = currentAccentHex;
+}
+function scanForNewAccentElements(node) {
+    if (!node || node.nodeType !== 1) return;
+    if (node.matches && node.matches(ACCENT_SELECTOR)) themeAccentElement(node);
+    if (node.querySelectorAll) {
+        node.querySelectorAll(ACCENT_SELECTOR).forEach(themeAccentElement);
+    }
+}
+const accentObserver = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(scanForNewAccentElements);
+        } else if (mutation.type === 'attributes' && mutation.target.nodeType === 1) {
+            scanForNewAccentElements(mutation.target);
+        }
+    }
+});
+function startAccentObserver() {
+    accentObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
+if (document.body) {
+    startAccentObserver();
+} else {
+    document.addEventListener('DOMContentLoaded', startAccentObserver);
 }
 setInterval(() => {
     themedElements = document.querySelectorAll('.themed');
@@ -628,9 +691,13 @@ function initSettingsUI(apply) {
         });
     }
     function applyTheme(colOrLeft, gradientSetting = null) {
+        if (gradientSetting !== 'rgb') {
             document.querySelectorAll('.themed').forEach(div => {
-            div.style.animation = 'none';
-        });
+                div.style.animation = 'none';
+                delete div.dataset.rgbSynced;
+            });
+            stopRgbAccentAnimation();
+        }
         let bg = colOrLeft;
         let isDark = isDarkColor(colOrLeft);
         if (gradientSetting === 'custom') {
@@ -715,8 +782,12 @@ function initSettingsUI(apply) {
                 bg = 'transparent';
                 isDark = true;
                 document.querySelectorAll('.themed').forEach(div => {
-                    div.style.animation = 'rgbAnimation 30s infinite linear';
+                    if (!div.dataset.rgbSynced) {
+                        div.dataset.rgbSynced = '1';
+                        applySyncedRgbAnimation(div);
+                    }
                 });
+                startRgbAccentAnimation();
             }
         }
         applyHeroAccent(bg, gradientSetting);

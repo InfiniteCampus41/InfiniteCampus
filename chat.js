@@ -1477,7 +1477,7 @@ function openPollCreateModal(channel) {
             <button id="pollCancelBtn" type="button" style="background:none;border:1px solid #555;color:#fff;border-radius:6px;padding:8px 16px;cursor:pointer;">
                 Cancel
             </button>
-            <button id="pollCreateBtn" class="ic-accent-bg" type="button" style="border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">
+            <button id="pollCreateBtn" class="ic-accent-bg themed" type="button" style="background:var(--ic-accent);border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">
                 Create Poll
             </button>
         </div>

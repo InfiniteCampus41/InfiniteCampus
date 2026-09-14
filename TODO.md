@@ -8,10 +8,10 @@
 | 6 | 🔴 Not Started | Allow owners to delete messages from Discord, with deletions syncing to Discord | TBD |
 | 7 | 🔴 Not Started | Add the same message controls to group chats, allowing the GC owner to delete other messages but not site owner's messages | TBD |
 | 8 | 🔴 Not Started | Fix anonymous file uploads sometimes not appearing | TBD |
-| 9 | 🔴 Not Started | Show a temporary message immediately when sending, then replace it with the actual message once confirmed | TBD |
-| 10 | 🟡 In Progress | Update the UI for viewing your own profile on the Account page | ~Sep 18 2026 |
+| 9 | 🟡 In Progress | Show a temporary message immediately when sending, then replace it with the actual message once confirmed | TBD |
+| 10 | 🟢 DONE | Update the UI for viewing your own profile on the Account page | ~Sep 18 2026 |
 | 11 | 🟡 In Progress | Update the UI for viewing someone else's profile on the Account page | ~Sep 18 2026 |
-| 12 | 🟢 In Progress | Update the UI for the Partners page | ~Sep 12 2026 |
+| 12 | 🟢 DONE | Update the UI for the Partners page | ~Sep 12 2026 |
 | 13 | 🔴 Not Started | Update the UI for the Movies page | ~Sep 22 2026 |
 | 14 | 🔴 Not Started | Update the UI for the Games page | ~Beginning Of October 2026 |
 | 15 | 🔴 Not Started | Update the UI for the Proxy page | ~Middle Of October 2026 |

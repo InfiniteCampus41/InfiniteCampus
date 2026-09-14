@@ -444,23 +444,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const abtDropdown = document.getElementById('abtDropdown');
     const updateToggle = document.getElementById('updateToggle');
     const updateDropdown = document.getElementById('updateDropdown');
+    function resyncThemedDropdown(dropdownEl) {
+        if (
+            typeof lastAppliedThemeKey !== 'undefined' &&
+            lastAppliedThemeKey === 'rgb' &&
+            typeof applySyncedRgbAnimation === 'function'
+        ) {
+            applySyncedRgbAnimation(dropdownEl);
+        }
+    }
     helpToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        helpDropdown.style.display = helpDropdown.style.display === 'flex' ? 'none' : 'flex';
+        const isOpening = helpDropdown.style.display !== 'flex';
+        helpDropdown.style.display = isOpening ? 'flex' : 'none';
         updateDropdown.style.display = 'none';
         abtDropdown.style.display = 'none';
+        if (isOpening) resyncThemedDropdown(helpDropdown);
     });
     abtToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        abtDropdown.style.display = abtDropdown.style.display === 'flex' ? 'none' : 'flex';
+        const isOpening = abtDropdown.style.display !== 'flex';
+        abtDropdown.style.display = isOpening ? 'flex' : 'none';
         updateDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
+        if (isOpening) resyncThemedDropdown(abtDropdown);
     });
     updateToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        updateDropdown.style.display = updateDropdown.style.display === 'flex' ? 'none' : 'flex';
+        const isOpening = updateDropdown.style.display !== 'flex';
+        updateDropdown.style.display = isOpening ? 'flex' : 'none';
         abtDropdown.style.display = 'none';
         helpDropdown.style.display = 'none';
+        if (isOpening) resyncThemedDropdown(updateDropdown);
     });
     document.addEventListener('click', (e) => {
         if (!helpDropdown.contains(e.target) && !helpToggle.contains(e.target)) {

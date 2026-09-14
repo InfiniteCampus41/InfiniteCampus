@@ -2572,6 +2572,28 @@ input[type="range"]::-webkit-slider-thumb {
     66% { background-color: blue; }
     100% { background-color: red; }
 }
+@property --ic-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #8cbe37;
+}
+@property --ic-accent-dim {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #445c1c;
+}
+@keyframes rgbAccentVarAnimation {
+    0% { --ic-accent: #ff0000; --ic-accent-dim: #8c0000; }
+    33% { --ic-accent: #008000; --ic-accent-dim: #004600; }
+    66% { --ic-accent: #0000ff; --ic-accent-dim: #00008c; }
+    100% { --ic-accent: #ff0000; --ic-accent-dim: #8c0000; }
+}
+.ic-accent-bg {
+    background: var(--ic-accent);
+}
+.ic-accent {
+    color: var(--ic-accent);
+}
 @keyframes spin { 
     to { 
         transform: rotate(360deg);
@@ -6674,6 +6696,8 @@ th, td {
     display:flex;
     justify-content:center;
     display:none;
+    justify-self:center;
+    width:100%;
 }
 #videoPlayer {
     width: 95vw;

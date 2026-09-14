@@ -129,82 +129,10 @@
                     <br>
                     <br>
                 </center>
-                <div id="userpanel">
-                    <p id="status" class="btxt">
+                <div id="acctWrap">
+                    <p id="status" class="btxt acctStatusMsg">
                         Checking Login Status...
                     </p>
-                    <br>
-                    <img id="pfp">
-                    <div id="stats">
-                        <div class="d-flex align-items-center gap-2">
-                            <textarea id="displayNameInput" class="tinput" placeholder="Enter Name Here" disabled maxlength="20" rows="1" style="font-weight:700"></textarea>
-                            <button id="editDisplayBtn" title="Edit">
-                                <i class="ic ic-pencil-square">
-                                </i>
-                            </button>
-                            <button id="saveDisplayBtn"  style="display:none" title="Save">
-                                <i class="ic ic-check2">
-                                </i>
-                            </button>
-                            <button id="cancelDisplayBtn" style="display:none" title="Cancel">
-                                <i class="ic ic-x-lg">
-                                </i>
-                            </button>
-                        </div>
-                        <small id="displayCharCount" class="text-secondary d-block text-end">
-                            0 / 20
-                        </small>
-                        <div style="border:1px solid grey;border-radius:10px;padding-top:10px;padding-right:3px;">
-                            <div class="d-flex align-items-center gap-2" style="margin-top:-10px;">
-                                <textarea id="bioInput" class="tinput" placeholder="Enter Bio Here" disabled maxlength="50" rows="1"></textarea>
-                                <button id="editBioBtn" class="btn icon-btn" title="Edit">
-                                    <i class="ic ic-pencil-square">
-                                    </i>
-                                </button>
-                                <button id="saveBioBtn" class="btn icon-btn" style="display:none" title="Save">
-                                    <i class="ic ic-check2">
-                                    </i>
-                                </button>
-                                <button id="cancelBioBtn" class="btn icon-btn" style="display:none" title="Cancel">
-                                    <i class="ic ic-x-lg">
-                                    </i>
-                                </button>
-                            </div>
-                            <small id="bioCharCount" class="text-secondary d-block text-end mt-1">
-                                0 / 50
-                            </small>
-                        </div>
-                        <br>
-                        <div style="border:1px solid grey;border-radius:10px;padding-top:10px;padding-right:3px;">
-                            <div class="d-flex align-items-center gap-2" style="margin-top:-10px">
-                                <textarea id="disInput" class="tinput" placeholder="Enter Discord Username Here" disabled maxlength="50" rows="1"></textarea>
-                                <button id="editDisBtn" class="btn icon-btn" title="Edit">
-                                    <i class="ic ic-pencil-square">
-                                    </i>
-                                </button>
-                                <button id="saveDisBtn" style="display:none;" class="btn icon-btn" style="display:none" title="Save">
-                                    <i class="ic ic-check2">
-                                    </i>
-                                </button>
-                                <button id="cancelDisBtn" style="display:none;" class="btn icon-btn" style="display:none" title="Cancel">
-                                    <i class="ic ic-x-lg">
-                                    </i>
-                                </button>
-                            </div>
-                        </div>
-                        <br>
-                        <br>
-                    </div>
-                </div>
-                <center id="adminBtn" style="display:none">
-                    <a style="max-width:400px;" class="button apbtn" href="InfiniteAdmins.html">
-                        Go To Admin Pages
-                    </a>
-                    <br>
-                    <br>
-                    <br>
-                </center>
-                <center>
                     <div id="bannedAccountNotice">
                         <div style="font-weight:bold;font-size:1.1em;">
                             You Have Been Banned
@@ -214,134 +142,279 @@
                         <div id="bannedAccountExpires" style="margin-top:6px;font-size:0.9em;">
                         </div>
                     </div>
-                </center>
-                <center>
-                    <div id="badgeContainer">
-                        <p class="btxt">
-                            Badges
-                        </p>
-                        <hr class="szo2">
-                        <div id="badges">
+                    <div id="userpanel" class="acctHero">
+                        <img id="pfp" alt="Profile Picture">
+                        <div id="stats" class="acctHeroInfo">
+                            <div style="text-align:right">
+                                <div class="acctEditRow acctNameEditRow">
+                                    <div class="acctTextareaWrap">
+                                        <textarea id="displayNameInput" class="tinput acctDisplayNameInput" placeholder="Enter Name Here" disabled maxlength="20" rows="1"></textarea>
+                                        <small id="displayCharCount" class="acctCharCount">
+                                            0 / 20
+                                        </small>
+                                    </div>
+                                    <button id="editDisplayBtn" class="acctIconBtn" title="Edit">
+                                        <i class="ic ic-pencil-square">
+                                        </i>
+                                    </button>
+                                    <button id="saveDisplayBtn" class="acctIconBtn" style="display:none" title="Save">
+                                        <i class="ic ic-check2">
+                                        </i>
+                                    </button>
+                                    <button id="cancelDisplayBtn" class="acctIconBtn" style="display:none" title="Cancel">
+                                        <i class="ic ic-x-lg">
+                                        </i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="acctEditRow acctBioEditRow">
+                                <div class="acctTextareaWrap">
+                                    <textarea id="bioInput" class="tinput" placeholder="Enter Bio Here" disabled maxlength="50" rows="1"></textarea>
+                                    <small id="bioCharCount" class="acctCharCount">
+                                        0 / 50
+                                    </small>
+                                </div>
+                                <button id="editBioBtn" class="acctIconBtn" title="Edit">
+                                    <i class="ic ic-pencil-square">
+                                    </i>
+                                </button>
+                                <button id="saveBioBtn" class="acctIconBtn" style="display:none" title="Save">
+                                    <i class="ic ic-check2">
+                                    </i>
+                                </button>
+                                <button id="cancelBioBtn" class="acctIconBtn" style="display:none" title="Cancel">
+                                    <i class="ic ic-x-lg">
+                                    </i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <hr>
-                    <div id="settings" style="justify-content:center; max-width:900px;">
-                        <label for="nameColorInput">
-                            Name Color
-                        </label>
-                        <div class="d-flex gap-2 align-items-center" style="justify-content:center">
-                            <input type="color" id="nameColorInput" class="form-control form-control-color">
-                            <button id="saveNameColorBtn" class="btn btn-primary">
-                                Save Name Color
-                            </button>
-                        </div>
-                        <br>
-                        <label for="statusRow">
-                            Status
-                        </label>
-                        <div class="d-flex gap-2 align-items-center" style="justify-content:center">
-                            <div id="statusRow" style="display:none;">
-                                <i id="statusIcon" class="ib ic ic-online">
+                    <div class="acctGrid">
+                        <div class="acctCard">
+                            <div class="acctCardTitle">
+                                <i class="ic ic-person-circle">
                                 </i>
-                                <span id="statusLabel">
-                                    Online
-                                </span>
-                                <div id="statusDropdown">
-                                    <div class="statusOption" data-status="online">
-                                        <i class="ib ic ic-online">
-                                        </i>
-                                        <span class="statusOptionLabel">
-                                            Online
-                                        </span>
-                                        <i class="ic ic-check2 statusCheck">
-                                        </i>
+                                Profile
+                            </div>
+                            <div class="acctUnderline">
+                            </div>
+                            <label class="acctFieldLabel" for="disInput">
+                                Discord Username
+                            </label>
+                            <div class="acctEditRow">
+                                <textarea id="disInput" class="tinput" placeholder="Enter Discord Username Here" disabled maxlength="50" rows="1"></textarea>
+                                <button id="editDisBtn" class="acctIconBtn" title="Edit">
+                                    <i class="ic ic-pencil-square">
+                                    </i>
+                                </button>
+                                <button id="saveDisBtn" class="acctIconBtn" style="display:none" title="Save">
+                                    <i class="ic ic-check2">
+                                    </i>
+                                </button>
+                                <button id="cancelDisBtn" class="acctIconBtn" style="display:none" title="Cancel">
+                                    <i class="ic ic-x-lg">
+                                    </i>
+                                </button>
+                            </div>
+                            <label class="acctFieldLabel" for="nameColorInput">
+                                Name Color
+                            </label>
+                            <div class="acctColorRow">
+                                <div id="acctSwatches" class="acctSwatches">
+                                </div>
+                                <input type="color" id="nameColorInput" class="form-control form-control-color acctColorInput">
+                                <button id="saveNameColorBtn" class="acctBtn acctBtnSmall darkbuttons">
+                                    Save
+                                </button>
+                            </div>
+                            <label class="acctFieldLabel">
+                                Badges
+                            </label>
+                            <div id="badgeContainer" class="acctBadgeContainer">
+                                <div id="badges" class="acctBadgesList">
+                                </div>
+                                <div id="noBadgesMsg" class="acctMuted" style="display:none;">
+                                    No Badges Yet.
+                                </div>
+                            </div>
+                            <label class="acctFieldLabel">
+                                Status
+                            </label>
+                            <div class="acctStatusWrap">
+                                <div id="statusRow" class="acctStatusRow" style="display:none;">
+                                    <i id="statusIcon" class="ib ic ic-online">
+                                    </i>
+                                    <span id="statusLabel">
+                                        Online
+                                    </span>
+                                    <i class="ic ic-chevron-down acctChevron">
+                                    </i>
+                                    <div id="statusDropdown" class="acctStatusDropdown">
+                                        <div class="statusOption" data-status="online">
+                                            <i class="ib ic ic-online">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Online
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="idle">
+                                            <i class="ib ic ic-idle">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Idle
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="dnd">
+                                            <i class="ib ic ic-dnd">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Do Not Disturb
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
+                                        <div class="statusOption" data-status="invisible">
+                                            <i class="ib ic ic-offline">
+                                            </i>
+                                            <span class="statusOptionLabel">
+                                                Invisible
+                                            </span>
+                                            <i class="ic ic-check2 statusCheck">
+                                            </i>
+                                        </div>
                                     </div>
-                                    <div class="statusOption" data-status="idle">
-                                        <i class="ib ic ic-idle">
-                                        </i>
-                                        <span class="statusOptionLabel">
-                                            Idle
-                                        </span>
-                                        <i class="ic ic-check2 statusCheck">
-                                        </i>
+                                </div>
+                            </div>
+                            <div class="acctEditRow">
+                                <textarea class="tinput" placeholder="Coming Soon!" disabled rows="1"></textarea>
+                            </div>
+                            <center id="adminBtn" class="acctAdminBtnWrap" style="display:none">
+                                <a class="acctBtn acctBtnAdmin darkbuttons" href="InfiniteAdmins.html">
+                                    <i class="ic ic-shield">
+                                    </i>
+                                    Admin Controls
+                                </a>
+                            </center>
+                        </div>
+                        <div class="acctCard">
+                            <div class="acctCardTitle">
+                                <i class="ic ic-sliders">
+                                </i>
+                                Preferences
+                            </div>
+                            <div class="acctUnderline">
+                            </div>
+                            <div class="acctPrefRow">
+                                <div class="acctPrefRowText">
+                                    <i class="ic ic-bell-fill acctPrefIcon">
+                                    </i>
+                                    <div>
+                                        <div class="acctPrefTitle">
+                                            Notifications
+                                        </div>
+                                        <div class="acctMuted">
+                                            Get Notified About Messages, Mentions, And Updates.
+                                        </div>
                                     </div>
-                                    <div class="statusOption" data-status="dnd">
-                                        <i class="ib ic ic-dnd">
-                                        </i>
-                                        <span class="statusOptionLabel">
-                                            Do Not Disturb
-                                        </span>
-                                        <i class="ic ic-check2 statusCheck">
-                                        </i>
+                                </div>
+                                <div id="mbBtns" class="acctPrefBtns">
+                                    <a id="enableNotifBtn" class="acctBtn acctBtnSmall darkbuttons">
+                                        Enable Notifications
+                                    </a>
+                                    <a id="notifSettingsBtnStatic" class="acctBtn acctBtnSmall" style="display:none !important">
+                                        Notification Settings
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="acctPrefRow acctPrefRowColumn">
+                                <div class="acctPrefRowText">
+                                    <i class="ic ic-mortarboard-fill acctPrefIcon">
+                                    </i>
+                                    <div>
+                                        <div class="acctPrefTitle">
+                                            School Extensions
+                                        </div>
+                                        <div class="acctMuted">
+                                            Manage Your School Filtering Extension.
+                                        </div>
                                     </div>
-                                    <div class="statusOption" data-status="invisible">
-                                        <i class="ib ic ic-offline">
-                                        </i>
-                                        <span class="statusOptionLabel">
-                                            Invisible
-                                        </span>
-                                        <i class="ic ic-check2 statusCheck">
-                                        </i>
+                                </div>
+                                <div id="extensionSection" class="acctExtensionSection">
+                                    <div id="extCheckContainer">
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <br>
-                        <div id="extensionSection" style="margin-top:15px; text-align:center; background:#333;border-radius:10px;width:50%;padding:10px;margin-left:auto;margin-right:auto;">
-                            <label class="btxt" style="display:block; margin-bottom:6px;">
-                                School Extension
-                            </label>
-                            <hr>
-                            <div id="extCheckContainer">
+                    </div>
+                    <div class="acctCard acctInfoCard">
+                        <div class="acctCardTitle">
+                            <i class="ic ic-card-list">
+                            </i>
+                            Account Information
+                        </div>
+                        <div class="acctUnderline">
+                        </div>
+                        <div class="acctInfoGrid">
+                            <div class="acctInfoList">
+                                <div class="acctInfoRow">
+                                    <i class="ic ic-person-fill">
+                                    </i>
+                                    <span class="acctInfoLabel">
+                                        Display Name
+                                    </span>
+                                    <span id="displayNameInfoDisplay" class="acctInfoValue">
+                                    </span>
+                                </div>
+                                <div class="acctInfoRow">
+                                    <i class="ic ic-fingerprint">
+                                    </i>
+                                    <span class="acctInfoLabel">
+                                        User ID
+                                    </span>
+                                    <span id="userIdDisplay" class="acctInfoValue text-info">
+                                    </span>
+                                </div>
+                                <div class="acctInfoRow">
+                                    <i class="ic ic-envelope-fill">
+                                    </i>
+                                    <span class="acctInfoLabel">
+                                        Email
+                                    </span>
+                                    <span id="userEmailDisplay" class="acctInfoValue text-info">
+                                    </span>
+                                    <button id="verifyEmailBtn" class="acctBtn acctBtnTiny">
+                                        Verify Email
+                                    </button>
+                                </div>
+                                <div class="acctInfoRow">
+                                    <i class="ic ic-calendar-event-fill">
+                                    </i>
+                                    <span class="acctInfoLabel">
+                                        Member Since
+                                    </span>
+                                    <span id="memberSinceDisplay" class="acctInfoValue">
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div id="profileContainer" style="display:flex;" class="mb-3">
-                        </div>
-                        <div style="display:grid; justify-content:center;">
-                            <p class="mb-2" style="text-align:center;color:#777;">
-                                <strong>
-                                    User ID:
-                                </strong>
-                                <span id="userIdDisplay" class="text-info">
-                                </span>
-                            </p>
-                            <hr>
-                            <p class="mb-2" style="text-align:center;color:#777">
-                                <strong>
-                                    Email:
-                                </strong>
-                                <span id="userEmailDisplay" class="text-info">
-                                </span>
-                            </p>
-                            <hr>
-                            <br>
-                            <div id="mbBtns">
-                                <a id="enableNotifBtn" class="button apbtn">
-                                    Enable Notifications
-                                </a>
-                                <br>
-                                <a id="notifSettingsBtnStatic" class="button apbtn" style="display:none !important">
-                                    Notification Settings
-                                </a>
-                                <br>
-                                <button id="verifyEmailBtn" class="button apbtn">
-                                    Verify Email
+                            <div class="acctInfoBtns">
+                                <button id="logoutBtn" class="acctBtn acctBtnGhost">
+                                    <i class="ic ic-box-arrow-right">
+                                    </i>
+                                    Log Out
+                                </button>
+                                <button id="resetPasswordBtnAcc" class="acctBtn acctBtnDanger">
+                                    <i class="ic ic-shield-lock-fill">
+                                    </i>
+                                    Reset Password
                                 </button>
                             </div>
-                            <hr>
-                        </div>
-                        <div id="mbBtns">
-                            <button id="logoutBtn" class="button apbtn">
-                                Log Out
-                            </button>
-                            <br>
-                            <br>
-                            <button id="resetPasswordBtnAcc" class="button apbtn">
-                                Reset Password
-                            </button>
                         </div>
                     </div>
-                </center>
+                </div>
                 <br>
                 <br>
             </div>

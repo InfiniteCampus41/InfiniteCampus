@@ -712,7 +712,6 @@ if (unsub) {
             padding: 4px 2px;
             display:flex;
             flex-direction:column;
-            gap:10px;
         }
         .extCheckItem {
             display: flex;
@@ -735,6 +734,429 @@ if (unsub) {
             margin-left: auto;
             flex-shrink: 0;
             max-width:50px;
+        }
+        #acctWrap {
+            --acct-panel: #16120e;
+            --acct-panel-2: #1e1712;
+            --acct-border: color-mix(in srgb, var(--ic-accent) 28%, transparent);
+            --acct-border-soft: rgba(255,255,255,0.08);
+            --acct-accent: var(--ic-accent);
+            --acct-accent-2: var(--ic-accent-bright);
+            --acct-text: #f5f1e8;
+            --acct-muted: #a89e90;
+            --acct-green: #3ddc72;
+            --acct-red: #ff5c5c;
+            max-width: 1080px;
+            margin: 10px auto 30px;
+            padding: 0 16px;
+            color: var(--acct-text);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            text-align: left;
+        }
+        .acctStatusMsg {
+            text-align: center;
+        }
+        #acctWrap #bannedAccountNotice {
+            margin: 0 0 16px;
+        }
+        .acctHero {
+            display: none;
+            align-items: center;
+            gap: 22px;
+            background: linear-gradient(135deg, var(--acct-panel), var(--acct-panel-2));
+            border: 1px solid var(--acct-border);
+            border-radius: 18px;
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--ic-accent) 35%, transparent);
+            flex-wrap: wrap;
+        }
+        .acctHero #pfp {
+            flex-shrink: 0;
+        }
+        .acctHeroInfo {
+            flex: 1;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .acctEditRow {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--acct-border-soft);
+            border-radius: 10px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.02);
+        }
+        .acctNameEditRow {
+            border-color: transparent;
+            background: transparent;
+            padding: 2px 0;
+        }
+        .acctDisplayNameInput {
+            font-size: 1.7em !important;
+            font-weight: 800;
+            color: var(--acct-text);
+        }
+        .acctBioEditRow textarea {
+            color: var(--acct-muted);
+            font-size: 0.95em;
+        }
+        .acctTextareaWrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+        .acctTextareaWrap textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding-right: 48px;
+        }
+        .acctTextareaWrap .acctCharCount {
+            position: absolute;
+            right: 8px;
+            bottom: 4px;
+            pointer-events: none;
+        }
+        .acctCharCount {
+            color: var(--acct-muted);
+            font-size: 0.75em;
+        }
+        .acctIconBtn {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--acct-border-soft);
+            background: transparent;
+            color: var(--acct-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s all;
+        }
+        .acctIconBtn:hover {
+            color: #111;
+            background: var(--acct-accent);
+            border-color: var(--acct-accent);
+        }
+        .acctGrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+        @media (max-width: 860px) {
+            .acctGrid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .acctCard {
+            background: var(--acct-panel);
+            border: 1px solid var(--acct-border);
+            border-radius: 16px;
+            padding: 22px;
+            height:100%;
+            display:flex;
+            flex-direction:column;
+        }
+        .acctCardTitle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--acct-text);
+        }
+        .acctCardTitle i {
+            color: var(--acct-accent);
+            font-size: 1.1em;
+        }
+        .acctUnderline {
+            height: 2px;
+            background: linear-gradient(90deg, var(--acct-accent), transparent);
+            margin: 10px 0 18px;
+        }
+        .acctFieldLabel {
+            display: block;
+            color: var(--acct-muted);
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin: 16px 0 6px;
+        }
+        .acctCard > .acctFieldLabel:first-of-type {
+            margin-top: 0;
+        }
+        .acctColorRow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .acctSwatches {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .acctSwatchBtn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.35);
+            cursor: pointer;
+            padding: 0;
+        }
+        .acctSwatchBtn:hover {
+            border-color: var(--acct-accent);
+        }
+        .acctColorInput {
+            width: 40px;
+            height: 32px;
+            padding: 2px;
+            background: #000;
+        }
+        .acctBadgeContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .acctBadgesList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .acctBadgeChip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.82em;
+            font-weight: 700;
+            white-space: nowrap;
+            border: 1px solid color-mix(in srgb, var(--chip-color, var(--acct-accent)) 55%, transparent);
+            background: color-mix(in srgb, var(--chip-color, var(--acct-accent)) 16%, transparent);
+        }
+        .acctMuted {
+            color: var(--acct-muted);
+            font-size: 0.85em;
+        }
+        .acctStatusWrap {
+            position: relative;
+            display:flex;
+            justify-content:center;
+            margin-bottom:5px;
+        }
+        .acctStatusRow {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid var(--acct-border-soft);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+            width: fit-content;
+        }
+        .acctChevron {
+            font-size: 0.75em;
+            color: var(--acct-muted);
+            margin-left: 4px;
+        }
+        .acctStatusDropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background: var(--acct-panel-2);
+            border: 1px solid var(--acct-border);
+            border-radius: 10px;
+            padding: 6px;
+            z-index: 20;
+            min-width: 200px;
+            box-shadow: 0 10px 24px -10px rgba(0,0,0,0.6);
+        }
+        .acctStatusDropdown .statusOption {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--acct-text);
+        }
+        .acctStatusDropdown .statusOption:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        .acctStatusDropdown .statusOptionLabel {
+            flex: 1;
+        }
+        .acctStatusDropdown .statusCheck {
+            visibility: hidden;
+            color: var(--acct-accent);
+        }
+        .acctAdminBtnWrap {
+            margin-top: 18px;
+            flex:1;
+            align-items:end;
+        }
+        .acctBtn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--acct-accent), var(--ic-accent-dim));
+            color: #1a1305;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s all;
+            font-size: 0.95em;
+        }
+        .acctBtn:hover {
+            filter: brightness(1.08);
+            color: #1a1305;
+        }
+        .acctBtnAdmin {
+            width: 100%;
+        }
+        .acctBtnSmall {
+            padding: 8px 14px;
+            font-size: 0.88em;
+        }
+        .acctBtnTiny {
+            padding: 4px 10px;
+            font-size: 0.75em;
+            margin-left: 8px;
+        }
+        .acctBtnGhost {
+            background: transparent;
+            border: 1px solid var(--acct-border-soft);
+            color: var(--acct-text);
+        }
+        .acctBtnGhost:hover {
+            border-color: var(--acct-accent);
+            color: var(--acct-accent-2);
+        }
+        .acctBtnDanger {
+            background: transparent;
+            border: 1px solid rgba(255,92,92,0.5);
+            color: var(--acct-red);
+        }
+        .acctBtnDanger:hover {
+            background: rgba(255,92,92,0.12);
+            color: var(--acct-red);
+        }
+        .acctPrefRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border: 1px solid var(--acct-border-soft);
+            border-radius: 12px;
+            margin-bottom: 14px;
+            background: rgba(255,255,255,0.02);
+            flex-wrap: wrap;
+        }
+        .acctPrefRowColumn {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .acctPrefRowText {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .acctPrefIcon {
+            font-size: 1.3em;
+            color: var(--acct-accent);
+        }
+        .acctPrefTitle {
+            font-weight: 700;
+        }
+        .acctPrefBtns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        #mbBtns br {
+            display: none;
+        }
+        .acctExtensionSection {
+            margin-top: 10px;
+        }
+        #extCheckContainer .extCheckItem {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--acct-border-soft);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+        }
+        #extCheckContainer .extCheckItem:last-child {
+            margin-bottom: 0;
+        }
+        .acctInfoCard {
+            margin-bottom: 20px;
+        }
+        .acctInfoGrid {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .acctInfoList {
+            flex: 1;
+            min-width: 260px;
+        }
+        .acctInfoRow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 0;
+            border-bottom: 1px dashed var(--acct-border-soft);
+            flex-wrap: wrap;
+        }
+        .acctInfoRow:last-child {
+            border-bottom: none;
+        }
+        .acctInfoRow > i {
+            color: var(--acct-accent);
+            width: 18px;
+            text-align: center;
+        }
+        .acctInfoLabel {
+            color: var(--acct-muted);
+            font-weight: 600;
+            min-width: 110px;
+        }
+        .acctInfoValue {
+            color: var(--acct-text);
+        }
+        .acctInfoBtns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+            min-width: 200px;
+        }
+        .acctInfoBtns .acctBtn {
+            width: 100%;
+        }
+        #verifiedDisplay {
+            font-size: 0.8em;
+            margin-top: 2px !important;
         }
     `;
     document.head.appendChild(style);
@@ -768,6 +1190,7 @@ if (unsub) {
     pfpWrapper.style.position = "relative";
     pfpWrapper.style.height = "fit-content";
     pfpWrapper.style.display = "inline-block";
+    pfpWrapper.style.alignSelf = "flex-start";
     panelPic.parentNode.insertBefore(pfpWrapper, panelPic);
     pfpWrapper.appendChild(panelPic);
     const hoverOverlay = document.createElement("div");
@@ -841,6 +1264,38 @@ if (unsub) {
     saveBtn.style.display = "block";
     saveBtn.style.margin = "20px auto 0";
     pfpModal.appendChild(saveBtn);
+    const swatchColors = ["#f0b429", "#3ddc72", "#4fa3ff", "#c67bff", "#ff6ec7", "#ff5c5c", "#ffffff"];
+    const swatchWrap = document.getElementById("acctSwatches");
+    if (swatchWrap && nameColorInput && saveNameColorBtn) {
+        swatchColors.forEach(color => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "acctSwatchBtn";
+            btn.style.background = color;
+            btn.title = color;
+            btn.addEventListener("click", () => {
+                nameColorInput.value = color;
+                saveNameColorBtn.click();
+            });
+            swatchWrap.appendChild(btn);
+        });
+    }
+    const displayNameInfoDisplay = document.getElementById("displayNameInfoDisplay");
+    const memberSinceDisplay = document.getElementById("memberSinceDisplay");
+    if (displayNameInfoDisplay) {
+        setInterval(() => {
+            const current = window.appSettings?.displayName;
+            if (current != null) displayNameInfoDisplay.textContent = current;
+        }, 1000);
+    }
+    if (memberSinceDisplay) {
+        onAuthStateChanged(auth, (user) => {
+            if (user?.metadata?.creationTime) {
+                const d = new Date(user.metadata.creationTime);
+                memberSinceDisplay.textContent = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+            }
+        });
+    }
     hoverOverlay.addEventListener("click", () => {
         previewImg.src = panelPic.src;
         selectedFile = null;
@@ -1410,42 +1865,44 @@ if (unsub) {
                 const badges = document.getElementById('badges');
                 badges.innerHTML = "";
                 adminBtn.style.display = 'none';
-                function addBadge(name, color, icon) {
+                function addBadge(name, color, icon, short) {
                     const badge = document.createElement("span");
                     const badgeContainer = document.getElementById('badgeContainer');
                     badgeContainer.style.display = 'flex';
                     badgeContainer.style.flexDirection = 'column';
-                    badge.style.color = color;
-                    badge.style.fontSize = '2em';
-                    badge.style.fontWeight = "600";
+                    badge.classList = "acctBadgeChip niceTitle";
+                    const chipColor = color || "var(--acct-text)";
+                    badge.style.color = chipColor;
+                    badge.style.setProperty("--chip-color", chipColor);
+                    badge.title = name;
                     badge.innerHTML = `
-                        <i class="${icon}" style="margin-right:6px;" title="${name}"></i>
+                        <i class="${icon}"></i><span>${short || name}</span>
                     `;
                     badges.appendChild(badge);
                 }
                 let hasAnyRole = false;
                 if (profile.isSus) {
-                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "ic ic-shield-exclamation");
+                    addBadge("This User Is Currently Under Investigation, Please Do Not Interact With This User", "red", "ic ic-shield-exclamation", "Flagged");
                     hasAnyRole = true;
                 }
                 if (profile.isOwner) {
                     addBadge("Owner", "lime", "ic ic-shield-plus");
-                    adminBtn.style.display = 'block';
+                    adminBtn.style.display = 'flex';
                     hasAnyRole = true;
                 }
                 if (profile.isTester) {
                     addBadge("Tester", "DarkGoldenRod", "ic ic-cogs");
-                    adminBtn.style.display = 'block';
+                    adminBtn.style.display = 'flex';
                     hasAnyRole = true;
                 }
                 if (profile.isCoOwner) {
                     addBadge("Co-Owner", "lightblue", "ic ic-shield-fill");
-                    adminBtn.style.display = 'block';
+                    adminBtn.style.display = 'flex';
                     hasAnyRole = true;
                 }
                 if (profile.isHAdmin) {
                     addBadge("Head Admin", "#00cc99", "ic ic-shield-halved");
-                    adminBtn.style.display = 'block';
+                    adminBtn.style.display = 'flex';
                     hasAnyRole = true;
                 }
                 if (profile.isAdmin) {
@@ -1453,103 +1910,105 @@ if (unsub) {
                     hasAnyRole = true;
                 }
                 if (profile.isPartner) {
-                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "ic ic-handshake");
+                    addBadge("This User Is A Partner Of Infinite Campus", "cornflowerblue", "ic ic-handshake", "Partner");
                     hasAnyRole = true;
                 }
                 if (profile.isDev) {
-                    addBadge("This User Is A Developer For Infinite Campus Games", "green", "ic ic-code-square");
-                    adminBtn.style.display = 'block';
+                    addBadge("This User Is A Developer For Infinite Campus Games", "green", "ic ic-code-square", "Developer");
+                    adminBtn.style.display = 'flex';
                     hasAnyRole = true;
                 }
                 if (profile.premium3) {
-                    addBadge("This User Has Infinite Campus Premium T3", "red", "ic ic-hearts");
+                    addBadge("This User Has Infinite Campus Premium T3", "red", "ic ic-hearts", "Premium T3");
                     hasAnyRole = true;
                 }
                 if (profile.premium2) {
-                    addBadge("This User Has Infinite Campus Premium T2", "orange", "ic ic-heart-fill");
+                    addBadge("This User Has Infinite Campus Premium T2", "orange", "ic ic-heart-fill", "Premium T2");
                     hasAnyRole = true;
                 }
                 if (profile.premium1) {
-                    addBadge("This User Has Infinite Campus Premium", "yellow", "ic ic-heart-half");
+                    addBadge("This User Has Infinite Campus Premium", "yellow", "ic ic-heart-half", "Premium");
                     hasAnyRole = true;
                 }
                 if (profile.isDonater) {
-                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "ic ic-balloon-heart");
+                    addBadge("This User Has Donated To Infinite Campus", "#00E5FF", "ic ic-balloon-heart", "Donator");
                     hasAnyRole = true;
                 }
                 if (profile.isUploader) {
-                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "ic ic-film");
+                    addBadge("This User Has Uploaded A Movie To Infinite Campus", "grey", "ic ic-film", "Uploader");
                     hasAnyRole = true
                 }
                 if (profile.mileStone) {
-                    addBadge("This User Is The 100th Signed Up User", "yellow", "ic ic-award");
+                    addBadge("This User Is The 100th Signed Up User", "yellow", "ic ic-award", "100th User");
                     hasAnyRole = true;
                 }
                 if (profile.isGuesser) {
-                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "ic ic-stopwatch");
+                    addBadge("This User Has A Lot Of Freetime", "#FF0000", "ic ic-stopwatch", "Guesser");
                     hasAnyRole = true;
                 }
                 if (profile.dUsername) {
                     const discordUser = profile.dUsername;
-                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "ic ic-discord");
+                    addBadge(`Known As @${discordUser} On Discord`, "#5865F2", "ic ic-discord", `@${discordUser}`);
                     hasAnyRole = true;
                 }
                 if (profile.isLink) {
-                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "ic ic-link");
+                    addBadge("This User Has Shared A Lot Of Links In The Links Channel", "#4fa3ff", "ic ic-link", "Link Sharer");
                     hasAnyRole = true;
                 }
                 if (profile.secure) {
-                    addBadge("This User Has Securely At School", "", "ib ic ic-securely");
+                    addBadge("This User Has Securely At School", "", "ib ic ic-securely", "Securely");
                     hasAnyRole = true;
                 }
                 if (profile.guardian) {
-                     addBadge("This User Has GoGuardian At School", "", "ib ic ic-goguardian");
+                     addBadge("This User Has GoGuardian At School", "", "ib ic ic-goguardian", "GoGuardian");
                     hasAnyRole = true;
                 }
                 if (profile.lanschool) {
-                    addBadge("This User Has Lanschool At School", "", "ib ic ic-lanschool");
+                    addBadge("This User Has Lanschool At School", "", "ib ic ic-lanschool", "Lanschool");
                     hasAnyRole = true;
                 }
                 if (profile.linewize) {
-                    addBadge("This User Has Linewize At School", "", "ib ic ic-linewize");
+                    addBadge("This User Has Linewize At School", "", "ib ic ic-linewize", "Linewize");
                     hasAnyRole = true;
                 }
                 if (profile.blocksi) {
-                    addBadge("This User Has Blocksi At School", "", "ib ic ic-blocksi");
+                    addBadge("This User Has Blocksi At School", "", "ib ic ic-blocksi", "Blocksi");
                     hasAnyRole = true;
                 }
                 if (profile.fortiguard) {
-                    addBadge("This User Has FortiGuard At School", "", "ib ic ic-fortiguard");
+                    addBadge("This User Has FortiGuard At School", "", "ib ic ic-fortiguard", "FortiGuard");
                     hasAnyRole = true;
                 }
                 if (profile.lightspeed) {
-                    addBadge("This User Has LightSpeed At School", "", "ib ic ic-lightspeed");
+                    addBadge("This User Has LightSpeed At School", "", "ib ic ic-lightspeed", "LightSpeed");
                     hasAnyRole = true;
                 }
                 if (profile.cisco) {
-                    addBadge("This User Has Cisco Umbrella At School", "", "ib ic ic-cisco");
+                    addBadge("This User Has Cisco Umbrella At School", "", "ib ic ic-cisco", "Cisco Umbrella");
                     hasAnyRole = true;
                 }
                 if (profile.contentkeeper) {
-                    addBadge("This User Has ContentKeeper At School", "", "ib ic ic-contentkeeper");
+                    addBadge("This User Has ContentKeeper At School", "", "ib ic ic-contentkeeper", "ContentKeeper");
                     hasAnyRole = true;
                 }
                 if (profile.deledao) {
-                    addBadge("This User Has Deledao At School", "", "ib ic ic-deledao");
+                    addBadge("This User Has Deledao At School", "", "ib ic ic-deledao", "Deledao");
                     hasAnyRole = true;
                 }
                 if (profile.iboss) {
-                    addBadge("This User Has IBoss At School", "", "ib ic ic-iboss");
+                    addBadge("This User Has IBoss At School", "", "ib ic ic-iboss", "IBoss");
                     hasAnyRole = true;
                 }
                 if (profile.barracuda) {
-                    addBadge("This User Has Barracuda At School", "", "ib ic ic-barracuda");
+                    addBadge("This User Has Barracuda At School", "", "ib ic ic-barracuda", "Barracuda");
                     hasAnyRole = true;
                 }
                 if (profile.verified) {
-                    addBadge("Verified User", "white", "ic ic-shield-check");
+                    addBadge("Verified User", "white", "ic ic-shield-check", "Verified");
                     hasAnyRole = true;
                 }
+                const noBadgesMsg = document.getElementById('noBadgesMsg');
+                if (noBadgesMsg) noBadgesMsg.style.display = hasAnyRole ? 'none' : 'block';
             }
             dbGet(`users/${user.uid}/profile`).then(applyProfile).catch(() => {});
             setInterval(() => {

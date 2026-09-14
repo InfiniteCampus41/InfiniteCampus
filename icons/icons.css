@@ -88,6 +88,10 @@ i {
     mask-image: url('/icons/box-arrow-in-right.svg');
     -webkit-mask-image: url('/icons/box-arrow-in-right.svg');
 }
+.ic-box-arrow-right {
+    mask-image: url('/icons/box-arrow-right.svg');
+    -webkit-mask-image: url('/icons/box-arrow-right.svg');
+}
 .ic-box-arrow-up-right {
     mask-image: url('/icons/box-arrow-up-right.svg');
     -webkit-mask-image: url('/icons/box-arrow-up-right.svg');
@@ -103,6 +107,14 @@ i {
 .ic-calculator {
     mask-image: url('/icons/calculator.svg');
     -webkit-mask-image: url('/icons/calculator.svg');
+}
+.ic-calendar-event-fill {
+    mask-image: url('/icons/calendar-event-fill.svg');
+    -webkit-mask-image: url('/icons/calendar-event-fill.svg');
+}
+.ic-card-list {
+    mask-image: url('/icons/card-list.svg');
+    -webkit-mask-image: url('/icons/card-list.svg');
 }
 .ic-chat-dots-fill {
     mask-image: url('/icons/chat-dots-fill.svg');
@@ -220,6 +232,10 @@ i {
     mask-image: url('/icons/emoji-smile.svg');
     -webkit-mask-image: url('/icons/emoji-smile.svg');
 }
+.ic-envelope-fill {
+    mask-image: url('/icons/envelope-fill.svg');
+    -webkit-mask-image: url('/icons/envelope-fill.svg');
+}
 .ic-envelope {
     mask-image: url('/icons/envelope.svg');
     -webkit-mask-image: url('/icons/envelope.svg');
@@ -259,6 +275,10 @@ i {
 .ic-film {
     mask-image: url('/icons/film.svg');
     -webkit-mask-image: url('/icons/film.svg');
+}
+.ic-fingerprint {
+    mask-image: url('/icons/fingerprint.svg');
+    -webkit-mask-image: url('/icons/fingerprint.svg');
 }
 .ic-fire {
     mask-image: url('/icons/fire.svg');
@@ -388,6 +408,10 @@ i {
     mask-image: url('/icons/lock.svg');
     -webkit-mask-image: url('/icons/lock.svg');
 }
+.ic-mortarboard-fill {
+    mask-image: url('/icons/mortarboard-fill.svg');
+    -webkit-mask-image: url('/icons/mortarboard-fill.svg');
+}
 .ic-music {
     mask-image: url('/icons/music.svg');
     -webkit-mask-image: url('/icons/music.svg');
@@ -431,6 +455,14 @@ i {
 .ic-people-fill {
     mask-image: url('/icons/people-fill.svg');
     -webkit-mask-image: url('/icons/people-fill.svg');
+}
+.ic-person-circle {
+    mask-image: url('/icons/person-circle.svg');
+    -webkit-mask-image: url('/icons/person-circle.svg');
+}
+.ic-person-fill {
+    mask-image: url('/icons/person-fill.svg');
+    -webkit-mask-image: url('/icons/person-fill.svg');
 }
 .ic-pin-angle-fill {
     mask-image: url('/icons/pin-angle-fill.svg');
@@ -506,6 +538,10 @@ i {
 .ic-shield-halved {
     mask-image: url('/icons/shield-halved.svg');
     -webkit-mask-image: url('/icons/shield-halved.svg');
+}
+.ic-shield-lock-fill {
+    mask-image: url('/icons/shield-lock-fill.svg');
+    -webkit-mask-image: url('/icons/shield-lock-fill.svg');
 }
 .ic-shield-lock {
     mask-image: url('/icons/shield-lock.svg');
