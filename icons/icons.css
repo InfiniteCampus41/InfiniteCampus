@@ -163,6 +163,10 @@ i {
     mask-image: url('/icons/cloud-check.svg');
     -webkit-mask-image: url('/icons/cloud-check.svg');
 }
+.ic-cloud-upload {
+    mask-image: url('/icons/cloud-upload.svg');
+    -webkit-mask-image: url('/icons/cloud-upload.svg');
+}
 .ic-code-square {
     mask-image: url('/icons/code-square.svg');
     -webkit-mask-image: url('/icons/code-square.svg');
@@ -178,6 +182,10 @@ i {
 .ic-collection {
     mask-image: url('/icons/collection.svg');
     -webkit-mask-image: url('/icons/collection.svg');
+}
+.ic-collection-play-fill {
+    mask-image: url('/icons/collection-play-fill.svg');
+    -webkit-mask-image: url('/icons/collection-play-fill.svg');
 }
 .ic-compass {
     mask-image: url('/icons/compass.svg');
@@ -400,6 +408,10 @@ i {
     mask-image: url('/icons/link.svg');
     -webkit-mask-image: url('/icons/link.svg');
 }
+.ic-list-ul {
+    mask-image: url('/icons/list-ul.svg');
+    -webkit-mask-image: url('/icons/list-ul.svg');
+}
 .ic-list {
     mask-image: url('/icons/list.svg');
     -webkit-mask-image: url('/icons/list.svg');
@@ -575,9 +587,17 @@ i {
     mask-image: url('/icons/spotify.svg');
     -webkit-mask-image: url('/icons/spotify.svg');
 }
+.ic-star-fill {
+    mask-image: url('/icons/star-fill.svg');
+    -webkit-mask-image: url('/icons/star-fill.svg');
+}
 .ic-stopwatch {
     mask-image: url('/icons/stopwatch.svg');
     -webkit-mask-image: url('/icons/stopwatch.svg');
+}
+.ic-tag-fill {
+    mask-image: url('/icons/tag-fill.svg');
+    -webkit-mask-image: url('/icons/tag-fill.svg');
 }
 .ic-terminal {
     mask-image: url('/icons/terminal.svg');

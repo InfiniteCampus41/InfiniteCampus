@@ -4052,7 +4052,7 @@ function createPendingMessage(text, context) {
             if (handle._timeoutId) { clearTimeout(handle._timeoutId); handle._timeoutId = null; }
             statusIcon.innerHTML = "";
             const errIcon = document.createElement("i");
-            errIcon.className = "ic ic-exclamation-triangle-fill msg-status-error";
+            errIcon.className = "ic ic-exclamation-triangle msg-status-error";
             errIcon.title = "Failed To Send";
             statusIcon.appendChild(errIcon);
             msgBtns.innerHTML = "";

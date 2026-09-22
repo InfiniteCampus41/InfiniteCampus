@@ -12,6 +12,7 @@
 | 10 | 🟢 DONE | Update the UI for viewing your own profile on the Account page | DONE |
 | 11 | 🟢 DONE | Update the UI for viewing someone else's profile on the Account page | DONE |
 | 12 | 🟢 DONE | Update the UI for the Partners page | DONE |
+
 | 13 | 🔴 Not Started | Update the UI for the Movies page | ~Sep 22 2026 |
 | 14 | 🔴 Not Started | Update the UI for the Games page | ~Beginning Of October 2026 |
 | 15 | 🔴 Not Started | Update the UI for the Proxy page | ~Middle Of October 2026 |
@@ -27,5 +28,70 @@
 | 25 | 🔴 Not Started | Update the UI for the Header *(Maybe)* | TBD |
 | 26 | 🔴 Not Started | Remove How to Unblock YouTube | TBD |
 | 27 | 🔴 Not Started | Update the UI for the Download page | TBD |
+
 | 28 | 🔴 Not Started | Make the download link use the API instead of GitHub | TBD |
 | 29 | 🔴 Not Started | Add linked Discord roles if your Discord account is linked | TBD |
+
+
+
+maybe replace the rules system with a list of services that each role can access
+example for the admin server page the rules would be like this
+the roles before the services will be for who actually has access to see the page
+AdminServerPage: {
+    isOwner:true,
+    isTester:true,
+    isCoOwner:true,
+    isHAdmin:true,
+    isDev:true,
+    isAdmin:true,
+    services: {
+        logs: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isHAdmin:true,
+            isDev:true,
+            isAdmin:true
+        },
+        uploadsLockdown: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isDev:true
+        },
+        discordLockdown: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isDev:true
+        },
+        moviesLockdown: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isDev:true
+        },
+        chatLockdown: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isDev:true
+        },
+        restart: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isDev:true
+        },
+        uploadLogs: {
+            isOwner:true,
+            isTester:true,
+            isCoOwner:true,
+            isHAdmin: true,
+            isDev:true
+        }
+    }
+}
+services that a user does not have access to should be hidden on the frontend.
+
+Also, i want a system where i can create new roles and assign them to people like discord.

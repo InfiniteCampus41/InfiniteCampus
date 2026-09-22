@@ -3,12 +3,14 @@ let BACKEND = `${a}`;
 let applyBK = `${a}`;
 let MOVIE_CACHE = [];
 let CURRENT_SORT = "order";
+let CURRENT_CATEGORY = "all";
+let CURRENT_VIEW = "grid";
+let currentlyOpenMoreMenu = null;
 let finishingTimeout = null;
 let FIREBASE_AVAILABLE = true;
 let MOVIE_LOAD_ID = 0;
 let isLoadingMovies = false;
 let lastUploadTime = Date.now();
-let currentlyOpenActions = null;
 let finishingWatcher = null;
 let currentSubtitleBlobUrl = null;
 let autoOpenedMovie = false;
@@ -232,10 +234,12 @@ async function loadMovies() {
             return;
         }
         MOVIE_CACHE = data.videos;
+        renderCategories(MOVIE_CACHE);
         const term = normalizeForSearch(document.getElementById("search")?.value || "");
-        const filtered = term
+        let filtered = term
             ? data.videos.filter(m => normalizeForSearch(m.name).includes(term))
             : data.videos;
+        filtered = applyCategoryFilter(filtered);
         await renderMovies(sortMovieList(filtered), loadId);
     } catch (e) {
         if (loadId !== MOVIE_LOAD_ID) return;
@@ -245,20 +249,20 @@ async function loadMovies() {
         if (loadId === MOVIE_LOAD_ID) isLoadingMovies = false;
     }
 }
-function fitTextToWidth(element, maxFont = 16, minFont = 8) {
-    let fontSize = maxFont;
-    element.style.fontSize = fontSize + "px";
-    while (element.scrollWidth > element.clientWidth && fontSize > minFont) {
-        fontSize -= 0.5;
-        element.style.fontSize = fontSize + "px";
-    }
+function escapeHtml(str) {
+    return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }
 async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
     const box = document.getElementById("movies");
     box.innerHTML = "";
+    currentlyOpenMoreMenu = null;
     for (const v of list) {
         if (loadId !== MOVIE_LOAD_ID) return;
-        let uploaderName = "";
+        let uploaderName = "An Anonymous User";
         if (FIREBASE_AVAILABLE && v.uploadedBy && v.uploadedBy !== "") {
             try {
                 const snap = await dbGet("users/" + v.uploadedBy + "/profile/displayName");
@@ -271,82 +275,80 @@ async function renderMovies(list, loadId = MOVIE_LOAD_ID) {
             }
         }
         const ccBadge = v.subtitleUrl
-            ? `<i class="ic ic-badge-cc-fill" title="Subtitles Available" style="width:100%;color:white;position:absolute;right:-45%;transform:translateY(-20%);"></i>`
+            ? `<span class="ic-movie-cc-badge" title="Subtitles Available"><i class="ic ic-badge-cc-fill"></i></span>`
             : "";
-
+        const ratingBadge = v.rating
+            ? `<span class="ic-movie-rating"><i class="ic ic-star-fill"></i> ${v.rating}</span>`
+            : "";
+        const year = v.releaseYear || "";
+        const tags = Array.isArray(v.tags) ? v.tags : [];
+        const tagsHtml = tags.length
+            ? `<div class="ic-movie-tags">${tags.map(t => `<span class="ic-movie-tag">${escapeHtml(t)}</span>`).join("")}</div>`
+            : "";
+        const metaBits = [];
+        if (year) metaBits.push(`<span class="ic-movie-year">${escapeHtml(year)}</span>`);
+        metaBits.push(`<span class="ic-movie-size">${escapeHtml(v.humanSize)}</span>`);
+        if (v.popularity) metaBits.push(`<span class="ic-movie-views">${v.popularity} view${v.popularity === 1 ? "" : "s"}</span>`);
         const movieDiv = document.createElement("div");
-        movieDiv.className = "movie-card";
-        movieDiv.style.width = "200px";
-        movieDiv.style.height = "300px";
-        movieDiv.style.backgroundSize = "cover";
-        movieDiv.style.backgroundPosition = "center";
-        movieDiv.style.cursor = "pointer";
-        movieDiv.style.position = "relative";
-        movieDiv.style.marginBottom = "20px";
-        movieDiv.style.color = "white";
-        movieDiv.style.borderRadius = "12px";
-        movieDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
+        movieDiv.className = "ic-movie-card";
         movieDiv.innerHTML = `
-            <img src="${v.proxiedthumb ? BACKEND + v.proxiedthumb : (v.cover || "")}" alt="${v.name} Cover" style="height:300px;width:200px;border-radius:12px;position:absolute;z-index:3;display:flex;" />
-            <div class="movie-actions" style="height:100%;width:100%;opacity:0;pointer-events:none;position:absolute;z-index:4;display:flex;flex-direction:column;transition:opacity 0.3s ease;">
-                <div style="top:0px;position:absolute;width:100%;justify-content:center;align-items:center;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;flex-direction:column;border-top-left-radius:12px;border-top-right-radius:12px;">
-                    <span style="display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;">
-                        <span class="movie-title" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${v.name}</span>
-                    </span>
-                    <div style="width:100%;position:relative;display:flex;justify-content:center;align-items:center;">
-                        <small style="font-size:0.7em;">
-                            ${v.humanSize}${v.popularity ? ` &middot; ${v.popularity} view${v.popularity === 1 ? "" : "s"}` : ""}
-                        </small>
-                        ${ccBadge}
-                    </div>
-                </div>
-                <div style="bottom:0px;position:absolute;width:100%;display:flex;padding:0px 10px;background:rgba(0,0,0,0.8);height:40px;align-items:center;flex-direction:column;height:60px;border-bottom-left-radius:12px;border-bottom-right-radius:12px;">
-                    <div style="padding:3px;display:flex;justify-content:space-between;width:100%;">
-                        <button class="button watch-btn">
-                            Watch
+            <div class="ic-movie-poster">
+                <img src="${v.proxiedthumb ? BACKEND + v.proxiedthumb : (v.cover || "")}" alt="${escapeHtml(v.name)} Cover" loading="lazy" />
+                ${ratingBadge}
+                ${ccBadge}
+            </div>
+            <div class="ic-movie-info">
+                <span class="ic-movie-title" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
+                <div class="ic-movie-meta">${metaBits.join("")}</div>
+                ${tagsHtml}
+                <div class="ic-movie-actions-row">
+                    <button class="ic-btn ic-btn-primary ic-movie-watch-btn">
+                        <i class="ic ic-play-fill"></i> Watch
+                    </button>
+                    <div class="ic-movie-more-wrap">
+                        <button class="ic-btn ic-btn-secondary ic-movie-more-btn" title="More Options">
+                            <i class="ic ic-three-dots-vertical"></i>
                         </button>
-                        <a href="${BACKEND}/download/x9a7b2/${v.name}" target="_blank">
-                            <button class="button download-btn">
-                                Download
-                            </button>
-                        </a>
+                        <div class="ic-movie-more-menu">
+                            <a class="ic-movie-more-item" href="${BACKEND}/download/x9a7b2/${v.name}" target="_blank">
+                                <i class="ic ic-download"></i> Download
+                            </a>
+                            <a class="ic-movie-more-item" href="InfiniteAccounts.html?user=${v.uploadedBy}">
+                                <i class="ic ic-person-fill"></i> ${escapeHtml(uploaderName)}
+                            </a>
+                        </div>
                     </div>
-                    <small style="font-size:0.7em;color:#ccc;margin-top:-3px;display:block;width:100%;">
-                        <a href="InfiniteAccounts.html?user=${v.uploadedBy}" style="text-decoration:none;display:flex;align-items:center;width:100%;white-space:nowrap;overflow:hidden;justify-content:center;">
-                            <span style="flex-shrink:0;">Uploaded By:&nbsp;</span><span class="movie-uploader" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${uploaderName}</span>
-                        </a>
-                    </small>
                 </div>
             </div>
         `;
-        movieDiv.addEventListener("click", (e) => {
-            const actions = movieDiv.querySelector(".movie-actions");
-            if (currentlyOpenActions && currentlyOpenActions !== actions) {
-                currentlyOpenActions.style.opacity = "0";
-                currentlyOpenActions.style.pointerEvents = "none";
-            }
-            const isOpen = actions.style.opacity === "1";
-            if (isOpen) {
-                actions.style.opacity = "0";
-                actions.style.pointerEvents = "none";
-                currentlyOpenActions = null;
-            } else {
-                actions.style.opacity = "1";
-                actions.style.pointerEvents = "auto";
-                currentlyOpenActions = actions;
-            }
-        });
-        movieDiv.querySelector(".watch-btn").addEventListener("click", (e) => {
+        movieDiv.querySelector(".ic-movie-watch-btn").addEventListener("click", (e) => {
             e.stopPropagation();
             manuallySelectedMovie = true;
             openWatchPanel(v.name, v.subtitleUrl || null);
         });
+        const moreBtn = movieDiv.querySelector(".ic-movie-more-btn");
+        const moreMenu = movieDiv.querySelector(".ic-movie-more-menu");
+        moreBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (currentlyOpenMoreMenu && currentlyOpenMoreMenu !== moreMenu) {
+                currentlyOpenMoreMenu.classList.remove("open");
+            }
+            const isOpen = moreMenu.classList.contains("open");
+            moreMenu.classList.toggle("open", !isOpen);
+            currentlyOpenMoreMenu = isOpen ? null : moreMenu;
+        });
         box.appendChild(movieDiv);
-        const titleEl = movieDiv.querySelector(".movie-title");
-        fitTextToWidth(titleEl);
-        const uploaderEl = movieDiv.querySelector(".movie-uploader");
-        if (uploaderEl) fitTextToWidth(uploaderEl, 10, 6);
     }
+}
+document.addEventListener("click", (e) => {
+    if (currentlyOpenMoreMenu && !currentlyOpenMoreMenu.contains(e.target)) {
+        currentlyOpenMoreMenu.classList.remove("open");
+        currentlyOpenMoreMenu = null;
+    }
+});
+function applyCategoryFilter(list) {
+    if (CURRENT_CATEGORY === "all") return list;
+    return list.filter(m => Array.isArray(m.tags) && m.tags.includes(CURRENT_CATEGORY));
 }
 function filterMovies() {
     if (isLoadingMovies) {
@@ -355,10 +357,57 @@ function filterMovies() {
     }
     const loadId = ++MOVIE_LOAD_ID;
     const term = normalizeForSearch(document.getElementById("search").value);
-    const filtered = MOVIE_CACHE.filter(m =>
+    let filtered = MOVIE_CACHE.filter(m =>
         normalizeForSearch(m.name).includes(term)
     );
+    filtered = applyCategoryFilter(filtered);
     renderMovies(sortMovieList(filtered), loadId);
+}
+function setCategory(tag) {
+    CURRENT_CATEGORY = tag;
+    document.querySelectorAll(".ic-movies-cat-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tag === tag);
+    });
+    filterMovies();
+}
+window.setCategory = setCategory;
+function setMoviesView(view) {
+    CURRENT_VIEW = view;
+    movies.classList.toggle("view-list", view === "list");
+    const gridBtn = document.getElementById("gridViewBtn");
+    const listBtn = document.getElementById("listViewBtn");
+    if (gridBtn) gridBtn.classList.toggle("active", view === "grid");
+    if (listBtn) listBtn.classList.toggle("active", view === "list");
+}
+window.setMoviesView = setMoviesView;
+function renderCategories(list) {
+    const box = document.getElementById("categoriesList");
+    if (!box) return;
+    const counts = new Map();
+    for (const m of list) {
+        if (!Array.isArray(m.tags)) continue;
+        for (const tag of m.tags) {
+            counts.set(tag, (counts.get(tag) || 0) + 1);
+        }
+    }
+    const sortedTags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    let html = `
+        <button class="ic-movies-cat-btn ${CURRENT_CATEGORY === "all" ? "active" : ""}" data-tag="all" onclick="setCategory('all')">
+            <i class="ic ic-collection-play-fill"></i>
+            <span class="ic-movies-cat-name">All Movies</span>
+            <span class="ic-movies-cat-count">${list.length}</span>
+        </button>
+    `;
+    for (const [tag, count] of sortedTags) {
+        html += `
+            <button class="ic-movies-cat-btn ${CURRENT_CATEGORY === tag ? "active" : ""}" data-tag="${tag}" onclick="setCategory('${tag.replace(/'/g, "\\'")}')">
+                <i class="ic ic-tag-fill"></i>
+                <span class="ic-movies-cat-name">${tag}</span>
+                <span class="ic-movies-cat-count">${count}</span>
+            </button>
+        `;
+    }
+    box.innerHTML = html;
 }
 (function buildPlayerDOM() {
     const panel = document.getElementById("watchPanel");
@@ -883,6 +932,7 @@ async function openWatchPanel(name, subtitleUrl = null) {
     section.style.display = "none";
     movies.style.display = "none";
     before.style.display = "none";
+    currentlyOpenMoreMenu = null;
     currentfile.textContent = `Currently Watching: ${name}`;
     currentfile.style.display = "flex";
     const watchHeader = document.getElementById("watch-header");
@@ -986,8 +1036,8 @@ function closeWatchPanel() {
     const watchHeader = document.getElementById("watch-header");
     if (watchHeader) watchHeader.style.display = "none";
     currentfile.textContent = "";
-    section.style.display = "block";
-    movies.style.display = "flex";
+    section.style.display = "flex";
+    movies.style.removeProperty("display");
 }
 window.openWatchPanel = openWatchPanel;
 window.closeWatchPanel = closeWatchPanel;

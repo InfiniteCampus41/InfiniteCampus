@@ -638,7 +638,8 @@ function setRandomPhrase() {
         "Oh That Granny, Oh She Done",
         "I Was In The Matrix, But The Matrix Was Too Slow So I Had To Come Here",
         "What Is This Diddyblud Doin On The Calculator",
-        "EXCUSE ME SIR"
+        "EXCUSE ME SIR",
+        "Hey, it's me, Verity"
     ]; 
     const random = phrases[Math.floor(Math.random() * phrases.length)];
     document.getElementById("phrase").innerHTML = random; 

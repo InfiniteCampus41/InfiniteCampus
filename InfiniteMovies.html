@@ -30,15 +30,6 @@
         <script src="./drypopup.js" type="module">
         </script>
         <style>
-            .section {
-                max-width:50vw;
-                background: transparent;
-                padding: 20px;
-                margin-bottom: 25px;
-                border-radius: 12px;
-                color:white;
-                border:1px solid white;
-            }
             #progressContainer {
                 width: 100%;
                 background: #444;
@@ -61,61 +52,107 @@
     </head>
     <body>
         <main>
-            <center>
-                <h1 class="tptxt" style="margin:0;">
-                    Movie Streaming Service
-                </h1>
-                <hr>
+            <div class="ic-home ic-movies-page">
                 <h6 style="display:none" class="btxt" id="currentFile">
                 </h6>
-                <br>
-                <div class="section" id="before">
-                    <h3 class="mdtxt">
-                        Submit A Movie
-                    </h3>
-                    <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t,.mkv,video/x-matroska">
-                    <label for="applyFile" type="file" class="button">
-                        Upload A File
-                    </label>
-                    <div id="selectedFileName" style="margin-top:5px;color:#ff0;">
-                    </div>
-                    <button class="button" onclick="uploadApply()">
-                        Upload
-                    </button>
-                    <div id="progressContainer" style="display:none; text-align:left;">
-                        <div id="progressBar" style="height: 100%; width: 0%; background: #4caf50;">
+                <section class="ic-movies-hero">
+                    <div class="ic-movies-hero-left">
+                        <div class="ic-apps-icon-box">
+                            <i class="ic ic-film">
+                            </i>
+                        </div>
+                        <div>
+                            <h1 class="ic-apps-h1">
+                                Movies
+                            </h1>
+                            <p class="ic-sub">
+                                Stream Your Favorite Movies — Anytime, Anywhere!
+                            </p>
+                            <p class="ic-movies-hero-tagline">
+                                Browse Our Collection And Find Your Next Favorite Movie.
+                            </p>
                         </div>
                     </div>
-                    <div id="progressPercent" style="margin-top: 8px; font-weight: bold; text-align:center;">
+                    <div class="ic-movies-hero-logo">
+                        <div class="ic-logo-mark" style="width:100%;height:100%">
+                        </div>
+                        <img class="ic-logo-fallback" src="/res/logo.png" alt="Infinite Campus">
                     </div>
-                    <div id="uploadingText" style="text-align:center; margin-top:5px; opacity:0.8;">
+                </section>
+                <details class="ic-movies-upload" id="before">
+                    <summary class="ic-movies-upload-summary">
+                        <i class="ic ic-cloud-upload">
+                        </i>
+                        Submit A Movie
+                    </summary>
+                    <div class="ic-movies-upload-body">
+                        <input style="display:none;" type="file" id="applyFile" accept="video/*,.ts,video/mp2t,.mkv,video/x-matroska">
+                        <label for="applyFile" type="file" class="ic-btn ic-btn-secondary">
+                            Upload A File
+                        </label>
+                        <div id="selectedFileName" class="ic-movies-upload-filename">
+                        </div>
+                        <button class="ic-btn ic-btn-primary" onclick="uploadApply()">
+                            Upload
+                        </button>
+                        <div id="progressContainer" style="display:none; text-align:left;">
+                            <div id="progressBar" style="height: 100%; width: 0%; background: #4caf50;">
+                            </div>
+                        </div>
+                        <div id="progressPercent" style="margin-top: 8px; font-weight: bold; text-align:center;">
+                        </div>
+                        <div id="uploadingText" style="text-align:center; margin-top:5px; opacity:0.8;">
+                        </div>
+                        <div id="upload-status">
+                        </div>
                     </div>
-                    <div id="upload-status">
+                </details>
+                <div id="section" class="ic-movies-layout">
+                    <aside class="ic-movies-sidebar">
+                        <h3 class="ic-movies-sidebar-title">
+                            <i class="ic ic-grid-3x3-gap-fill">
+                            </i>
+                            Categories
+                        </h3>
+                        <div id="categoriesList" class="ic-movies-categories">
+                        </div>
+                    </aside>
+                    <div class="ic-movies-main">
+                        <div class="ic-movies-toolbar">
+                            <a class="discord ic-movies-suggest" href="InfiniteChatters.html?channel=Movie-Requests">
+                                Suggest A Movie
+                            </a>
+                            <div class="ic-apps-search-wrap ic-movies-search-wrap">
+                                <input class="ic-apps-search" id="search" placeholder="Search Movies..." autocomplete="off" oninput="filterMovies()">
+                                <i class="ic ic-search">
+                                </i>
+                            </div>
+                            <select class="ic-movies-sort" id="sortSelect" onchange="setSortMode(this.value)">
+                                <option value="order">Sort: Default Order</option>
+                                <option value="name">Sort: Name (A-Z)</option>
+                                <option value="popularity">Sort: Most Popular</option>
+                            </select>
+                            <button class="ic-btn ic-btn-secondary ic-movies-reload" onclick="loadMovies()" title="Reload List">
+                                <i class="ic ic-arrow-clockwise">
+                                </i>
+                            </button>
+                            <div class="ic-movies-view-toggle">
+                                <button class="ic-movies-view-btn active" id="gridViewBtn" onclick="setMoviesView('grid')" title="Grid View">
+                                    <i class="ic ic-grid-3x3-gap-fill">
+                                    </i>
+                                </button>
+                                <button class="ic-movies-view-btn" id="listViewBtn" onclick="setMoviesView('list')" title="List View">
+                                    <i class="ic ic-list-ul">
+                                    </i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="movies">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="section">
-                    <a class="discord" href="InfiniteChatters.html?channel=Movie-Requests">
-                        Suggest A Movie
-                    </a>
-                    <br>
-                    <h2 class="btxt">
-                        Available Movies
-                    </h2>
-                    <input class="button mbInp" id="search" placeholder="Search Movies" autocomplete="off" oninput="filterMovies()">
-                    <select class="button" id="sortSelect" onchange="setSortMode(this.value)">
-                        <option value="order">Sort: Default Order</option>
-                        <option value="name">Sort: Name (A-Z)</option>
-                        <option value="popularity">Sort: Most Popular</option>
-                    </select>
-                    <button class="button" onclick="loadMovies()">
-                        Reload List
-                    </button>
-                </div>
-                <div id="movies">
-                </div>
-                <br>
-                <br>
-                <br>
                 <div id="watchPanel">
                     <video id="watchVideo">
                     </video>
@@ -125,7 +162,7 @@
                     <br>
                     <br>
                 </div>
-            </center>
+            </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
         </script>
